@@ -1,0 +1,963 @@
+{
+  "$ref": "#/definitions/PhaserCharacterExport",
+  "definitions": {
+    "PhaserCharacterExport": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "tizo8-export",
+          "description": "Discriminator that identifies this JSON as a SpriteShip export manifest. Never changes."
+        },
+        "schemaVersion": {
+          "type": "string",
+          "description": "Semver-like schema version. Additive changes bump the minor (1.0 → 1.1); breaking changes bump the major (1.x → 2.0). Consumers should pin the major."
+        },
+        "exportedAt": {
+          "type": "string",
+          "description": "ISO-8601 timestamp of when this bundle was generated."
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "type": "string",
+              "const": "spriteship",
+              "description": "Source application identifier."
+            },
+            "appUrl": {
+              "type": "string",
+              "const": "https://spriteship.com",
+              "description": "Canonical app URL. Stable across exports."
+            }
+          },
+          "required": [
+            "app",
+            "appUrl"
+          ],
+          "additionalProperties": false,
+          "description": "Origin of this export. Lets downstream tools (and AI assistants) attribute the asset correctly."
+        },
+        "engine": {
+          "type": "string",
+          "const": "phaser"
+        },
+        "surface": {
+          "type": "string",
+          "const": "sprite"
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable display name for the exported entity."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "Stable SpriteShip ID for the entity (character/asset/map). Survives renames; safe to use as an idempotency key when re-importing."
+        },
+        "engineVersion": {
+          "type": "string",
+          "description": "Engine version this bundle was tested against. The bundle may still work in older/newer versions — this is a hint, not a hard requirement."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path relative to the zip root. Matches the actual file in this archive. Use this to locate the file from your engine code or build script."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "spritesheet",
+                  "atlas",
+                  "metadata",
+                  "mounts",
+                  "pose",
+                  "image",
+                  "source-frame",
+                  "ui-source",
+                  "font",
+                  "mask",
+                  "tile",
+                  "engine-script",
+                  "engine-resource",
+                  "engine-scene",
+                  "engine-meta",
+                  "license",
+                  "readme",
+                  "preview",
+                  "schema",
+                  "manifest",
+                  "skill"
+                ],
+                "description": "Role of this file. `engine-*` roles are engine-native and consumed directly by the target engine; `license`/`readme`/`preview`/`schema`/`manifest`/`skill` are the SpriteShip bundle layer shared across all engines."
+              },
+              "description": {
+                "type": "string",
+                "description": "One-line human-readable description of the file. Safe to display to end users or pass to an AI assistant as context."
+              }
+            },
+            "required": [
+              "path",
+              "role",
+              "description"
+            ],
+            "additionalProperties": false,
+            "description": "One entry in the zip-file inventory."
+          },
+          "description": "Self-describing inventory of every file in this zip. Walk this array to discover what each file is for — never guess from filenames alone."
+        },
+        "fieldWarnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Map exports only, present when non-empty: custom data-field resolution warnings (e.g. a referenced entity was deleted so its fields were skipped). Mirrors the `warnings` array in fields-schema.json."
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "tizo8-phaser-character",
+              "description": "Payload discriminator. Never changes for this export shape."
+            },
+            "version": {
+              "type": "number",
+              "const": 1,
+              "description": "Payload version. Bumped on breaking shape changes."
+            },
+            "characterId": {
+              "type": "string",
+              "description": "Stable character ID."
+            },
+            "characterName": {
+              "type": "string",
+              "description": "Human-readable character name."
+            },
+            "gameType": {
+              "type": "string",
+              "description": "Game type label this character was authored for: `platformer` | `topdown` | `topdown-overhead` | `isometric` | `point-and-click`. Influences animation conventions (which directions exist, anchor mode, etc.)."
+            },
+            "frameSize": {
+              "type": "number",
+              "description": "Source frame size in pixels. Equals `sourceSize.w` of every atlas frame — Phaser reads it for `frame.realWidth`, `displayOriginX`, and body/scale math. Single source of truth for the renderer's pixel space."
+            },
+            "animations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "row": {
+                    "type": "number",
+                    "description": "Starting spritesheet row for this animation."
+                  },
+                  "frameCount": {
+                    "type": "number",
+                    "description": "Number of curated frames in this animation."
+                  },
+                  "fps": {
+                    "type": "number",
+                    "description": "Default playback rate in frames per second."
+                  },
+                  "loop": {
+                    "type": "boolean",
+                    "description": "Whether the animation loops by default."
+                  },
+                  "holdFrame": {
+                    "type": "number",
+                    "description": "Optional frame index to hold for authored timing."
+                  },
+                  "trimStart": {
+                    "type": "number",
+                    "description": "Legacy source-capture trim start."
+                  },
+                  "trimEnd": {
+                    "type": "number",
+                    "description": "Legacy source-capture trim end."
+                  },
+                  "loopStart": {
+                    "type": "number",
+                    "description": "Frame index where the loop body starts."
+                  },
+                  "loopEnd": {
+                    "type": "number",
+                    "description": "Frame index where the loop body ends."
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "description": "User-facing label; the containing object key remains the immutable animation slug."
+                  },
+                  "collisionBodyMode": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "custom"
+                    ],
+                    "description": "Whether collision was fitted from the first final frame or manually overridden."
+                  },
+                  "collisionRoles": {
+                    "type": "object",
+                    "properties": {
+                      "movement": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "rect"
+                                  },
+                                  "cx": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "cy": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "hw": {
+                                    "type": "number",
+                                    "exclusiveMinimum": 0
+                                  },
+                                  "hh": {
+                                    "type": "number",
+                                    "exclusiveMinimum": 0
+                                  },
+                                  "rot": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "cx",
+                                  "cy",
+                                  "hw",
+                                  "hh"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "circle"
+                                  },
+                                  "cx": {
+                                    "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles/properties/movement/anyOf/0/anyOf/0/properties/cx"
+                                  },
+                                  "cy": {
+                                    "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles/properties/movement/anyOf/0/anyOf/0/properties/cy"
+                                  },
+                                  "r": {
+                                    "type": "number",
+                                    "exclusiveMinimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "cx",
+                                  "cy",
+                                  "r"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "polygon"
+                                  },
+                                  "points": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "x": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
+                                        },
+                                        "y": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "x",
+                                        "y"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "minItems": 3,
+                                    "maxItems": 64
+                                  },
+                                  "rot": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "points"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "compound"
+                              },
+                              "bodies": {
+                                "type": "array",
+                                "items": {
+                                  "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles/properties/movement/anyOf/0"
+                                },
+                                "minItems": 1,
+                                "maxItems": 16
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "bodies"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "none"
+                              }
+                            },
+                            "required": [
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ],
+                        "description": "Reusable asset collider. All child coordinates are fractions of the same sprite/cell; circle radius is a fraction of width. Compound children are separate solids, not a filled bounding box. None explicitly disables collision; null/omission follows endpoint inheritance rules."
+                      },
+                      "hurtbox": {
+                        "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles/properties/movement",
+                        "description": "Reusable asset collider. All child coordinates are fractions of the same sprite/cell; circle radius is a fraction of width. Compound children are separate solids, not a filled bounding box. None explicitly disables collision; null/omission follows endpoint inheritance rules."
+                      },
+                      "hitbox": {
+                        "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles/properties/movement",
+                        "description": "Reusable asset collider. All child coordinates are fractions of the same sprite/cell; circle radius is a fraction of width. Compound children are separate solids, not a filled bounding box. None explicitly disables collision; null/omission follows endpoint inheritance rules."
+                      },
+                      "hitboxFrames": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "from": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "to": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "from",
+                            "to"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 64
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "collisionBody": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "rect"
+                          },
+                          "cx": {
+                            "type": "number",
+                            "description": "Body center X, as a fraction 0..1 of the sprite/cell width (X) or height (Y)."
+                          },
+                          "cy": {
+                            "type": "number",
+                            "description": "Body center Y, as a fraction 0..1 of the sprite/cell width (X) or height (Y)."
+                          },
+                          "hw": {
+                            "type": "number",
+                            "description": "Half-width (center → edge), as a fraction 0..1 of the sprite/cell width (X) or height (Y). Full width is `hw * 2`."
+                          },
+                          "hh": {
+                            "type": "number",
+                            "description": "Half-height (center → edge), as a fraction 0..1 of the sprite/cell width (X) or height (Y). Full height is `hh * 2`."
+                          },
+                          "rot": {
+                            "type": "number",
+                            "description": "Rotation in radians around the body center, clockwise-positive. Absent = 0. Use an exact-shape solver when the default engine cannot represent rotation; never replace an authored shape with its AABB."
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "cx",
+                          "cy",
+                          "hw",
+                          "hh"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "circle"
+                          },
+                          "cx": {
+                            "type": "number",
+                            "description": "Circle center X, as a fraction 0..1 of the sprite/cell width (X) or height (Y)."
+                          },
+                          "cy": {
+                            "type": "number",
+                            "description": "Circle center Y, as a fraction 0..1 of the sprite/cell width (X) or height (Y)."
+                          },
+                          "r": {
+                            "type": "number",
+                            "description": "Radius as a fraction 0..1 of the sprite/cell WIDTH (width, not height — so the circle stays round on non-square sprites)."
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "cx",
+                          "cy",
+                          "r"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "polygon"
+                          },
+                          "points": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "description": "Closed loop of 3..64 vertices, as a fraction 0..1 of the sprite/cell width (X) or height (Y). The closing edge is implicit — do not repeat the first point. MAY BE CONCAVE."
+                          },
+                          "rot": {
+                            "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionBody/anyOf/0/properties/rot"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "points"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ],
+                    "description": "Physics body for this animation, normalized to the full untrimmed source frame. Prefer it over the character-level body while this animation plays, and re-apply it when playback changes. Scale by frameSize/sourceSize; do not subtract spriteSourceSize or alpha-trim offsets."
+                  },
+                  "startPoseId": {
+                    "type": "string",
+                    "description": "Stored start-pose provenance. It does not determine collision sizing."
+                  },
+                  "endPoseId": {
+                    "type": "string",
+                    "description": "Stored end-pose provenance. It does not determine collision sizing."
+                  }
+                },
+                "required": [
+                  "fps",
+                  "loop"
+                ],
+                "additionalProperties": true
+              },
+              "description": "Flat top-level animation map across all groups. Lets consumers build a single `animConfig` without merging per-group lists. Each animation is already curated to exactly its frames — frame selection is applied at build time, so consumers never see frame-index lists."
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "Logical group name. Single-sheet characters always use `\"default\"`; per-direction characters use direction codes like `\"down\"`, `\"up_left\"`."
+                  },
+                  "sheetUrl": {
+                    "type": "string",
+                    "description": "Public full-resolution spritesheet URL in JSON responses, or an archive-relative canonical path containing the selected-size pixels in a narrowed zip."
+                  },
+                  "atlasUrl": {
+                    "type": "string",
+                    "description": "Public full-resolution atlas URL in JSON responses, or an archive-relative canonical path containing selected-size geometry in a narrowed zip. Identical content to the inline `atlas` field."
+                  },
+                  "atlas": {
+                    "type": "object",
+                    "properties": {
+                      "frames": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number",
+                                  "description": "Frame X in spritesheet pixels (top-left origin)."
+                                },
+                                "y": {
+                                  "type": "number",
+                                  "description": "Frame Y in spritesheet pixels (top-left origin)."
+                                },
+                                "w": {
+                                  "type": "number",
+                                  "description": "Frame width in pixels."
+                                },
+                                "h": {
+                                  "type": "number",
+                                  "description": "Frame height in pixels."
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y",
+                                "w",
+                                "h"
+                              ],
+                              "additionalProperties": false,
+                              "description": "Rectangle inside the spritesheet PNG this frame occupies."
+                            },
+                            "sourceSize": {
+                              "type": "object",
+                              "properties": {
+                                "w": {
+                                  "type": "number",
+                                  "description": "Original sprite canvas width before trimming."
+                                },
+                                "h": {
+                                  "type": "number",
+                                  "description": "Original sprite canvas height before trimming."
+                                }
+                              },
+                              "required": [
+                                "w",
+                                "h"
+                              ],
+                              "additionalProperties": false,
+                              "description": "Original (untrimmed) sprite canvas dimensions. Use this for renderer body size, collision boxes, and scale math."
+                            },
+                            "spriteSourceSize": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number",
+                                  "description": "Per-frame X offset of trimmed content within the source canvas. This IS the per-frame anchor — collision math and mount-point math must read this."
+                                },
+                                "y": {
+                                  "type": "number",
+                                  "description": "Per-frame Y offset of trimmed content within the source canvas."
+                                },
+                                "w": {
+                                  "type": "number",
+                                  "description": "Width of the trimmed content rect."
+                                },
+                                "h": {
+                                  "type": "number",
+                                  "description": "Height of the trimmed content rect."
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y",
+                                "w",
+                                "h"
+                              ],
+                              "additionalProperties": false,
+                              "description": "Where the trimmed content sits inside the source canvas. Top-left origin. Used to recover the original sprite pivot after the exporter strips transparent padding."
+                            },
+                            "duration": {
+                              "type": "number",
+                              "description": "Per-frame duration in milliseconds. When set, overrides the animation-level fps for this frame (variable-pace animations)."
+                            },
+                            "trimmed": {
+                              "type": "boolean",
+                              "description": "Whether transparent edges were trimmed. If true, `spriteSourceSize` carries the un-trim offset."
+                            },
+                            "rotated": {
+                              "type": "boolean",
+                              "description": "Whether the frame was rotated 90° during atlas packing. Almost always false for SpriteShip atlases."
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "sourceSize",
+                            "spriteSourceSize"
+                          ],
+                          "additionalProperties": false,
+                          "description": "A single animation frame inside the atlas. Shape is identical to TexturePacker JSON Hash, so any TexturePacker-compatible runtime can load it."
+                        },
+                        "description": "Map of frame-name → frame definition. Frame names are referenced from animations and mounts."
+                      },
+                      "animations": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "frames": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Frame names (keys into the atlas `frames` map) in play order."
+                            },
+                            "fps": {
+                              "type": "number",
+                              "description": "Default playback rate in frames per second. Can be overridden per-frame via the `duration` field on the atlas frame."
+                            },
+                            "loop": {
+                              "type": "boolean",
+                              "description": "Whether the animation loops by default. One-shot animations (`false`) hold on the last frame after one play."
+                            },
+                            "loopStart": {
+                              "type": "number",
+                              "description": "Frame index inside `frames[]` where the loop restarts. Allows intro + looping body in one animation."
+                            },
+                            "loopEnd": {
+                              "type": "number",
+                              "description": "Frame index inside `frames[]` where the loop ends. The body runs `loopStart` → `loopEnd` repeatedly."
+                            }
+                          },
+                          "required": [
+                            "frames",
+                            "fps",
+                            "loop"
+                          ],
+                          "additionalProperties": false,
+                          "description": "Animation definition with a frame sequence + playback metadata."
+                        },
+                        "description": "Map of animation-name → animation definition. The renderer plays `frames[]` at `fps` and loops per `loop`."
+                      },
+                      "meta": {
+                        "type": "object",
+                        "properties": {
+                          "image": {
+                            "type": "string",
+                            "description": "Filename of the spritesheet PNG this atlas refers to (relative to atlas file location)."
+                          },
+                          "size": {
+                            "type": "object",
+                            "properties": {
+                              "w": {
+                                "type": "number",
+                                "description": "Spritesheet PNG width in pixels."
+                              },
+                              "h": {
+                                "type": "number",
+                                "description": "Spritesheet PNG height in pixels."
+                              }
+                            },
+                            "required": [
+                              "w",
+                              "h"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Full spritesheet dimensions."
+                          },
+                          "scale": {
+                            "type": "string",
+                            "description": "TexturePacker `scale` field — usually \"1\"."
+                          }
+                        },
+                        "additionalProperties": true,
+                        "description": "Atlas-level metadata. Anything not listed here is engine-tolerated extra data."
+                      }
+                    },
+                    "required": [
+                      "frames",
+                      "animations",
+                      "meta"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Phaser-style atlas (TexturePacker JSON Hash + Phaser `animations` block)."
+                  },
+                  "variants": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "size": {
+                          "type": "number",
+                          "description": "Downscaled frame size in pixels (e.g. 64, 128, 256)."
+                        },
+                        "sheetUrl": {
+                          "type": "string",
+                          "description": "Downscaled spritesheet URL."
+                        },
+                        "atlasUrl": {
+                          "type": "string",
+                          "description": "Downscaled atlas URL — coords scaled to match the smaller sheet."
+                        }
+                      },
+                      "required": [
+                        "size",
+                        "sheetUrl",
+                        "atlasUrl"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Pre-rendered downscaled variants. Pick the size closest to your in-game render scale to save GPU memory."
+                  },
+                  "previewUrl": {
+                    "type": "string",
+                    "description": "Optional single-frame thumbnail URL — useful for UI lists."
+                  },
+                  "animations": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties"
+                    },
+                    "description": "Subset of the top-level `animations` map that lives on THIS group's sheet. Identical entries; redeclared here to make per-group loading trivial."
+                  }
+                },
+                "required": [
+                  "key",
+                  "sheetUrl",
+                  "atlasUrl",
+                  "atlas",
+                  "variants",
+                  "animations"
+                ],
+                "additionalProperties": false,
+                "description": "One renderable group — a sheet + atlas + variants. Single-sheet characters have a single-element `groups[]` array with `key=\"default\"`."
+              },
+              "description": "All renderable groups. Always non-empty. Length 1 for single-sheet characters; length N for per-direction characters (one group per direction)."
+            },
+            "mounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Mount point name. Characters are seeded with up to ten skeleton-derived slots: \"head\", \"left_hand\", \"right_hand\", \"chest\", \"back\", \"belt\", \"left_shoulder\", \"right_shoulder\", \"left_foot\", \"right_foot\" — plus any custom slots the author added. Left/right are SCREEN sides (the slot on the visible left of the sprite), not the character's anatomy, so a slot stays on the same side of the image as the character turns. A slot is absent when the pose detector could not find it on that animation. Use this key as the slot identifier when attaching equipment sprites."
+                  },
+                  "frame": {
+                    "type": "string",
+                    "description": "Atlas frame name this mount is anchored to (e.g. \"idle_0\"). Mount coordinates are valid for THIS frame only — for animated mounts, look up the next frame's entry and interpolate, OR fetch the mount whose `frame` matches the currently-displayed frame."
+                  },
+                  "x": {
+                    "type": "number",
+                    "description": "X position in atlas-frame pixels, top-left origin. To get the world-space mount position: world_x = sprite_world_x + (x - sprite_pivot_x) * sprite_scale."
+                  },
+                  "y": {
+                    "type": "number",
+                    "description": "Y position in atlas-frame pixels, top-left origin. Apply the same transform as `x` to get world coordinates."
+                  },
+                  "rotation": {
+                    "type": "number",
+                    "description": "Mount rotation in radians, clockwise-positive. Apply when rendering the attached equipment sprite."
+                  }
+                },
+                "required": [
+                  "name",
+                  "frame",
+                  "x",
+                  "y"
+                ],
+                "additionalProperties": false,
+                "description": "Equipment-attachment point on a character frame. Use these to spawn weapons/hats/etc. at the correct location and rotation as the character animates."
+              },
+              "description": "Equipment attachment points (weapons, hats, accessories). Same set of mounts applies across groups but coordinates are per-frame — look up each frame's entry as the character animates."
+            },
+            "mountsData": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "number",
+                  "description": "mounts.json schema version."
+                },
+                "frameSize": {
+                  "type": "number",
+                  "description": "Pixel space the mount coordinates are expressed in."
+                },
+                "slots": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "frame": {
+                            "type": "number",
+                            "description": "0-based frame index within the animation."
+                          },
+                          "x": {
+                            "type": "number",
+                            "description": "Mount X within the frame (top-left origin)."
+                          },
+                          "y": {
+                            "type": "number",
+                            "description": "Mount Y within the frame (top-left origin)."
+                          },
+                          "rotation": {
+                            "type": "number",
+                            "description": "Mount rotation in degrees."
+                          }
+                        },
+                        "required": [
+                          "frame",
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "description": "slot name → animation name → ordered per-frame mount points."
+                }
+              },
+              "required": [
+                "frameSize",
+                "slots"
+              ],
+              "additionalProperties": true,
+              "description": "Structured mount points (the canonical mounts.json shape): per-slot, per-animation, per-frame attachment coordinates. Rescale by `atlasFrameSize / frameSize` if the loaded atlas differs."
+            },
+            "imageUrl": {
+              "type": "string",
+              "description": "Standalone character image URL. Use this as a static fallback for image-only characters that don't yet have a built spritesheet."
+            },
+            "poses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Stable pose ID (e.g. `default`, `pose_3`)."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "User-typed pose name (e.g. `down`, `wave`)."
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "Prompt the pose was generated from — useful as a fallback when matching direction tokens."
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "s",
+                      "se",
+                      "e",
+                      "ne",
+                      "n",
+                      "nw",
+                      "w",
+                      "sw"
+                    ],
+                    "description": "Authoritative compass facing (`s` = toward camera, `e` = right profile, plus diagonals). PREFER this over token-matching `name`/`prompt` when picking a pose per facing; the text match is only the legacy fallback for poses that predate the field."
+                  },
+                  "autoGenerated": {
+                    "type": "boolean",
+                    "description": "True for pipeline-harvested poses (directional anchor set — frozen MID-STRIDE frames). When binding a facing, prefer a user pose over an autoGenerated one carrying the same direction."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Pose PNG URL."
+                  },
+                  "collisionRoles": {
+                    "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles"
+                  },
+                  "collisionBody": {
+                    "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionBody",
+                    "description": "Collision body authored for THIS pose specifically (normalized to the pose image). Overrides the character-level `collisionBody` while this pose is displayed. Omitted when the user authored none."
+                  }
+                },
+                "required": [
+                  "id",
+                  "url"
+                ],
+                "additionalProperties": false,
+                "description": "Static directional/expressive pose. Useful for image-only characters (no animations yet)."
+              },
+              "description": "Generated static poses. Enables image-only state machines where you swap the texture based on facing direction."
+            },
+            "collisionRoles": {
+              "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionRoles"
+            },
+            "collisionBody": {
+              "$ref": "#/definitions/PhaserCharacterExport/properties/payload/properties/animations/additionalProperties/properties/collisionBody",
+              "description": "Character-level fallback collision body, normalized to the full untrimmed source frame. Prefer `animations[activeName].collisionBody` during animation playback or `poses[].collisionBody` for a displayed pose. In Phaser Arcade apply rects with `body.setSize(hw*2*frameSize, hh*2*frameSize)` and `body.setOffset((cx-hw)*frameSize, (cy-hh)*frameSize)`; do not subtract atlas `spriteSourceSize`/alpha-trim offsets. Only fall back to the frame bbox when no resolved body exists."
+            }
+          },
+          "required": [
+            "schema",
+            "version",
+            "characterId",
+            "characterName",
+            "gameType",
+            "frameSize",
+            "animations",
+            "groups"
+          ],
+          "additionalProperties": false,
+          "description": "Phaser character payload. Pass this directly to a Phaser scene's `load.atlas` + `anims.create` calls — the field names match Phaser's API exactly."
+        }
+      },
+      "required": [
+        "schema",
+        "schemaVersion",
+        "exportedAt",
+        "source",
+        "engine",
+        "surface",
+        "title",
+        "entityId",
+        "engineVersion",
+        "files",
+        "payload"
+      ],
+      "additionalProperties": false,
+      "description": "Top-level SpriteShip export manifest for a Phaser character bundle."
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

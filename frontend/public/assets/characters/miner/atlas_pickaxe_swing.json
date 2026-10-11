@@ -1,0 +1,1412 @@
+{
+  "frames": {
+    "pickaxe_swing_0000": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0001": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 514,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0002": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1028,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0003": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1542,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0004": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2056,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0005": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2570,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0006": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3084,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0007": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3598,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0008": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4112,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0009": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4626,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0010": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5140,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0011": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5654,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0012": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6168,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0013": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6682,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0014": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 7196,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0015": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 0,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0016": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 514,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0017": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1028,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0018": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1542,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0019": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2056,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0020": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2570,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0021": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3084,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0022": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3598,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0023": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4112,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0024": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4626,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0025": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5140,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0026": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5654,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0027": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6168,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0028": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6682,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0029": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 7196,
+        "y": 514,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0030": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 0,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0031": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 514,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0032": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1028,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0033": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1542,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0034": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2056,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0035": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2570,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0036": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3084,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0037": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3598,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0038": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4112,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0039": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4626,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0040": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5140,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0041": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5654,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0042": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6168,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0043": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6682,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0044": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 7196,
+        "y": 1028,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0045": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 0,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0046": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 514,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0047": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1028,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0048": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 1542,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0049": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2056,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0050": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 2570,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0051": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3084,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0052": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 3598,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0053": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4112,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0054": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 4626,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0055": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5140,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0056": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 5654,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0057": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6168,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0058": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 6682,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    },
+    "pickaxe_swing_0059": {
+      "watermarkEligible": true,
+      "frame": {
+        "x": 7196,
+        "y": 1542,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "duration": 33
+    }
+  },
+  "animations": {
+    "pickaxe_swing": {
+      "frames": [
+        "pickaxe_swing_0000",
+        "pickaxe_swing_0001",
+        "pickaxe_swing_0002",
+        "pickaxe_swing_0003",
+        "pickaxe_swing_0004",
+        "pickaxe_swing_0005",
+        "pickaxe_swing_0006",
+        "pickaxe_swing_0007",
+        "pickaxe_swing_0008",
+        "pickaxe_swing_0009",
+        "pickaxe_swing_0010",
+        "pickaxe_swing_0011",
+        "pickaxe_swing_0012",
+        "pickaxe_swing_0013",
+        "pickaxe_swing_0014",
+        "pickaxe_swing_0015",
+        "pickaxe_swing_0016",
+        "pickaxe_swing_0017",
+        "pickaxe_swing_0018",
+        "pickaxe_swing_0019",
+        "pickaxe_swing_0020",
+        "pickaxe_swing_0021",
+        "pickaxe_swing_0022",
+        "pickaxe_swing_0023",
+        "pickaxe_swing_0024",
+        "pickaxe_swing_0025",
+        "pickaxe_swing_0026",
+        "pickaxe_swing_0027",
+        "pickaxe_swing_0028",
+        "pickaxe_swing_0029",
+        "pickaxe_swing_0030",
+        "pickaxe_swing_0031",
+        "pickaxe_swing_0032",
+        "pickaxe_swing_0033",
+        "pickaxe_swing_0034",
+        "pickaxe_swing_0035",
+        "pickaxe_swing_0036",
+        "pickaxe_swing_0037",
+        "pickaxe_swing_0038",
+        "pickaxe_swing_0039",
+        "pickaxe_swing_0040",
+        "pickaxe_swing_0041",
+        "pickaxe_swing_0042",
+        "pickaxe_swing_0043",
+        "pickaxe_swing_0044",
+        "pickaxe_swing_0045",
+        "pickaxe_swing_0046",
+        "pickaxe_swing_0047",
+        "pickaxe_swing_0048",
+        "pickaxe_swing_0049",
+        "pickaxe_swing_0050",
+        "pickaxe_swing_0051",
+        "pickaxe_swing_0052",
+        "pickaxe_swing_0053",
+        "pickaxe_swing_0054",
+        "pickaxe_swing_0055",
+        "pickaxe_swing_0056",
+        "pickaxe_swing_0057",
+        "pickaxe_swing_0058",
+        "pickaxe_swing_0059"
+      ],
+      "fps": 30,
+      "loop": false
+    }
+  },
+  "meta": {
+    "app": "https://spriteship.com",
+    "version": "1.0",
+    "image": "spritesheet_pickaxe_swing.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 7710,
+      "h": 2056
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "pickaxe_swing",
+        "from": 0,
+        "to": 59,
+        "direction": "forward",
+        "color": "#000000ff"
+      }
+    ]
+  }
+}

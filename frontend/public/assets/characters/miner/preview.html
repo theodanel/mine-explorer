@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Petit mineur dragon aventurier — Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { color-scheme: dark; }
+    html, body { margin: 0; padding: 0; background: #1f2329; color: #e7eaf0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+    .sub { color: #8a93a3; font-size: 12px; margin-bottom: 24px; }
+    .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    select, button, input[type=range] { background: #2a2f37; color: #e7eaf0; border: 1px solid #3a4150; border-radius: 6px; padding: 6px 10px; font: inherit; }
+    button { cursor: pointer; }
+    button.primary { background: #4f8cff; border-color: #4f8cff; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    .stage { background: repeating-conic-gradient(#252a32 0% 25%, #1f2329 0% 50%) 50% / 24px 24px; border-radius: 8px; padding: 32px; display: flex; align-items: center; justify-content: center; min-height: 320px; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; max-width: 100%; max-height: 70vh; object-fit: contain; }
+    .meta { color: #8a93a3; font-size: 12px; margin-top: 12px; }
+    .err { background: #3a1f24; color: #ffb4b4; padding: 12px 16px; border-radius: 6px; margin-top: 16px; }
+    label { color: #8a93a3; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Petit mineur dragon aventurier</h1>
+    <div class="sub">SpriteShip preview · drop this folder into your engine — see <code>README.md</code></div>
+    <div class="controls" id="controls">
+      <label id="groupLabel" style="display:none;">Group
+        <select id="group"></select>
+      </label>
+      <label>Animation
+        <select id="anim"></select>
+      </label>
+      <label>FPS
+        <input id="fps" type="range" min="1" max="30" value="8" />
+        <span id="fpsVal">8</span>
+      </label>
+      <label>Scale
+        <input id="scale" type="range" min="0.5" max="6" step="0.5" value="1" />
+        <span id="scaleVal">1×</span>
+      </label>
+      <button id="loop" class="primary">Loop: on</button>
+      <button id="play">▶ Play</button>
+    </div>
+    <div class="stage"><canvas id="cv" width="256" height="256"></canvas></div>
+    <div class="meta" id="meta"></div>
+    <div class="err" id="err" hidden></div>
+  </div>
+
+  <script>
+  (function() {
+    const TITLE = "Petit mineur dragon aventurier";
+    const GROUPS = [{"key":"pickaxe_swing","spritesheetPath":"spritesheet_pickaxe_swing.png","atlas":{"frames":{"pickaxe_swing_0000":{"watermarkEligible":true,"frame":{"x":0,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0001":{"watermarkEligible":true,"frame":{"x":514,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0002":{"watermarkEligible":true,"frame":{"x":1028,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0003":{"watermarkEligible":true,"frame":{"x":1542,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0004":{"watermarkEligible":true,"frame":{"x":2056,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0005":{"watermarkEligible":true,"frame":{"x":2570,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0006":{"watermarkEligible":true,"frame":{"x":3084,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0007":{"watermarkEligible":true,"frame":{"x":3598,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0008":{"watermarkEligible":true,"frame":{"x":4112,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0009":{"watermarkEligible":true,"frame":{"x":4626,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0010":{"watermarkEligible":true,"frame":{"x":5140,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0011":{"watermarkEligible":true,"frame":{"x":5654,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0012":{"watermarkEligible":true,"frame":{"x":6168,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0013":{"watermarkEligible":true,"frame":{"x":6682,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0014":{"watermarkEligible":true,"frame":{"x":7196,"y":0,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0015":{"watermarkEligible":true,"frame":{"x":0,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0016":{"watermarkEligible":true,"frame":{"x":514,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0017":{"watermarkEligible":true,"frame":{"x":1028,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0018":{"watermarkEligible":true,"frame":{"x":1542,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0019":{"watermarkEligible":true,"frame":{"x":2056,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0020":{"watermarkEligible":true,"frame":{"x":2570,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0021":{"watermarkEligible":true,"frame":{"x":3084,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0022":{"watermarkEligible":true,"frame":{"x":3598,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0023":{"watermarkEligible":true,"frame":{"x":4112,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0024":{"watermarkEligible":true,"frame":{"x":4626,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0025":{"watermarkEligible":true,"frame":{"x":5140,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0026":{"watermarkEligible":true,"frame":{"x":5654,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0027":{"watermarkEligible":true,"frame":{"x":6168,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0028":{"watermarkEligible":true,"frame":{"x":6682,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0029":{"watermarkEligible":true,"frame":{"x":7196,"y":514,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0030":{"watermarkEligible":true,"frame":{"x":0,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0031":{"watermarkEligible":true,"frame":{"x":514,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0032":{"watermarkEligible":true,"frame":{"x":1028,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0033":{"watermarkEligible":true,"frame":{"x":1542,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0034":{"watermarkEligible":true,"frame":{"x":2056,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0035":{"watermarkEligible":true,"frame":{"x":2570,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0036":{"watermarkEligible":true,"frame":{"x":3084,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0037":{"watermarkEligible":true,"frame":{"x":3598,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0038":{"watermarkEligible":true,"frame":{"x":4112,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0039":{"watermarkEligible":true,"frame":{"x":4626,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0040":{"watermarkEligible":true,"frame":{"x":5140,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0041":{"watermarkEligible":true,"frame":{"x":5654,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0042":{"watermarkEligible":true,"frame":{"x":6168,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0043":{"watermarkEligible":true,"frame":{"x":6682,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0044":{"watermarkEligible":true,"frame":{"x":7196,"y":1028,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0045":{"watermarkEligible":true,"frame":{"x":0,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0046":{"watermarkEligible":true,"frame":{"x":514,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0047":{"watermarkEligible":true,"frame":{"x":1028,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0048":{"watermarkEligible":true,"frame":{"x":1542,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0049":{"watermarkEligible":true,"frame":{"x":2056,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0050":{"watermarkEligible":true,"frame":{"x":2570,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0051":{"watermarkEligible":true,"frame":{"x":3084,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0052":{"watermarkEligible":true,"frame":{"x":3598,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0053":{"watermarkEligible":true,"frame":{"x":4112,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0054":{"watermarkEligible":true,"frame":{"x":4626,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0055":{"watermarkEligible":true,"frame":{"x":5140,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0056":{"watermarkEligible":true,"frame":{"x":5654,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0057":{"watermarkEligible":true,"frame":{"x":6168,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0058":{"watermarkEligible":true,"frame":{"x":6682,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33},"pickaxe_swing_0059":{"watermarkEligible":true,"frame":{"x":7196,"y":1542,"w":512,"h":512},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":512,"h":512},"sourceSize":{"w":512,"h":512},"duration":33}},"animations":{"pickaxe_swing":{"frames":["pickaxe_swing_0000","pickaxe_swing_0001","pickaxe_swing_0002","pickaxe_swing_0003","pickaxe_swing_0004","pickaxe_swing_0005","pickaxe_swing_0006","pickaxe_swing_0007","pickaxe_swing_0008","pickaxe_swing_0009","pickaxe_swing_0010","pickaxe_swing_0011","pickaxe_swing_0012","pickaxe_swing_0013","pickaxe_swing_0014","pickaxe_swing_0015","pickaxe_swing_0016","pickaxe_swing_0017","pickaxe_swing_0018","pickaxe_swing_0019","pickaxe_swing_0020","pickaxe_swing_0021","pickaxe_swing_0022","pickaxe_swing_0023","pickaxe_swing_0024","pickaxe_swing_0025","pickaxe_swing_0026","pickaxe_swing_0027","pickaxe_swing_0028","pickaxe_swing_0029","pickaxe_swing_0030","pickaxe_swing_0031","pickaxe_swing_0032","pickaxe_swing_0033","pickaxe_swing_0034","pickaxe_swing_0035","pickaxe_swing_0036","pickaxe_swing_0037","pickaxe_swing_0038","pickaxe_swing_0039","pickaxe_swing_0040","pickaxe_swing_0041","pickaxe_swing_0042","pickaxe_swing_0043","pickaxe_swing_0044","pickaxe_swing_0045","pickaxe_swing_0046","pickaxe_swing_0047","pickaxe_swing_0048","pickaxe_swing_0049","pickaxe_swing_0050","pickaxe_swing_0051","pickaxe_swing_0052","pickaxe_swing_0053","pickaxe_swing_0054","pickaxe_swing_0055","pickaxe_swing_0056","pickaxe_swing_0057","pickaxe_swing_0058","pickaxe_swing_0059"],"fps":30,"loop":false}},"meta":{"app":"https://spriteship.com","version":"1.0","image":"spritesheet_pickaxe_swing.png","format":"RGBA8888","size":{"w":7710,"h":2056},"scale":"1","frameTags":[{"name":"pickaxe_swing","from":0,"to":59,"direction":"forward","color":"#000000ff"}]}}}];
+    const DEFAULT_FPS = 8;
+
+    const cv = document.getElementById('cv');
+    const ctx = cv.getContext('2d');
+    const groupSel = document.getElementById('group');
+    const groupLabel = document.getElementById('groupLabel');
+    const animSel = document.getElementById('anim');
+    const fpsInp = document.getElementById('fps');
+    const fpsVal = document.getElementById('fpsVal');
+    const scaleInp = document.getElementById('scale');
+    const scaleVal = document.getElementById('scaleVal');
+    const loopBtn = document.getElementById('loop');
+    const playBtn = document.getElementById('play');
+    const metaEl = document.getElementById('meta');
+    const errEl = document.getElementById('err');
+
+    function showError(msg) { errEl.hidden = false; errEl.textContent = msg; }
+
+    if (!GROUPS || GROUPS.length === 0) {
+      showError('Empty preview — no groups baked into this preview.html.');
+      return;
+    }
+
+    // Per-group state — sheet is loaded lazily on first selection so the
+    // user doesn't pay for groups they never look at.
+    const sheetCache = new Map(); // key -> HTMLImageElement | Error
+
+    let currentGroup = GROUPS[0];
+    let currentAnim = null;
+    let frameIdx = 0, last = 0, playing = true, loop = true, scale = 1, fps = DEFAULT_FPS;
+
+    if (GROUPS.length > 1) {
+      groupLabel.style.display = '';
+      for (const g of GROUPS) {
+        const opt = document.createElement('option');
+        opt.value = g.key;
+        opt.textContent = g.key;
+        groupSel.appendChild(opt);
+      }
+      groupSel.addEventListener('change', () => {
+        const g = GROUPS.find(x => x.key === groupSel.value);
+        if (g) setGroup(g);
+      });
+    }
+
+    function setGroup(g) {
+      currentGroup = g;
+      // Repopulate the animation dropdown for this group via safe DOM ops.
+      while (animSel.firstChild) animSel.removeChild(animSel.firstChild);
+      const animations = g.atlas.animations || {};
+      const animList = Object.keys(animations);
+      if (animList.length === 0) {
+        animations['(all frames)'] = { frames: Object.keys(g.atlas.frames || {}), fps: DEFAULT_FPS, loop: true };
+        animList.push('(all frames)');
+      }
+      for (const name of animList) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name + ' (' + (animations[name].frames || []).length + ')';
+        animSel.appendChild(opt);
+      }
+      loadSheet(g);
+      setAnim(animList[0]);
+    }
+
+    function loadSheet(g) {
+      if (sheetCache.has(g.key)) return;
+      const im = new Image();
+      im.onload = () => { sheetCache.set(g.key, im); };
+      im.onerror = () => {
+        sheetCache.set(g.key, new Error('Image load failed: ' + g.spritesheetPath));
+        showError('Failed to load ' + g.spritesheetPath + '. Make sure this HTML is in the SAME folder as the spritesheet PNG.');
+      };
+      im.src = g.spritesheetPath;
+    }
+
+    function setAnim(name) {
+      const a = currentGroup.atlas.animations[name];
+      if (!a) return;
+      currentAnim = a;
+      currentAnim._name = name;
+      frameIdx = 0;
+      last = performance.now();
+      fps = a.fps || DEFAULT_FPS;
+      fpsInp.value = String(Math.min(30, Math.max(1, Math.round(fps))));
+      fpsVal.textContent = fpsInp.value;
+      // Pre-compute the tight max bounding box across every frame of this
+      // animation. The canvas uses THIS for sizing (not sourceSize) so it
+      // hugs the character instead of the full atlas cell — and the canvas
+      // stays stable across frames even when individual sprite bboxes vary.
+      let maxW = 0, maxH = 0;
+      for (const frameName of a.frames) {
+        const f = currentGroup.atlas.frames[frameName];
+        if (!f) continue;
+        const sss = f.spriteSourceSize || { w: f.frame.w, h: f.frame.h };
+        if (sss.w > maxW) maxW = sss.w;
+        if (sss.h > maxH) maxH = sss.h;
+      }
+      currentAnim._maxBboxW = Math.max(1, maxW);
+      currentAnim._maxBboxH = Math.max(1, maxH);
+      metaEl.textContent = currentGroup.key + ' · ' + name + ' · ' + a.frames.length + ' frames · default fps ' + fps + (a.loop === false ? ' · one-shot' : ' · looped');
+    }
+
+    animSel.addEventListener('change', () => setAnim(animSel.value));
+    fpsInp.addEventListener('input', () => { fps = +fpsInp.value; fpsVal.textContent = fpsInp.value; });
+    scaleInp.addEventListener('input', () => { scale = +scaleInp.value; scaleVal.textContent = scale + '×'; });
+    loopBtn.addEventListener('click', () => { loop = !loop; loopBtn.textContent = 'Loop: ' + (loop ? 'on' : 'off'); });
+    playBtn.addEventListener('click', () => { playing = !playing; playBtn.textContent = playing ? '⏸ Pause' : '▶ Play'; });
+
+    setGroup(GROUPS[0]);
+    requestAnimationFrame(tick);
+
+    function tick(t) {
+      requestAnimationFrame(tick);
+      const img = sheetCache.get(currentGroup.key);
+      if (!img || img instanceof Error || !currentAnim) return;
+      const interval = 1000 / fps;
+      if (playing && t - last >= interval) {
+        last = t;
+        frameIdx++;
+        if (frameIdx >= currentAnim.frames.length) {
+          if (loop || currentAnim.loop !== false) frameIdx = 0;
+          else { frameIdx = currentAnim.frames.length - 1; playing = false; playBtn.textContent = '▶ Play'; }
+        }
+      }
+      drawFrame(img);
+    }
+
+    function drawFrame(img) {
+      const name = currentAnim.frames[frameIdx];
+      const f = currentGroup.atlas.frames[name];
+      if (!f) return;
+      const src = f.frame;
+      const sss = f.spriteSourceSize || { x: 0, y: 0, w: src.w, h: src.h };
+      // Canvas is sized to the animation's TIGHT max bounding box (not the
+      // atlas cell's sourceSize) so the canvas hugs the character and stays
+      // stable across frames. Each frame's trimmed content is drawn centered
+      // within that box.
+      //
+      // IMPORTANT: SpriteShip atlases store the FULL cell (with transparent
+      // padding) in 'frame', and use 'spriteSourceSize' (sss) to mark where
+      // the actual character is within that cell. So the drawImage crop must
+      // be offset by sss.x/sss.y, and use sss.w/sss.h (not src.w/src.h) for
+      // both the source crop size AND the destination size.
+      const maxBboxW = currentAnim._maxBboxW || sss.w;
+      const maxBboxH = currentAnim._maxBboxH || sss.h;
+      const cw = maxBboxW * scale;
+      const ch = maxBboxH * scale;
+      if (cv.width !== Math.ceil(cw) || cv.height !== Math.ceil(ch)) {
+        cv.width = Math.ceil(cw);
+        cv.height = Math.ceil(ch);
+      }
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.imageSmoothingEnabled = false;
+      const sx = src.x + sss.x;
+      const sy = src.y + sss.y;
+      const sw = sss.w;
+      const sh = sss.h;
+      const drawX = Math.round((cw - sw * scale) / 2);
+      const drawY = Math.round((ch - sh * scale) / 2);
+      ctx.drawImage(
+        img,
+        sx, sy, sw, sh,
+        drawX, drawY, sw * scale, sh * scale,
+      );
+    }
+  })();
+  </script>
+</body>
+</html>

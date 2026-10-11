@@ -1,0 +1,6 @@
+# Base H2 locale (données de dev, pas du code)
+backend/data/
+
+# Fichiers d'OS et d'éditeur
+.DS_Store
+Thumbs.db

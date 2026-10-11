@@ -1,0 +1,67 @@
+@if (view(); as view) {
+  <div class="backdrop">
+    <section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="item-compare-title">
+      <h2 id="item-compare-title">
+        <img class="title-icon" [src]="view.slot.iconUrl" alt="" width="128" height="128" />
+        Nouveau : {{ view.slot.label }}
+        <span class="tier" [attr.data-tier]="view.candidate.tier"
+          >{{ view.candidate.tierLabel }} · Niv. {{ view.candidate.level }}</span
+        >
+      </h2>
+
+      <p class="power" [attr.data-trend]="view.powerTrend">
+        <span class="power-label">Puissance</span>
+        <span class="power-value">{{ view.power }}</span>
+        @if (view.powerTrend === 'better') {
+          <span class="power-arrow" aria-label="meilleur que l'objet porté">▲</span>
+        } @else if (view.powerTrend === 'worse') {
+          <span class="power-arrow" aria-label="moins bon que l'objet porté">▼</span>
+        }
+        <span class="power-delta">{{ view.powerDelta > 0 ? '+' : '' }}{{ view.powerDelta }}</span>
+      </p>
+
+      <table class="compare">
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">Stat</span></th>
+            <th scope="col">
+              Porté
+              @if (view.current) {
+                <span class="tier" [attr.data-tier]="view.current.tier"
+                  >{{ view.current.tierLabel }} · Niv. {{ view.current.level }}</span
+                >
+              } @else {
+                <span class="tier">Aucun</span>
+              }
+            </th>
+            <th scope="col">Nouveau</th>
+            <th scope="col"><span class="visually-hidden">Écart</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of view.rows; track row.stat) {
+            <tr>
+              <th scope="row">{{ row.label }}</th>
+              <td>{{ row.current }}</td>
+              <td>{{ row.candidate }}</td>
+              <td class="delta" [attr.data-trend]="row.trend">{{ row.delta }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="actions">
+        <button type="button" class="game-button stone sell" (click)="inventory.sellPending()">
+          Vendre
+          <span class="price">+{{ view.sellPrice }}</span>
+        </button>
+        <button type="button" class="game-button green equip" (click)="inventory.equipPending()">
+          Équiper
+          @if (view.replacedSellPrice !== null) {
+            <span class="price">ancien vendu +{{ view.replacedSellPrice }}</span>
+          }
+        </button>
+      </div>
+    </section>
+  </div>
+}

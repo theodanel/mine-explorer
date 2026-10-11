@@ -1,0 +1,150 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 5cqw;
+  background: rgb(0 0 0 / 55%);
+}
+
+.dialog {
+  width: 100%;
+  padding: 5cqw;
+}
+
+h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2cqw;
+  margin: 0 0 4cqw;
+  font-size: 5.5cqw;
+}
+
+.title-icon {
+  width: 9cqw;
+  height: 9cqw;
+}
+
+.tier {
+  display: inline-block;
+  padding: 0.5cqw 2cqw;
+  border-radius: 1.5cqw;
+  background: var(--tier-color, #5a4636);
+  color: #1a0f07;
+  font-size: 3cqw;
+  font-weight: bold;
+}
+
+// Gain ou perte de Puissance si l'on équipe l'objet : c'est le chiffre qui décide
+.power {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2cqw;
+  margin: 0 0 3cqw;
+  padding: 1.5cqw;
+  border-radius: 2.5cqw;
+  background: rgb(0 0 0 / 30%);
+
+  &[data-trend='better'] { --trend-color: #6fdc6f; }
+  &[data-trend='worse'] { --trend-color: #ff6b5e; }
+  &[data-trend='same'] { --trend-color: #c9b89a; }
+}
+
+.power-label {
+  font-size: 3.4cqw;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.power-value {
+  font-size: 6cqw;
+  font-weight: bold;
+  color: #ffd34d;
+}
+
+.power-arrow,
+.power-delta {
+  color: var(--trend-color);
+  font-size: 4.5cqw;
+  font-weight: bold;
+}
+
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 4cqw;
+
+  th,
+  td {
+    padding: 1.5cqw 1cqw;
+    text-align: right;
+  }
+
+  thead th {
+    font-size: 3.2cqw;
+    font-weight: normal;
+    opacity: 0.8;
+    vertical-align: bottom;
+
+    .title-icon {
+  width: 9cqw;
+  height: 9cqw;
+}
+
+.tier {
+      display: block;
+      margin-top: 1cqw;
+      width: fit-content;
+      margin-left: auto;
+    }
+  }
+
+  tbody th {
+    text-align: left;
+    font-weight: normal;
+  }
+
+  tbody tr + tr {
+    border-top: 0.3cqw solid rgb(255 255 255 / 10%);
+  }
+}
+
+.delta {
+  font-weight: bold;
+
+  &[data-trend='better'] { color: #6fdc6f; }
+  &[data-trend='worse'] { color: #ff6b5e; }
+  &[data-trend='same'] { opacity: 0.6; }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3cqw;
+  margin-top: 5cqw;
+
+  button {
+    display: grid;
+    gap: 1cqw;
+    padding: 3cqw 2cqw;
+    font-size: 4.5cqw;
+  }
+}
+
+
+.price {
+  font-size: 3cqw;
+  font-weight: normal;
+  opacity: 0.9;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

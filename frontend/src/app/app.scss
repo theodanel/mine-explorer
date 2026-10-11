@@ -4,12 +4,15 @@
   height: 100dvh;
 }
 
-// Cadre portrait 9:16 qui tient entièrement dans l'écran, quelle que soit son orientation
+// Cadre portrait 9:16 qui tient entièrement dans l'écran, quelle que soit son orientation.
+// L'interface est posée en absolu par-dessus la scène : positions en % de hauteur, tailles en cqw de largeur.
 .game {
   position: relative;
   width: min(100vw, calc(100dvh * 9 / 16));
   aspect-ratio: 9 / 16;
   overflow: hidden;
+  container-type: inline-size;
+  font-family: Arial, sans-serif;
 }
 
 .scene {
@@ -17,26 +20,148 @@
   inset: 0;
 }
 
-.coins {
+// Le fond remonté laisse une bande unie en bas : un dégradé la fond dans le sol sous les panneaux
+.bottom-shade {
   position: absolute;
-  top: 4%;
-  left: 50%;
-  translate: -50% 0;
+  inset: 70% 0 0;
+  background: linear-gradient(transparent, #1a0f07 35%);
+  pointer-events: none;
+}
+
+.top-bar {
+  position: absolute;
+  inset: 2.5% 3cqw auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player {
   display: flex;
   align-items: center;
-  gap: 0.5em;
+}
+
+// Portrait rond dans un cadre épais, comme la référence, mais en bois
+.portrait {
+  position: relative;
+  z-index: 1;
+  width: 15cqw;
+  height: 15cqw;
+  border: 1cqw solid #2a1a0d;
+  border-radius: 50%;
+  background: radial-gradient(#e8b45c, #9a6230);
+  box-shadow:
+    inset 0 0 0 0.6cqw #c48a4a,
+    0 0.8cqw 0 rgb(0 0 0 / 35%);
+}
+
+.player-card {
+  display: grid;
+  margin: 0 0 0 -3cqw;
+  padding: 1cqw 3cqw 1cqw 4.5cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 0 2cqw 2cqw 0;
+  background: linear-gradient(#5b3d24, #3d2815);
+  color: #fff3d6;
+}
+
+.player-name {
+  font-size: 3.6cqw;
+  font-weight: bold;
+}
+
+.player-title {
+  font-size: 2.8cqw;
+  color: #e8c48a;
+}
+
+.resources {
+  display: grid;
+  gap: 1.5cqw;
   margin: 0;
-  padding: 0.3em 0.9em;
+  padding: 0;
+  list-style: none;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5cqw;
+  min-width: 22cqw;
+  padding: 0.6cqw 2.5cqw 0.6cqw 0.8cqw;
+  border: 0.6cqw solid #2a1a0d;
   border-radius: 999px;
-  background: rgb(0 0 0 / 45%);
-  color: #ffd34d;
-  font: bold clamp(1.25rem, 6vw, 2rem) / 1 Arial, sans-serif;
+  background: rgb(20 12 6 / 75%);
+  font: bold 4cqw / 1 Arial, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
-.coin-icon {
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff2a8, #e0a800 60%, #9a6b00);
+.coins {
+  color: #ffd34d;
+}
+
+.shards {
+  color: #d9a8ff;
+}
+
+.zone {
+  position: absolute;
+  inset: 13% 0 auto;
+}
+
+// Colonnes d'équipement de part et d'autre du mineur
+.column-left,
+.column-right {
+  position: absolute;
+  top: 21%;
+}
+
+.column-left {
+  left: 3cqw;
+}
+
+.column-right {
+  right: 3cqw;
+}
+
+// Cartouche de Puissance sous les pieds du mineur
+.power {
+  position: absolute;
+  top: 56.5%;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2cqw;
+  margin: 0;
+  padding: 1cqw 4cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 2cqw;
+  background: linear-gradient(#8a2f1e, #5c1d12);
+  color: #fff3d6;
+  box-shadow: 0 0.8cqw 0 rgb(0 0 0 / 35%);
+}
+
+.power-label {
+  font-size: 3cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.2cqw;
+}
+
+.power-value {
+  font-size: 5cqw;
+  font-weight: bold;
+  color: #ffd34d;
+}
+
+.stats {
+  position: absolute;
+  inset: 63% 3cqw auto;
+}
+
+// Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)
+.forge {
+  position: absolute;
+  inset: auto 0 2%;
 }

@@ -1,0 +1,26 @@
+@if (view(); as view) {
+  <div class="backdrop">
+    <section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="offline-report-title">
+      <h2 id="offline-report-title">Pendant ton absence</h2>
+      <p class="duration">
+        Ton mineur a creusé {{ view.duration }}
+        @if (view.capped) {
+          <span class="cap">(maximum {{ view.cap }})</span>
+        }
+      </p>
+      <ul class="gains">
+        <li>
+          <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />+{{ view.gold }}
+        </li>
+        @if (view.shards > 0) {
+          <li>
+            <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />+{{
+              view.shards
+            }}
+          </li>
+        }
+      </ul>
+      <button type="button" class="game-button green collect" (click)="earnings.dismiss()">Récupérer</button>
+    </section>
+  </div>
+}

@@ -1,0 +1,307 @@
+:host {
+  display: block;
+}
+
+.forge-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5cqw;
+}
+
+.side-button,
+.side-spacer {
+  width: 20cqw;
+}
+
+.side-button {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+  padding: 1.5cqw 1cqw;
+}
+
+.side-title {
+  font-size: 3.2cqw;
+}
+
+.side-level {
+  color: #ffd34d;
+  font-size: 3.6cqw;
+}
+
+.side-timer {
+  color: #b8f0b0;
+  font-size: 2.8cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.forge {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  // Relâchement avec dépassement : c'est ce qui donne le petit rebond
+  transition: transform 0.25s cubic-bezier(0.34, 1.8, 0.64, 1);
+
+  &:active:not(:disabled) {
+    transform: scale(0.88);
+    transition-duration: 0.08s;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 0.8cqw solid #ffd34d;
+    outline-offset: 0.5cqw;
+    border-radius: 3cqw;
+  }
+}
+
+.forge-icon {
+  width: 17cqw;
+  height: 17cqw;
+  // Le halo de l'image d'origine se mélangeait au fond vert : on le recrée ici
+  filter: drop-shadow(0 0 1.5cqw rgb(190 110 255 / 80%));
+  animation: forge-glow 1.6s ease-in-out infinite alternate;
+
+  .forge:disabled & {
+    filter: grayscale(0.8) brightness(0.7);
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes forge-glow {
+  to {
+    filter: drop-shadow(0 0 3cqw rgb(190 110 255 / 100%));
+  }
+}
+
+// Socle du coût, posé sous la pioche
+.forge-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  margin-top: -2.5cqw;
+  padding: 0.8cqw 3cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 2cqw;
+  background: linear-gradient(#5b3d24, #3d2815);
+  box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 15%);
+  color: #d9a8ff;
+  font: bold 4cqw / 1 Arial, sans-serif;
+
+  .forge:disabled & {
+    color: #ff6b5e;
+  }
+}
+
+// La fenêtre couvre tout le cadre de jeu (container-type en fait le bloc conteneur du fixed)
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 4cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  width: 100%;
+  padding: 4cqw 4.5cqw 5cqw;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 5.2cqw;
+    text-shadow: 0 0.4cqw 0 rgb(0 0 0 / 50%);
+  }
+}
+
+.close {
+  width: 8cqw;
+  height: 8cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
+  box-shadow: 0 0.6cqw 0 #5a170b;
+  color: #fff;
+  font: bold 5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.dialog-resources {
+  display: flex;
+  gap: 3cqw;
+  margin: 2.5cqw 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 1cqw;
+    padding: 0.6cqw 2.5cqw 0.6cqw 1cqw;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 35%);
+    font: bold 3.8cqw / 1 Arial, sans-serif;
+  }
+}
+
+.odds {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 1cqw;
+  font-size: 3.8cqw;
+
+  th,
+  td {
+    padding: 1.2cqw 2cqw;
+    text-align: right;
+  }
+
+  thead th {
+    padding-block: 0;
+    font-size: 3.2cqw;
+    font-weight: normal;
+    opacity: 0.85;
+  }
+
+  // Chaque ligne prend la couleur de son palier, en bandeau
+  tbody tr {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tier-color) 45%, #2a1b10), #2a1b10 85%);
+  }
+
+  tbody th {
+    display: flex;
+    align-items: center;
+    gap: 2cqw;
+    border-radius: 2cqw 0 0 2cqw;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  tbody td:last-child {
+    border-radius: 0 2cqw 2cqw 0;
+  }
+
+  .next {
+    opacity: 0.55;
+  }
+
+  .unreachable {
+    opacity: 0.35;
+  }
+}
+
+.tier-swatch {
+  width: 4cqw;
+  height: 4cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 1cqw;
+  background: var(--tier-color);
+}
+
+.hint {
+  margin: 3cqw 0 2cqw;
+  font-size: 3.4cqw;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.hint-timer {
+  display: block;
+  margin-top: 1cqw;
+  color: #ffd34d;
+  font-weight: bold;
+}
+
+.upgrading {
+  display: grid;
+  gap: 1cqw;
+  margin: 0;
+  padding: 3cqw;
+  border-radius: 3cqw;
+  background: rgb(0 0 0 / 35%);
+  font-size: 3.8cqw;
+  text-align: center;
+
+  strong {
+    color: #b8f0b0;
+    font-size: 6cqw;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.upgrading-note {
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 1cqw;
+  margin: 0 0 3cqw;
+  padding: 1cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 2cqw;
+  background: #1a0f07;
+  list-style: none;
+}
+
+.segment {
+  height: 3cqw;
+  border-radius: 0.8cqw;
+  background: #3a2a1c;
+
+  &.filled {
+    background: linear-gradient(#ffe27a, #e09a12);
+    box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 45%);
+  }
+}
+
+.upgrade {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 4cqw;
+  padding: 3cqw;
+  font-size: 4.6cqw;
+}
+
+.upgrade-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 0.6cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 30%);
+  color: #ffd34d;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

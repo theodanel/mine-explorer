@@ -1,7 +1,39 @@
 <main class="game">
   <app-mine-scene class="scene" />
-  <p class="coins">
-    <span class="coin-icon" aria-hidden="true"></span>
-    <span class="coin-count">{{ wallet.coins() }}</span>
+  <div class="bottom-shade" aria-hidden="true"></div>
+
+  <header class="top-bar">
+    <div class="player">
+      <img class="portrait" src="assets/ui/miner-portrait.png" alt="" width="160" height="160" />
+      <p class="player-card">
+        <span class="player-name">Petit mineur</span>
+        <span class="player-title">Apprenti</span>
+      </p>
+    </div>
+    <ul class="resources">
+      <li class="resource coins" aria-label="Pièces">
+        <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />
+        <span class="coin-count">{{ wallet.coins() }}</span>
+      </li>
+      <li class="resource shards" aria-label="Éclats de géode">
+        <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
+        <span class="shard-count">{{ shards.amount() }}</span>
+      </li>
+    </ul>
+  </header>
+
+  <app-zone-banner class="zone" />
+  <app-equipment-column class="column-left" [slots]="leftSlots" />
+  <app-equipment-column class="column-right" [slots]="rightSlots" />
+
+  <p class="power" aria-label="Puissance">
+    <span class="power-label" aria-hidden="true">Puissance</span>
+    <span class="power-value">{{ inventory.power() }}</span>
   </p>
+
+  <app-stats-panel class="stats" />
+  <app-forge-button class="forge" />
+  <app-item-compare />
+  <app-offline-report />
+  <app-splash-screen />
 </main>

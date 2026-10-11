@@ -1,0 +1,68 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.splash {
+  position: absolute;
+  inset: 0;
+  background: #120c08;
+  pointer-events: auto;
+  transition: opacity 0.5s ease-out;
+
+  &.leaving {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Le haut de l'illustration est laissé libre pour le titre
+.logo {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  width: 82%;
+  height: auto;
+  translate: -50% 0;
+  filter: drop-shadow(0 1.2cqw 0.8cqw rgb(0 0 0 / 55%));
+}
+
+// Positions relevées sur splash-bg.png (572×1024) : le cadre de barre dessiné va de 11 % à 89 % en largeur,
+// de 90,3 % à 94 % en hauteur. La barre se pose dedans, avec une petite marge pour laisser voir le cadre.
+.bar {
+  position: absolute;
+  top: 90.8%;
+  left: 12.6%;
+  width: 74.8%;
+  height: 2.6%;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(#ffe27a, #e09a12);
+  box-shadow: inset 0 0.5cqw 0 rgb(255 255 255 / 45%);
+  transition: width 0.25s ease-out;
+}
+
+.bar-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff8e6;
+  font: bold 3.4cqw / 1 Arial, sans-serif;
+  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
+}

@@ -1,8 +1,21 @@
 import { Container, Graphics, Text } from 'pixi.js';
 
+import type { StrikeOutcome } from '../mining/mining';
+
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
 const FLOATING_TEXT_OFFSET_Y = -40;
+const TEXT_SIZE = 52;
+const HIGHLIGHT_TEXT_SIZE = 68;
+const REWARD_TEXT_SIZE = 38;
+const DAMAGE_COLOR = 0xffffff;
+const CRITICAL_COLOR = 0xff7a2e;
+const GOLD_COLOR = 0xffd34d;
+const SHARD_COLOR = 0xc98bff;
+/** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
+const REWARD_TEXT_OFFSET_Y = 20;
+const SHARD_TEXT_OFFSET_Y = 70;
+const ZONE_CLEARED_OFFSET_Y = -160;
 const CHIP_COUNT = 7;
 const CHIP_DURATION_MS = 450;
 const CHIP_COLORS = [0x8a6a4f, 0x6e5440, 0xb0a090] as const;
@@ -20,14 +33,14 @@ class FloatingText implements Effect {
   private ageMs = 0;
   private readonly startY: number;
 
-  constructor(x: number, y: number, label: string) {
+  constructor(x: number, y: number, label: string, color: number, fontSize: number) {
     this.view = new Text({
       text: label,
       style: {
         fontFamily: 'Arial, sans-serif',
-        fontSize: 56,
+        fontSize,
         fontWeight: 'bold',
-        fill: 0xffd34d,
+        fill: color,
         stroke: { color: 0x3b2410, width: 8 },
       },
     });
@@ -71,17 +84,33 @@ class RockChip implements Effect {
   }
 }
 
-/** Effets visuels d'un coup de pioche : éclats de roche et gain flottant. */
+/** Effets visuels d'un coup de pioche : éclats de roche, dégâts infligés et butin quand le rocher casse. */
 export class HitEffects {
   private readonly effects: Effect[] = [];
 
   constructor(private readonly layer: Container) {}
 
-  spawn(x: number, y: number, gain: number): void {
+  spawn(x: number, y: number, outcome: StrikeOutcome): void {
     for (let i = 0; i < CHIP_COUNT; i++) {
       this.add(new RockChip(x, y));
     }
-    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, `+${gain}`));
+    const damageLabel = outcome.critical ? `${outcome.damage} !` : String(outcome.damage);
+    const damageColor = outcome.critical ? CRITICAL_COLOR : DAMAGE_COLOR;
+    const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
+    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize));
+
+    // L'or tombe à chaque coup : texte discret pour ne pas noyer les dégâts
+    this.add(new FloatingText(x, y + REWARD_TEXT_OFFSET_Y, `+${outcome.reward.gold}`, GOLD_COLOR, REWARD_TEXT_SIZE));
+    const shards = outcome.reward.shards;
+    if (shards > 0) {
+      const shardLabel = shards === 1 ? '+1 éclat' : `+${shards} éclats`;
+      this.add(new FloatingText(x, y + SHARD_TEXT_OFFSET_Y, shardLabel, SHARD_COLOR, HIGHLIGHT_TEXT_SIZE));
+    }
+    if (outcome.clearedZone !== null) {
+      this.add(
+        new FloatingText(x, y + ZONE_CLEARED_OFFSET_Y, `Zone ${outcome.clearedZone} terminée !`, GOLD_COLOR, HIGHLIGHT_TEXT_SIZE),
+      );
+    }
   }
 
   update(elapsedMs: number): void {

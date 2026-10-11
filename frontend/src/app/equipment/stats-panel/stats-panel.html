@@ -1,0 +1,17 @@
+<section class="panel" aria-labelledby="stats-title">
+  <h2 id="stats-title" class="title">Stats de minage</h2>
+  <dl class="grid">
+    @for (line of stats(); track line.stat) {
+      <div class="stat">
+        <img class="stat-icon" [src]="line.iconUrl" alt="" width="128" height="128" />
+        <dt>{{ line.label }}</dt>
+        <dd>{{ line.value }}</dd>
+      </div>
+    }
+    <div class="stat">
+      <img class="stat-icon" src="assets/ui/forge-icon.png" alt="" width="128" height="128" />
+      <dt>Dégâts/s</dt>
+      <dd>{{ dps() }}</dd>
+    </div>
+  </dl>
+</section>

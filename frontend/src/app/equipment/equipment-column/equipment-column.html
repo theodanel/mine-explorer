@@ -1,0 +1,18 @@
+<ul class="column">
+  @for (cell of cells(); track cell.key) {
+    @if (cell.locked) {
+      <li class="slot locked" aria-label="Emplacement verrouillé"></li>
+    } @else {
+      <li
+        class="slot"
+        [attr.data-tier]="cell.tier"
+        [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
+      >
+        <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
+        @if (cell.level !== null) {
+          <span class="slot-level">Niv. {{ cell.level }}</span>
+        }
+      </li>
+    }
+  }
+</ul>

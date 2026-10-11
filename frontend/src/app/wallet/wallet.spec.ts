@@ -38,4 +38,19 @@ describe('Wallet', () => {
     expect(() => wallet.add(amount)).toThrow(RangeError);
     expect(wallet.coins()).toBe(0);
   });
+
+  it('dépense quand le solde suffit', () => {
+    localStorage.setItem(STORAGE_KEY, '30');
+    const wallet = createWallet();
+    expect(wallet.spend(20)).toBe(true);
+    expect(wallet.coins()).toBe(10);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('10');
+  });
+
+  it('refuse de dépenser plus que le solde', () => {
+    localStorage.setItem(STORAGE_KEY, '19');
+    const wallet = createWallet();
+    expect(wallet.spend(20)).toBe(false);
+    expect(wallet.coins()).toBe(19);
+  });
 });

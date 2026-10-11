@@ -1,1 +1,7 @@
-<app-mine-scene/>
+<main class="game">
+  <app-mine-scene class="scene" />
+  <p class="coins">
+    <span class="coin-icon" aria-hidden="true"></span>
+    <span class="coin-count">{{ wallet.coins() }}</span>
+  </p>
+</main>

@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
+
 import { MineScene } from './mine-scene/mine-scene';
+import { Wallet } from './wallet/wallet';
 
 @Component({
   selector: 'app-root',
@@ -8,5 +10,5 @@ import { MineScene } from './mine-scene/mine-scene';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('frontend');
+  protected readonly wallet = inject(Wallet);
 }

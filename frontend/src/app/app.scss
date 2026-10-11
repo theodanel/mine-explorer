@@ -1,0 +1,42 @@
+:host {
+  display: grid;
+  place-items: center;
+  height: 100dvh;
+}
+
+// Cadre portrait 9:16 qui tient entièrement dans l'écran, quelle que soit son orientation
+.game {
+  position: relative;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+.coins {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0.3em 0.9em;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  color: #ffd34d;
+  font: bold clamp(1.25rem, 6vw, 2rem) / 1 Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.coin-icon {
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff2a8, #e0a800 60%, #9a6b00);
+}

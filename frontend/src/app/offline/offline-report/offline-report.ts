@@ -25,7 +25,6 @@ export class OfflineReport {
       capped: report.creditedMs >= OFFLINE_CAP_MS,
       cap: formatDuration(OFFLINE_CAP_MS),
       gold: NUMBER_FORMAT.format(report.gold),
-      shards: report.shards,
     };
   });
 }

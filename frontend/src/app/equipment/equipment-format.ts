@@ -7,7 +7,8 @@ const percentFormat = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 
 /** Valeur totale d'une stat : « 3 » ou « 5,5 % ». */
 export function formatStat(stat: StatId, value: number): string {
   if (STATS[stat].kind === 'integer') {
-    return String(value);
+    // Le bonus d'évolution rend la Frappe fractionnaire : on affiche ce que le coup inflige vraiment, arrondi
+    return String(Math.round(value));
   }
   return percentFormat.format(value * 100) + PERCENT_SUFFIX;
 }

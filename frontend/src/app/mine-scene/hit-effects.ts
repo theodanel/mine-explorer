@@ -1,5 +1,6 @@
 import { Container, Graphics, Text } from 'pixi.js';
 
+import { TIER_LABELS } from '../equipment/equipment.model';
 import type { StrikeOutcome } from '../mining/mining';
 
 const FLOATING_TEXT_DURATION_MS = 700;
@@ -15,6 +16,8 @@ const SHARD_COLOR = 0xc98bff;
 /** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
 const REWARD_TEXT_OFFSET_Y = 20;
 const SHARD_TEXT_OFFSET_Y = 70;
+const ORE_TEXT_OFFSET_Y = 120;
+const ORE_COLOR = 0xe8c48a;
 const ZONE_CLEARED_OFFSET_Y = -160;
 const CHIP_COUNT = 7;
 const CHIP_DURATION_MS = 450;
@@ -105,6 +108,10 @@ export class HitEffects {
     if (shards > 0) {
       const shardLabel = shards === 1 ? '+1 éclat' : `+${shards} éclats`;
       this.add(new FloatingText(x, y + SHARD_TEXT_OFFSET_Y, shardLabel, SHARD_COLOR, HIGHLIGHT_TEXT_SIZE));
+    }
+    if (outcome.ore !== null) {
+      const oreLabel = `+${outcome.ore.amount} ${TIER_LABELS[outcome.ore.tier]}`;
+      this.add(new FloatingText(x, y + ORE_TEXT_OFFSET_Y, oreLabel, ORE_COLOR, REWARD_TEXT_SIZE));
     }
     if (outcome.clearedZone !== null) {
       this.add(

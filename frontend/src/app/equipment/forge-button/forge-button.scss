@@ -9,9 +9,26 @@
   gap: 5cqw;
 }
 
-.side-button,
-.side-spacer {
+.side-button {
   width: 20cqw;
+}
+
+// Pastille rouge : une récompense de mission attend
+.badge {
+  position: absolute;
+  top: -2cqw;
+  right: -2cqw;
+  display: grid;
+  place-items: center;
+  min-width: 5.5cqw;
+  height: 5.5cqw;
+  padding: 0 1cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #d0352a;
+  color: #fff;
+  font: bold 3cqw / 1 Arial, sans-serif;
+  text-shadow: none;
 }
 
 .side-button {

@@ -1,9 +1,11 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { FORGE_SHARD_COST } from '../balance/balance';
+import { Evolution } from '../evolution/evolution';
 import { Forge } from '../forge/forge';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { ID_FACTORY, RANDOM } from '../shared/random';
+import { MissionCounters } from '../missions/mission-counters';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { computePower, computeStats, rollItem, sellPrice } from './equipment-rules';
@@ -23,11 +25,17 @@ export class Inventory {
   private readonly forgeLevel = inject(Forge).level;
   private readonly random = inject(RANDOM);
   private readonly createId = inject(ID_FACTORY);
+  private readonly missionCounters = inject(MissionCounters);
+  private readonly evolution = inject(Evolution);
   private readonly state = signal<EquipmentSave>(loadSave());
 
   readonly equipped = computed(() => this.state().equipped);
   readonly pending = computed(() => this.state().pending);
-  readonly stats = computed(() => computeStats(this.equipped()));
+  /** Stats de l'équipement, avec le bonus de Frappe des évolutions du mineur. */
+  readonly stats = computed(() => {
+    const stats = computeStats(this.equipped());
+    return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
+  });
   readonly power = computed(() => computePower(this.stats()));
   readonly forgeCost = FORGE_SHARD_COST;
   readonly canForge = computed(() => this.pending() === null && this.shards.amount() >= FORGE_SHARD_COST);
@@ -38,6 +46,7 @@ export class Inventory {
       return false;
     }
     this.save({ ...this.state(), pending: rollItem(this.random, this.createId, this.forgeLevel()) });
+    this.missionCounters.record('itemsForged');
     return true;
   }
 
@@ -47,6 +56,7 @@ export class Inventory {
     const replaced = this.equipped()[item.slot];
     if (replaced) {
       this.wallet.add(sellPrice(replaced));
+      this.missionCounters.record('itemsSold');
     }
     this.save({ equipped: { ...this.equipped(), [item.slot]: item }, pending: null });
   }
@@ -54,6 +64,7 @@ export class Inventory {
   sellPending(): void {
     const item = this.requirePending();
     this.wallet.add(sellPrice(item));
+    this.missionCounters.record('itemsSold');
     this.save({ ...this.state(), pending: null });
   }
 

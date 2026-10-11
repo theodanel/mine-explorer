@@ -4,7 +4,6 @@ import { OFFLINE_MIN_MS, OfflineGains, offlineGains } from '../balance/balance';
 import { Inventory } from '../equipment/inventory';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 
 const STORAGE_KEY = 'mine-explorer.last-seen';
@@ -20,7 +19,6 @@ export class OfflineEarnings {
   private readonly clock = inject(CLOCK);
   private readonly inventory = inject(Inventory);
   private readonly wallet = inject(Wallet);
-  private readonly shards = inject(GeodeShards);
   private readonly document = inject(DOCUMENT);
 
   /** Dernier bilan à montrer au joueur, ou null. */
@@ -52,9 +50,6 @@ export class OfflineEarnings {
     const gains = offlineGains(this.inventory.stats(), now - lastSeen);
     if (gains.gold > 0) {
       this.wallet.add(gains.gold);
-    }
-    if (gains.shards > 0) {
-      this.shards.add(gains.shards);
     }
     this.report.set(gains);
   }

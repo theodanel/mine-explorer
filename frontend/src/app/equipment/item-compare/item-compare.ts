@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 
+import { itemIconUrl } from '../../loading/game-assets';
 import { Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
 import { formatStat, formatStatDelta } from '../equipment-format';
 import { compareItems, powerDelta, sellPrice } from '../equipment-rules';
@@ -29,6 +30,7 @@ export class ItemCompare {
       powerDelta: delta,
       powerTrend: trendOf(delta),
       slot: SLOTS[candidate.slot],
+      iconUrl: itemIconUrl(candidate.slot, candidate.tier, SLOTS[candidate.slot].iconUrl),
       current: current ? describeItem(current) : null,
       candidate: describeItem(candidate),
       rows: compareItems(current, candidate).map(({ stat, current: before, candidate: after }) => ({

@@ -2,8 +2,10 @@ import { AfterViewInit, Component, effect, ElementRef, inject, OnDestroy, viewCh
 import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Texture, Ticker } from 'pixi.js';
 
 import { speedMultiplier } from '../equipment/equipment-rules';
+import { EvolutionId } from '../balance/balance';
 import { Inventory } from '../equipment/inventory';
-import { MINER_ATLAS_URL, zoneBackground } from '../loading/game-assets';
+import { Evolution } from '../evolution/evolution';
+import { EVOLUTION_VISUALS, MINER_ATLAS_URL, zoneBackground } from '../loading/game-assets';
 import { Mining } from '../mining/mining';
 import { Progression } from '../progression/progression';
 import { hasCrossedFrame } from './frame-crossing';
@@ -31,6 +33,12 @@ const IMPACT_FRAME = 10;
 // Pointe de la pioche à l'impact, par rapport à l'ancre (bas-centre) du mineur
 const IMPACT_OFFSET = { x: 118, y: -41 } as const;
 
+// Formes évoluées affichées en image fixe en attendant leur animation : un peu plus grandes que l'Apprenti,
+// avec un petit écrasement à chaque coup pour garder le rythme du minage
+const EVOLVED_HEIGHT = 300;
+const STRIKE_SQUASH_MS = 180;
+const STRIKE_SQUASH = 0.08;
+
 @Component({
   selector: 'app-mine-scene',
   templateUrl: './mine-scene.html',
@@ -44,6 +52,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly app = new Application();
   private miner: AnimatedSprite | null = null;
   private background: Sprite | null = null;
+  /** Image fixe de la forme évoluée, posée sur l'Apprenti animé qui continue de cadencer les coups. */
+  private evolvedSprite: Sprite | null = null;
+  private evolvedScale = 1;
+  private squashMs = 0;
+  private readonly evolution = inject(Evolution);
   private initialized = false;
   private destroyed = false;
 
@@ -53,6 +66,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const speed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.inventory.stats());
       if (this.miner) {
         this.miner.animationSpeed = speed;
+      }
+    });
+    // Nouvelle forme, nouveau visuel, sans recréer la scène
+    effect(() => {
+      const form = this.evolution.form().id;
+      if (this.evolvedSprite) {
+        void this.showForm(form);
       }
     });
     // Nouvelle zone, nouveau décor : le fond suivant se charge pendant que le mineur continue
@@ -110,22 +130,62 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.miner = miner;
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
-    this.app.stage.addChild(miner, effectsLayer);
+    this.evolvedSprite = new Sprite();
+    this.evolvedSprite.anchor.set(0.5, 1);
+    this.evolvedSprite.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.app.stage.addChild(miner, this.evolvedSprite, effectsLayer);
+    void this.showForm(this.evolution.form().id);
 
     let previousFrame = miner.currentFrame;
     miner.onFrameChange = (currentFrame: number) => {
       if (hasCrossedFrame(previousFrame, currentFrame, IMPACT_FRAME)) {
         const outcome = this.mining.strike();
         effects.spawn(miner.x + IMPACT_OFFSET.x * MINER_SCALE, miner.y + IMPACT_OFFSET.y * MINER_SCALE, outcome);
+        this.squashMs = STRIKE_SQUASH_MS;
       }
       previousFrame = currentFrame;
     };
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
-      // Le ticker s'arrête quand l'onglet est caché : seul le temps de minage visible compte ici
-      this.mining.mineFor(ticker.deltaMS);
+      this.updateSquash(ticker.deltaMS);
     });
     miner.play();
+  }
+
+  /** L'Apprenti est animé ; une forme évoluée s'affiche en image fixe par-dessus, l'animation devenant invisible. */
+  private async showForm(form: EvolutionId): Promise<void> {
+    const { bodyUrl } = EVOLUTION_VISUALS[form];
+    if (!this.miner || !this.evolvedSprite) {
+      return;
+    }
+    if (bodyUrl === null) {
+      this.miner.alpha = 1;
+      this.evolvedSprite.visible = false;
+      return;
+    }
+    try {
+      const texture = await Assets.load<Texture>(bodyUrl);
+      if (this.destroyed || !this.miner || !this.evolvedSprite) {
+        return;
+      }
+      this.evolvedSprite.texture = texture;
+      this.evolvedScale = EVOLVED_HEIGHT / texture.height;
+      this.evolvedSprite.scale.set(this.evolvedScale);
+      this.evolvedSprite.visible = true;
+      this.miner.alpha = 0;
+    } catch (error) {
+      // On garde l'Apprenti animé plutôt qu'un mineur invisible
+      console.error(`Visuel de la forme ${form} introuvable`, error);
+    }
+  }
+
+  private updateSquash(elapsedMs: number): void {
+    if (!this.evolvedSprite?.visible || this.squashMs <= 0) {
+      return;
+    }
+    this.squashMs = Math.max(this.squashMs - elapsedMs, 0);
+    const squash = Math.sin((this.squashMs / STRIKE_SQUASH_MS) * Math.PI) * STRIKE_SQUASH;
+    this.evolvedSprite.scale.set(this.evolvedScale * (1 + squash), this.evolvedScale * (1 - squash));
   }
 
   private async showZoneBackground(zone: number): Promise<void> {
@@ -148,6 +208,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private destroyApp(): void {
     this.miner = null;
     this.background = null;
+    this.evolvedSprite = null;
     // children: true libère sprites et effets ; les textures restent en cache dans Assets pour un remontage
     this.app.destroy(true, { children: true });
   }

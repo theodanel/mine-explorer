@@ -146,3 +146,78 @@ Theme: a celestial underground sanctuary, white marble and gold rock formations,
 ```
 
 Dépose chaque image dans `art-source/backgrounds/` sous le nom `zone2.png`, `zone3.png`… Je les optimiserai et je les brancherai selon la zone en cours.
+
+## Pioches (une par palier)
+
+Toutes les pioches doivent avoir exactement le même cadrage et le même angle : le jeu les place dans la main du mineur en suivant son mouvement. Colle le bloc commun, puis la ligne du palier.
+
+```
+Mobile idle RPG game item, hand-painted 2D cartoon style matching a chibi mining RPG: soft painterly shading, thick dark-brown outlines, warm lighting. A single mining pickaxe, isolated, centered. Exact framing for every variant: square 1:1 image, the pickaxe rotated 45 degrees with the head at the top-right and the handle end at the bottom-left, the whole tool fills 80% of the image diagonal, the handle is straight and the grip area is the lower third of the handle. Flat front view, no perspective, no hand, no character, no text, no shadow on the background. Solid pure green background #00FF00 filling the whole image, no green on the pickaxe.
+```
+
+| Palier | Ligne à ajouter |
+|---|---|
+| Bois | `Material: a crude pickaxe with a sharpened wooden head tied with rope to a rough branch handle.` |
+| Pierre | `Material: a primitive pickaxe with a chipped grey flint stone head bound with leather straps to a wooden handle.` |
+| Cuivre | `Material: a copper pickaxe, shiny orange metal head with green patina spots, oak handle with copper rings.` |
+| Fer | `Material: a sturdy dark grey iron pickaxe with rivets, cold blue sheen, leather-wrapped grip.` |
+| Acier | `Material: a polished blue-steel pickaxe with a sharp beveled edge and engraved lines, steel-reinforced handle.` |
+| Or | `Material: a golden pickaxe with ornate engravings and a small ruby on the head, dark wood handle with gold caps.` |
+| Mithril | `Material: an elegant pale silver-teal mithril pickaxe with elven curved blades and softly glowing teal runes.` |
+| Cristal | `Material: a pickaxe whose head is a cluster of violet translucent crystals glowing from inside, silver handle.` |
+| Magma | `Material: a black volcanic rock pickaxe with glowing orange lava cracks and small embers, obsidian handle.` |
+| Divin | `Material: a radiant white-gold pickaxe with a floating star gem, delicate wing-shaped details, soft golden glow kept close to the metal (no green in the glow).` |
+
+## Évolutions du mineur
+
+Chaque forme demande trois images : le portrait (cadre rond en haut à gauche), le personnage en pied (référence à donner à SpriteShip pour l'animation de frappe) et la même pose les mains vides (pour y placer la pioche en jeu). Gemini fait des images fixes, l'animation se génère ensuite dans SpriteShip à partir de l'image en pied.
+
+### Description du personnage (à coller dans chaque prompt d'évolution)
+
+```
+Character: the same cute chibi dwarf-dragon miner in every image: small round body, big head, blue-grey scaly skin with orange spots, large amber eyes, short snout, a thick tail with an orange tip and small dark spikes, three-quarter view facing right. Hand-painted 2D cartoon style, soft painterly shading, thick dark-brown outlines, warm lighting. No text, no background scenery. Solid pure green background #00FF00 filling the whole image, no green on the character.
+```
+
+### Les trois cadrages (à ajouter après la forme)
+
+- **Portrait** : `Framing: bust portrait, head and shoulders, centered, square 1:1, the face fills half of the image.`
+- **En pied** : `Framing: full body, standing in a mining stance holding a pickaxe in both hands, feet at the bottom of the image, square 1:1, the character fills 85% of the image height.`
+- **Mains vides** : `Framing: exactly the same full body pose and position as the mining stance, but both hands are empty and closed as if gripping an invisible handle, no tool at all, square 1:1, the character fills 85% of the image height.`
+
+### Les formes
+
+**1. Apprenti (départ, zones 1 à 4)**
+
+```
+Form: apprentice miner. Simple yellow plastic mining helmet with a small round headlamp, red scarf, beige shirt, brown leather gloves and boots, small brown backpack with a red rolled blanket. Humble, slightly scruffy, cheerful.
+```
+
+**2. Mineur (zone 5)**
+
+```
+Form: experienced miner, a bit taller and more confident. Dented yellow helmet with copper trims and a brighter lamp, copper goggles pushed on the helmet, thick leather apron with pockets, bigger backpack with ropes and a lantern hanging from it, reinforced boots with copper toe caps.
+```
+
+**3. Contremaître (zone 10)**
+
+```
+Form: mine foreman, proud and sturdy. Steel-plated helmet with two headlamps, iron shoulder pads and chest plate over a leather jacket, utility belt with small tools and a pocket watch, heavy steel-toed boots, small iron horns starting to grow on the head.
+```
+
+**4. Maître des profondeurs (zone 15)**
+
+```
+Form: master of the depths, wise and powerful. Mithril helmet with a glowing crystal instead of a lamp, flowing dark blue cape with silver mining runes, mithril armor with teal glowing lines, crystal shards growing on the tail spikes, longer curved horns, calm confident expression.
+```
+
+**5. Légende de la mine (zone 20)**
+
+```
+Form: legendary mine guardian, majestic. White-gold divine armor with star engravings, a radiant halo-like lamp above the helmet, glowing golden runes on the scales, small luminous wings on the back, tail tip glowing like molten gold, heroic expression. Keep any glow close to the body (no green in the glow).
+```
+
+### Conseils
+
+- Génère d'abord l'Apprenti en pied, puis donne cette image à Gemini comme référence pour toutes les autres : c'est le meilleur moyen de garder le même personnage.
+- Pour les pioches, génère d'abord celle en Bois, puis demande les autres « en gardant exactement le même cadrage et le même angle que l'image jointe ».
+- Dépose les fichiers dans `art-source/evolutions/` (`apprenti-portrait.png`, `apprenti-pied.png`, `apprenti-mains-vides.png`…) et `art-source/pioches/` (`bois.png`, `pierre.png`…).

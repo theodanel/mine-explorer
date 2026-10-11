@@ -22,9 +22,23 @@
     >
   </button>
 
-  <!-- Garde la pioche au centre tant que la droite n'a pas de bouton -->
-  <span class="side-spacer" aria-hidden="true"></span>
+  <button
+    type="button"
+    class="game-button wood side-button missions-button"
+    [attr.aria-label]="'Missions, ' + missions.claimableCount() + ' récompense(s) à récupérer'"
+    (click)="missionsOpen.set(true)"
+  >
+    <span class="side-title">Missions</span>
+    <span class="side-level">{{ missions.main().progress }} / {{ missions.main().mission.target }}</span>
+    @if (missions.claimableCount() > 0) {
+      <span class="badge" aria-hidden="true">{{ missions.claimableCount() }}</span>
+    }
+  </button>
 </div>
+
+@if (missionsOpen()) {
+  <app-missions-dialog (closed)="missionsOpen.set(false)" />
+}
 
 @if (upgradeOpen()) {
   <div class="backdrop" (click)="upgradeOpen.set(false)">

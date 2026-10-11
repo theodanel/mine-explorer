@@ -2,6 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 
 import { MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
 import { Forge } from '../../forge/forge';
+import { Missions } from '../../missions/missions';
+import { MissionsDialog } from '../../missions/missions-dialog/missions-dialog';
 import { formatDuration } from '../../shared/format-duration';
 import { GeodeShards } from '../../wallet/geode-shards';
 import { Wallet } from '../../wallet/wallet';
@@ -16,6 +18,7 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
+  imports: [MissionsDialog],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })
@@ -25,6 +28,8 @@ export class ForgeButton {
   protected readonly wallet = inject(Wallet);
   protected readonly shards = inject(GeodeShards);
   protected readonly upgradeOpen = signal(false);
+  protected readonly missionsOpen = signal(false);
+  protected readonly missions = inject(Missions);
 
   /** Compte à rebours de l'amélioration en cours, ou null. */
   protected readonly upgradeTimeLeft = computed(() => {

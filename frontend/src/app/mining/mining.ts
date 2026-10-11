@@ -1,20 +1,23 @@
 import { inject, Injectable } from '@angular/core';
 
+import { ORE_PER_ROCK, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
 import { HitResult, resolveHit } from '../equipment/equipment-rules';
+import { TierId } from '../equipment/equipment.model';
 import { Inventory } from '../equipment/inventory';
+import { MissionCounters } from '../missions/mission-counters';
+import { Ores } from '../ores/ores';
 import { Progression } from '../progression/progression';
-import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
-import { mineForShards, StrikeReward, strikeReward } from './mining-rules';
-
-const SHARD_TIMER_KEY = 'mine-explorer.shard-timer';
+import { StrikeReward, strikeReward } from './mining-rules';
 
 export interface StrikeOutcome extends HitResult {
   readonly reward: StrikeReward;
   /** Zone terminée par ce coup, ou null. */
   readonly clearedZone: number | null;
+  /** Minerai ramassé si le rocher a cassé, ou null. */
+  readonly ore: { readonly tier: TierId; readonly amount: number } | null;
 }
 
 /**
@@ -28,12 +31,21 @@ export class Mining {
   private readonly wallet = inject(Wallet);
   private readonly shards = inject(GeodeShards);
   private readonly random = inject(RANDOM);
-  private shardCarryMs = loadShardCarry();
+  private readonly missionCounters = inject(MissionCounters);
+  private readonly ores = inject(Ores);
 
   strike(): StrikeOutcome {
     const stats = this.inventory.stats();
     const hit = resolveHit(stats, this.random);
-    const { clearedZone } = this.progression.hit(hit.damage);
+    const zone = this.progression.zone();
+    const { rockBroken, clearedZone } = this.progression.hit(hit.damage);
+    let ore: StrikeOutcome['ore'] = null;
+    if (rockBroken) {
+      this.missionCounters.record('rocksBroken');
+      // Le minerai est celui de la zone où le rocher a cassé, même si ce coup fait passer à la suivante
+      ore = { tier: zoneMaterial(zone), amount: ORE_PER_ROCK + (clearedZone !== null ? ZONE_CLEAR_ORES : 0) };
+      this.ores.add(ore.tier, ore.amount);
+    }
     const reward = strikeReward(hit.damage, stats.goldBonus, clearedZone !== null);
     if (reward.gold > 0) {
       this.wallet.add(reward.gold);
@@ -41,22 +53,6 @@ export class Mining {
     if (reward.shards > 0) {
       this.shards.add(reward.shards);
     }
-    return { ...hit, reward, clearedZone };
+    return { ...hit, reward, clearedZone, ore };
   }
-
-  /** Compte le temps de minage actif. Renvoie les éclats trouvés dans les filons pendant ce temps. */
-  mineFor(elapsedMs: number): number {
-    const { shards, carryMs } = mineForShards(this.shardCarryMs, elapsedMs);
-    this.shardCarryMs = carryMs;
-    if (shards > 0) {
-      this.shards.add(shards);
-      writeStorage(SHARD_TIMER_KEY, String(Math.round(carryMs)));
-    }
-    return shards;
-  }
-}
-
-function loadShardCarry(): number {
-  const value = Number(readStorage(SHARD_TIMER_KEY) ?? 0);
-  return Number.isFinite(value) && value >= 0 ? value : 0;
 }

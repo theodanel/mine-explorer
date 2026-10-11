@@ -37,8 +37,45 @@
 }
 
 .player {
+  position: relative;
   display: flex;
   align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.8cqw solid #ffd34d;
+    outline-offset: 0.6cqw;
+  }
+}
+
+// Pastille qui annonce qu'une évolution est possible
+.evolve-badge {
+  position: absolute;
+  bottom: -2.5cqw;
+  left: 1cqw;
+  z-index: 2;
+  padding: 0.5cqw 1.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#5fd16a, #23802f);
+  color: #fff;
+  font: bold 2.6cqw / 1 Arial, sans-serif;
+  animation: evolve-pulse 1s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes evolve-pulse {
+  to {
+    transform: scale(1.1);
+  }
 }
 
 // Portrait rond dans un cadre épais, comme la référence, mais en bois
@@ -123,36 +160,6 @@
 
 .column-right {
   right: 3cqw;
-}
-
-// Cartouche de Puissance sous les pieds du mineur
-.power {
-  position: absolute;
-  top: 56.5%;
-  left: 50%;
-  translate: -50% 0;
-  display: flex;
-  align-items: baseline;
-  gap: 2cqw;
-  margin: 0;
-  padding: 1cqw 4cqw;
-  border: 0.6cqw solid #2a1a0d;
-  border-radius: 2cqw;
-  background: linear-gradient(#8a2f1e, #5c1d12);
-  color: #fff3d6;
-  box-shadow: 0 0.8cqw 0 rgb(0 0 0 / 35%);
-}
-
-.power-label {
-  font-size: 3cqw;
-  text-transform: uppercase;
-  letter-spacing: 0.2cqw;
-}
-
-.power-value {
-  font-size: 5cqw;
-  font-weight: bold;
-  color: #ffd34d;
 }
 
 .stats {

@@ -163,31 +163,74 @@ export function tierChances(pickaxeLevel: number): Readonly<Record<TierId, numbe
 // ─── Mine ──────────────────────────────────────────────────────────────────
 
 /**
- * Chaque zone a une « vie » : le joueur la mine en entier, puis passe à la suivante.
- * Pas de boss ni de chrono : le mur est un mur de temps. La vie est multipliée par 3,8 à chaque zone,
- * donc sans améliorer la pioche, chaque zone prend presque 4 fois plus de temps que la précédente.
+ * Chaque zone compte 15 étapes (1-1 à 1-15, puis 2-1…), une par rocher. Pas de boss ni de chrono :
+ * chaque rocher a un peu plus de PV que le précédent, et le joueur trop faible avance simplement plus lentement.
  */
-const BASE_ZONE_HP = 3600;
-const ZONE_HP_GROWTH = 3.8;
+export const STAGES_PER_ZONE = 15;
+
+const BASE_ROCK_HP = 320;
+/** +9 % de PV par rocher, soit ×3,6 par zone : environ 4 à 5 niveaux de pioche par zone. */
+const ROCK_HP_GROWTH = 1.09;
 
 /** 1 PV miné rapporte un quart de pièce (avant le bonus d'or). */
 const GOLD_PER_DAMAGE = 0.25;
 
-/**
- * Éclats rationnés par leurs sources, pas par le nombre de coups : frapper plus vite n'en donne pas plus.
- * Sources : un filon toutes les 5 minutes de minage, un lot à chaque zone terminée, et l'absence (voir plus bas).
- */
-export const SHARD_INTERVAL_MS = 5 * 60 * 1000;
-export const ZONE_CLEAR_SHARDS = 10;
+/** Les éclats viennent surtout des missions : la fin d'une zone n'en donne qu'un petit lot. */
+export const ZONE_CLEAR_SHARDS = 5;
 
-export function zoneHp(zone: number): number {
-  return Math.round(BASE_ZONE_HP * ZONE_HP_GROWTH ** (zone - 1));
+export function stageIndex(zone: number, stage: number): number {
+  return (zone - 1) * STAGES_PER_ZONE + (stage - 1);
+}
+
+export function rockHp(zone: number, stage: number): number {
+  return Math.round(BASE_ROCK_HP * ROCK_HP_GROWTH ** stageIndex(zone, stage));
 }
 
 export function goldForDamage(damage: number, goldBonus: number): number {
   return Math.round(damage * GOLD_PER_DAMAGE * (1 + goldBonus));
 }
 
+// ─── Minerais et évolutions ────────────────────────────────────────────────
+
+/** Chaque zone donne le minerai de son décor : Bois en zone 1, Pierre en zone 2… Divin à partir de la zone 10. */
+export function zoneMaterial(zone: number): TierId {
+  return TIER_ORDER[Math.min(Math.max(zone, 1), TIER_ORDER.length) - 1];
+}
+
+/** Minerai gagné à chaque rocher cassé, et lot offert quand la zone est terminée. */
+export const ORE_PER_ROCK = 1;
+export const ZONE_CLEAR_ORES = 20;
+
+export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';
+
+export interface EvolutionForm {
+  readonly id: EvolutionId;
+  readonly label: string;
+  /** Zone à atteindre pour pouvoir évoluer vers cette forme. */
+  readonly minZone: number;
+  /** Minerais à dépenser. Une zone traversée en donne 35 (15 rochers + 20 à la fin) : le coût tient en un passage. */
+  readonly ores: Readonly<Partial<Record<TierId, number>>>;
+  readonly gold: number;
+  /** Bonus de Frappe de cette forme, cumulé avec les précédentes. */
+  readonly strikeBonus: number;
+}
+
+/**
+ * Formes du mineur, de la première à la dernière. Chacune demande d'avoir atteint une zone,
+ * les minerais des zones traversées et de l'or, et donne +25 % de Frappe (cumulés).
+ */
+export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
+  { id: 'apprentice', label: 'Apprenti', minZone: 1, ores: {}, gold: 0, strikeBonus: 0 },
+  { id: 'miner', label: 'Mineur', minZone: 5, ores: { stone: 30, copper: 30, iron: 30 }, gold: 20_000, strikeBonus: 0.25 },
+  { id: 'foreman', label: 'Contremaître', minZone: 7, ores: { steel: 30, gold: 30 }, gold: 1_000_000, strikeBonus: 0.25 },
+  { id: 'master', label: 'Maître des profondeurs', minZone: 9, ores: { mithril: 30, crystal: 30 }, gold: 10_000_000, strikeBonus: 0.25 },
+  { id: 'legend', label: 'Légende de la mine', minZone: 11, ores: { magma: 30, divine: 30 }, gold: 300_000_000, strikeBonus: 0.25 },
+];
+
+/** Multiplicateur de Frappe cumulé jusqu'à la forme d'index donné. */
+export function evolutionStrikeMultiplier(formIndex: number): number {
+  return EVOLUTION_FORMS.slice(0, formIndex + 1).reduce((total, form) => total * (1 + form.strikeBonus), 1);
+}
 
 // ─── Hors ligne ────────────────────────────────────────────────────────────
 
@@ -202,17 +245,15 @@ export interface OfflineGains {
   /** Absence prise en compte, après plafond. */
   readonly creditedMs: number;
   readonly gold: number;
-  readonly shards: number;
 }
 
-/** Gains d'une absence, plafonnée à 4 h et à moitié prix. La zone n'avance qu'en jeu. */
+/** Or d'une absence, plafonnée à 4 h et à moitié prix. Les étapes et les missions n'avancent qu'en jeu. */
 export function offlineGains(stats: MiningStats, elapsedMs: number): OfflineGains {
   const creditedMs = Math.min(Math.max(elapsedMs, 0), OFFLINE_CAP_MS);
   const seconds = creditedMs / 1000;
   return {
     creditedMs,
     gold: goldForDamage(damagePerSecond(stats) * seconds * OFFLINE_EFFICIENCY, stats.goldBonus),
-    shards: Math.floor((creditedMs / SHARD_INTERVAL_MS) * OFFLINE_EFFICIENCY),
   };
 }
 
@@ -239,19 +280,19 @@ export function powerOf(stats: MiningStats): number {
 }
 
 /**
- * Temps visé pour miner une zone : 10 minutes pour la première, puis deux fois plus à chaque zone,
+ * Temps visé pour casser un rocher : 1 minute en zone 1, puis 50 % de plus à chaque zone,
  * au rythme de la pioche. Au-delà, le joueur sent qu'il doit s'améliorer.
  */
-const ZONE_TARGET_BASE_SECONDS = 600;
-const ZONE_TARGET_GROWTH = 2;
+const STAGE_TARGET_BASE_SECONDS = 60;
+const STAGE_TARGET_GROWTH = 1.5;
 
-export function zoneTargetSeconds(zone: number): number {
-  return ZONE_TARGET_BASE_SECONDS * ZONE_TARGET_GROWTH ** (zone - 1);
+export function stageTargetSeconds(zone: number): number {
+  return STAGE_TARGET_BASE_SECONDS * STAGE_TARGET_GROWTH ** (zone - 1);
 }
 
-/** Puissance qui mine la zone dans le temps visé. En dessous, ça marche quand même, mais plus lentement. */
-export function recommendedPower(zone: number): number {
-  return Math.ceil((zoneHp(zone) / zoneTargetSeconds(zone)) * POWER_PER_DPS);
+/** Puissance qui casse le rocher de l'étape dans le temps visé. En dessous, ça marche quand même, mais plus lentement. */
+export function recommendedPower(zone: number, stage: number): number {
+  return Math.ceil((rockHp(zone, stage) / stageTargetSeconds(zone)) * POWER_PER_DPS);
 }
 
 /** Secondes pour miner les PV restants à cette Puissance. */

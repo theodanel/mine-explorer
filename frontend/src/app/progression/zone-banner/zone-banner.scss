@@ -49,20 +49,3 @@
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
 }
-
-.recommended {
-  margin: 0;
-  padding: 0.3cqw 2.5cqw;
-  border-radius: 1.5cqw;
-  background: rgb(0 0 0 / 55%);
-  color: #b8f0b0;
-  font-size: 3cqw;
-
-  strong {
-    font-size: 3.6cqw;
-  }
-
-  &.too-weak {
-    color: #ffb4a2;
-  }
-}

@@ -1,6 +1,7 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
 import { MAX_PICKAXE_LEVEL, SEGMENTS_PER_LEVEL, segmentCost, tierChances, upgradeDurationMs } from '../balance/balance';
+import { MissionCounters } from '../missions/mission-counters';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { Wallet } from '../wallet/wallet';
@@ -28,6 +29,7 @@ const TICK_MS = 1000;
 export class Forge {
   private readonly wallet = inject(Wallet);
   private readonly clock = inject(CLOCK);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<PickaxeState>(loadState());
   private readonly now = signal(this.clock());
 
@@ -62,6 +64,7 @@ export class Forge {
       return false;
     }
     this.save(addSegment(this.state(), this.clock()));
+    this.missionCounters.record('segmentsPaid');
     return true;
   }
 

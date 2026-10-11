@@ -1,0 +1,25 @@
+<div class="mission" [class.main]="main()">
+  <div class="mission-text">
+    <span class="mission-label">{{ view().mission.label }}</span>
+    <div
+      class="mission-bar"
+      role="progressbar"
+      [attr.aria-label]="view().mission.label"
+      aria-valuemin="0"
+      [attr.aria-valuemax]="view().mission.target"
+      [attr.aria-valuenow]="view().progress"
+    >
+      <div class="mission-fill" [style.width.%]="percent()"></div>
+      <span class="mission-count">{{ view().progress }} / {{ view().mission.target }}</span>
+    </div>
+  </div>
+  @if (view().claimed) {
+    <span class="done">Récupéré</span>
+  } @else {
+    <button type="button" class="game-button green claim" [disabled]="!view().complete" (click)="claim.emit()">
+      <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />+{{
+        view().mission.reward.shards
+      }}
+    </button>
+  }
+</div>

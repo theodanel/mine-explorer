@@ -15,8 +15,9 @@ import {
   OFFLINE_CAP_MS,
   offlineGains,
   upgradeDurationMs,
-  zoneHp,
-  zoneTargetSeconds,
+  rockHp,
+  STAGES_PER_ZONE,
+  stageTargetSeconds,
 } from './balance';
 
 const SLOT_MAIN_STATS = Object.fromEntries(SLOT_IDS.map((slot) => [slot, SLOTS[slot].mainStat])) as Record<
@@ -24,10 +25,10 @@ const SLOT_MAIN_STATS = Object.fromEntries(SLOT_IDS.map((slot) => [slot, SLOTS[s
   StatId
 >;
 
-/** Premier niveau de pioche dont l'équipement moyen atteint la Puissance recommandée de la zone. */
+/** Premier niveau de pioche dont l'équipement moyen atteint la Puissance recommandée du dernier rocher de la zone. */
 function pickaxeNeededFor(zone: number): number | null {
   for (let level = 1; level <= MAX_PICKAXE_LEVEL; level++) {
-    if (powerOf(expectedStatsAtPickaxe(level, SLOT_MAIN_STATS)) >= recommendedPower(zone)) {
+    if (powerOf(expectedStatsAtPickaxe(level, SLOT_MAIN_STATS)) >= recommendedPower(zone, STAGES_PER_ZONE)) {
       return level;
     }
   }
@@ -99,18 +100,18 @@ describe('pioche', () => {
   });
 });
 
-describe('zones', () => {
-  it('multiplient leur vie par 3,8 à chaque zone', () => {
-    expect(zoneHp(2)).toBe(Math.round(zoneHp(1) * 3.8));
+describe('étapes', () => {
+  it('comptent 15 rochers par zone', () => {
+    expect(STAGES_PER_ZONE).toBe(15);
   });
 
-  it('recommandent la Puissance qui mine la zone dans le temps visé', () => {
-    expect(secondsToMine(zoneHp(3), recommendedPower(3))).toBeLessThanOrEqual(zoneTargetSeconds(3));
+  it('donnent un peu plus de PV à chaque rocher, sans saut entre les zones', () => {
+    expect(rockHp(1, 2)).toBeGreaterThan(rockHp(1, 1));
+    expect(rockHp(2, 1) / rockHp(1, 15)).toBeCloseTo(rockHp(1, 2) / rockHp(1, 1), 1);
   });
 
-  it('visent 10 minutes pour la première zone, puis deux fois plus à chaque zone', () => {
-    expect(zoneTargetSeconds(1)).toBe(600);
-    expect(zoneTargetSeconds(2)).toBe(1200);
+  it('recommandent la Puissance qui casse le rocher dans le temps visé', () => {
+    expect(secondsToMine(rockHp(3, 5), recommendedPower(3, 5))).toBeLessThanOrEqual(stageTargetSeconds(3));
   });
 
   it('rapportent un quart de pièce par PV miné, plus le bonus du sac', () => {
@@ -122,10 +123,6 @@ describe('zones', () => {
 describe('absence', () => {
   it('plafonne les gains à 4 h', () => {
     expect(offlineGains(BASE_STATS, 10 * OFFLINE_CAP_MS)).toEqual(offlineGains(BASE_STATS, OFFLINE_CAP_MS));
-  });
-
-  it("donne un éclat toutes les 10 minutes d'absence", () => {
-    expect(offlineGains(BASE_STATS, OFFLINE_CAP_MS).shards).toBe(24);
   });
 });
 
@@ -141,8 +138,8 @@ describe('courbe de progression', () => {
     expect(days).toBeLessThan(35);
   });
 
-  it('demande environ 3 niveaux de pioche de plus à chaque zone', () => {
-    const needed = Array.from({ length: 11 }, (_, index) => pickaxeNeededFor(index + 1));
-    expect(needed).toEqual([3, 7, 10, 13, 15, 18, 20, 22, 25, 27, 30]);
+  it('demande 3 à 4 niveaux de pioche de plus à chaque zone', () => {
+    const needed = Array.from({ length: 7 }, (_, index) => pickaxeNeededFor(index + 1));
+    expect(needed).toEqual([9, 13, 16, 20, 23, 26, 29]);
   });
 });

@@ -5,23 +5,28 @@ import {
   applyDamage,
   DamageResult,
   isValidProgress,
+  migrateProgress,
   Progress,
   remainingHp,
+  rockHealth,
+  stageLabel,
+  stagesReached,
   START_PROGRESS,
-  zoneHealth,
 } from './progression-rules';
 
 const STORAGE_KEY = 'mine-explorer.progress';
 
-/** Avancée du joueur dans la mine : zone en cours et vie restante. */
+/** Avancée du joueur dans la mine : zone, étape et rocher en cours. */
 @Injectable({ providedIn: 'root' })
 export class Progression {
   private readonly state = signal<Progress>(loadProgress());
 
   readonly progress = this.state.asReadonly();
   readonly zone = computed(() => this.state().zone);
-  readonly health = computed(() => zoneHealth(this.state()));
+  readonly label = computed(() => stageLabel(this.state()));
+  readonly health = computed(() => rockHealth(this.state()));
   readonly remainingHp = computed(() => remainingHp(this.state()));
+  readonly stagesReached = computed(() => stagesReached(this.state()));
 
   hit(damage: number): DamageResult {
     const result = applyDamage(this.state(), damage);
@@ -37,7 +42,7 @@ function loadProgress(): Progress {
     return START_PROGRESS;
   }
   try {
-    const value: unknown = JSON.parse(raw);
+    const value = migrateProgress(JSON.parse(raw));
     if (isValidProgress(value)) {
       return value;
     }

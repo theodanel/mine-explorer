@@ -1,5 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
+import { itemIconUrl } from '../../loading/game-assets';
 import { SlotId, SLOTS } from '../equipment.model';
 import { Inventory } from '../inventory';
 
@@ -28,7 +29,7 @@ export class EquipmentColumn {
         key: slot,
         locked: false as const,
         label,
-        iconUrl,
+        iconUrl: itemIconUrl(slot, item?.tier ?? null, iconUrl),
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
       };

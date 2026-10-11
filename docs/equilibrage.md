@@ -8,8 +8,8 @@ Inspirations : Forge Master (pioche à segments et minuteur, paliers en fenêtre
 
 1. **Miner.** Chaque zone compte 15 étapes, de 1-1 à 1-15, puis 2-1, etc. Chaque étape est un rocher, un peu plus dur que le précédent. Chaque coup rapporte 0,25 pièce par PV miné (plus le bonus du sac).
 2. **Missions.** Elles sont la source principale d'éclats de géode, comme dans Legends of Mushroom :
-   - une mission principale à la fois, qui s'enchaîne sans fin (casse des rochers, forge, atteins une étape, paie des segments, vends, monte la pioche), avec des objectifs qui grandissent à chaque tour ;
-   - quatre missions du jour (20 rochers, 5 objets forgés, 5 segments, 3 ventes) et un coffre de 10 éclats quand les quatre sont récupérées. Elles changent à minuit, heure du joueur.
+   - une mission principale à la fois, qui s'enchaîne sans fin (termine des étapes, forge, atteins une étape, paie des segments, vends, monte la pioche), avec des objectifs qui grandissent à chaque tour ;
+   - quatre missions du jour (20 étapes, 5 objets forgés, 5 segments, 3 ventes) et un coffre de 10 éclats quand les quatre sont récupérées. Elles changent à minuit, heure du joueur.
    - Une zone terminée donne aussi 5 éclats.
 3. **Forger.** 2 éclats = 1 tirage. Le palier de l'objet dépend uniquement du niveau de la pioche.
 4. **Équiper ou vendre.** La comparaison montre le gain ou la perte de Puissance.

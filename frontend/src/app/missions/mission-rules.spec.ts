@@ -16,12 +16,12 @@ function counters(overrides: Partial<Counters>): Counters {
 }
 
 describe('missions principales', () => {
-  it('commencent par casser un premier rocher', () => {
-    expect(mainMission(0)).toMatchObject({ label: 'Casse un rocher', target: 1, reward: { shards: 4 } });
+  it('commencent par terminer une première étape', () => {
+    expect(mainMission(0)).toMatchObject({ label: 'Termine une étape', target: 1, reward: { shards: 4 } });
   });
 
   it('enchaînent un cycle de 6 missions aux objectifs croissants', () => {
-    expect(mainMission(6).label).toBe('Casse 5 rochers');
+    expect(mainMission(6).label).toBe('Termine 5 étapes');
     expect(mainMission(2).label).toBe("Atteins l'étape 1-5");
     expect(mainMission(8).label).toBe("Atteins l'étape 1-11");
     expect(mainMission(5).label).toBe('Monte la pioche au niveau 2');

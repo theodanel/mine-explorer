@@ -2,7 +2,11 @@
 // qui s'enchaîne sans fin, et quatre missions du jour. Elles sont la source principale d'éclats de géode.
 import { STAGES_PER_ZONE } from '../balance/balance';
 
-/** Compteurs cumulés depuis le début de la partie, alimentés par les actions du joueur. */
+/**
+ * Compteurs cumulés depuis le début de la partie, alimentés par les actions du joueur.
+ * « rocksBroken » compte les étapes terminées (une étape = un rocher). L'identifiant reste celui-ci
+ * pour ne pas invalider les sauvegardes existantes ; seuls les libellés parlent d'étapes.
+ */
 export const COUNTER_IDS = ['rocksBroken', 'itemsForged', 'itemsSold', 'segmentsPaid'] as const;
 export type CounterId = (typeof COUNTER_IDS)[number];
 export type Counters = Readonly<Record<CounterId, number>>;
@@ -31,7 +35,7 @@ export interface MissionDef {
 
 /** Cycle de 6 missions qui revient avec des objectifs plus grands à chaque tour. */
 const MAIN_TEMPLATES: readonly ((round: number) => Omit<MissionDef, 'id'>)[] = [
-  (round) => counterMission('rocksBroken', 1 + 4 * round, (n) => (n === 1 ? 'Casse un rocher' : `Casse ${n} rochers`), 4),
+  (round) => counterMission('rocksBroken', 1 + 4 * round, (n) => (n === 1 ? 'Termine une étape' : `Termine ${n} étapes`), 4),
   (round) => counterMission('itemsForged', 2 + round, (n) => `Forge ${n} objets`, 3),
   (round) => {
     const target = 5 + 6 * round;
@@ -56,7 +60,7 @@ export function mainMission(index: number): MissionDef {
 // ─── Missions du jour ──────────────────────────────────────────────────────
 
 export const DAILY_MISSIONS: readonly MissionDef[] = [
-  { id: 'daily-rocks', ...counterMission('rocksBroken', 20, (n) => `Casse ${n} rochers`, 5) },
+  { id: 'daily-rocks', ...counterMission('rocksBroken', 20, (n) => `Termine ${n} étapes`, 5) },
   { id: 'daily-forge', ...counterMission('itemsForged', 5, (n) => `Forge ${n} objets`, 5) },
   { id: 'daily-segments', ...counterMission('segmentsPaid', 5, (n) => `Paie ${n} segments de pioche`, 4) },
   { id: 'daily-sell', ...counterMission('itemsSold', 3, (n) => `Vends ${n} objets`, 3) },

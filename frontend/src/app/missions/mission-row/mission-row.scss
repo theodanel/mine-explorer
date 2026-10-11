@@ -1,0 +1,69 @@
+:host {
+  display: block;
+}
+
+.mission {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  padding: 2cqw 2.5cqw;
+  border-radius: 2.5cqw;
+  background: rgb(0 0 0 / 30%);
+
+  &.main {
+    border: 0.5cqw solid #c48a4a;
+  }
+}
+
+.mission-text {
+  display: grid;
+  flex: 1;
+  gap: 1cqw;
+}
+
+.mission-label {
+  font-size: 3.6cqw;
+  font-weight: bold;
+}
+
+.mission-bar {
+  position: relative;
+  height: 3.6cqw;
+  overflow: hidden;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #3a2a1c;
+}
+
+.mission-fill {
+  height: 100%;
+  background: linear-gradient(#ffe27a, #e09a12);
+}
+
+.mission-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 2.6cqw;
+  font-weight: bold;
+  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
+}
+
+.claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  min-width: 17cqw;
+  justify-content: center;
+  padding: 1.5cqw 2cqw;
+  font-size: 3.6cqw;
+}
+
+.done {
+  min-width: 17cqw;
+  color: #b8f0b0;
+  font-size: 3.2cqw;
+  font-weight: bold;
+  text-align: center;
+}

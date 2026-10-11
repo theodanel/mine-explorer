@@ -1,0 +1,174 @@
+:host {
+  display: grid;
+  place-items: center;
+  height: 100dvh;
+}
+
+// Cadre portrait 9:16 qui tient entièrement dans l'écran, quelle que soit son orientation.
+// L'interface est posée en absolu par-dessus la scène : positions en % de hauteur, tailles en cqw de largeur.
+.game {
+  position: relative;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  container-type: inline-size;
+  font-family: Arial, sans-serif;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+// Le fond remonté laisse une bande unie en bas : un dégradé la fond dans le sol sous les panneaux
+.bottom-shade {
+  position: absolute;
+  inset: 70% 0 0;
+  background: linear-gradient(transparent, #1a0f07 35%);
+  pointer-events: none;
+}
+
+.top-bar {
+  position: absolute;
+  inset: 2.5% 3cqw auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.8cqw solid #ffd34d;
+    outline-offset: 0.6cqw;
+  }
+}
+
+// Pastille qui annonce qu'une évolution est possible
+.evolve-badge {
+  position: absolute;
+  bottom: -2.5cqw;
+  left: 1cqw;
+  z-index: 2;
+  padding: 0.5cqw 1.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#5fd16a, #23802f);
+  color: #fff;
+  font: bold 2.6cqw / 1 Arial, sans-serif;
+  animation: evolve-pulse 1s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes evolve-pulse {
+  to {
+    transform: scale(1.1);
+  }
+}
+
+// Portrait rond dans un cadre épais, comme la référence, mais en bois
+.portrait {
+  position: relative;
+  z-index: 1;
+  width: 15cqw;
+  height: 15cqw;
+  border: 1cqw solid #2a1a0d;
+  border-radius: 50%;
+  background: radial-gradient(#e8b45c, #9a6230);
+  box-shadow:
+    inset 0 0 0 0.6cqw #c48a4a,
+    0 0.8cqw 0 rgb(0 0 0 / 35%);
+}
+
+.player-card {
+  display: grid;
+  margin: 0 0 0 -3cqw;
+  padding: 1cqw 3cqw 1cqw 4.5cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 0 2cqw 2cqw 0;
+  background: linear-gradient(#5b3d24, #3d2815);
+  color: #fff3d6;
+}
+
+.player-name {
+  font-size: 3.6cqw;
+  font-weight: bold;
+}
+
+.player-title {
+  font-size: 2.8cqw;
+  color: #e8c48a;
+}
+
+.resources {
+  display: grid;
+  gap: 1.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5cqw;
+  min-width: 22cqw;
+  padding: 0.6cqw 2.5cqw 0.6cqw 0.8cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 999px;
+  background: rgb(20 12 6 / 75%);
+  font: bold 4cqw / 1 Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.coins {
+  color: #ffd34d;
+}
+
+.shards {
+  color: #d9a8ff;
+}
+
+.zone {
+  position: absolute;
+  inset: 13% 0 auto;
+}
+
+// Colonnes d'équipement de part et d'autre du mineur
+.column-left,
+.column-right {
+  position: absolute;
+  top: 21%;
+}
+
+.column-left {
+  left: 3cqw;
+}
+
+.column-right {
+  right: 3cqw;
+}
+
+.stats {
+  position: absolute;
+  inset: 63% 3cqw auto;
+}
+
+// Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)
+.forge {
+  position: absolute;
+  inset: auto 0 2%;
+}

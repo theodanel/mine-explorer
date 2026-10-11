@@ -1,11 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Frontend</title>
+  <title>Mine Explorer</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- L'écran de chargement doit s'afficher tout de suite : on télécharge ses images en priorité -->
+  <link rel="preload" as="image" href="assets/ui/splash-bg.webp">
+  <link rel="preload" as="image" href="assets/ui/logo.webp">
 </head>
 <body>
   <app-root></app-root>

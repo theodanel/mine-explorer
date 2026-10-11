@@ -1,0 +1,14 @@
+<section class="banner" aria-label="Avancée dans la mine">
+  <h2 class="label">Zone {{ progression.label() }}</h2>
+  <div
+    class="bar"
+    role="progressbar"
+    aria-label="Résistance du rocher"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    [attr.aria-valuenow]="healthPercent()"
+  >
+    <div class="bar-fill" [style.width.%]="healthPercent()"></div>
+    <span class="bar-label">{{ remaining() }} PV</span>
+  </div>
+</section>

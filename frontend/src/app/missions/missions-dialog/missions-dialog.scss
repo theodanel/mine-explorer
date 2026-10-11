@@ -1,0 +1,90 @@
+// La fenêtre couvre tout le cadre de jeu (container-type en fait le bloc conteneur du fixed)
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 4cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  width: 100%;
+  padding: 4cqw 4.5cqw 5cqw;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 5.2cqw;
+    text-shadow: 0 0.4cqw 0 rgb(0 0 0 / 50%);
+  }
+}
+
+.close {
+  width: 8cqw;
+  height: 8cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
+  box-shadow: 0 0.6cqw 0 #5a170b;
+  color: #fff;
+  font: bold 5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+h3 {
+  margin: 4cqw 0 1.5cqw;
+  font-size: 3.4cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.2cqw;
+  opacity: 0.8;
+}
+
+.list {
+  display: grid;
+  gap: 1.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.done {
+  min-width: 17cqw;
+  color: #b8f0b0;
+  font-size: 3.2cqw;
+  font-weight: bold;
+  text-align: center;
+}
+
+.chest {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3cqw;
+  margin-top: 3cqw;
+  padding: 2.5cqw;
+  border: 0.5cqw dashed #8a5f38;
+  border-radius: 2.5cqw;
+  font-size: 3.2cqw;
+
+  &.ready {
+    border-style: solid;
+    border-color: #ffd34d;
+  }
+}
+
+.claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  justify-content: center;
+  min-width: 17cqw;
+  padding: 1.5cqw 2cqw;
+  font-size: 3.6cqw;
+}

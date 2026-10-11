@@ -1,0 +1,44 @@
+<div class="backdrop" (click)="closed.emit()">
+  <section
+    class="dialog game-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="missions-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="dialog-header">
+      <h2 id="missions-title">Missions</h2>
+      <button type="button" class="close" aria-label="Fermer" (click)="closed.emit()">×</button>
+    </header>
+
+    <h3>Mission principale</h3>
+    <app-mission-row [view]="missions.main()" [main]="true" (claim)="missions.claimMain()" />
+
+    <h3>Missions du jour</h3>
+    <ul class="list">
+      @for (view of missions.daily(); track view.mission.id) {
+        <li>
+          <app-mission-row [view]="view" (claim)="missions.claimDaily(view.mission.id)" />
+        </li>
+      }
+    </ul>
+
+    <div class="chest" [class.ready]="missions.chestReady()">
+      <span>Coffre du jour : toutes les missions du jour récupérées</span>
+      @if (missions.chestClaimed()) {
+        <span class="done">Récupéré</span>
+      } @else {
+        <button
+          type="button"
+          class="game-button green claim"
+          [disabled]="!missions.chestReady()"
+          (click)="missions.claimChest()"
+        >
+          <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />+{{
+            missions.chestReward.shards
+          }}
+        </button>
+      }
+    </div>
+  </section>
+</div>

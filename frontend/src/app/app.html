@@ -108,10 +108,13 @@
   }
   <app-footer-menu class="footer" />
 
-  <app-item-compare />
-  <app-gallery-choice />
-  <app-artifact-found />
-  <app-companion-hatched />
-  <app-offline-report />
+  <!-- Fenêtres qui n'apparaissent qu'après quelques instants de jeu : chargées dès que le navigateur est libre -->
+  @defer (on idle) {
+    <app-item-compare />
+    <app-gallery-choice />
+    <app-artifact-found />
+    <app-companion-hatched />
+    <app-offline-report />
+  }
   <app-splash-screen />
 </main>

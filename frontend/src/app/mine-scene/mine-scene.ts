@@ -1,5 +1,7 @@
 import { AfterViewInit, Component, effect, ElementRef, inject, OnDestroy, viewChild } from '@angular/core';
 import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Texture, Ticker } from 'pixi.js';
+// Version de PixiJS sans « eval » : le site interdit l'évaluation de code (CSP sans 'unsafe-eval')
+import 'pixi.js/unsafe-eval';
 
 import { speedMultiplier } from '../equipment/equipment-rules';
 import { EvolutionId } from '../balance/balance';

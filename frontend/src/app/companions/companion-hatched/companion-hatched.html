@@ -1,0 +1,23 @@
+@if (view(); as view) {
+  <div class="backdrop" (click)="companions.dismissHatching()">
+    <section
+      class="dialog game-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="companion-hatched-title"
+      [attr.data-rarity]="view.rarity"
+      (click)="$event.stopPropagation()"
+    >
+      <p class="headline">{{ view.headline }}</p>
+      <img class="hatched-icon" [src]="view.icon" alt="" width="200" height="200" />
+      <h2 id="companion-hatched-title">{{ view.label }}</h2>
+      <p class="rarity">{{ view.rarityLabel }} · {{ view.stars }} ★</p>
+      @if (view.kind === 'maxed') {
+        <p class="description">Il a déjà toutes ses étoiles : l'œuf se change en {{ view.shards }} éclats.</p>
+      } @else {
+        <p class="description">{{ view.description }}</p>
+      }
+      <button type="button" class="game-button green" (click)="companions.dismissHatching()">Super !</button>
+    </section>
+  </div>
+}

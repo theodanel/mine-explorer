@@ -2,6 +2,7 @@
   <button
     type="button"
     class="game-button wood side-button"
+    data-tuto="pickaxe"
     (click)="upgradeOpen.set(true)"
   >
     <span class="side-title">Pioche</span>
@@ -17,6 +18,7 @@
     <button
       type="button"
       class="forge"
+      data-tuto="forge"
       [attr.aria-label]="forgeLabel()"
       (click)="onForgeClick()"
       [disabled]="!inventory.canForge() && !inventory.pending()"
@@ -66,6 +68,7 @@
   <button
     type="button"
     class="game-button wood side-button missions-button"
+    data-tuto="missions"
     [attr.aria-label]="'Missions, ' + missions.claimableCount() + ' récompense(s) à récupérer'"
     (click)="missionsOpen.set(true)"
   >

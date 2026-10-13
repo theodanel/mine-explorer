@@ -116,5 +116,9 @@
     <app-companion-hatched />
     <app-offline-report />
   }
+  <!-- Tutoriel du premier lancement : il attend la fin du chargement, rien ne presse -->
+  @defer (on idle) {
+    <app-tutorial-overlay />
+  }
   <app-splash-screen />
 </main>

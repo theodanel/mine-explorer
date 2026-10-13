@@ -21,6 +21,7 @@ import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
+import { TutorialOverlay } from './tutorial/tutorial-overlay/tutorial-overlay';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
 import { Ores } from './ores/ores';
@@ -53,6 +54,7 @@ import { Wallet } from './wallet/wallet';
     EvolutionPage,
     ProfilePage,
     SplashScreen,
+    TutorialOverlay,
     MineEventLayer,
     GalleryChoice,
     CompanionsPage,

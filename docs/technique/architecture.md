@@ -37,7 +37,7 @@ Domaines : progression (zones et filons), minage, mineur (calcul des stats), éq
 
 - **Angular sans zone.js** : l'affichage suit des `signal`/`computed`. Composants autonomes (*standalone*), contrôle de flux `@if`/`@for`/`@switch`, injection par `inject()`.
 - **Hasard et temps injectés** (`RANDOM`, `CLOCK`, `ID_FACTORY`) : les tests figent les tirages et l'heure.
-- **Scène PixiJS isolée** dans `mine-scene/` : le reste de l'interface est en HTML/CSS. PixiJS est chargé dans sa variante sans `eval` (`pixi.js/unsafe-eval`), compatible avec la CSP du site.
+- **Scène PixiJS isolée** dans `mine-scene/` : le reste de l'interface est en HTML/CSS. Le rocher frappé (`mine-scene/mine-rock.ts`, une image par zone dans `public/assets/rocks/zone1.webp` à `zone10.webp`) se cale sous la pioche de la forme affichée ; sa barre de vie est un élément HTML placé en pourcentage de la scène, qui le suit sur tous les écrans. Une image absente n'empêche rien : seule la barre s'affiche. PixiJS est chargé dans sa variante sans `eval` (`pixi.js/unsafe-eval`), compatible avec la CSP du site.
 - **Pages et fenêtres secondaires chargées à la demande** (`@defer`) pour tenir le budget de 1 Mo du chargement initial.
 - **Superposition des fenêtres** centralisée dans `shared/overlays.ts` : une seule fenêtre automatique à la fois, jamais par-dessus une page ou une fenêtre ouverte par le joueur. Profondeurs (`z-index`) définies une fois dans `styles.scss`.
 

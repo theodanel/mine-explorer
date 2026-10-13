@@ -2,7 +2,46 @@
   display: block;
 }
 
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .stage {
   width: 100%;
   height: 100%;
+}
+
+// Vie du filon, juste au-dessus du rocher : petite pour ne pas cacher le décor, centrée sur lui
+.health {
+  position: absolute;
+  width: 22cqw;
+  height: 3.4cqw;
+  overflow: hidden;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 1.6cqw;
+  background: rgb(0 0 0 / 60%);
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+.health-fill {
+  height: 100%;
+  background:
+    linear-gradient(rgb(255 255 255 / 30%), transparent 50%),
+    linear-gradient(#e86a3c, #a8321a);
+  transition: width 0.15s ease-out;
+}
+
+.health-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff8e6;
+  font-size: 2.2cqw;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
 }

@@ -1,1 +1,16 @@
-<div #stage class="stage"></div>
+<div class="frame">
+  <div #stage class="stage"></div>
+  <div
+    class="health"
+    role="progressbar"
+    aria-label="Résistance du filon"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    [attr.aria-valuenow]="healthPercent()"
+    [style.left.%]="healthBarLeft()"
+    [style.top.%]="healthBarTop()"
+  >
+    <div class="health-fill" [style.width.%]="healthPercent()"></div>
+    <span class="health-label">{{ remaining() }} PV</span>
+  </div>
+</div>

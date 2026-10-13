@@ -6,18 +6,6 @@
     Zone {{ progression.zone() }}
     <span class="stage">Filon {{ progression.progress().stage }} / {{ stagesPerZone }}</span>
   </h2>
-  <div
-    class="bar"
-    tabindex="0"
-    role="progressbar"
-    aria-label="Résistance du filon"
-    aria-valuemin="0"
-    aria-valuemax="100"
-    [attr.aria-valuenow]="healthPercent()"
-  >
-    <div class="bar-fill" [style.width.%]="healthPercent()"></div>
-    <span class="bar-label">{{ remaining() }} PV</span>
-  </div>
   @if (galleries.offer() !== null) {
     <button type="button" class="gallery choose" (click)="galleries.reopenDialog()">Choisir la galerie</button>
   } @else if (galleries.current() !== 'neutral') {

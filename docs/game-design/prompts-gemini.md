@@ -147,6 +147,42 @@ Theme: a celestial underground sanctuary, white marble and gold rock formations,
 
 Dépose chaque image dans `art-source/backgrounds/` sous le nom `zone2.png`, `zone3.png`… Je les optimiserai et je les brancherai selon la zone en cours.
 
+## Rochers des zones (le filon que frappe le mineur)
+
+Un rocher par zone, posé au sol à droite du mineur, là où tombe la pioche. Il doit se lire d'un coup d'œil sur le décor de sa zone, sans le cacher : un bloc trapu, plus large que haut, d'environ la moitié de la taille du mineur. Fond vert comme les icônes (je le détoure). Colle d'abord le bloc « Style commun » plus haut, puis ce cadre commun, puis le thème de la zone.
+
+### Cadre commun (à coller après le « Style commun »)
+
+```
+A single mineable ore boulder for a side-view mining game, seen from the front at floor level, sitting flat on the ground (flat bottom edge, no ground, no shadow, no debris around it). Chunky and readable silhouette, about 1.3 times wider than tall, filling 85% of the image width, centered. Square image 1024x1024. The ore veins and crystals are embedded in the rock, clearly visible, as if the miner will chip them out. Same framing, size and lighting for every boulder of the series, light coming from the top left.
+```
+
+### Thème par zone
+
+**Zone 1 · Bois** : `Rock: a rounded brown earth-and-clay boulder with tangled tree roots, splinters of old wood stuck in it and a few small grey pebbles.`
+
+**Zone 2 · Pierre** : `Rock: a grey granite block with sharp chisel-cut facets, white quartz specks and fine cracks.`
+
+**Zone 3 · Cuivre** : `Rock: a brown rock boulder with shiny orange copper veins and two or three small copper nuggets, light green patina stains.`
+
+**Zone 4 · Fer** : `Rock: a dark blue-grey boulder with heavy rust-red iron ore streaks and metallic dark grey lumps.`
+
+**Zone 5 · Acier** : `Rock: a dark slate boulder with polished steel-grey metal plates and bright silver ore veins, a faint warm forge glow on its edges.`
+
+**Zone 6 · Or** : `Rock: a warm sandstone boulder packed with thick shiny gold veins and big gold nuggets, tiny sparkles.`
+
+**Zone 7 · Mithril** : `Rock: a pale stone boulder with glowing silver-teal mithril veins and a few faint carved rune marks.`
+
+**Zone 8 · Cristal** : `Rock: a dark purple stone boulder with large translucent violet and pink crystals growing out of it, glowing softly from inside.`
+
+**Zone 9 · Magma** : `Rock: a black basalt boulder split by glowing orange lava cracks, small embers, a red-hot core visible in the cracks.`
+
+**Zone 10 · Divin** : `Rock: a white marble boulder with golden veins and small star-shaped glowing gems, a soft warm divine aura.`
+
+Dépose chaque image dans `art-source/rocks/` sous le nom `zone1.png` à `zone10.png`. Je les détoure et je les range dans `frontend/public/assets/rocks/zone1.webp`… : le jeu les affiche dès qu'elles sont là, sans autre changement. En attendant, la barre de vie flotte seule à l'emplacement du rocher.
+
+Si tu veux aller plus loin plus tard, on pourra demander pour chaque rocher deux variantes fissurées (« same boulder, same framing, with a few cracks » puis « with deep cracks, a chunk missing ») pour montrer l'usure au fil des coups.
+
 ## Pioches (une par palier)
 
 Toutes les pioches doivent avoir exactement le même cadrage et le même angle : le jeu les place dans la main du mineur en suivant son mouvement. Colle le bloc commun, puis la ligne du palier.

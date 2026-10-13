@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, effect, ElementRef, inject, OnDestroy, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Texture, Ticker } from 'pixi.js';
 // Version de PixiJS sans « eval » : le site interdit l'évaluation de code (CSP sans 'unsafe-eval')
 import 'pixi.js/unsafe-eval';
@@ -13,6 +13,7 @@ import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
+import { MineRock, RockTop } from './mine-rock';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -40,6 +41,10 @@ const SHAKE_MS = 450;
 const SHAKE_PX = 14;
 /** Part de la secousse du grisou reprise par la dynamite. */
 const DYNAMITE_SHAKE_SHARE = 0.4;
+/** La barre de vie flotte juste au-dessus du rocher, en pixels de scène. */
+const HEALTH_BAR_GAP = 14;
+const PERCENT = 100;
+const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 
 @Component({
   selector: 'app-mine-scene',
@@ -64,7 +69,15 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private squashMs = 0;
   private shakeMs = 0;
   private effects: HitEffects | null = null;
+  private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
+  private readonly rock = new MineRock((top) => this.rockTop.set(top));
   private initialized = false;
+
+  /** Position de la barre de vie, en pourcentage de la scène : elle suit le rocher, quelle que soit la taille de l'écran. */
+  protected readonly healthBarLeft = computed(() => (this.rockTop().x / SCENE_WIDTH) * PERCENT);
+  protected readonly healthBarTop = computed(() => ((this.rockTop().y - HEALTH_BAR_GAP) / SCENE_HEIGHT) * PERCENT);
+  protected readonly healthPercent = computed(() => Math.round(this.progression.health() * PERCENT));
+  protected readonly remaining = computed(() => NUMBER_FORMAT.format(this.progression.remainingHp()));
   private destroyed = false;
 
   constructor() {
@@ -99,6 +112,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const zone = this.progression.zone();
       if (this.background) {
         void this.showZoneBackground(zone);
+        void this.rock.show(zone);
       }
     });
   }
@@ -119,8 +133,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background = new Sprite();
-      this.app.stage.addChild(this.background);
+      this.app.stage.addChild(this.background, this.rock.sprite);
       await this.showZoneBackground(this.progression.zone());
+      void this.rock.show(this.progression.zone());
       await this.startMining(frames);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);
@@ -167,12 +182,14 @@ export class MineScene implements AfterViewInit, OnDestroy {
         const { impactOffset, scale } = this.strike;
         effects.spawn(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale, outcome);
         this.playStrikeSounds(outcome);
+        this.rock.hit(outcome.rockBroken);
         this.squashMs = STRIKE_SQUASH_MS;
       }
       previousFrame = currentFrame;
     };
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
+      this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);
     });
@@ -236,6 +253,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
+    // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
+    this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
   }
 
   /** Le coup, puis ce qu'il a fait : éclat déterré, filon qui cède. */

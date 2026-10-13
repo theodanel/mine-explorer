@@ -67,6 +67,15 @@ export function zoneBackground(zone: number): ZoneBackground {
   return ZONE_BACKGROUNDS[index];
 }
 
+/**
+ * Rocher que frappe le mineur, un par zone et assorti à son décor. Les images viennent de Gemini
+ * (prompts dans docs/game-design/prompts-gemini.md) : tant qu'une image manque, la scène n'affiche que la barre de vie.
+ */
+export function rockUrl(zone: number): string {
+  const index = Math.min(Math.max(zone, 1), ZONE_BACKGROUNDS.length);
+  return `assets/rocks/zone${index}.webp`;
+}
+
 /** Images de l'interface, préchargées pour éviter qu'elles n'apparaissent une à une au lancement. */
 export const UI_IMAGES: readonly string[] = [
   'assets/ui/coin.png',

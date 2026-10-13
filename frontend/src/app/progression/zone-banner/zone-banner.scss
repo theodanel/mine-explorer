@@ -27,38 +27,7 @@
   font-size: 3.4cqw;
 }
 
-// Vie du filon : elle se vide à chaque coup, avec les PV et le temps restants écrits dessus
-.bar {
-  position: relative;
-  width: 62cqw;
-  height: 4.4cqw;
-  overflow: hidden;
-  border: 0.6cqw solid #1a0f07;
-  border-radius: 2cqw;
-  background: rgb(0 0 0 / 60%);
-}
-
-.bar-fill {
-  height: 100%;
-  background:
-    linear-gradient(rgb(255 255 255 / 30%), transparent 50%),
-    linear-gradient(#e86a3c, #a8321a);
-  transition: width 0.15s ease-out;
-}
-
-.bar-label {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: #fff8e6;
-  font-size: 2.8cqw;
-  font-weight: bold;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
-}
-
-// Galerie de la zone, sous la barre de vie du filon
+// Galerie de la zone, sous le titre
 .gallery {
   display: flex;
   align-items: center;

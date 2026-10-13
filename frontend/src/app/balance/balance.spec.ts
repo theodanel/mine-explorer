@@ -1,4 +1,4 @@
-import { SLOT_IDS, SLOTS, SlotId, StatId, TIER_IDS } from '../equipment/equipment.model';
+import { SLOT_IDS, SLOTS, SlotId, StatId, TIER_IDS, TierId } from '../equipment/equipment.model';
 import {
   BASE_STATS,
   expectedStatsAtPickaxe,
@@ -46,9 +46,18 @@ describe('paliers', () => {
     expect(secondaryStatCount('divine')).toBe(3);
   });
 
-  it('se vendent deux fois plus cher à chaque palier', () => {
+  it('se vendent selon leur niveau, 50 % plus cher un palier au-dessus de la base', () => {
     expect(sellPriceFor('wood', 1)).toBe(5);
-    expect(sellPriceFor('stone', 1)).toBe(10);
+    expect(sellPriceFor('stone', 1)).toBe(8);
+    expect(sellPriceFor('copper', 10)).toBeGreaterThan(sellPriceFor('iron', 10) / 2);
+  });
+
+  it('rapportent une part de segment qui baisse avec le niveau sans devenir négligeable', () => {
+    const baseTier = (level: number): TierId => TIER_ORDER[Math.floor((level - 1) / 3)];
+    const share = (level: number): number => sellPriceFor(baseTier(level), level) / (segmentCost(level) ?? Infinity);
+    expect(share(10)).toBeGreaterThan(share(20));
+    // Environ 0,09 % au niveau 29 : faible, mais une vente compte encore quand on en fait des centaines
+    expect(share(29)).toBeGreaterThan(0.0008);
   });
 });
 
@@ -62,19 +71,25 @@ describe('table des chances de la pioche', () => {
     expect(tierChances(1).wood).toBe(100);
   });
 
-  it('fait arriver les paliers supérieurs par petites touches', () => {
-    expect(tierChances(2)).toMatchObject({ wood: 88, stone: 11.5, copper: 0.5, iron: 0 });
+  it('fait arriver le palier suivant par petites touches', () => {
+    expect(tierChances(2)).toMatchObject({ wood: 92, stone: 8, copper: 0 });
+  });
+
+  it('ne donne pas de Fer avant le niveau 7', () => {
+    expect(tierChances(5)).toMatchObject({ wood: 12, stone: 80, copper: 8, iron: 0 });
+    expect(tierChances(6).iron).toBe(0);
+    expect(tierChances(7).iron).toBe(3);
   });
 
   it('fait glisser la fenêtre d\'un palier tous les 3 niveaux', () => {
-    expect(tierChances(4).stone).toBe(70);
-    expect(tierChances(7).copper).toBe(70);
+    expect(tierChances(4).stone).toBe(72);
+    expect(tierChances(7).copper).toBe(72);
   });
 
-  it('ne garde jamais plus de 4 paliers possibles', () => {
+  it('ne garde jamais plus de 3 paliers possibles', () => {
     for (let level = 1; level <= MAX_PICKAXE_LEVEL; level++) {
       const possible = Object.values(tierChances(level)).filter((chance) => chance > 0);
-      expect(possible.length).toBeLessThanOrEqual(4);
+      expect(possible.length).toBeLessThanOrEqual(3);
     }
   });
 
@@ -95,8 +110,8 @@ describe('pioche', () => {
     expect(costGrowth).toBeGreaterThan(powerGrowth);
   });
 
-  it("demande 2 minutes d'amélioration au niveau 1", () => {
-    expect(upgradeDurationMs(1)).toBe(2 * 60 * 1000);
+  it("demande 1 minute d'amélioration au niveau 1", () => {
+    expect(upgradeDurationMs(1)).toBe(60 * 1000);
   });
 });
 
@@ -107,7 +122,13 @@ describe('étapes', () => {
 
   it('donnent un peu plus de PV à chaque rocher, sans saut entre les zones', () => {
     expect(rockHp(1, 2)).toBeGreaterThan(rockHp(1, 1));
-    expect(rockHp(2, 1) / rockHp(1, 15)).toBeCloseTo(rockHp(1, 2) / rockHp(1, 1), 1);
+    expect(rockHp(2, 1) / rockHp(1, 15)).toBeCloseTo(rockHp(2, 2) / rockHp(2, 1), 2);
+  });
+
+  it('rendent les premiers filons tendres, puis rejoignent la courbe au 1-15', () => {
+    // 1-1 : 10 % des 320 PV de la courbe, une dizaine de secondes sans équipement
+    expect(rockHp(1, 1)).toBe(32);
+    expect(rockHp(1, 15)).toBe(Math.round(320 * 1.073 ** 14));
   });
 
   it('recommandent la Puissance qui casse le rocher dans le temps visé', () => {
@@ -121,6 +142,10 @@ describe('étapes', () => {
 });
 
 describe('absence', () => {
+  it("donne un éclat toutes les 10 minutes d'absence", () => {
+    expect(offlineGains(BASE_STATS, OFFLINE_CAP_MS).shards).toBe(24);
+  });
+
   it('plafonne les gains à 4 h', () => {
     expect(offlineGains(BASE_STATS, 10 * OFFLINE_CAP_MS)).toEqual(offlineGains(BASE_STATS, OFFLINE_CAP_MS));
   });
@@ -128,18 +153,18 @@ describe('absence', () => {
 
 // Intentions de design : si un réglage les casse, le document d'équilibrage doit être revu en même temps
 describe('courbe de progression', () => {
-  it('cumule environ un mois de minuteurs pour atteindre la pioche 30', () => {
+  it("garde des minuteurs courts : l'or fixe le rythme, pas l'attente", () => {
     let totalMs = 0;
     for (let level = 1; level < MAX_PICKAXE_LEVEL; level++) {
       totalMs += upgradeDurationMs(level);
     }
     const days = totalMs / (24 * 60 * 60 * 1000);
-    expect(days).toBeGreaterThan(25);
-    expect(days).toBeLessThan(35);
+    expect(days).toBeGreaterThan(1);
+    expect(days).toBeLessThan(2);
   });
 
-  it('demande 3 à 4 niveaux de pioche de plus à chaque zone', () => {
+  it('demande environ 3 niveaux de pioche de plus à chaque zone, évolutions non comptées', () => {
     const needed = Array.from({ length: 7 }, (_, index) => pickaxeNeededFor(index + 1));
-    expect(needed).toEqual([9, 13, 16, 20, 23, 26, 29]);
+    expect(needed).toEqual([10, 13, 16, 19, 22, 25, 28]);
   });
 });

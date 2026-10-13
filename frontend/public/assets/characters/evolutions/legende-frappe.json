@@ -1,0 +1,525 @@
+{
+ "frames": {
+  "legende-frappe_0000": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0001": {
+   "frame": {
+    "x": 397,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0002": {
+   "frame": {
+    "x": 794,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0003": {
+   "frame": {
+    "x": 1191,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0004": {
+   "frame": {
+    "x": 1588,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0005": {
+   "frame": {
+    "x": 0,
+    "y": 360,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0006": {
+   "frame": {
+    "x": 397,
+    "y": 360,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0007": {
+   "frame": {
+    "x": 794,
+    "y": 360,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0008": {
+   "frame": {
+    "x": 1191,
+    "y": 360,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0009": {
+   "frame": {
+    "x": 1588,
+    "y": 360,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0010": {
+   "frame": {
+    "x": 0,
+    "y": 720,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0011": {
+   "frame": {
+    "x": 397,
+    "y": 720,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0012": {
+   "frame": {
+    "x": 794,
+    "y": 720,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0013": {
+   "frame": {
+    "x": 1191,
+    "y": 720,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0014": {
+   "frame": {
+    "x": 1588,
+    "y": 720,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0015": {
+   "frame": {
+    "x": 0,
+    "y": 1080,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0016": {
+   "frame": {
+    "x": 397,
+    "y": 1080,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0017": {
+   "frame": {
+    "x": 794,
+    "y": 1080,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0018": {
+   "frame": {
+    "x": 1191,
+    "y": 1080,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0019": {
+   "frame": {
+    "x": 1588,
+    "y": 1080,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0020": {
+   "frame": {
+    "x": 0,
+    "y": 1440,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0021": {
+   "frame": {
+    "x": 397,
+    "y": 1440,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  },
+  "legende-frappe_0022": {
+   "frame": {
+    "x": 794,
+    "y": 1440,
+    "w": 397,
+    "h": 360
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 397,
+    "h": 360
+   },
+   "sourceSize": {
+    "w": 397,
+    "h": 360
+   },
+   "duration": 83
+  }
+ },
+ "animations": {
+  "pickaxe_swing": [
+   "legende-frappe_0000",
+   "legende-frappe_0001",
+   "legende-frappe_0002",
+   "legende-frappe_0003",
+   "legende-frappe_0004",
+   "legende-frappe_0005",
+   "legende-frappe_0006",
+   "legende-frappe_0007",
+   "legende-frappe_0008",
+   "legende-frappe_0009",
+   "legende-frappe_0010",
+   "legende-frappe_0011",
+   "legende-frappe_0012",
+   "legende-frappe_0013",
+   "legende-frappe_0014",
+   "legende-frappe_0015",
+   "legende-frappe_0016",
+   "legende-frappe_0017",
+   "legende-frappe_0018",
+   "legende-frappe_0019",
+   "legende-frappe_0020",
+   "legende-frappe_0021",
+   "legende-frappe_0022"
+  ]
+ },
+ "meta": {
+  "app": "art-source/animations/decouper-frappe.py (ffmpeg + Pillow)",
+  "version": "1.0",
+  "image": "legende-frappe.webp",
+  "format": "RGBA8888",
+  "size": {
+   "w": 1985,
+   "h": 1800
+  },
+  "scale": "1"
+ }
+}

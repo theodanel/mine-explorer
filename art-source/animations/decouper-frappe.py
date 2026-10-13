@@ -1,11 +1,13 @@
 """Transforme une vidéo de frappe sur fond vert en atlas d'animation pour le jeu.
 
 Usage :
-    python decouper-frappe.py <video.mp4> <image d'impact> <nom> <dossier de sortie>
+    python decouper-frappe.py <video.mp4> <image d'impact> <nom> <dossier de sortie> [<dernière image>]
 
 - <image d'impact> : numéro (à partir de 1) de l'image de la vidéo où la pioche touche le sol.
 - Le jeu attend 23 images avec l'impact sur la 11e (index 10), à 12 i/s : on prend une image sur deux
   d'une vidéo à 24 i/s, de l'impact − 20 à l'impact + 24.
+- <dernière image>, facultative : quand la vidéo enchaîne un deuxième coup trop tôt, les 12 images après l'impact
+  sont réparties jusqu'à celle-ci au lieu d'aller jusqu'à l'impact + 24.
 - Écrit <nom>.webp (grille 5 × 5) et <nom>.json (atlas TexturePacker, animation « pickaxe_swing »),
   plus deux images quadrillées (repos et impact) pour mesurer les réglages StrikeAnimation de game-assets.ts.
 
@@ -51,19 +53,29 @@ def key_green(image: Image.Image) -> Image.Image:
     return rgba
 
 
-def extract(video: Path, first: int, folder: Path) -> list[Image.Image]:
+def frame_numbers(impact: int, last: int | None) -> list[int]:
+    before = [impact - (IMPACT_INDEX - i) * STEP for i in range(IMPACT_INDEX + 1)]
+    after_count = FRAME_COUNT - IMPACT_INDEX - 1
+    if last is None:
+        return before + [impact + (i + 1) * STEP for i in range(after_count)]
+    return before + [round(impact + (last - impact) * (i + 1) / after_count) for i in range(after_count)]
+
+
+def extract(video: Path, numbers: list[int], folder: Path) -> list[Image.Image]:
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), str(folder / "f%04d.png")], check=True)
-    numbers = [first + i * STEP for i in range(FRAME_COUNT)]
     return [key_green(Image.open(folder / f"f{n:04d}.png")) for n in numbers]
 
 
 def main() -> None:
+    # La console Windows n'est pas en UTF-8 par défaut : les messages contiennent des accents et des signes moins
+    sys.stdout.reconfigure(encoding="utf-8")
     video, impact, name, out = Path(sys.argv[1]), int(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
-    first = impact - IMPACT_INDEX * STEP
-    if first < 1:
+    last = int(sys.argv[5]) if len(sys.argv) > 5 else None
+    numbers = frame_numbers(impact, last)
+    if numbers[0] < 1:
         sys.exit(f"Impact trop tôt : il faut {IMPACT_INDEX * STEP} images avant lui")
     with tempfile.TemporaryDirectory() as tmp:
-        frames = extract(video, first, Path(tmp))
+        frames = extract(video, numbers, Path(tmp))
 
     # Cadre commun à toutes les images, pour que le personnage ne saute pas d'une image à l'autre
     boxes = [frame.getchannel("A").point(lambda a: 255 if a > 16 else 0).getbbox() for frame in frames]

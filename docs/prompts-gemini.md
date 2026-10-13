@@ -533,3 +533,23 @@ The same companion pet idles in place in a seamless loop: gentle breathing, blin
 3. a purple egg covered in small crystals, glowing softly
 4. a golden egg with glowing orange magma cracks and tiny sparks around it
 ```
+
+## Refonte compagnons et évolution (13/10/2026)
+
+Visuels de [[refonte-compagnons-evolution]]. Colle le bloc « Style commun », puis la « Règle de planche » pour la planche, puis le prompt. Dépose les résultats dans `art-source/refonte/`. En attendant, le jeu affiche du texte sur les boutons en bois.
+
+**Planche 10 : ressources et boutons de la refonte** (grille 3 × 1)
+
+```
+3 icons for a mining game, grid of 3 columns and 1 row:
+1. an awakening stone: a smooth palm-sized river pebble, deep teal, with a glowing golden star-shaped rune carved in its center and a soft golden light seeping out of the carving
+2. a mine challenge trophy: a small wooden plaque with an iron pickaxe and a crossed hammer mounted on it, a golden ribbon at the bottom, a few rock shards flying around
+3. a rolled parchment scroll tied with a red cord, slightly unrolled at one end showing faint ink lines
+```
+
+**Bannière du Défi de la mine** (une image, format 3:1)
+
+```
+A wide horizontal banner for a mining challenge event, 3:1 ratio: a wooden signboard nailed to two mine support beams, decorated with a crossed pickaxe and hammer in the center, scattered glowing purple geode shards and a cracked rock pile at each end, a lantern hanging from the left beam. Empty center area of the signboard for a title added in code, no text.
+```
+

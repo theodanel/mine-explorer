@@ -32,13 +32,13 @@ describe('shardsForStage', () => {
     expect(shardsForStage(1, 5)).toBe(4);
   });
 
-  it('donne une forge par filon jusqu\'à la zone 2', () => {
-    expect(shardsForStage(1, 6)).toBe(2);
-    expect(shardsForStage(2, 15)).toBe(2);
+  it('donne trois éclats par filon dans les zones adoucies (1 à 4)', () => {
+    expect(shardsForStage(1, 6)).toBe(3);
+    expect(shardsForStage(4, 15)).toBe(3);
   });
 
   it('donne ensuite deux éclats par filon', () => {
-    expect(shardsForStage(3, 1)).toBe(2);
+    expect(shardsForStage(5, 1)).toBe(2);
     expect(shardsForStage(9, 15)).toBe(2);
   });
 });

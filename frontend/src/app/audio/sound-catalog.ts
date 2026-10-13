@@ -1,5 +1,4 @@
-// Sons du jeu : un fichier par son dans public/assets/sounds/. Fichier pur, sans Angular.
-// Un fichier absent ne casse rien : le son reste muet, et la liste des absents s'affiche une fois dans la console.
+// Catalogue des sons du jeu, fabriqués par synth.ts. Fichier pur, sans Angular.
 import { tierIndex } from '../balance/balance';
 import type { TierId } from '../equipment/equipment.model';
 
@@ -18,10 +17,6 @@ export const SOUND_IDS = [
   'upgrade',
 ] as const;
 export type SoundId = (typeof SOUND_IDS)[number];
-
-export function soundUrl(id: SoundId): string {
-  return `assets/sounds/${id}.ogg`;
-}
 
 /** Volume propre à chaque son, pour que le coup de pioche, entendu sans arrêt, reste discret. */
 export const SOUND_GAIN: Readonly<Record<SoundId, number>> = {
@@ -61,10 +56,8 @@ export function forgeSound(tier: TierId): SoundId {
   return index >= 3 ? 'forgeRare' : 'forgeCommon';
 }
 
-/** Volumes proposés, dans l'ordre où le bouton les fait défiler. */
-export const VOLUME_STEPS: readonly number[] = [1, 0.5, 0];
-
-export function nextVolume(current: number): number {
-  const index = VOLUME_STEPS.findIndex((step) => Math.abs(step - current) < 0.01);
-  return VOLUME_STEPS[(index + 1) % VOLUME_STEPS.length];
-}
+/** Volumes proposés dans les paramètres, du plus fort au coupé. */
+export const VOLUME_STEPS: readonly number[] = [1, 0.5, 0.25, 0];
+export const DEFAULT_SOUND_VOLUME = 1;
+/** La musique accompagne sans couvrir les bruitages : moyenne par défaut. */
+export const DEFAULT_MUSIC_VOLUME = 0.5;

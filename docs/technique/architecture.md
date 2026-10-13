@@ -52,12 +52,23 @@ L'état de la partie est réparti entre services et sauvegardé dans le `localSt
 
 Le test `shared/save-robustness.spec.ts` charge chaque clé avec des valeurs abîmées ou trafiquées et vérifie que la partie reste jouable.
 
+### Son
+
+Aucun fichier audio : les 12 bruitages et la musique d'ambiance sont calculés par le code (`audio/synth.ts`), échantillon par échantillon, au premier toucher du joueur (exigence des navigateurs mobiles pour autoriser le son). Le calcul prend quelques millisecondes ; la musique, une boucle de 32 secondes en la mineur, est calculée juste après pour ne pas ralentir ce premier toucher. Le service `audio/sound.ts` joue le tout avec Web Audio, sur deux volumes séparés (bruitages, musique) réglables dans Profil, et coupe tout quand l'onglet est caché. Pour écouter les sons hors du jeu : `node --import ./tools/register-ts.mjs tools/export-sounds.mts <dossier>` écrit `bruitages.wav` et `musique.wav`.
+
+Raison : pas de licence à suivre, pas de téléchargement, aucun poids ajouté au site, et rien à autoriser de plus dans la CSP. Des fichiers enregistrés (par exemple les packs CC0 de Kenney) pourront remplacer un son plus tard si le rendu synthétique ne suffit pas.
+
+### Mises à jour et sauvegardes
+
+La sauvegarde vit dans le `localStorage` du navigateur, propre à chaque adresse : une partie commencée sur `mine.bouncylab.ovh` n'existe pas sur `mine-explorer.pages.dev`, et inversement. Une nouvelle version publiée sur la même adresse reprend la partie en cours ; chaque changement de format ou d'équilibrage qui pourrait invalider une sauvegarde doit avoir sa migration et son test (exemple : `migrateProgress` ramène les dégâts du filon en cours sous ses nouveaux PV au lieu de rejeter la partie). Le jeu n'a pas de service worker : le joueur reçoit la nouvelle version au prochain chargement de la page, les fichiers JavaScript ayant un nom qui change à chaque build.
+
 ### Outils
 
 | Outil | Usage |
 |---|---|
 | `tools/simulate.mts` | Joue l'économie avec les vraies règles sur 90 jours (profils régulier, assidu, continu). Sert à régler `balance/`. |
 | `tools/balance-tables.mts` | Recalcule les tableaux de `docs/game-design/equilibrage.md`. |
+| `tools/export-sounds.mts` | Exporte bruitages et musique en WAV pour les écouter. |
 | `tools/serve-dist.mjs` | Sert le build de production avec les en-têtes de `public/_headers`, pour vérifier la CSP en local. |
 
 ## Backend

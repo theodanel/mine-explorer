@@ -57,6 +57,18 @@ describe('sauvegarde', () => {
     expect(migrateProgress({ zone: 7, damage: 123 })).toEqual({ zone: 7, stage: 1, damage: 0 });
   });
 
+  it("garde la partie d'un joueur quand un rééquilibrage baisse les PV du filon en cours", () => {
+    // Sauvegarde de la version en ligne : 2-10 bien entamé, avec les PV d'avant l'adoucissement des zones 1 à 4
+    const before = { zone: 2, stage: 10, damage: 1500 };
+    const migrated = migrateProgress(before);
+    expect(isValidProgress(migrated)).toBe(true);
+    expect(migrated).toEqual({ zone: 2, stage: 10, damage: rockHp(2, 10) - 1 });
+  });
+
+  it('ne touche pas aux dégâts qui tiennent dans le filon', () => {
+    expect(migrateProgress({ zone: 2, stage: 10, damage: 5 })).toEqual({ zone: 2, stage: 10, damage: 5 });
+  });
+
   it('accepte une progression cohérente', () => {
     expect(isValidProgress({ zone: 3, stage: 15, damage: 0 })).toBe(true);
   });

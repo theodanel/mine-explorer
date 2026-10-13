@@ -10,6 +10,7 @@ import { Progression } from '../../progression/progression';
 const VOLUME_OPTIONS = [
   { value: 1, label: 'Fort' },
   { value: 0.5, label: 'Moyen' },
+  { value: 0.25, label: 'Faible' },
   { value: 0, label: 'Coupé' },
 ] as const;
 

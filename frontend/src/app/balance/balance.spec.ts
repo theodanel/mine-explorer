@@ -126,10 +126,11 @@ describe('étapes', () => {
     expect(rockHp(2, 1) / rockHp(1, 15)).toBeCloseTo(rockHp(2, 2) / rockHp(2, 1), 2);
   });
 
-  it('rendent les premiers filons tendres, puis rejoignent la courbe au 1-15', () => {
+  it('rendent les zones 1 à 4 tendres, puis rejoignent la courbe au 5-1', () => {
     // 1-1 : 10 % des 320 PV de la courbe, une dizaine de secondes sans équipement
     expect(rockHp(1, 1)).toBe(32);
-    expect(rockHp(1, 15)).toBe(Math.round(320 * 1.073 ** 14));
+    expect(rockHp(2, 15)).toBeLessThan(Math.round(320 * 1.073 ** 29) / 3);
+    expect(rockHp(5, 1)).toBe(Math.round(320 * 1.073 ** 60));
   });
 
   it('recommandent la Puissance qui casse le rocher dans le temps visé', () => {
@@ -164,8 +165,8 @@ describe('courbe de progression', () => {
     expect(days).toBeLessThan(2);
   });
 
-  it('demande environ 3 niveaux de pioche de plus à chaque zone, évolutions non comptées', () => {
+  it('ouvre vite les premières zones, puis demande environ 3 niveaux de pioche par zone, évolutions non comptées', () => {
     const needed = Array.from({ length: 7 }, (_, index) => pickaxeNeededFor(index + 1));
-    expect(needed).toEqual([10, 13, 16, 19, 22, 25, 28]);
+    expect(needed).toEqual([1, 8, 14, 19, 22, 25, 28]);
   });
 });

@@ -56,7 +56,23 @@ export function migrateProgress(value: unknown): unknown {
   if (typeof value === 'object' && value !== null && !('stage' in value) && 'zone' in value) {
     return { zone: (value as { zone: unknown }).zone, stage: 1, damage: 0 };
   }
-  return value;
+  return clampDamageToRock(value);
+}
+
+/**
+ * Quand un rééquilibrage baisse les PV des filons, les dégâts déjà portés au filon en cours peuvent dépasser
+ * ses nouveaux PV : la sauvegarde serait rejetée et le joueur repartirait du 1-1. Le filon reste alors à 1 PV.
+ */
+function clampDamageToRock(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+  const { zone, stage, damage } = value as Record<string, unknown>;
+  if (!isPositiveInteger(zone) || !isPositiveInteger(stage) || stage > STAGES_PER_ZONE || !Number.isSafeInteger(damage)) {
+    return value;
+  }
+  const hp = rockHp(zone, stage);
+  return Number.isFinite(hp) && (damage as number) >= hp ? { ...value, damage: hp - 1 } : value;
 }
 
 export function isValidProgress(value: unknown): value is Progress {

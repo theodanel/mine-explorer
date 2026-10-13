@@ -199,22 +199,27 @@ const GOLD_PER_DAMAGE = 0.25;
 /**
  * Les éclats viennent de deux sources en jouant. Théo les trouvait trop rares : le 13/10/2026, coups, filons
  * et absence en donnent 50 % de plus, soit environ 200 forges par jour pour le joueur régulier, à tout moment.
- * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 3 % par coup, soit
- *    environ 56 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
+ * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 4 % par coup depuis le
+ *    13/10/2026 au soir (3 % avant), soit environ 75 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
  *    où les filons durent longtemps.
  * 2. Chaque filon épuisé en donne. Comme dans Legends of Mushroom, le début arrose : les 5 premiers filons
  *    donnent de quoi forger deux fois chacun (les 5 emplacements remplis en une minute), puis un tirage par filon.
  * Les missions, les fins de zone, l'absence, les événements, les objectifs d'évolution et le Défi de la mine complètent.
  */
-export const SHARD_FIND_CHANCE = 0.03;
+export const SHARD_FIND_CHANCE = 0.04;
 const WELCOME_STAGES = 5;
 const WELCOME_SHARDS = 4;
+/** Les filons des zones adoucies donnent un éclat de plus : le début de partie forge davantage. */
+const EARLY_STAGE_SHARDS = 3;
 const STAGE_SHARDS = 2;
 export const ZONE_CLEAR_SHARDS = 5;
 
 /** Éclats gagnés en épuisant le filon `stage` de la zone `zone`. */
 export function shardsForStage(zone: number, stage: number): number {
-  return zone === 1 && stage <= WELCOME_STAGES ? WELCOME_SHARDS : STAGE_SHARDS;
+  if (zone === 1 && stage <= WELCOME_STAGES) {
+    return WELCOME_SHARDS;
+  }
+  return zone <= SOFT_START_ZONES ? EARLY_STAGE_SHARDS : STAGE_SHARDS;
 }
 
 export function stageIndex(zone: number, stage: number): number {
@@ -222,11 +227,15 @@ export function stageIndex(zone: number, stage: number): number {
 }
 
 /**
- * Les premiers filons sont tendres pour que le joueur avance tout de suite : le 1-1 n'a que 10 % des PV
- * de la courbe (une dizaine de secondes sans équipement), et l'écart se referme jusqu'au 1-15.
+ * Les premières zones sont tendres pour que le joueur avance vite : le 1-1 n'a que 10 % des PV de la courbe,
+ * et l'écart se referme progressivement jusqu'au début de la zone 5. Le 13/10/2026, Théo trouvait les zones 2
+ * et 3 trop longues (plusieurs minutes par filon avec une pioche 4) : l'adoucissement, limité à la zone 1,
+ * couvre désormais les zones 1 à 4. Les PV en zone 2 sont divisés par 4 environ, par 2,4 en zone 3, et la courbe
+ * normale reprend au 5-1, si bien que le moyen et le long terme ne bougent pas.
  */
 const FIRST_ROCK_HP_FACTOR = 0.1;
-const SOFT_START_LAST_INDEX = STAGES_PER_ZONE - 1;
+const SOFT_START_ZONES = 4;
+const SOFT_START_LAST_INDEX = SOFT_START_ZONES * STAGES_PER_ZONE;
 
 function softStartFactor(index: number): number {
   if (index >= SOFT_START_LAST_INDEX) {

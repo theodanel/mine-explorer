@@ -28,18 +28,21 @@ interface SlotDefinition {
   readonly label: string;
   /** Chemin de l'icône, servie depuis public/. */
   readonly iconUrl: string;
-  /** Stat garantie sur tout objet de cet emplacement. */
-  readonly mainStat: StatId;
+  /**
+   * Stat que l'Atelier renforce pour cet emplacement. Depuis les builds libres, un objet peut porter n'importe
+   * quelle stat : celle-ci ne dit plus ce que l'objet porte, seulement ce que l'Atelier multiplie.
+   */
+  readonly workshopStat: StatId;
 }
 
 export const SLOTS: Readonly<Record<SlotId, SlotDefinition>> = {
-  // La pioche frappe, les gants assurent la prise, la lampe du casque montre les points faibles,
-  // les bottes donnent l'appui, le sac emporte plus d'or
-  pickaxe: { label: 'Pioche', iconUrl: 'assets/ui/pickaxe.png', mainStat: 'strikePower' },
-  gloves: { label: 'Gants', iconUrl: 'assets/ui/gloves.png', mainStat: 'critChance' },
-  helmet: { label: 'Casque', iconUrl: 'assets/ui/helmet.png', mainStat: 'critDamage' },
-  boots: { label: 'Bottes', iconUrl: 'assets/ui/boots.png', mainStat: 'miningSpeed' },
-  bag: { label: 'Sac', iconUrl: 'assets/ui/backpack.png', mainStat: 'goldBonus' },
+  // L'Atelier garde l'esprit de chaque pièce : la pioche frappe, les gants assurent la prise, la lampe du casque
+  // montre les points faibles, les bottes donnent l'appui, le sac emporte plus d'or
+  pickaxe: { label: 'Pioche', iconUrl: 'assets/ui/pickaxe.png', workshopStat: 'strikePower' },
+  gloves: { label: 'Gants', iconUrl: 'assets/ui/gloves.png', workshopStat: 'critChance' },
+  helmet: { label: 'Casque', iconUrl: 'assets/ui/helmet.png', workshopStat: 'critDamage' },
+  boots: { label: 'Bottes', iconUrl: 'assets/ui/boots.png', workshopStat: 'miningSpeed' },
+  bag: { label: 'Sac', iconUrl: 'assets/ui/backpack.png', workshopStat: 'goldBonus' },
 };
 
 export const TIER_LABELS: Readonly<Record<TierId, string>> = {

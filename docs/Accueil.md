@@ -13,6 +13,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[competences-et-artefacts]] : arbre de compétences, sorts actifs et artefacts (budget de puissance, tables, découvertes).
 - [[idees-fun]] : ce qui rendrait le jeu plus fun et plus addictif (Atelier, événements de mine, embranchements, compagnons, son), avec l'équilibrage de chaque idée.
 - [[refonte-compagnons-evolution]] : équipements en bas, évolution par objectifs, Défi de la mine et pierres d'éveil, éclats plus faciles (13/10/2026).
+- [[builds-libres]] : toutes les stats sur toutes les pièces, affixes selon la qualité, réglage des builds (13/10/2026).
 - [[equilibrage]] : les chiffres en vigueur dans le jeu (formules, coûts, zones, courbe simulée). Source de vérité : `frontend/src/app/balance/balance.ts`.
 - [[prompt-refonte-majeure]] : analyse et plan de la refonte en phases (talents, compagnons, prestige, événements…).
 

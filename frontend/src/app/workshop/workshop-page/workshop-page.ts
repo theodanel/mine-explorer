@@ -40,7 +40,7 @@ export class WorkshopPage {
       const level = this.workshop.level(slot);
       const cost = this.workshop.cost(slot);
       const check = this.workshop.check(slot);
-      const stat = STATS[SLOTS[slot].mainStat].label;
+      const stat = STATS[SLOTS[slot].workshopStat].label;
       return {
         slot,
         label: SLOTS[slot].label,

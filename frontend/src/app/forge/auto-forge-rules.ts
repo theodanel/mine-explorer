@@ -1,6 +1,6 @@
 // Règles pures des filtres de la forge automatique.
 import { tierIndex } from '../balance/balance';
-import { powerDelta } from '../equipment/equipment-rules';
+import { hasAffix, powerDelta } from '../equipment/equipment-rules';
 import { EquippedItems, Item, SLOT_IDS, SlotId, STAT_IDS, StatId, TIER_IDS, TierId } from '../equipment/equipment.model';
 
 /**
@@ -11,7 +11,7 @@ export interface ForgeFilters {
   readonly slots: readonly SlotId[];
   /** Palier minimum, ou null pour tous les paliers. */
   readonly minTier: TierId | null;
-  /** L'objet doit porter au moins une de ces stats, principale ou secondaire. */
+  /** L'objet doit porter au moins une de ces stats en affixe (la Frappe de base de chaque pièce ne compte pas). */
   readonly stats: readonly StatId[];
   /** Ne garder que les objets qui font monter la Puissance par rapport à celui porté. */
   readonly upgradesOnly: boolean;
@@ -31,7 +31,7 @@ export function passesFilters(item: Item, filters: ForgeFilters, equipped: Equip
   if (filters.minTier !== null && tierIndex(item.tier) < tierIndex(filters.minTier)) {
     return false;
   }
-  if (filters.stats.length > 0 && !filters.stats.some((stat) => item.stats[stat] !== undefined)) {
+  if (filters.stats.length > 0 && !filters.stats.some((stat) => hasAffix(item, stat))) {
     return false;
   }
   return !filters.upgradesOnly || powerDelta(equipped, item) > 0;

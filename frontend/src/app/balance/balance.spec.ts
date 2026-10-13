@@ -1,4 +1,4 @@
-import { SLOT_IDS, SLOTS, SlotId, StatId, TIER_IDS, TierId } from '../equipment/equipment.model';
+import { TIER_IDS, TierId } from '../equipment/equipment.model';
 import {
   BASE_STATS,
   expectedStatsAtPickaxe,
@@ -6,7 +6,7 @@ import {
   MAX_PICKAXE_LEVEL,
   powerOf,
   recommendedPower,
-  secondaryStatCount,
+  affixCount,
   secondsToMine,
   segmentCost,
   sellPriceFor,
@@ -20,15 +20,10 @@ import {
   stageTargetSeconds,
 } from './balance';
 
-const SLOT_MAIN_STATS = Object.fromEntries(SLOT_IDS.map((slot) => [slot, SLOTS[slot].mainStat])) as Record<
-  SlotId,
-  StatId
->;
-
 /** Premier niveau de pioche dont l'équipement moyen atteint la Puissance recommandée du dernier rocher de la zone. */
 function pickaxeNeededFor(zone: number): number | null {
   for (let level = 1; level <= MAX_PICKAXE_LEVEL; level++) {
-    if (powerOf(expectedStatsAtPickaxe(level, SLOT_MAIN_STATS)) >= recommendedPower(zone, STAGES_PER_ZONE)) {
+    if (powerOf(expectedStatsAtPickaxe(level)) >= recommendedPower(zone, STAGES_PER_ZONE)) {
       return level;
     }
   }
@@ -40,10 +35,10 @@ describe('paliers', () => {
     expect(TIER_ORDER).toEqual(TIER_IDS);
   });
 
-  it('donnent plus de stats secondaires en montant', () => {
-    expect(secondaryStatCount('wood')).toBe(0);
-    expect(secondaryStatCount('iron')).toBe(1);
-    expect(secondaryStatCount('divine')).toBe(3);
+  it("donnent plus d'affixes en montant : 1 en Bois, 2 en Fer, 4 en Divin", () => {
+    expect(affixCount('wood')).toBe(1);
+    expect(affixCount('iron')).toBe(2);
+    expect(affixCount('divine')).toBe(4);
   });
 
   it('se vendent selon leur niveau, 50 % plus cher un palier au-dessus de la base', () => {
@@ -106,7 +101,7 @@ describe('pioche', () => {
   });
 
   it('coûte plus cher plus vite que la Puissance ne grandit', () => {
-    const powerGrowth = powerOf(expectedStatsAtPickaxe(20, SLOT_MAIN_STATS)) / powerOf(expectedStatsAtPickaxe(10, SLOT_MAIN_STATS));
+    const powerGrowth = powerOf(expectedStatsAtPickaxe(20)) / powerOf(expectedStatsAtPickaxe(10));
     const costGrowth = (segmentCost(20) ?? 0) / (segmentCost(10) ?? Infinity);
     expect(costGrowth).toBeGreaterThan(powerGrowth);
   });
@@ -137,9 +132,9 @@ describe('étapes', () => {
     expect(secondsToMine(rockHp(3, 5), recommendedPower(3, 5))).toBeLessThanOrEqual(stageTargetSeconds(3));
   });
 
-  it('rapportent un quart de pièce par PV miné, plus le bonus du sac', () => {
-    expect(goldForDamage(100, 0)).toBe(25);
-    expect(goldForDamage(100, 0.2)).toBe(30);
+  it("rapportent 0,34 pièce par PV miné, plus le bonus d'or", () => {
+    expect(goldForDamage(100, 0)).toBe(34);
+    expect(goldForDamage(100, 0.2)).toBe(41);
   });
 });
 
@@ -167,6 +162,6 @@ describe('courbe de progression', () => {
 
   it('ouvre vite les premières zones, puis demande environ 3 niveaux de pioche par zone, évolutions non comptées', () => {
     const needed = Array.from({ length: 7 }, (_, index) => pickaxeNeededFor(index + 1));
-    expect(needed).toEqual([1, 8, 14, 19, 22, 25, 28]);
+    expect(needed).toEqual([1, 7, 12, 16, 19, 22, 24]);
   });
 });

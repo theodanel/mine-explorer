@@ -12,9 +12,7 @@ import {
   TIER_ORDER,
   upgradeDurationMs,
 } from '../src/app/balance/balance.ts';
-import { SLOT_IDS, SLOTS } from '../src/app/equipment/equipment.model.ts';
 
-const slotMainStats = Object.fromEntries(SLOT_IDS.map((slot) => [slot, SLOTS[slot].mainStat])) as never;
 const fr = (value: number): string => Math.round(value).toLocaleString('fr-FR');
 const big = (value: number): string => {
   if (value >= 1e9) return `${(value / 1e9).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} Md`;
@@ -35,7 +33,7 @@ for (const level of [1, 2, 3, 5, 8, 10, 12, 15, 18, 20, 22, 25, 28, 29]) {
   console.log(`| ${level} | ${big(cost)} | ${big(cost * 10)} | ${duration(upgradeDurationMs(level))} | ${big(sellPriceFor(baseTier, level))} |`);
 }
 
-const powers = Array.from({ length: MAX_PICKAXE_LEVEL }, (_, index) => powerOf(expectedStatsAtPickaxe(index + 1, slotMainStats)));
+const powers = Array.from({ length: MAX_PICKAXE_LEVEL }, (_, index) => powerOf(expectedStatsAtPickaxe(index + 1)));
 console.log('\n| Zone | 1er filon | Dernier filon | Puissance recommandée (1er → dernier) | Pioche pour la finir (sans évolution) |');
 console.log('|---|---|---|---|---|');
 for (const zone of [1, 2, 3, 5, 7, 9, 11, 13, 15]) {

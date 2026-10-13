@@ -23,7 +23,7 @@ Depuis `frontend/` :
 
 ## La boucle
 
-1. **Miner.** Chaque zone compte 15 filons, de 1-1 à 1-15, puis 2-1, etc. Chaque filon a un peu plus de PV que le précédent. Chaque coup rapporte 0,25 pièce par PV miné (plus le bonus du sac).
+1. **Miner.** Chaque zone compte 15 filons, de 1-1 à 1-15, puis 2-1, etc. Chaque filon a un peu plus de PV que le précédent. Chaque coup rapporte 0,34 pièce par PV miné (plus le bonus d'or).
 2. **Éclats de géode.** Chaque coup a 4 % de chances d'en déterrer un (environ 75 par heure sans bonus de Vitesse). En plus, les 5 premiers filons en donnent 4 (les 5 emplacements remplis en une minute), puis chaque filon 3 jusqu'à la fin de la zone 4, et 2 ensuite. Une zone terminée en donne 5, et l'absence 1 toutes les 6 minutes (40 au maximum). Les missions, les objectifs d'évolution, le Défi de la mine, les événements et les expéditions complètent :
    - une mission principale à la fois, qui s'enchaîne sans fin (épuise des filons, forge, atteins un filon, paie des segments, vends, monte la pioche) ; les objectifs grandissent à chaque tour, mais les filons et les segments sont plafonnés à 3, et la mission de segments se valide d'elle-même quand la pioche est au maximum ;
    - trois missions du jour (épuise un filon, forge 10 objets, vends 5 objets) et un coffre de 10 éclats quand les trois sont récupérées, soit 27 éclats par jour. Elles changent à minuit, heure du joueur.
@@ -54,7 +54,7 @@ Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne
 Réglages dans `frontend/src/app/balance/workshop.ts`, règles dans `workshop/workshop-rules.ts`. Idée 1 de [[idees-fun]].
 
 - **Ouverture** : avec la forme Contremaître (vers le jour 6 pour le joueur régulier). Avant, l'onglet montre ce qui attend le joueur.
-- **Effet** : chaque niveau d'un emplacement donne +1,5 % à sa stat principale (Frappe pour la pioche, Vitesse pour les bottes, Critique pour les gants, Dégâts crit. pour le casque, Bonus d'or pour le sac). Le bonus appartient à l'emplacement et reste quand on change d'objet. Les niveaux s'additionnent, et l'Atelier multiplie les autres familles.
+- **Effet** : chaque niveau d'un emplacement donne +1,5 % à sa stat d'Atelier (Frappe pour la pioche, Vitesse pour les bottes, Critique pour les gants, Dégâts crit. pour le casque, Bonus d'or pour le sac). Le bonus appartient à l'emplacement et reste quand on change d'objet. Les niveaux s'additionnent, et l'Atelier multiplie les autres familles.
 - **Or** : le niveau 1 coûte 20 segments de pioche du niveau 17 (environ 29 M), puis chaque niveau coûte ×3. Le prix monte bien plus vite que le revenu (×1,4 par zone) : c'est un puits d'or sans fin, pas un raccourci.
 - **Minerai** : celui de la dernière zone terminée (Or en zone 7, Mithril en zone 8…, Divin ensuite), 2 par niveau puis 1 de plus tous les 5 niveaux. L'Atelier ne prend jamais les minerais des évolutions encore à faire, sinon une évolution pourrait être bloquée pour de bon (une zone ne redonne son minerai qu'en la traversant).
 - **Mesure (régulier)** : ×1,08 de Puissance au jour 21, ×1,18 juste avant la pioche 30, puis ×1,25 au jour 49 et ×1,39 au jour 90, quand tout l'or y passe. Seul, l'Atelier avançait la pioche 30 de 1,9 jour ; avec les événements de mine, de 2,9 jours : le segment de pioche a été relevé (voir Compagnons pour la valeur finale). Le joueur simulé met dans l'Atelier au plus un quart du prix d'un segment tant que la pioche n'est pas au maximum (`--sans-atelier` pour comparer).
@@ -91,7 +91,9 @@ Réglages dans `frontend/src/app/balance/companions.ts` et `balance/challenge.ts
 
 ## Stats
 
-| Stat | Emplacement | Rôle | Base du mineur |
+Depuis les builds libres ([[builds-libres]]), n'importe quelle pièce peut porter n'importe quelle stat. L'emplacement ne fixe plus que la stat que l'Atelier renforce.
+
+| Stat | Stat d'Atelier de | Rôle | Base du mineur |
 |---|---|---|---|
 | Frappe | Pioche | Dégâts d'un coup | 5 |
 | Vitesse | Bottes | Coups par seconde en plus (donc plus d'or et plus d'éclats déterrés) | 0 % |
@@ -108,15 +110,15 @@ Stats simulées d'un joueur régulier : Frappe 566, Vitesse +13 %, Critique 12 %
 - **Puissance** = Dégâts moyens × Coups par seconde × 100. Le mineur sans équipement est à 267.
 - **PV d'un filon** = 320 × 1,073^n × adoucissement, où n = (zone − 1) × 15 + (filon − 1). Une zone est environ 2,9 fois plus dure que la précédente, ce que gagne la Puissance en 2 à 3 niveaux de pioche. L'adoucissement vaut 0,1^(1 − n/60) dans les zones 1 à 4 et 1 ensuite : le 1-1 n'a que 32 PV (une dizaine de secondes sans équipement), les PV sont divisés par 4 environ en zone 2 et par 2,4 en zone 3, et la courbe normale est rejointe au 5-1. Jusqu'au 13/10/2026, l'adoucissement s'arrêtait au 1-15 et les zones 2 et 3 demandaient plusieurs minutes par filon.
 - **Puissance recommandée** = la Puissance qui épuise le filon dans le temps visé : 40 secondes en zone 1, puis 30 % de plus à chaque zone.
-- **Or** = dégâts × 0,25 × (1 + Bonus d'or)
+- **Or** = dégâts × 0,34 × (1 + Bonus d'or). C'était 0,25 tant que le sac portait toujours de l'or : l'or est devenu un choix de build, le revenu de base compense.
 - **Segment de pioche** = 15 × 2,065^(niveau − 1) pièces, et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,05, les éclats plus faciles du 13/10/2026 (deux fois plus de forges) l'amenaient au jour 43 : le coût a été relevé pour garder le rythme (pioche 30 au jour 49,3 en moyenne sur 5 tirages).
 - **Minuteur d'amélioration** = 1 min × 1,25^(niveau − 1), moins de 2 jours cumulés jusqu'au niveau 30.
 - **Absence** = or de 50 % du DPS et 1 éclat toutes les 6 minutes, sur 4 h au maximum.
-- **Éclats** = 2 % de chances par coup, plus 4 par filon du 1-1 au 1-5, 2 jusqu'au 2-15, puis 1.
-- **Stat principale d'un objet** = base × croissance du palier^palier × croissance du niveau^(niveau − 1), avec une variation de ±10 %
+- **Éclats** = 4 % de chances par coup, plus 4 par filon du 1-1 au 1-5, 3 jusqu'au 4-15, puis 2.
+- **Valeur de référence d'une stat** = base × croissance du palier^palier × croissance du niveau^(niveau − 1), avec une variation de ±10 %
   - Frappe : base 4, ×1,6 par palier, ×1,1 par niveau
   - Pourcentages (vitesse 5 %, critique 3 %, dégâts crit. 15 %, or 8 %) : ×1,2 par palier, ×1,01 par niveau
-- **Stats secondaires** : 50 % d'une stat principale. Aucune de Bois à Cuivre, 1 de Fer à Or, 2 de Mithril à Magma, 3 en Divin.
+- **Objet** = une Frappe de base (25 % de la référence) et des affixes tirés dans les 5 stats, sans doublon : 1 de Bois à Cuivre, 2 de Fer à Or, 3 de Mithril à Magma, 4 en Divin. Un affixe vaut une part de la référence (Frappe 30 %, Vitesse 110 %, Critique 110 %, Dégâts crit. 90 %, or 120 %), plein tarif pour le premier, 60 % pour les suivants. Détails et réglage dans [[builds-libres]].
 - **Vente** = 5 × 1,66^(niveau − 1) pièces, ×1,5 pour un palier au-dessus de la base du niveau et ÷1,5 pour un palier en dessous. Une vente vaut environ 5 % d'un segment au niveau 10, 0,5 % au niveau 20 et 0,07 % au niveau 29 : généreuse au début, toujours utile. Avec deux fois plus de forges, les ventes font environ 18 % de l'or d'une partie.
 - **Plafonds** : Vitesse +200 %, Critique 100 %
 

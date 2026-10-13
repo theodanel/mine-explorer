@@ -4,12 +4,12 @@ import { strikeReward } from './mining-rules';
 const ONGOING = { zone: 1, stage: 1, stageCleared: false, zoneCleared: false, foundShard: false };
 
 describe('strikeReward', () => {
-  it('donne un quart de pièce par PV miné', () => {
-    expect(strikeReward(40, 0, ONGOING)).toEqual({ gold: 10, shards: 0 });
+  it('donne 0,34 pièce par PV miné', () => {
+    expect(strikeReward(40, 0, ONGOING)).toEqual({ gold: 14, shards: 0 });
   });
 
   it('applique le bonus d\'or du sac', () => {
-    expect(strikeReward(40, 0.5, ONGOING).gold).toBe(15);
+    expect(strikeReward(40, 0.5, ONGOING).gold).toBe(20);
   });
 
   it('donne un éclat quand le coup en déterre un', () => {

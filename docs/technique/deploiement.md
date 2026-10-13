@@ -10,7 +10,7 @@ Les en-têtes HTTP de sécurité sont dans `frontend/public/_headers`, copié à
 
 ## Mise en place (une seule fois)
 
-1. **Créer le projet Cloudflare Pages** : *Workers & Pages*, *Create application*, *Get started* sur « Drag and drop your files ». Nom du projet : `mine-explorer`. Le tableau de bord exige un premier envoi : y déposer le dossier `frontend/dist/frontend/browser` d'un `npm run build` local, puis *Deploy site*. Les déploiements suivants viennent de la CI. Vérifier ensuite dans *Settings* que la branche de production est `main`.
+1. **Créer le projet Cloudflare Pages** : *Workers & Pages*, *Create application*, puis le lien « Continue to Pages » en bas de l'écran (Cloudflare met désormais les Workers en avant et appelle Pages « legacy » ; « Upload your static files » crée un Worker, que la CI ne sait pas mettre à jour et qui n'accepte pas de CNAME chez OVH), puis « Drag and drop your files ». Nom du projet : `mine-explorer`. Le tableau de bord exige un premier envoi : y déposer le dossier `frontend/dist/frontend/browser` d'un `npm run build` local, puis *Deploy site*. Les déploiements suivants viennent de la CI. Vérifier ensuite dans *Settings* que la branche de production est `main`.
 2. **Créer un jeton d'API** : *My Profile*, *API Tokens*, *Create Token*, modèle *Edit Cloudflare Workers* ou jeton personnalisé avec la seule permission *Account → Cloudflare Pages → Edit*, limité au compte concerné. Le copier une fois.
 3. **Relever l'identifiant du compte** : visible sur la page d'accueil du compte (*Account ID*).
 4. **Dans GitHub** (*Settings → Environments*) : créer l'environnement `production`, y ajouter

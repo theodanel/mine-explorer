@@ -34,8 +34,8 @@
     <h3 class="section-title">Paramètres</h3>
     <article class="card settings">
       <div class="setting">
-        <span class="setting-label">Son</span>
-        <div class="segmented" role="radiogroup" aria-label="Volume du jeu">
+        <span class="setting-label" id="sound-label">Bruitages</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="sound-label">
           @for (option of volumes; track option.value) {
             <button
               type="button"
@@ -49,7 +49,23 @@
           }
         </div>
       </div>
-      <p class="hint">Le réglage est gardé d'une partie à l'autre.</p>
+      <div class="setting">
+        <span class="setting-label" id="music-label">Musique</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="music-label">
+          @for (option of volumes; track option.value) {
+            <button
+              type="button"
+              role="radio"
+              [class.on]="sound.musicVolume() === option.value"
+              [attr.aria-checked]="sound.musicVolume() === option.value"
+              (click)="sound.setMusicVolume(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      </div>
+      <p class="hint">Les réglages sont gardés d'une partie à l'autre.</p>
     </article>
   </div>
 </section>

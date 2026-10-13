@@ -21,7 +21,7 @@ Retour à [[documentation-technique]].
 
 ## Couverture (13/10/2026)
 
-340 tests frontend, 3 tests backend.
+360 tests frontend, 3 tests backend (au 13/10/2026 au soir ; couverture mesurée sur les 340 premiers).
 
 | Mesure | Frontend |
 |---|---|

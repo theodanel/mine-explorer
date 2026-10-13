@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 
+import { Overlays } from '../../shared/overlays';
 import { OFFLINE_CAP_MS } from '../../balance/balance';
 import { formatDuration } from '../../shared/format-duration';
 import { OfflineEarnings } from '../offline-earnings';
@@ -14,10 +15,16 @@ const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 })
 export class OfflineReport {
   protected readonly earnings = inject(OfflineEarnings);
+  private readonly overlays = inject(Overlays);
+  private readonly visible = this.overlays.isShown('offlineReport');
+
+  constructor() {
+    this.overlays.register('offlineReport', computed(() => this.earnings.report() !== null));
+  }
 
   protected readonly view = computed(() => {
     const report = this.earnings.report();
-    if (report === null) {
+    if (report === null || !this.visible()) {
       return null;
     }
     return {
@@ -25,6 +32,7 @@ export class OfflineReport {
       capped: report.creditedMs >= OFFLINE_CAP_MS,
       cap: formatDuration(OFFLINE_CAP_MS),
       gold: NUMBER_FORMAT.format(report.gold),
+      shards: report.shards,
     };
   });
 }

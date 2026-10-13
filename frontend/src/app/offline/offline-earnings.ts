@@ -1,9 +1,10 @@
 import { DestroyRef, DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
 import { OFFLINE_MIN_MS, OfflineGains, offlineGains } from '../balance/balance';
-import { Inventory } from '../equipment/inventory';
+import { Miner } from '../miner/miner';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
+import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 
 const STORAGE_KEY = 'mine-explorer.last-seen';
@@ -17,8 +18,9 @@ const HEARTBEAT_MS = 15_000;
 @Injectable({ providedIn: 'root' })
 export class OfflineEarnings {
   private readonly clock = inject(CLOCK);
-  private readonly inventory = inject(Inventory);
+  private readonly miner = inject(Miner);
   private readonly wallet = inject(Wallet);
+  private readonly shards = inject(GeodeShards);
   private readonly document = inject(DOCUMENT);
 
   /** Dernier bilan à montrer au joueur, ou null. */
@@ -47,9 +49,14 @@ export class OfflineEarnings {
     if (!Number.isFinite(lastSeen) || lastSeen <= 0 || now - lastSeen < OFFLINE_MIN_MS) {
       return;
     }
-    const gains = offlineGains(this.inventory.stats(), now - lastSeen);
+    // Sans les sorts : ils ne fonctionnent qu'en jeu
+    const { stats, offlineEfficiency } = this.miner.permanent();
+    const gains = offlineGains(stats, now - lastSeen, offlineEfficiency);
     if (gains.gold > 0) {
       this.wallet.add(gains.gold);
+    }
+    if (gains.shards > 0) {
+      this.shards.add(gains.shards);
     }
     this.report.set(gains);
   }

@@ -142,9 +142,51 @@
   color: #d9a8ff;
 }
 
+.ore {
+  color: #fff3d6;
+  font-size: 3.2cqw;
+}
+
+.ore-label {
+  flex: 1;
+}
+
+.ore-count {
+  color: var(--tier-color);
+}
+
+.ore-icon {
+  width: 1.4em;
+  height: 1.4em;
+  margin: -0.2em 0;
+}
+
 .zone {
   position: absolute;
-  inset: 13% 0 auto;
+  inset: 15.5% 0 auto;
+}
+
+// Volume, discret sous le portrait du mineur
+.sound {
+  position: absolute;
+  inset: 11.5% auto auto 3cqw;
+  z-index: var(--z-scene-ui);
+}
+
+// Compagnon à côté du mineur, au sol, entre la colonne de gauche et lui
+.buddy {
+  position: absolute;
+  top: 44%;
+  left: 23cqw;
+  z-index: var(--z-scene-ui);
+  width: 18cqw;
+}
+
+// Événements de mine : dans la galerie, entre les colonnes d'équipement, au-dessus du mineur
+.events {
+  position: absolute;
+  inset: 21% 20cqw 46%;
+  z-index: var(--z-events);
 }
 
 // Colonnes d'équipement de part et d'autre du mineur
@@ -162,13 +204,34 @@
   right: 3cqw;
 }
 
+// Sorts équipés : sous l'équipement de droite, au-dessus des stats
+.spells {
+  position: absolute;
+  inset: 53.5% 3cqw auto auto;
+}
+
 .stats {
   position: absolute;
-  inset: 63% 3cqw auto;
+  inset: 61.5% 3cqw auto;
 }
 
 // Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)
 .forge {
   position: absolute;
-  inset: auto 0 2%;
+  inset: auto 0 10.5%;
+}
+
+.footer {
+  position: absolute;
+  inset: auto 0 0;
+  // Sous les fenêtres, au-dessus des pages
+  z-index: var(--z-footer);
+  height: 9.5%;
+}
+
+// Pages ouvertes depuis la barre du bas : par-dessus la mine, qui continue derrière
+.page-layer {
+  position: absolute;
+  inset: 0 0 9.5%;
+  z-index: var(--z-page);
 }

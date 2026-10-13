@@ -1,0 +1,525 @@
+{
+ "frames": {
+  "contremaitre-frappe_0000": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0001": {
+   "frame": {
+    "x": 556,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0002": {
+   "frame": {
+    "x": 1112,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0003": {
+   "frame": {
+    "x": 1668,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0004": {
+   "frame": {
+    "x": 2224,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0005": {
+   "frame": {
+    "x": 0,
+    "y": 415,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0006": {
+   "frame": {
+    "x": 556,
+    "y": 415,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0007": {
+   "frame": {
+    "x": 1112,
+    "y": 415,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0008": {
+   "frame": {
+    "x": 1668,
+    "y": 415,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0009": {
+   "frame": {
+    "x": 2224,
+    "y": 415,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0010": {
+   "frame": {
+    "x": 0,
+    "y": 830,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0011": {
+   "frame": {
+    "x": 556,
+    "y": 830,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0012": {
+   "frame": {
+    "x": 1112,
+    "y": 830,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0013": {
+   "frame": {
+    "x": 1668,
+    "y": 830,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0014": {
+   "frame": {
+    "x": 2224,
+    "y": 830,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0015": {
+   "frame": {
+    "x": 0,
+    "y": 1245,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0016": {
+   "frame": {
+    "x": 556,
+    "y": 1245,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0017": {
+   "frame": {
+    "x": 1112,
+    "y": 1245,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0018": {
+   "frame": {
+    "x": 1668,
+    "y": 1245,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0019": {
+   "frame": {
+    "x": 2224,
+    "y": 1245,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0020": {
+   "frame": {
+    "x": 0,
+    "y": 1660,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0021": {
+   "frame": {
+    "x": 556,
+    "y": 1660,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  },
+  "contremaitre-frappe_0022": {
+   "frame": {
+    "x": 1112,
+    "y": 1660,
+    "w": 556,
+    "h": 415
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 556,
+    "h": 415
+   },
+   "sourceSize": {
+    "w": 556,
+    "h": 415
+   },
+   "duration": 83
+  }
+ },
+ "animations": {
+  "pickaxe_swing": [
+   "contremaitre-frappe_0000",
+   "contremaitre-frappe_0001",
+   "contremaitre-frappe_0002",
+   "contremaitre-frappe_0003",
+   "contremaitre-frappe_0004",
+   "contremaitre-frappe_0005",
+   "contremaitre-frappe_0006",
+   "contremaitre-frappe_0007",
+   "contremaitre-frappe_0008",
+   "contremaitre-frappe_0009",
+   "contremaitre-frappe_0010",
+   "contremaitre-frappe_0011",
+   "contremaitre-frappe_0012",
+   "contremaitre-frappe_0013",
+   "contremaitre-frappe_0014",
+   "contremaitre-frappe_0015",
+   "contremaitre-frappe_0016",
+   "contremaitre-frappe_0017",
+   "contremaitre-frappe_0018",
+   "contremaitre-frappe_0019",
+   "contremaitre-frappe_0020",
+   "contremaitre-frappe_0021",
+   "contremaitre-frappe_0022"
+  ]
+ },
+ "meta": {
+  "app": "custom chroma-key pipeline (ffmpeg + Pillow)",
+  "version": "1.0",
+  "image": "contremaitre-frappe.webp",
+  "format": "RGBA8888",
+  "size": {
+   "w": 2780,
+   "h": 2075
+  },
+  "scale": "1"
+ }
+}

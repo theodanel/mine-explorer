@@ -30,6 +30,14 @@ export const APPRENTICE_STRIKE: StrikeAnimation = {
 };
 
 // Les formes évoluées sont affichées à environ 300 px de haut, comme leurs images fixes
+const MINER_STRIKE: StrikeAnimation = {
+  atlasUrl: 'assets/characters/evolutions/mineur-frappe.json',
+  // Images de 511 × 366 découpées par art-source/animations/decouper-frappe.py ; mesures sur ses grilles
+  scale: 0.83,
+  bodyOffsetX: 75,
+  impactOffset: { x: 75, y: -36 },
+};
+
 const FOREMAN_STRIKE: StrikeAnimation = {
   atlasUrl: 'assets/characters/evolutions/contremaitre-frappe.json',
   scale: 0.85,
@@ -190,7 +198,7 @@ interface EvolutionVisual {
 
 export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> = {
   apprentice: { portraitUrl: 'assets/ui/miner-portrait.png', body: { kind: 'animated', strike: APPRENTICE_STRIKE } },
-  miner: { portraitUrl: 'assets/evolutions/mineur-portrait.webp', body: { kind: 'static', url: 'assets/evolutions/mineur.webp' } },
+  miner: { portraitUrl: 'assets/evolutions/mineur-portrait.webp', body: { kind: 'animated', strike: MINER_STRIKE } },
   foreman: { portraitUrl: 'assets/evolutions/contremaitre-portrait.webp', body: { kind: 'animated', strike: FOREMAN_STRIKE } },
   master: { portraitUrl: 'assets/evolutions/maitre-portrait.webp', body: { kind: 'animated', strike: MASTER_STRIKE } },
   legend: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'static', url: 'assets/evolutions/legende.webp' } },

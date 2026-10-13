@@ -1,0 +1,121 @@
+<section class="page game-panel" aria-labelledby="skills-title">
+  <header class="page-header">
+    <img class="header-icon" src="assets/ui/menu/skills.png" alt="" width="160" height="160" />
+    <h2 id="skills-title">Compétences</h2>
+    <span class="points">
+      {{ skills.available() }} point{{ skills.available() > 1 ? 's' : '' }}
+    </span>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <nav class="tabs" aria-label="Branches de l'arbre">
+    @for (tab of tabs(); track tab.id) {
+      <button
+        type="button"
+        class="tab"
+        [attr.data-branch]="tab.id"
+        [class.current]="tab.id === branchId()"
+        [attr.aria-pressed]="tab.id === branchId()"
+        (click)="selectBranch(tab.id)"
+      >
+        {{ tab.label }}
+        <span class="tab-spent">{{ tab.spent }} pt{{ tab.spent > 1 ? 's' : '' }}</span>
+      </button>
+    }
+  </nav>
+
+  @let current = branch();
+  <div class="tree" [attr.data-branch]="current.id">
+    <p class="branch-summary">{{ current.summary }}</p>
+    @for (row of current.rows; track row.row) {
+      <div class="tier" [class.closed]="!row.open">
+        <div class="tier-nodes">
+          @for (node of row.nodes; track node.id) {
+            <button
+              type="button"
+              class="node"
+              [class.selected]="node.selected"
+              [class.learned]="node.rank > 0"
+              [class.learnable]="node.learnable"
+              [class.maxed]="node.rank === node.max"
+              [attr.data-rarity]="node.rarity"
+              [attr.aria-label]="node.label + ', rang ' + node.rank + ' sur ' + node.max"
+              (click)="selectId(node.id)"
+            >
+              <span class="frame">
+                <img class="node-icon" [src]="node.icon" alt="" width="160" height="160" />
+                <span class="node-rank">{{ node.rank }}/{{ node.max }}</span>
+                @if (node.equipped) {
+                  <span class="equipped-mark">Équipé</span>
+                }
+              </span>
+              <span class="node-label">{{ node.label }}</span>
+            </button>
+          }
+        </div>
+        @if (!row.open) {
+          <span class="tier-lock">Encore {{ row.missing }} pt{{ row.missing > 1 ? 's' : '' }} dans {{ current.label }}</span>
+        }
+      </div>
+    }
+  </div>
+
+  @let detail = selected();
+  <article class="detail" [attr.data-rarity]="detail.rarity">
+    <img class="detail-icon" [src]="detail.icon" alt="" width="160" height="160" />
+    <div class="detail-body">
+      <h3>{{ detail.label }}</h3>
+      <p class="detail-kind">{{ detail.kindLabel }} · Rang {{ detail.rank }}/{{ detail.max }}</p>
+      <p class="detail-summary">{{ detail.summary }}</p>
+      @if (detail.current; as currentEffect) {
+        <p class="effect"><strong>Actuel :</strong> {{ currentEffect }}</p>
+      }
+      @if (detail.next; as next) {
+        <p class="effect next"><strong>Rang {{ detail.rank + 1 }} :</strong> {{ next }}</p>
+      }
+      @if (detail.blocker; as blocker) {
+        <p class="blocker">{{ blocker }}</p>
+      }
+    </div>
+    <div class="detail-actions">
+      @if (detail.cost !== null) {
+        <button type="button" class="game-button green learn" [disabled]="detail.check !== 'ok'" (click)="skills.learn(detail.node)">
+          {{ detail.rank === 0 ? 'Apprendre' : 'Améliorer' }} · {{ detail.cost }} pt{{ detail.cost > 1 ? 's' : '' }}
+        </button>
+      }
+      @if (detail.spell; as spell) {
+        <div class="equip" role="group" aria-label="Emplacement du sort">
+          @for (slot of slotIndexes; track slot) {
+            <button
+              type="button"
+              class="game-button slot-button"
+              [class.green]="equippedSlots()[slot] === spell"
+              (click)="equippedSlots()[slot] === spell ? skills.unequip(slot) : skills.equip(spell, slot)"
+            >
+              {{ equippedSlots()[slot] === spell ? 'Retirer' : 'Case ' + (slot + 1) }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </article>
+
+  <footer class="page-footer">
+    @if (confirmRespec()) {
+      <span class="respec-question">Rembourser tous les points ?</span>
+      <button type="button" class="game-button red small" [disabled]="wallet.coins() < skills.respecCost()" (click)="respec()">
+        Oui ({{ skills.respecCost() }} or)
+      </button>
+      <button type="button" class="game-button stone small" (click)="confirmRespec.set(false)">Non</button>
+    } @else {
+      <button
+        type="button"
+        class="game-button stone small"
+        [disabled]="skills.spent() === 0"
+        (click)="confirmRespec.set(true)"
+      >
+        Réinitialiser l'arbre
+      </button>
+    }
+  </footer>
+</section>

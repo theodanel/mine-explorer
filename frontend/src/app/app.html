@@ -16,6 +16,8 @@
       </span>
       @if (evolution.ready()) {
         <span class="evolve-badge">Évoluer !</span>
+      } @else if (evolution.claimable() > 0) {
+        <span class="evolve-badge">Récompense</span>
       }
     </button>
     <ul class="resources">
@@ -52,13 +54,17 @@
 
   <app-zone-banner class="zone" />
   <app-sound-toggle class="sound" />
+  @if (challenge.unlocked() && challenge.claimable().length > 0) {
+    <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">Défi : récompense !</button>
+  }
   <app-companion-buddy class="buddy" />
   <app-mine-event-layer class="events" />
-  <app-equipment-column class="column-left" [slots]="leftSlots" />
-  <app-equipment-column class="column-right" [slots]="rightSlots" />
+
 
   <app-spell-bar class="spells" />
-  <app-stats-panel class="stats" />
+  <!-- Équipements en bas, comme Legend of Mushroom ; les stats derrière le bouton rond -->
+  <app-equipment-column class="equipment-bar" [slots]="equipmentSlots" [row]="true" />
+  <app-stats-button class="stats-button" />
   <app-forge-button class="forge" />
 
   <!-- Les pages se chargent à la première ouverture : le jeu démarre plus vite -->
@@ -78,6 +84,11 @@
         <app-companions-page class="page-layer" />
       }
     }
+    @case ('challenge') {
+      @defer (on immediate) {
+        <app-challenge-page class="page-layer" />
+      }
+    }
     @case ('workshop') {
       @defer (on immediate) {
         <app-workshop-page class="page-layer" />
@@ -92,7 +103,9 @@
   <app-companion-hatched />
   <app-offline-report />
   @if (evolutionOpen()) {
-    <app-evolution-dialog (closed)="evolutionOpen.set(false)" />
+    @defer (on immediate) {
+      <app-evolution-dialog (closed)="evolutionOpen.set(false)" />
+    }
   }
   <app-splash-screen />
 </main>

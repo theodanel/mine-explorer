@@ -10,12 +10,14 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionDialog } from './evolution/evolution-dialog/evolution-dialog';
 import { ItemCompare } from './equipment/item-compare/item-compare';
-import { StatsPanel } from './equipment/stats-panel/stats-panel';
+import { StatsButton } from './equipment/stats-button/stats-button';
 import { EVOLUTION_VISUALS, materialIconUrl } from './loading/game-assets';
 import { MineEventLayer } from './mine-events/mine-event-layer/mine-event-layer';
 import { CompanionBuddy } from './companions/companion-buddy/companion-buddy';
 import { CompanionHatched } from './companions/companion-hatched/companion-hatched';
 import { CompanionsPage } from './companions/companions-page/companions-page';
+import { Challenge } from './challenge/challenge';
+import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
 import { SoundToggle } from './audio/sound-toggle/sound-toggle';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
@@ -39,7 +41,7 @@ import { Wallet } from './wallet/wallet';
     ZoneBanner,
     EquipmentColumn,
     SpellBar,
-    StatsPanel,
+    StatsButton,
     ForgeButton,
     SkillsPage,
     ArtifactsPage,
@@ -54,6 +56,7 @@ import { Wallet } from './wallet/wallet';
     MineEventLayer,
     GalleryChoice,
     CompanionsPage,
+    ChallengePage,
     CompanionHatched,
     CompanionBuddy,
   ],
@@ -67,6 +70,8 @@ export class App {
   protected readonly evolution = inject(Evolution);
   protected readonly evolutionOpen = signal(false);
   protected readonly navigation = inject(Navigation);
+  // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
+  protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);
   private readonly progression = inject(Progression);
 
@@ -77,9 +82,8 @@ export class App {
   });
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
 
-  // Trois cases par colonne autour du mineur ; la dernière à droite porte l'artefact
-  protected readonly leftSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag'];
-  protected readonly rightSlots: readonly ColumnSlot[] = ['gloves', 'boots', 'artifact'];
+  // Panneau du bas : les 5 emplacements, puis l'artefact et le compagnon
+  protected readonly equipmentSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag', 'gloves', 'boots', 'artifact', 'companion'];
 
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page

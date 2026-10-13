@@ -1,4 +1,4 @@
-<ul class="column">
+<ul class="column" [class.row]="row()">
   @for (cell of cells(); track cell.key) {
     @switch (cell.kind) {
       @case ('locked') {
@@ -19,6 +19,25 @@
               <span class="slot-level">Niv. {{ cell.level }}</span>
             } @else {
               <span class="artifact-hint">Artefact</span>
+            }
+          </button>
+        </li>
+      }
+      @case ('companion') {
+        <li class="companion-cell" [appTooltip]="cell.tooltip">
+          <button
+            type="button"
+            class="slot companion"
+            [class.empty-artifact]="cell.empty"
+            [attr.data-rarity]="cell.empty ? null : cell.rarity"
+            [attr.aria-label]="cell.empty ? 'Compagnon : aucun' : 'Compagnon : ' + cell.label + ', ' + cell.stars + ' étoiles'"
+            (click)="openCompanions()"
+          >
+            @if (!cell.empty) {
+              <img class="slot-icon" [src]="cell.icon" alt="" width="200" height="200" />
+              <span class="slot-level">{{ cell.stars }} ★</span>
+            } @else {
+              <span class="artifact-hint">Compagnon</span>
             }
           </button>
         </li>

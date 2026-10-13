@@ -1,0 +1,96 @@
+:host {
+  display: block;
+}
+
+// Bouton rond en bois, en attendant l'icône du parchemin (planche 10)
+.stats-button {
+  display: grid;
+  place-items: center;
+  width: 11cqw;
+  height: 11cqw;
+  padding: 0;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #a77a4c, #5b3b22);
+  box-shadow: 0 0.7cqw 0 #24170d;
+  color: #fff3d6;
+  font: bold 2.7cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+    outline-offset: 0.3cqw;
+  }
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3cqw;
+  padding: 5cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  display: grid;
+  gap: 2cqw;
+  width: 100%;
+  max-height: 75cqh;
+  padding: 4cqw;
+  overflow-y: auto;
+
+  h2,
+  h3 {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 5.5cqw;
+    text-align: center;
+  }
+
+  h3 {
+    font-size: 3.2cqw;
+    text-transform: uppercase;
+    letter-spacing: 0.2cqw;
+    opacity: 0.8;
+  }
+}
+
+.sources {
+  display: grid;
+  gap: 1.5cqw;
+  margin: 0;
+}
+
+.source {
+  padding: 1.5cqw 2.5cqw;
+  border-radius: 2cqw;
+  background: rgb(0 0 0 / 30%);
+
+  dt {
+    font-size: 3.2cqw;
+    font-weight: bold;
+  }
+
+  dd {
+    margin: 0.4cqw 0 0;
+    color: #9dffa4;
+    font-size: 3cqw;
+  }
+}
+
+.close {
+  width: 10cqw;
+  height: 10cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  color: #fff;
+  font: bold 6cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}

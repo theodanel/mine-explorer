@@ -166,18 +166,27 @@
   inset: 15.5% 0 auto;
 }
 
-// Volume, discret sous le portrait du mineur
+// Volume, discret sous le bandeau de zone, à gauche
 .sound {
   position: absolute;
-  inset: 11.5% auto auto 3cqw;
+  inset: 23% auto auto 3cqw;
   z-index: var(--z-scene-ui);
+}
+
+// Rappel du Défi de la mine quand un palier attend, sous le bouton du son
+.challenge-call {
+  position: absolute;
+  inset: 27% auto auto 3cqw;
+  z-index: var(--z-scene-ui);
+  padding: 1cqw 2.5cqw;
+  font-size: 2.8cqw;
 }
 
 // Compagnon à côté du mineur, au sol, entre la colonne de gauche et lui
 .buddy {
   position: absolute;
-  top: 44%;
-  left: 23cqw;
+  top: 42%;
+  left: 12cqw;
   z-index: var(--z-scene-ui);
   width: 18cqw;
 }
@@ -185,34 +194,27 @@
 // Événements de mine : dans la galerie, entre les colonnes d'équipement, au-dessus du mineur
 .events {
   position: absolute;
-  inset: 21% 20cqw 46%;
+  inset: 21% 5cqw 42%;
   z-index: var(--z-events);
 }
 
-// Colonnes d'équipement de part et d'autre du mineur
-.column-left,
-.column-right {
-  position: absolute;
-  top: 21%;
-}
-
-.column-left {
-  left: 3cqw;
-}
-
-.column-right {
-  right: 3cqw;
-}
-
-// Sorts équipés : sous l'équipement de droite, au-dessus des stats
+// Sorts équipés : à droite, juste au-dessus du panneau d'équipement
 .spells {
   position: absolute;
-  inset: 53.5% 3cqw auto auto;
+  inset: 56.5% 3cqw auto auto;
 }
 
-.stats {
+// Panneau d'équipement en bas, à la place des anciennes colonnes et du panneau de stats
+.equipment-bar {
   position: absolute;
-  inset: 61.5% 3cqw auto;
+  inset: 65% 3cqw auto;
+}
+
+// Bouton rond des stats, en bas à droite de la barre de forge
+.stats-button {
+  position: absolute;
+  inset: auto 2cqw 11.5% auto;
+  z-index: var(--z-scene-ui);
 }
 
 // Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)

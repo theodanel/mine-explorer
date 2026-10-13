@@ -1,4 +1,4 @@
-// Tableaux de docs/equilibrage.md calculés à partir de balance.ts.
+// Tableaux de docs/game-design/equilibrage.md calculés à partir de balance.ts.
 // Lancement depuis frontend/ : node --import ./tools/register-ts.mjs tools/balance-tables.mts
 import {
   expectedStatsAtPickaxe,

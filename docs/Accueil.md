@@ -18,6 +18,20 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 
 ## Technique
 
+Documentation technique de référence, tenue à jour à chaque changement du code : [[documentation-technique]].
+
+- [[architecture]] : découpage du frontend, état et sauvegarde, backend.
+- [[installation]] : prérequis, lancement en local, commandes.
+- [[tests]] : stratégie, couverture, simulateur d'économie.
+- [[ci-cd]] : intégration continue, CodeQL, Dependabot.
+- [[deploiement]] : mise en ligne sur Cloudflare Pages, secrets, restriction d'accès.
+- [[securite]] : modèle de menace, en-têtes, limites assumées.
+- [[choix-techniques]] : décisions techniques justifiées.
+
+### Historique technique
+
+Notes d'étude du début du projet, conservées pour mémoire ; elles ne décrivent plus forcément le code actuel.
+
 - [[faisabilite]] : faisabilité Spring Boot + Angular, architecture recommandée, périmètre MVP.
 - [[guide-demarrage-technique]] : relier le GDD au code, formules, 2D avec PixiJS, organisation du monorepo, GDD/TDD/roadmap.
 - [[mvp-parcours]] : le parcours MVP en 7 étapes.
@@ -29,6 +43,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 
 ## Organisation du coffre
 
-- `game-design/` et `technique/` : notes copiées depuis le dossier partagé du projet le 12/10/2026. C'est désormais ici qu'elles vivent.
-- À la racine : les notes de travail liées au code (`equilibrage.md`, `prompts-gemini.md`, `prompt-refonte-majeure.md`).
+- `game-design/` : conception du jeu, équilibrage et prompts de visuels.
+- `technique/` : documentation technique à jour ; `technique/historique/` : études du début du projet.
+- À la racine : cet accueil et [[Decisions]].
 - Les PDF de référence (guides Gamearly) et les images restent hors du coffre.

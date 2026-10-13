@@ -22,7 +22,7 @@ Le prompt doit donc faire travailler un agent sur une refonte longue, **phase pa
 
 ### Diagnostic du jeu actuel
 
-Vérifié dans le code et `docs/equilibrage.md` :
+Vérifié dans le code et `docs/game-design/equilibrage.md` :
 
 | Point | État actuel | Limite |
 |---|---|---|
@@ -81,18 +81,18 @@ Lis tout ce prompt avant de toucher au code. Réponds toujours en français, de 
 
 ## 1. Le jeu aujourd'hui
 
-Commence par lire, dans cet ordre : `docs/equilibrage.md`, `frontend/src/app/balance/balance.ts`, puis chaque dossier de `frontend/src/app/`. Ce résumé t'oriente mais le code fait foi.
+Commence par lire, dans cet ordre : `docs/game-design/equilibrage.md`, `frontend/src/app/balance/balance.ts`, puis chaque dossier de `frontend/src/app/`. Ce résumé t'oriente mais le code fait foi.
 
 - **Front** : Angular 21 (composants standalone, signals, `computed`, `effect`, `input`/`output`, contrôle de flux `@if`/`@for`, `inject`, jetons d'injection `RANDOM`, `ID_FACTORY`, `CLOCK` pour tester sans hasard ni horloge réelle). La scène est en PixiJS v8 (`mine-scene/`).
-- **Règles** : des fonctions TypeScript pures, testables et portables en Java (`*-rules.ts`). Tout l'équilibrage est dans `balance/balance.ts`, documenté dans `docs/equilibrage.md`.
+- **Règles** : des fonctions TypeScript pures, testables et portables en Java (`*-rules.ts`). Tout l'équilibrage est dans `balance/balance.ts`, documenté dans `docs/game-design/equilibrage.md`.
 - **Tests** : Vitest via `npx ng test --watch=false`. Les avertissements jsdom sur `canvas.getContext` sont attendus.
 - **Mise en page** : un cadre `.game` en 9:16 avec `container-type: inline-size`, toutes les tailles en `cqw`. Classes globales `.game-button` (wood, green, red, stone), `.game-panel`, couleurs de palier via `[data-tier]`. Infobulles avec la directive `[appTooltip]` (texte ou carte).
 - **Systèmes existants** : minage automatique (12/23 coups par seconde, multiplié par la Vitesse), zones de 15 filons sans boss ni chrono, or, éclats de géode (gagnés par filon, par zone, en absence et par missions), minerais par zone (pas de minerai en zone 1), 5 emplacements d'équipement, 10 paliers de matériau (Bois à Divin), forge à 2 éclats, pioche à 10 segments d'or puis minuteur (niveau 30 en environ 36 jours), 5 formes d'évolution (Apprenti, Mineur, Contremaître, Maître, Légende) avec animations de frappe pour l'Apprenti, le Contremaître et le Maître, missions principales et du jour, gains d'absence plafonnés à 4 h.
 - **Sauvegarde** : `localStorage`, une clé par système (`mine-explorer.coins`, `.equipment`, `.pickaxe`, `.progress`, `.evolution`, `.ores`, `.missions`, `.counters`, `.geode-shards`, `.last-seen`), lue et validée par `shared/local-storage.ts`.
 - **Backend** : Spring Boot 4.1, Java 21, Web MVC, JPA, Validation, Flyway, H2. Seulement la classe d'application : rien n'est branché.
-- **Graphismes** : Théo génère les images avec Gemini. Les prompts sont dans `docs/prompts-gemini.md`, les sources dans `art-source/`, les fichiers servis dans `frontend/public/assets/`. Les animations viennent de vidéos sur fond vert, détourées en planches de 23 images.
+- **Graphismes** : Théo génère les images avec Gemini. Les prompts sont dans `docs/game-design/prompts-gemini.md`, les sources dans `art-source/`, les fichiers servis dans `frontend/public/assets/`. Les animations viennent de vidéos sur fond vert, détourées en planches de 23 images.
 
-**Le problème central** : la progression s'arrête vers la zone 8, parce que la pioche niveau 30 ne suffit plus (`docs/equilibrage.md`, section « Courbe attendue »). Les joueurs n'ont pas de choix à faire, pas d'objectif hebdomadaire, et rien ne vient casser la routine.
+**Le problème central** : la progression s'arrête vers la zone 8, parce que la pioche niveau 30 ne suffit plus (`docs/game-design/equilibrage.md`, section « Courbe attendue »). Les joueurs n'ont pas de choix à faire, pas d'objectif hebdomadaire, et rien ne vient casser la routine.
 
 ## 2. Ce que Théo a déjà décidé : ne le remets pas en cause sans le lui demander
 
@@ -123,11 +123,11 @@ Ces règles valent pour toutes les phases.
 2. **Règles pures d'abord.** Chaque système a son fichier de règles pures et ses tests, avant le service et l'interface. Les chiffres vont dans les fichiers d'équilibrage, jamais en dur dans les composants.
 3. **Typage strict.** Pas de `any`, pas de catch vide, pas d'erreur avalée, pas de nombre magique, pas de code mort. Commentaires sur le pourquoi, pas sur le quoi. Suis les conventions du code existant (noms en anglais, libellés et commentaires en français).
 4. **Sauvegardes jamais cassées.** Toute sauvegarde existante doit se charger après ta phase, avec une migration testée.
-5. **Simulation obligatoire.** Après chaque phase qui touche à l'économie, lance l'outil de simulation (créé en phase 0) et mets à jour `docs/equilibrage.md` avec les nouvelles courbes. Si une cible de rythme (section 6) n'est plus tenue, corrige avant de livrer.
+5. **Simulation obligatoire.** Après chaque phase qui touche à l'économie, lance l'outil de simulation (créé en phase 0) et mets à jour `docs/game-design/equilibrage.md` avec les nouvelles courbes. Si une cible de rythme (section 6) n'est plus tenue, corrige avant de livrer.
 6. **Vérification visuelle.** Lance un serveur de test sur un port libre autre que 4200 (le port de Théo, dont tu ne touches jamais la sauvegarde), en 390×844, et vérifie chaque écran nouveau ou modifié. Arrête tes serveurs de test à la fin.
 7. **Fin de phase.** Tests verts, simulation à jour, documentation à jour, résumé en quelques lignes pour Théo (ce qui a changé, ce qu'il doit tester, ce qui reste ouvert), et un nom de commit en français. **Ne commite pas et ne pousse pas sans qu'il le demande.** Puis attends son feu vert pour la phase suivante.
 8. **Suivi.** Tiens `docs/refonte.md` à jour : décisions prises, phase en cours, ce qui reste à faire, visuels attendus de Théo. Une nouvelle session doit pouvoir reprendre à partir de ce fichier.
-9. **Visuels.** Quand une phase a besoin d'images, ajoute leurs prompts dans `docs/prompts-gemini.md`, dans le style existant (bloc « Style commun », prompts en anglais, fond vert pur). En attendant les images, utilise des emplacements propres (icône générique, forme CSS), jamais un écran cassé.
+9. **Visuels.** Quand une phase a besoin d'images, ajoute leurs prompts dans `docs/game-design/prompts-gemini.md`, dans le style existant (bloc « Style commun », prompts en anglais, fond vert pur). En attendant les images, utilise des emplacements propres (icône générique, forme CSS), jamais un écran cassé.
 10. **Fiabilité.** N'invente aucune API, option ou version. Si tu n'es pas sûr qu'une API Angular ou Pixi existe dans la version installée, vérifie dans `node_modules` ou la documentation officielle. Distingue ce que tu as testé de ce que tu supposes.
 
 ## 5. Les systèmes à construire
@@ -141,7 +141,7 @@ Les valeurs chiffrées sont des **points de départ à simuler**, pas des vérit
 - **Navigation.** Une barre d'onglets en bas : Mine, Héros (équipement, stats, talents), Forge, Compagnons, Atelier, Événements. Les onglets apparaissent au fil des déblocages. Badges de notification sur chaque onglet.
 - **Déblocages progressifs.** Un fichier unique qui liste chaque fonction, sa condition de déblocage (zone, évolution, niveau de mineur…) et sa courte présentation. Exemple de départ : Forge dès le début, Missions au filon 1-3, Améliorer la pioche au filon 1-5, Talents au niveau de mineur 5, Compétences à la zone 2, Compagnons à la zone 3, Atelier à l'évolution Mineur, Donjons à la zone 4, Événements à la zone 2, Prestige à la zone 8.
 - **Équilibrage découpé.** `balance.ts` devient un dossier `balance/` avec un fichier par système, toujours sans aucune logique d'interface.
-- **Outil de simulation.** Un script versionné dans le dépôt (par exemple `frontend/tools/simulate.mts`, lancé avec Node 24 qui lit le TypeScript) qui joue l'économie avec les vraies fonctions de règles, pour 3 profils de joueur : **actif** (2 h par jour en jeu, se connecte 4 fois), **régulier** (30 min par jour, 2 connexions), **passif** (3 connexions de 5 minutes par jour). Il produit les tableaux de `docs/equilibrage.md` : moment de chaque évolution, de chaque zone, de chaque niveau de pioche, nombre de tirages par jour, ressources accumulées sans usage. Aucune dépendance ajoutée sans accord.
+- **Outil de simulation.** Un script versionné dans le dépôt (par exemple `frontend/tools/simulate.mts`, lancé avec Node 24 qui lit le TypeScript) qui joue l'économie avec les vraies fonctions de règles, pour 3 profils de joueur : **actif** (2 h par jour en jeu, se connecte 4 fois), **régulier** (30 min par jour, 2 connexions), **passif** (3 connexions de 5 minutes par jour). Il produit les tableaux de `docs/game-design/equilibrage.md` : moment de chaque évolution, de chaque zone, de chaque niveau de pioche, nombre de tirages par jour, ressources accumulées sans usage. Aucune dépendance ajoutée sans accord.
 
 ### 5.2 Stats et règle de cumul (phase 1)
 
@@ -332,7 +332,7 @@ Les phases 0 et 1 viennent en premier. Pour les suivantes, si une autre priorit�
 - Ajouter un boss, un chrono qui fait échouer, une perte de ressource ou de progression non choisie par le joueur.
 - Cacher une probabilité, ou créer une urgence artificielle (offre qui expire en poussant à payer, série perdue au moindre jour manqué).
 - Ajouter une dépendance, changer le schéma de sauvegarde ou l'architecture sans l'accord de Théo.
-- Livrer une phase sans tests, sans simulation ou sans mise à jour de `docs/equilibrage.md`.
+- Livrer une phase sans tests, sans simulation ou sans mise à jour de `docs/game-design/equilibrage.md`.
 - Mettre des chiffres d'équilibrage dans les composants.
 - Toucher à la sauvegarde du port 4200.
 - Commiter ou pousser sans qu'on te le demande.

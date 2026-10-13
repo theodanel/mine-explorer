@@ -1,6 +1,6 @@
 // Tout l'équilibrage du jeu au même endroit : chiffres, tables et formules.
 // Fichier pur (aucune dépendance Angular) pour être testé, simulé en ligne de commande et porté côté Spring.
-// Le document docs/equilibrage.md explique ces choix et la courbe de progression attendue.
+// Le document docs/game-design/equilibrage.md explique ces choix et la courbe de progression attendue.
 import type { MiningStats, SlotId, StatId, TierId } from '../equipment/equipment.model';
 
 // ─── Mineur ────────────────────────────────────────────────────────────────

@@ -1,0 +1,95 @@
+# Intégration et déploiement continus de Mine Explorer.
+# Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend.
+# Sur main uniquement, quand tout est vert : déploiement du frontend sur Cloudflare Pages.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Moindre privilège : lecture seule par défaut, chaque job ne reçoit que ce dont il a besoin
+permissions:
+  contents: read
+
+# Un nouveau push annule l'exécution précédente de la même branche
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (lint, tests, build, audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Installer les dépendances (versions du lockfile)
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tests unitaires et couverture
+        run: npx ng test --watch=false --coverage
+      - name: Build de production
+        run: npm run build
+      - name: Audit des dépendances (échoue sur une faille haute ou critique)
+        run: npm audit --audit-level=high
+      - name: Garder le build pour le déploiement
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/frontend/browser
+          retention-days: 7
+          if-no-files-found: error
+
+  backend:
+    name: Backend (build et tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Build et tests
+        run: sh ./mvnw -B -ntp verify
+
+  deploy:
+    name: Déploiement sur Cloudflare Pages
+    needs: [frontend, backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Environnement GitHub « production » : ses secrets ne sont lisibles que par ce job
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+      - name: Publier
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main

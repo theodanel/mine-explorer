@@ -4,7 +4,7 @@ import type { SlotId, TierId } from '../equipment/equipment.model';
 import { type EvolutionId, MAX_PICKAXE_LEVEL, segmentCost, TIER_ORDER } from './balance';
 
 /**
- * L'Atelier s'ouvre avec la forme Contremaître (zone 7, vers le jour 6 pour un joueur régulier) :
+ * L'Atelier s'ouvre avec la forme Contremaître (zone 6, vers le jour 3 pour un joueur régulier) :
  * le début reste rapide et généreux, et l'or trouve un deuxième usage quand la pioche commence à coûter cher.
  */
 export const WORKSHOP_UNLOCK_FORM: EvolutionId = 'foreman';
@@ -18,11 +18,11 @@ export const WORKSHOP_STEP = 0.015;
 
 /**
  * Prix en or d'un niveau, exprimé en segments de pioche : le renforcement suit la progression sans réglage par zone.
- * Le premier niveau vaut un demi-segment du niveau 17 de pioche (celui qu'on a à peu près en arrivant
- * Contremaître), puis chaque niveau coûte ×1,6, bien plus vite que le revenu (×1,4 par zone) : c'est un puits d'or,
+ * Le premier niveau se paie en segments du niveau 14 de pioche (celui qu'on a à peu près en arrivant
+ * Contremaître), puis chaque niveau coûte ×3, bien plus vite que le revenu (×1,4 par zone) : c'est un puits d'or,
  * jamais un raccourci, et il reste utile après la pioche 30.
  */
-const WORKSHOP_BASE_PICKAXE_LEVEL = 17;
+const WORKSHOP_BASE_PICKAXE_LEVEL = 14;
 const WORKSHOP_BASE_SEGMENT_SHARE = 20;
 const WORKSHOP_GOLD_GROWTH = 3;
 

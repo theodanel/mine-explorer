@@ -13,7 +13,7 @@ import {
 } from '../../balance/camp';
 import { OFFLINE_CAP_MS, OFFLINE_EFFICIENCY } from '../../balance/balance';
 import { TIER_LABELS } from '../../equipment/equipment.model';
-import { materialIconUrl } from '../../loading/game-assets';
+import { ADVENTURE_IMAGES, materialIconUrl, pageBackground } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
 import { Wallet } from '../../wallet/wallet';
@@ -32,6 +32,7 @@ const BLOCKED_TEXT: Readonly<Record<Exclude<BuildCheck, 'ok'>, string>> = {
 
 interface BuildingText {
   readonly label: string;
+  readonly icon: string;
   readonly role: string;
   /** Effet au niveau donné, en une ligne courte. */
   readonly effect: (level: number) => string;
@@ -40,16 +41,19 @@ interface BuildingText {
 const BUILDINGS: Readonly<Record<BuildingId, BuildingText>> = {
   tavern: {
     label: 'Taverne',
+    icon: ADVENTURE_IMAGES.tavern,
     role: 'Les mineurs reviennent reposés : plus d\'or pendant ton absence.',
     effect: (level) => `${PERCENT.format((OFFLINE_EFFICIENCY + level * TAVERN_EFFICIENCY_STEP) * 100)} % du rendement hors ligne`,
   },
   warehouse: {
     label: 'Entrepôt',
+    icon: ADVENTURE_IMAGES.warehouse,
     role: 'Plus de place pour stocker : ton absence compte plus longtemps.',
     effect: (level) => `Absence comptée jusqu'à ${formatDuration(OFFLINE_CAP_MS + level * WAREHOUSE_CAP_STEP_MS)}`,
   },
   well: {
     label: 'Puits',
+    icon: ADVENTURE_IMAGES.well,
     role: `Il remonte des éclats même jeu fermé, jusqu'à ${WELL_STORAGE_HOURS} h de réserve.`,
     effect: (level) => `${DECIMAL.format(level * WELL_SHARDS_PER_HOUR)} éclat${level * WELL_SHARDS_PER_HOUR >= 2 ? 's' : ''} par heure`,
   },
@@ -67,6 +71,7 @@ export class CampPage {
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
 
+  protected readonly background = pageBackground(ADVENTURE_IMAGES.campBackground);
   protected readonly coins = computed(() => COMPACT.format(this.wallet.coins()));
   protected readonly material = computed(() => {
     const tier = this.camp.material();
@@ -102,6 +107,7 @@ function rowsFor(levels: CampLevels, camp: Camp) {
     return {
       building,
       label: text.label,
+      icon: text.icon,
       role: text.role,
       level,
       maxLevel: BUILDING_MAX_LEVEL[building],

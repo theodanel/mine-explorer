@@ -2,10 +2,12 @@ import { Component, computed, inject } from '@angular/core';
 
 import { Abyss } from '../../abyss/abyss';
 import { Camp } from '../../camp/camp';
+import { ADVENTURE_IMAGES } from '../../loading/game-assets';
 import { Navigation, PageId } from '../../navigation/navigation';
 
 interface Adventure {
   readonly page: PageId;
+  readonly icon: string;
   readonly title: string;
   readonly text: string;
   /** Condition encore à remplir, ou null quand l'aventure est ouverte. */
@@ -27,6 +29,7 @@ export class AdventuresPage {
   protected readonly adventures = computed<readonly Adventure[]>(() => [
     {
       page: 'camp',
+      icon: ADVENTURE_IMAGES.campCard,
       title: 'Campement',
       text: 'Fais grandir ton camp : meilleurs gains hors ligne, absence plus longue, éclats passifs.',
       locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
@@ -34,6 +37,7 @@ export class AdventuresPage {
     },
     {
       page: 'abyss',
+      icon: ADVENTURE_IMAGES.abyssCard,
       title: 'Puits sans fond',
       text: `30 secondes pour descendre le plus bas possible : c'est là que ton build compte. ${this.abyss.dailyRuns} essais par jour.`,
       locked: this.abyss.unlocked() ? null : this.abyss.unlockLabel,

@@ -11,6 +11,16 @@
   cursor: pointer;
 }
 
+// Décor du Puits derrière la page (assombri dans le composant)
+.page {
+  background-size: cover;
+  background-position: center;
+}
+
+.purse img {
+  object-fit: contain;
+}
+
 .purse span {
   font: bold 3.2cqw / 1 Arial, sans-serif;
 }

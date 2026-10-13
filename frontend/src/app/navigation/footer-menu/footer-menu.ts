@@ -77,7 +77,7 @@ export class FooterMenu {
     },
     {
       label: 'Aventures',
-      icon: null,
+      icon: MENU_ICONS.adventures,
       page: 'adventures',
       locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
       badge: this.camp.unlocked() ? this.camp.ready() : 0,

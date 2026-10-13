@@ -1,4 +1,4 @@
-<section class="page game-panel" aria-labelledby="camp-title">
+<section class="page game-panel" aria-labelledby="camp-title" [style.background-image]="background">
   <header class="page-header">
     <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
     <h2 id="camp-title">Campement</h2>
@@ -24,8 +24,8 @@
   <ul class="slots" [class.closed]="!camp.unlocked()">
     @for (row of rows(); track row.building) {
       <li class="slot-row">
-        <span class="frame building-frame">
-          <span class="building-name">{{ row.label }}</span>
+        <span class="frame">
+          <img [src]="row.icon" alt="" width="192" height="192" />
           <span class="level">{{ row.level }}</span>
         </span>
         <div class="text">

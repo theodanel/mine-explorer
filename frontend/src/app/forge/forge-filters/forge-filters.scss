@@ -1,0 +1,124 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: 4cqw;
+  background: rgb(0 0 0 / 55%);
+}
+
+.dialog {
+  display: grid;
+  gap: 2cqw;
+  width: min(100%, 92cqw);
+  max-height: 100%;
+  padding: 4.5cqw;
+  overflow-y: auto;
+
+  h3 {
+    margin: 1.5cqw 0 0;
+    font-size: 3.6cqw;
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 5.5cqw;
+  }
+}
+
+.close {
+  margin-left: auto;
+  width: 8.5cqw;
+  height: 8.5cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  color: #fff;
+  font: bold 5.5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.intro {
+  margin: 0;
+  color: #e8d6b8;
+  font-size: 3.1cqw;
+  line-height: 1.35;
+}
+
+.hint {
+  font-size: 2.6cqw;
+  font-weight: normal;
+  opacity: 0.7;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5cqw;
+}
+
+// Pastille à cocher : bois sombre, éclairée en vert quand elle est active
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 1.2cqw 2.4cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#5b3d24, #3d2815);
+  box-shadow: 0 0.5cqw 0 #1a0f07;
+  color: #f3e6d0;
+  font: bold 3cqw / 1.1 Arial, sans-serif;
+  cursor: pointer;
+
+  &.on {
+    background: linear-gradient(#5fd16a, #23802f);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+    outline-offset: 0.3cqw;
+  }
+}
+
+.chip-icon {
+  width: 5cqw;
+  height: 5cqw;
+}
+
+// Paliers : la couleur du matériau, le palier choisi entouré d'or
+.tier {
+  background: linear-gradient(color-mix(in srgb, var(--tier-color) 70%, #3d2815), #3d2815);
+  text-shadow: 0 0.3cqw 0 rgb(0 0 0 / 60%);
+
+  &.on {
+    background: linear-gradient(var(--tier-color), color-mix(in srgb, var(--tier-color) 55%, #1a0f07));
+    box-shadow:
+      0 0 0 0.6cqw #ffd34d,
+      0 0.5cqw 0 #1a0f07;
+  }
+}
+
+.upgrades {
+  justify-self: start;
+  margin-top: 1.5cqw;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3cqw;
+  margin-top: 2cqw;
+
+  .game-button {
+    padding: 2.5cqw;
+    font-size: 4cqw;
+  }
+}

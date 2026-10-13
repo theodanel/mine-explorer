@@ -12,7 +12,7 @@ export function slotLevel(levels: WorkshopLevels, slot: SlotId): number {
   return levels[slot] ?? 0;
 }
 
-/** Multiplicateur que l'Atelier applique à la stat principale de l'emplacement. */
+/** Multiplicateur que l'Atelier applique à la stat d'Atelier de l'emplacement (celle de SLOTS, quel que soit l'objet porté). */
 export function slotMultiplier(level: number): number {
   return 1 + WORKSHOP_STEP * level;
 }
@@ -21,7 +21,7 @@ export function slotMultiplier(level: number): number {
 export function reinforce(stats: MiningStats, levels: WorkshopLevels): MiningStats {
   const next = { ...stats };
   for (const slot of SLOT_IDS) {
-    const stat = SLOTS[slot].mainStat;
+    const stat = SLOTS[slot].workshopStat;
     next[stat] *= slotMultiplier(slotLevel(levels, slot));
   }
   return next;

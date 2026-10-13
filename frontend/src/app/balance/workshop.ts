@@ -10,7 +10,7 @@ import { type EvolutionId, MAX_PICKAXE_LEVEL, segmentCost, TIER_ORDER } from './
 export const WORKSHOP_UNLOCK_FORM: EvolutionId = 'foreman';
 
 /**
- * Chaque niveau d'un emplacement donne +3 % à la stat principale de cet emplacement (Frappe pour la pioche,
+ * Chaque niveau d'un emplacement donne +3 % à la stat d'Atelier de cet emplacement (Frappe pour la pioche,
  * Critique pour les gants…). Le bonus appartient à l'emplacement : il reste quand on change d'objet.
  * Les niveaux d'un même emplacement s'additionnent ; l'Atelier forme une famille à part, multipliée aux autres.
  */

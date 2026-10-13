@@ -11,6 +11,19 @@ describe('parseEquipmentSave', () => {
     expect(parseEquipmentSave(JSON.stringify(save))).toEqual(save);
   });
 
+  it("garde sans perte les objets forgés avant les builds libres, une stat par emplacement", () => {
+    // Sauvegarde de la version en ligne : la pioche portait la Frappe, les gants le Critique, le sac l'or
+    const before: EquipmentSave = {
+      equipped: {
+        pickaxe: { id: 'p', slot: 'pickaxe', tier: 'copper', level: 6, stats: { strikePower: 17 } },
+        gloves: { id: 'g', slot: 'gloves', tier: 'iron', level: 8, stats: { critChance: 0.055, goldBonus: 0.04 } },
+        bag: { id: 'b', slot: 'bag', tier: 'wood', level: 2, stats: { goldBonus: 0.081 } },
+      },
+      pending: { id: 'h', slot: 'helmet', tier: 'copper', level: 6, stats: { critDamage: 0.22 } },
+    };
+    expect(parseEquipmentSave(JSON.stringify(before))).toEqual(before);
+  });
+
   it.each([
     ['du JSON cassé', '{'],
     ['un tableau', '[]'],

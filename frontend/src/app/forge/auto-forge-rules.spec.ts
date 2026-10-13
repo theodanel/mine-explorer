@@ -25,7 +25,14 @@ describe('filtres de forge automatique', () => {
     expect(passesFilters(item({ tier: 'divine' }), filters, {})).toBe(true);
   });
 
-  it('demandent au moins une des stats voulues, principale ou secondaire', () => {
+  it('ne comptent la Frappe que si elle dépasse la Frappe de base de la pièce', () => {
+    // Cuivre niveau 5 : la Frappe de base tire au plus 4, un affixe de Frappe la pousse au-delà
+    const filters = { ...NO_FILTERS, stats: ['strikePower' as const] };
+    expect(passesFilters(item({ stats: { strikePower: 4, goldBonus: 0.1 } }), filters, {})).toBe(false);
+    expect(passesFilters(item({ stats: { strikePower: 7 } }), filters, {})).toBe(true);
+  });
+
+  it('demandent au moins une des stats voulues en affixe', () => {
     const filters = { ...NO_FILTERS, stats: ['critChance' as const, 'miningSpeed' as const] };
     expect(passesFilters(item({ stats: { goldBonus: 0.1 } }), filters, {})).toBe(false);
     expect(passesFilters(item({ stats: { goldBonus: 0.1, critChance: 0.02 } }), filters, {})).toBe(true);

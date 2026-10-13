@@ -35,7 +35,7 @@ export class StatsDetails {
   /** Une section par source de bonus ; une source sans effet n'apparaît pas. */
   protected readonly sources = computed(() => {
     const workshopLines = SLOT_IDS.filter((slot) => this.workshop.level(slot) > 0).map(
-      (slot) => `+${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % de ${STATS[SLOTS[slot].mainStat].label}`,
+      (slot) => `+${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % de ${STATS[SLOTS[slot].workshopStat].label}`,
     );
     const gallery = this.galleries.gallery();
     return [

@@ -1,12 +1,14 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
 import {
+  AFFIX_SHARE,
+  affixCount,
   BASE_STATS,
   expectedStatValue,
   hitsPerSecond,
+  ITEM_BASE_STRIKE_SHARE,
+  NEXT_AFFIX_RATIO,
   powerOf,
-  SECONDARY_STAT_RATIO,
-  secondaryStatCount,
   sellPriceFor,
   STAT_CAPS,
   STAT_ROLL_SPREAD,
@@ -19,7 +21,6 @@ import {
   MiningStats,
   SLOT_IDS,
   SlotId,
-  SLOTS,
   STAT_IDS,
   STATS,
   StatId,
@@ -40,22 +41,41 @@ export interface StatComparison {
   readonly candidate: number;
 }
 
-/** Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche. */
+/**
+ * Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche.
+ * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon : n'importe quel
+ * emplacement peut porter n'importe quelle stat. Un affixe de Frappe s'ajoute à la Frappe de base.
+ */
 export function rollItem(random: Random, createId: () => string, pickaxeLevel: number): Item {
   const slot = pickOne(SLOT_IDS, random);
   const chances = tierChances(pickaxeLevel);
   const tier = pickWeighted(TIER_IDS, (t) => chances[t], random);
   const level = pickaxeLevel;
-  const mainStat = SLOTS[slot].mainStat;
 
-  const stats: Partial<MiningStats> = { [mainStat]: rollStat(mainStat, tier, level, 1, random) };
-  const secondaryCandidates = STAT_IDS.filter((stat) => stat !== mainStat);
-  for (let i = 0; i < secondaryStatCount(tier); i++) {
-    const index = Math.floor(random() * secondaryCandidates.length);
-    const [stat] = secondaryCandidates.splice(index, 1);
-    stats[stat] = rollStat(stat, tier, level, SECONDARY_STAT_RATIO, random);
+  const stats: Partial<MiningStats> = { strikePower: rollStat('strikePower', tier, level, ITEM_BASE_STRIKE_SHARE, random) };
+  const candidates = [...STAT_IDS];
+  for (let i = 0; i < affixCount(tier); i++) {
+    const [stat] = candidates.splice(Math.floor(random() * candidates.length), 1);
+    const ratio = AFFIX_SHARE[stat] * (i === 0 ? 1 : NEXT_AFFIX_RATIO);
+    stats[stat] = (stats[stat] ?? 0) + rollStat(stat, tier, level, ratio, random);
   }
   return { id: createId(), slot, tier, level, stats };
+}
+
+/**
+ * Vrai si l'objet porte cette stat en affixe. Toute pièce a une Frappe de base : la Frappe ne compte comme affixe
+ * qu'au-delà du maximum que la base peut tirer. Le plus petit affixe de Frappe dépasse ce maximum, sans ambiguïté.
+ */
+export function hasAffix(item: Item, stat: StatId): boolean {
+  const value = item.stats[stat];
+  if (value === undefined) {
+    return false;
+  }
+  if (stat !== 'strikePower') {
+    return true;
+  }
+  const baseMax = expectedStatValue('strikePower', item.tier, item.level, ITEM_BASE_STRIKE_SHARE) * (1 + STAT_ROLL_SPREAD);
+  return value > Math.max(1, Math.round(baseMax));
 }
 
 export function computeStats(equipped: EquippedItems): MiningStats {

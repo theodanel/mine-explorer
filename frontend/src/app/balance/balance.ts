@@ -1,7 +1,7 @@
 // Tout l'équilibrage du jeu au même endroit : chiffres, tables et formules.
 // Fichier pur (aucune dépendance Angular) pour être testé, simulé en ligne de commande et porté côté Spring.
 // Le document docs/game-design/equilibrage.md explique ces choix et la courbe de progression attendue.
-import type { MiningStats, SlotId, StatId, TierId } from '../equipment/equipment.model';
+import type { MiningStats, StatId, TierId } from '../equipment/equipment.model';
 
 // ─── Mineur ────────────────────────────────────────────────────────────────
 
@@ -47,15 +47,20 @@ export function tierIndex(tier: TierId): number {
   return TIER_ORDER.indexOf(tier);
 }
 
-/** Stats secondaires selon le palier : aucune en Bois-Pierre-Cuivre, jusqu'à 3 en Divin. */
-export function secondaryStatCount(tier: TierId): number {
-  const index = tierIndex(tier);
-  return index === TIER_ORDER.length - 1 ? 3 : Math.floor(index / 3);
+/**
+ * Affixes selon la qualité : chaque objet porte 1 à 4 stats tirées dans le pool complet, sans doublon.
+ * Bois à Cuivre 1, Fer à Or 2, Mithril à Magma 3, Divin 4 : plus la qualité monte, plus l'objet est riche.
+ */
+export function affixCount(tier: TierId): number {
+  return 1 + Math.floor(tierIndex(tier) / 3);
 }
 
 // ─── Objets ────────────────────────────────────────────────────────────────
 
-/** Valeur de la stat principale d'un objet en Bois de niveau 1. */
+/**
+ * Valeur de référence de chaque stat pour un objet en Bois de niveau 1. Les objets n'en portent qu'une part
+ * (ITEM_BASE_STRIKE_SHARE, AFFIX_SHARE) : ces références viennent de l'époque où chaque emplacement avait sa stat.
+ */
 export const MAIN_STAT_BASE: Readonly<MiningStats> = {
   strikePower: 4,
   miningSpeed: 0.05,
@@ -64,8 +69,26 @@ export const MAIN_STAT_BASE: Readonly<MiningStats> = {
   goldBonus: 0.08,
 };
 
-/** Les stats secondaires valent moitié moins que la stat principale. */
-export const SECONDARY_STAT_RATIO = 0.5;
+/**
+ * Builds libres (13/10/2026) : n'importe quelle pièce peut porter n'importe quelle stat, pour que le joueur choisisse
+ * tout en Frappe, tout en Vitesse, tout en critique ou un mélange. Laissées à leur ancienne valeur, les stats libres
+ * donnaient un build tout en Frappe 4 fois plus fort que l'ancien équipement : le jeu devenait trop facile et les autres
+ * builds ne servaient à rien. D'où trois règles, réglées au calcul puis au simulateur :
+ * 1. Chaque pièce a une Frappe de base (10 % de l'ancienne Frappe de pioche) : un build sans affixe de Frappe frappe quand même.
+ * 2. Les affixes valent une part de l'ancienne stat principale, choisie pour que les builds se tiennent : de 0 à 25 % sous
+ *    le meilleur build selon le niveau, sauf l'or, qui échange de la Puissance contre du revenu.
+ * 3. Le premier affixe vaut plein tarif, les suivants 60 %.
+ * Le meilleur build reste à la Puissance de l'ancien équipement jusqu'à la pioche 25 : l'économie ne bouge pas.
+ */
+export const ITEM_BASE_STRIKE_SHARE = 0.25;
+export const AFFIX_SHARE: Readonly<MiningStats> = {
+  strikePower: 0.3,
+  miningSpeed: 1.1,
+  critChance: 1.1,
+  critDamage: 0.9,
+  goldBonus: 1.2,
+};
+export const NEXT_AFFIX_RATIO = 0.6;
 
 /** Croissance par niveau d'objet (le niveau de l'objet est celui de la pioche qui l'a forgé). */
 const STRIKE_LEVEL_GROWTH = 1.1;
@@ -193,8 +216,12 @@ const BASE_ROCK_HP = 320;
  */
 const ROCK_HP_GROWTH = 1.073;
 
-/** 1 PV miné rapporte un quart de pièce (avant le bonus d'or). */
-const GOLD_PER_DAMAGE = 0.25;
+/**
+ * 1 PV miné rapporte 0,34 pièce (avant le bonus d'or). C'était 0,25 tant que le sac portait toujours du bonus d'or :
+ * avec les builds libres, l'or devient un choix qui coûte de la Puissance, et le simulateur, qui équipe pour la
+ * Puissance, finissait avec +5 % d'or au lieu de +89 %. Le revenu de base compense, pour garder la pioche 30 vers le jour 48.
+ */
+const GOLD_PER_DAMAGE = 0.34;
 
 /**
  * Les éclats viennent de deux sources en jouant. Théo les trouvait trop rares : le 13/10/2026, coups, filons
@@ -434,17 +461,22 @@ export function secondsToMine(remainingHp: number, power: number): number {
 // ─── Courbe attendue (pour le document d'équilibrage et les tests) ───────────
 
 /**
- * Stats d'un joueur moyen avec la pioche au niveau donné : un objet par emplacement,
- * du palier moyen de la table et du niveau de la pioche, sans stats secondaires.
+ * Stats d'un joueur moyen avec la pioche au niveau donné : cinq objets du palier moyen de la table et du niveau
+ * de la pioche, avec leur Frappe de base, et des affixes répartis à parts égales entre les cinq stats.
  */
-export function expectedStatsAtPickaxe(level: number, slotMainStats: Readonly<Record<SlotId, StatId>>): MiningStats {
+const SLOT_COUNT = 5;
+const STAT_KEYS = Object.keys(MAIN_STAT_BASE) as StatId[];
+
+export function expectedStatsAtPickaxe(level: number): MiningStats {
   const chances = tierChances(level);
   const stats: MiningStats = { ...BASE_STATS };
-  for (const stat of Object.values(slotMainStats)) {
-    stats[stat] += TIER_ORDER.reduce(
-      (sum, tier) => sum + (chances[tier] / 100) * expectedStatValue(stat, tier, level),
-      0,
-    );
+  for (const tier of TIER_ORDER) {
+    const share = chances[tier] / 100;
+    const affixes = 1 + (affixCount(tier) - 1) * NEXT_AFFIX_RATIO;
+    stats.strikePower += share * SLOT_COUNT * expectedStatValue('strikePower', tier, level, ITEM_BASE_STRIKE_SHARE);
+    for (const stat of STAT_KEYS) {
+      stats[stat] += share * affixes * expectedStatValue(stat, tier, level, AFFIX_SHARE[stat]);
+    }
   }
   return stats;
 }

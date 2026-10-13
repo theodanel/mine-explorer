@@ -29,33 +29,46 @@ function item(overrides: Partial<Item>): Item {
 }
 
 describe('rollItem', () => {
-  it('forge une pioche en Bois de niveau 1 avec la pioche au niveau 1', () => {
-    // pioche (2e emplacement), Bois (70 % au niveau 1), valeur sans variation (0.5 → ±0 %)
-    expect(rollItem(sequence(0.2, 0, 0.5), createId, 1)).toEqual({
+  // Ordre des tirages : emplacement, palier, variation de la Frappe de base, puis pour chaque affixe sa stat et sa variation
+  it('forge un objet en Bois de niveau 1 : une Frappe de base et un affixe', () => {
+    // pioche (2e emplacement), Bois, Frappe de base sans variation, affixe Vitesse (2e des 5 stats) sans variation
+    expect(rollItem(sequence(0.2, 0, 0.5, 0.2, 0.5), createId, 1)).toEqual({
       id: 'item-1',
       slot: 'pickaxe',
       tier: 'wood',
       level: 1,
-      stats: { strikePower: 4 },
+      stats: { strikePower: 1, miningSpeed: 0.055 },
     });
+  });
+
+  it("porte n'importe quelle stat, quel que soit l'emplacement", () => {
+    // des bottes (dernier emplacement) avec un affixe de Dégâts crit. (4e des 5 stats)
+    const result = rollItem(sequence(0.99, 0, 0.5, 0.7, 0.5), createId, 1);
+    expect(result.slot).toBe('boots');
+    expect(Object.keys(result.stats)).toEqual(['strikePower', 'critDamage']);
+  });
+
+  it("ajoute un affixe de Frappe à la Frappe de base", () => {
+    const result = rollItem(sequence(0.2, 0, 0.5, 0, 0.5), createId, 10);
+    expect(result.stats.strikePower).toBeGreaterThan(rollItem(sequence(0.2, 0, 0.5, 0.2, 0.5), createId, 10).stats.strikePower ?? 0);
   });
 
   it("donne à l'objet le niveau de la pioche et le palier de sa fenêtre", () => {
     // niveau 7 : Pierre 25 %, Cuivre 72 %, Fer 3 % ; 0.5 tombe dans le Cuivre
-    const result = rollItem(sequence(0.2, 0.5, 0.5), createId, 7);
+    const result = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7);
     expect(result.level).toBe(7);
     expect(result.tier).toBe('copper');
   });
 
   it('atteint le dernier palier non nul de la fenêtre, jamais au-delà', () => {
     // 0.9999 tombe tout en haut de la table du niveau 2 : Pierre (8 %), jamais le Cuivre à 0 %
-    expect(rollItem(sequence(0.2, 0.9999, 0.5), createId, 2).tier).toBe('stone');
+    expect(rollItem(sequence(0.2, 0.9999, 0.5, 0.5, 0.5), createId, 2).tier).toBe('stone');
   });
 
-  it('donne 3 stats secondaires distinctes au palier Divin', () => {
-    const result = rollItem(sequence(0.2, 0.5, 0.5, 0, 0.5, 0, 0.5, 0, 0.5), createId, 30);
+  it('donne 4 affixes distincts au palier Divin : avec la Frappe de base, les 5 stats sont présentes', () => {
+    const result = rollItem(sequence(0.2, 0.5, 0.5, 0.99, 0.5, 0.99, 0.5, 0.99, 0.5, 0.99, 0.5), createId, 30);
     expect(result.tier).toBe('divine');
-    expect(Object.keys(result.stats)).toHaveLength(4);
+    expect(Object.keys(result.stats).sort()).toEqual(['critChance', 'critDamage', 'goldBonus', 'miningSpeed', 'strikePower']);
   });
 });
 

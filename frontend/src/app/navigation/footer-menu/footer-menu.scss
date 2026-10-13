@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+// Planche de bois sur toute la largeur, comme les barres d'onglets des jeux mobiles
+.footer {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1cqw;
+  height: 100%;
+  padding: 1.2cqw 1.5cqw 1.8cqw;
+  border-top: 0.8cqw solid #1a0f07;
+  background:
+    linear-gradient(rgb(255 255 255 / 8%), transparent 30%),
+    linear-gradient(#5b3d24, #3a2614);
+  box-shadow: inset 0 0.6cqw 0 #8a5f38;
+}
+
+.tab-wrapper {
+  display: block;
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.2cqw;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 2.5cqw;
+  background: linear-gradient(#6e4a2c, #4a3019);
+  box-shadow: 0 0.8cqw 0 #24170d;
+  color: #f3e6d0;
+  font: bold 2.5cqw / 1.1 Arial, sans-serif;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.7cqw solid #ffd34d;
+    outline-offset: 0.4cqw;
+  }
+}
+
+// Onglet ouvert : planche plus claire, enfoncée
+.current {
+  background: linear-gradient(#c48a4a, #8a5f38);
+  box-shadow: 0 0.3cqw 0 #24170d;
+  transform: translateY(0.5cqw);
+  color: #fff8e6;
+}
+
+.soon {
+  filter: grayscale(0.9) brightness(0.65);
+  cursor: default;
+}
+
+.tab-icon {
+  width: 9.5cqw;
+  height: 9.5cqw;
+  margin-top: -3.5cqw;
+  filter: drop-shadow(0 0.5cqw 0.3cqw rgb(0 0 0 / 50%));
+}
+
+.tab-label {
+  font-size: 2.5cqw;
+}
+
+.badge {
+  position: absolute;
+  top: -2cqw;
+  right: -1.2cqw;
+  display: grid;
+  place-items: center;
+  min-width: 5cqw;
+  height: 5cqw;
+  padding: 0 1cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #d0352a;
+  color: #fff;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
+}

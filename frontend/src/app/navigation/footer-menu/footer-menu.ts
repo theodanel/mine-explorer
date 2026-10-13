@@ -1,0 +1,82 @@
+import { Component, computed, inject } from '@angular/core';
+
+import { Artifacts } from '../../artifacts/artifacts';
+import { COMPANIONS_UNLOCK_ZONE } from '../../balance/companions';
+import { Companions } from '../../companions/companions';
+import { MENU_ICONS } from '../../loading/game-assets';
+import { Tooltip } from '../../shared/tooltip/tooltip';
+import { Skills } from '../../skills/skills';
+import { Workshop } from '../../workshop/workshop';
+import { Navigation, PageId } from '../navigation';
+
+interface Tab {
+  readonly label: string;
+  readonly icon: string;
+  readonly page: PageId;
+  /** Condition encore à remplir pour ouvrir ce menu (« Zone 3 »…), ou null s'il est ouvert. Le menu est alors grisé. */
+  readonly locked: string | null;
+  readonly badge: number;
+  /** Seulement pour un menu verrouillé : ce qu'il faut faire pour l'ouvrir. */
+  readonly tooltip: string | null;
+}
+
+/** Barre de menus tout en bas du jeu, avec une icône peinte par menu. */
+@Component({
+  selector: 'app-footer-menu',
+  imports: [Tooltip],
+  templateUrl: './footer-menu.html',
+  styleUrl: './footer-menu.scss',
+})
+export class FooterMenu {
+  protected readonly navigation = inject(Navigation);
+  private readonly skills = inject(Skills);
+  private readonly artifacts = inject(Artifacts);
+  private readonly workshop = inject(Workshop);
+  private readonly companions = inject(Companions);
+
+  protected readonly tabs = computed<readonly Tab[]>(() => [
+    { label: 'Mine', icon: MENU_ICONS.mine, page: 'mine', locked: null, badge: 0, tooltip: null },
+    {
+      label: 'Compétences',
+      icon: MENU_ICONS.skills,
+      page: 'skills',
+      locked: null,
+      badge: this.skills.available(),
+      tooltip: null,
+    },
+    {
+      label: 'Artefacts',
+      icon: MENU_ICONS.artifacts,
+      page: 'artifacts',
+      locked: null,
+      badge: this.artifacts.unseen(),
+      tooltip: null,
+    },
+    {
+      label: 'Compagnons',
+      icon: MENU_ICONS.companions,
+      page: 'companions',
+      locked: this.companions.unlocked() ? null : `Zone ${COMPANIONS_UNLOCK_ZONE}`,
+      badge: this.companions.unlocked() ? this.companions.ready() : 0,
+      tooltip: this.companions.unlocked()
+        ? null
+        : `Compagnons : s'ouvre à la zone ${COMPANIONS_UNLOCK_ZONE}, avec un premier œuf offert.`,
+    },
+    {
+      label: 'Atelier',
+      icon: MENU_ICONS.workshop,
+      page: 'workshop',
+      locked: this.workshop.unlocked() ? null : this.workshop.unlockLabel,
+      badge: this.workshop.unlocked() ? this.workshop.affordable() : 0,
+      tooltip: this.workshop.unlocked()
+        ? null
+        : `Atelier : s'ouvre quand ton mineur devient ${this.workshop.unlockLabel}.`,
+    },
+  ]);
+
+  protected open(tab: Tab): void {
+    if (tab.locked === null) {
+      this.navigation.open(tab.page);
+    }
+  }
+}

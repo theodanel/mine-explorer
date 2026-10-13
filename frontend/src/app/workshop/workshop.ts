@@ -8,7 +8,7 @@ import { Ores } from '../ores/ores';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { Wallet } from '../wallet/wallet';
-import { isValidLevels, reservedOres, slotLevel, upgradeCost, WorkshopCost } from './workshop-rules';
+import { isValidLevels, slotLevel, upgradeCost, WorkshopCost } from './workshop-rules';
 
 const STORAGE_KEY = 'mine-explorer.workshop';
 
@@ -30,18 +30,8 @@ export class Workshop {
   readonly unlocked = computed(() => this.evolution.index() >= WORKSHOP_UNLOCK_INDEX);
   readonly unlockLabel = EVOLUTION_FORMS[WORKSHOP_UNLOCK_INDEX].label;
   readonly material = computed(() => workshopMaterial(this.progression.zone()));
-  /** Minerai utilisable : le stock, moins ce que les évolutions à venir demandent. */
-  readonly spendableOres = computed(() => {
-    const tier = this.material();
-    return Math.max(this.ores.stock()[tier] - reservedOres(this.evolution.index(), tier), 0);
-  });
-  readonly reservedOres = computed(() => Math.min(reservedOres(this.evolution.index(), this.material()), this.ores.stock()[this.material()]));
-  /** Minerai en stock, réservé compris. */
-  readonly oreStock = computed(() => this.ores.stock()[this.material()]);
-  /** Forme qui demande ce minerai (la première à venir), pour expliquer pourquoi il est gardé. */
-  readonly reservedFor = computed(
-    () => EVOLUTION_FORMS.slice(this.evolution.index() + 1).find((form) => (form.ores[this.material()] ?? 0) > 0)?.label ?? null,
-  );
+  /** Minerai de la dernière zone terminée, en stock : les évolutions n'en demandent plus, tout est utilisable. */
+  readonly spendableOres = computed(() => this.ores.stock()[this.material()]);
   /** Emplacements qu'on peut renforcer tout de suite : sert de pastille au menu. */
   readonly affordable = computed(() => SLOT_IDS.filter((slot) => this.check(slot) === 'ok').length);
 

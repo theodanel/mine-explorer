@@ -1,10 +1,13 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import { ARTIFACTS } from '../../balance/artifacts';
+import { COMPANIONS } from '../../balance/companions';
+import { companionEffects } from '../../companions/companion-rules';
+import { Companions } from '../../companions/companions';
 import { RARITY_LABELS } from '../../balance/skill-tree';
 import { artifactEffects } from '../../artifacts/artifact-rules';
 import { Artifacts } from '../../artifacts/artifacts';
-import { artifactIconUrl, itemIconUrl } from '../../loading/game-assets';
+import { artifactIconUrl, companionIconUrl, itemIconUrl } from '../../loading/game-assets';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { Tooltip, TooltipContent } from '../../shared/tooltip/tooltip';
@@ -13,8 +16,8 @@ import { sellPrice } from '../equipment-rules';
 import { Item, SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
 
-/** Emplacement d'objet, case d'artefact, ou null pour une case verrouillée réservée à plus tard. */
-export type ColumnSlot = SlotId | 'artifact' | null;
+/** Emplacement d'objet, case d'artefact ou de compagnon, ou null pour une case verrouillée réservée à plus tard. */
+export type ColumnSlot = SlotId | 'artifact' | 'companion' | null;
 
 @Component({
   selector: 'app-equipment-column',
@@ -28,6 +31,9 @@ export class EquipmentColumn {
   private readonly navigation = inject(Navigation);
 
   readonly slots = input.required<readonly ColumnSlot[]>();
+  /** En ligne : le panneau d'équipement du bas de l'écran, façon Legend of Mushroom. */
+  readonly row = input(false);
+  private readonly companions = inject(Companions);
 
   protected readonly cells = computed(() => {
     const equipped = this.inventory.equipped();
@@ -37,6 +43,9 @@ export class EquipmentColumn {
       }
       if (slot === 'artifact') {
         return this.artifactCell();
+      }
+      if (slot === 'companion') {
+        return this.companionCell();
       }
       const { label, iconUrl } = SLOTS[slot];
       const item = equipped[slot];
@@ -54,6 +63,42 @@ export class EquipmentColumn {
 
   protected openArtifacts(): void {
     this.navigation.open('artifacts');
+  }
+
+  protected openCompanions(): void {
+    if (this.companions.unlocked()) {
+      this.navigation.open('companions');
+    }
+  }
+
+  /** Case du compagnon qui accompagne le mineur, à côté de l'artefact. */
+  private companionCell() {
+    const id = this.companions.active();
+    const owned = id === null ? undefined : this.companions.owned()[id];
+    if (id === null || owned === undefined) {
+      return {
+        key: 'companion',
+        kind: 'companion' as const,
+        empty: true as const,
+        tooltip: (this.companions.unlocked() ? 'Compagnon : fais éclore un œuf pour en avoir un.' : null) as TooltipContent | null,
+      };
+    }
+    const def = COMPANIONS[id];
+    const tooltip: TooltipContent = {
+      title: def.label,
+      badge: { label: `${RARITY_LABELS[def.rarity]} · ${owned.stars} ★`, tier: '' },
+      lines: [...describeBonuses(companionEffects(id, owned)), 'Touche pour voir tes compagnons.'],
+    };
+    return {
+      key: 'companion',
+      kind: 'companion' as const,
+      empty: false as const,
+      label: def.label,
+      icon: companionIconUrl(id),
+      rarity: def.rarity,
+      stars: owned.stars,
+      tooltip,
+    };
   }
 
   private artifactCell() {

@@ -56,8 +56,9 @@ describe('paliers', () => {
     const baseTier = (level: number): TierId => TIER_ORDER[Math.floor((level - 1) / 3)];
     const share = (level: number): number => sellPriceFor(baseTier(level), level) / (segmentCost(level) ?? Infinity);
     expect(share(10)).toBeGreaterThan(share(20));
-    // Environ 0,09 % au niveau 29 : faible, mais une vente compte encore quand on en fait des centaines
-    expect(share(29)).toBeGreaterThan(0.0008);
+    // Environ 0,07 % au niveau 29 : faible, mais une vente compte encore quand on en fait des centaines
+    // (deux fois plus de forges depuis les éclats du 13/10/2026 : les ventes font 18 % de l'or d'une partie)
+    expect(share(29)).toBeGreaterThan(0.0006);
   });
 });
 
@@ -142,8 +143,8 @@ describe('étapes', () => {
 });
 
 describe('absence', () => {
-  it("donne un éclat toutes les 10 minutes d'absence", () => {
-    expect(offlineGains(BASE_STATS, OFFLINE_CAP_MS).shards).toBe(24);
+  it("donne un éclat toutes les 6 minutes d'absence", () => {
+    expect(offlineGains(BASE_STATS, OFFLINE_CAP_MS).shards).toBe(40);
   });
 
   it('plafonne les gains à 4 h', () => {

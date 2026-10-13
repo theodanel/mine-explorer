@@ -83,8 +83,8 @@ export function expectedStatValue(stat: StatId, tier: TierId, level: number, rat
 
 /**
  * Vente : comme dans Legend of Mushroom, vendre doit compter. Le prix grandit un peu moins vite que les segments
- * de pioche (×1,66 par niveau contre ×2,05) : une vente vaut environ 5 % d'un segment au niveau 10, 0,6 % au niveau 20
- * et 0,09 % au niveau 29. Généreux au début, les ventes font environ 20 % de l'or d'une partie (simulation).
+ * de pioche (×1,66 par niveau contre ×2,065) : une vente vaut environ 5 % d'un segment au niveau 10, 0,5 % au niveau 20
+ * et 0,07 % au niveau 29. Généreux au début, les ventes font environ 18 % de l'or d'une partie (simulation).
  * À ×1,73, elles en faisaient la moitié et écrasaient le minage.
  * Un objet d'un palier au-dessus de la base de son niveau vaut 50 % de plus, un palier en dessous un tiers de moins.
  */
@@ -107,15 +107,16 @@ export const MAX_PICKAXE_LEVEL = 30;
 export const SEGMENTS_PER_LEVEL = 10;
 
 /**
- * L'or est le vrai régulateur du rythme. Le coût est multiplié par 2,05 à chaque niveau alors que la Puissance,
+ * L'or est le vrai régulateur du rythme. Le coût est multiplié par 2,065 à chaque niveau alors que la Puissance,
  * donc le revenu, grandit d'environ ×1,4 : chaque niveau demande un peu plus de temps que le précédent, le mur
  * classique des jeux idle (coûts exponentiels, production plus lente). Résultat simulé pour un joueur qui joue 1 h
- * par jour, avec tous les systèmes (arbre, sorts, artefacts, Atelier, événements, galeries, compagnons ; moyenne
- * de 5 tirages) : niveau 10 le premier jour, 20 vers le jour 8, 25 vers le jour 19, 30 vers le jour 49.
- * Ce chiffre est très sensible : ×2 donnait le niveau 30 au jour 35, ×2,035 au jour 42 une fois les compagnons ajoutés.
+ * par jour, avec tous les systèmes (arbre, sorts, artefacts, Atelier, événements, galeries, compagnons, évolution
+ * par objectifs ; moyenne de 5 tirages) : niveau 10 le premier jour, 20 vers le jour 8, 25 vers le jour 19,
+ * 30 vers le jour 49. Ce chiffre est très sensible : ×2 donnait le niveau 30 au jour 35 ; ×2,05 au jour 43 une fois
+ * les éclats rendus plus faciles (deux fois plus de forges, donc plus de ventes et de meilleurs objets).
  */
 const SEGMENT_BASE_COST = 15;
-const SEGMENT_COST_GROWTH = 2.05;
+const SEGMENT_COST_GROWTH = 2.065;
 
 /** Prix en or d'un segment au niveau donné, ou null au niveau maximum. */
 export function segmentCost(pickaxeLevel: number): number | null {
@@ -196,29 +197,24 @@ const ROCK_HP_GROWTH = 1.073;
 const GOLD_PER_DAMAGE = 0.25;
 
 /**
- * Les éclats viennent de deux sources en jouant.
- * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 2 % par coup, soit
- *    environ 37 éclats par heure sans bonus de Vitesse, une forge toutes les 3 minutes même en profondeur,
+ * Les éclats viennent de deux sources en jouant. Théo les trouvait trop rares : le 13/10/2026, coups, filons
+ * et absence en donnent 50 % de plus, soit environ 200 forges par jour pour le joueur régulier, à tout moment.
+ * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 3 % par coup, soit
+ *    environ 56 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
  *    où les filons durent longtemps.
  * 2. Chaque filon épuisé en donne. Comme dans Legends of Mushroom, le début arrose : les 5 premiers filons
- *    donnent de quoi forger deux fois chacun (les 5 emplacements remplis en une minute), puis un tirage par filon
- *    jusqu'à la zone 2, puis un éclat par filon.
- * Les missions, les fins de zone et l'absence complètent.
+ *    donnent de quoi forger deux fois chacun (les 5 emplacements remplis en une minute), puis un tirage par filon.
+ * Les missions, les fins de zone, l'absence, les événements, les objectifs d'évolution et le Défi de la mine complètent.
  */
-export const SHARD_FIND_CHANCE = 0.02;
+export const SHARD_FIND_CHANCE = 0.03;
 const WELCOME_STAGES = 5;
 const WELCOME_SHARDS = 4;
-const EARLY_ZONES_LAST = 2;
-const EARLY_SHARDS = 2;
-const DEEP_SHARDS = 1;
+const STAGE_SHARDS = 2;
 export const ZONE_CLEAR_SHARDS = 5;
 
 /** Éclats gagnés en épuisant le filon `stage` de la zone `zone`. */
 export function shardsForStage(zone: number, stage: number): number {
-  if (zone === 1 && stage <= WELCOME_STAGES) {
-    return WELCOME_SHARDS;
-  }
-  return zone <= EARLY_ZONES_LAST ? EARLY_SHARDS : DEEP_SHARDS;
+  return zone === 1 && stage <= WELCOME_STAGES ? WELCOME_SHARDS : STAGE_SHARDS;
 }
 
 export function stageIndex(zone: number, stage: number): number {
@@ -267,31 +263,82 @@ export const ZONE_CLEAR_ORES = 20;
 
 export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';
 
+/** Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie. */
+export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'eventsTouched';
+
+export interface EvolutionObjective {
+  /** Palier de la mission, à partir de 1 : un palier s'ouvre quand le précédent est rempli. */
+  readonly tier: number;
+  readonly metric: EvolutionMetric;
+  readonly target: number;
+  /** Éclats offerts dès que la mission est remplie. */
+  readonly shards: number;
+}
+
+/** Missions d'une forme, palier par palier : [palier][mesure, objectif]. Toutes rapportent les mêmes éclats. */
+function tiered(shards: number, tiers: readonly (readonly (readonly [EvolutionMetric, number])[])[]): EvolutionObjective[] {
+  return tiers.flatMap((missions, index) => missions.map(([metric, target]) => ({ tier: index + 1, metric, target, shards })));
+}
+
 export interface EvolutionForm {
   readonly id: EvolutionId;
   readonly label: string;
-  /** Zone à atteindre pour pouvoir évoluer vers cette forme. */
-  readonly minZone: number;
-  /** Minerais à dépenser. Une zone traversée en donne 35 (15 filons + 20 à la fin) : le coût tient en un passage. */
-  readonly ores: Readonly<Partial<Record<TierId, number>>>;
-  readonly gold: number;
+  /** Objectifs à remplir pour passer à cette forme, façon « Adventure Rank » de Legend of Mushroom. */
+  readonly objectives: readonly EvolutionObjective[];
   /** Bonus de Frappe de cette forme, cumulé avec les précédentes. */
   readonly strikeBonus: number;
 }
 
 /**
- * Formes du mineur, de la première à la dernière. Chacune demande d'avoir atteint une zone,
- * les minerais des zones traversées et de l'or, et donne +50 % de Frappe, multipliés entre eux (×5 en Légende).
- * Ce sont les paliers multiplicateurs des jeux idle : un grand bond de Puissance qui fait franchir un mur.
- * Le prix en or vaut à peu près un niveau de pioche au moment où la zone est atteinte : évoluer ou monter
- * la pioche, le choix se pose, mais l'évolution rapporte bien plus.
+ * Formes du mineur, de la première à la dernière. Chacune se gagne en remplissant des missions rangées en 3 paliers,
+ * façon « Adventure Rank » de Legend of Mushroom, sans rien payer : le joueur évolue parce qu'il a joué.
+ * Le dernier palier reprend les objectifs calés sur ce que le joueur régulier avait fait quand il évoluait avec l'ancien
+ * coût en or et minerais : les dates ne bougent pas (simulé : Mineur jour 3, Contremaître jour 5, Maître jour 9,
+ * Légende jour 19). Les deux premiers paliers jalonnent le chemin, pour qu'il y ait toujours une mission proche.
+ * Chaque forme donne +50 % de Frappe, multipliés entre eux (×5 en Légende) : les paliers multiplicateurs des jeux idle.
  */
 export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
-  { id: 'apprentice', label: 'Apprenti', minZone: 1, ores: {}, gold: 0, strikeBonus: 0 },
-  { id: 'miner', label: 'Mineur', minZone: 5, ores: { stone: 30, copper: 30, iron: 30 }, gold: 150_000, strikeBonus: 0.5 },
-  { id: 'foreman', label: 'Contremaître', minZone: 7, ores: { steel: 30, gold: 30 }, gold: 5_000_000, strikeBonus: 0.5 },
-  { id: 'master', label: 'Maître des profondeurs', minZone: 9, ores: { mithril: 30, crystal: 30 }, gold: 40_000_000, strikeBonus: 0.5 },
-  { id: 'legend', label: 'Légende de la mine', minZone: 11, ores: { magma: 30, divine: 30 }, gold: 600_000_000, strikeBonus: 0.5 },
+  { id: 'apprentice', label: 'Apprenti', objectives: [], strikeBonus: 0 },
+  {
+    id: 'miner',
+    label: 'Mineur',
+    objectives: tiered(4, [
+      [['zone', 2], ['pickaxeLevel', 4], ['itemsForged', 60]],
+      [['zone', 3], ['pickaxeLevel', 7], ['itemsForged', 180], ['eventsTouched', 5]],
+      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350], ['eventsTouched', 15]],
+    ]),
+    strikeBonus: 0.5,
+  },
+  {
+    id: 'foreman',
+    label: 'Contremaître',
+    objectives: tiered(6, [
+      [['zone', 6], ['pickaxeLevel', 12], ['itemsForged', 550]],
+      [['pickaxeLevel', 14], ['itemsForged', 750], ['eventsTouched', 30]],
+      [['zone', 7], ['pickaxeLevel', 16], ['itemsForged', 1000], ['eventsTouched', 50]],
+    ]),
+    strikeBonus: 0.5,
+  },
+  {
+    id: 'master',
+    label: 'Maître des profondeurs',
+    objectives: tiered(8, [
+      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 1300]],
+      [['pickaxeLevel', 19], ['itemsForged', 1600], ['eventsTouched', 80]],
+      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['eventsTouched', 110]],
+    ]),
+    strikeBonus: 0.5,
+  },
+  {
+    id: 'legend',
+    label: 'Légende de la mine',
+    objectives: tiered(10, [
+      [['zone', 10], ['pickaxeLevel', 22], ['itemsForged', 2600]],
+      [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['eventsTouched', 180]],
+      [['zone', 12], ['pickaxeLevel', 24], ['itemsForged', 4000], ['eventsTouched', 250]],
+    ]),
+    strikeBonus: 0.5,
+  },
 ];
 
 /** Multiplicateur de Frappe cumulé jusqu'à la forme d'index donné. */
@@ -308,8 +355,8 @@ export const OFFLINE_EFFICIENCY = 0.5;
 /** En dessous, l'absence est trop courte pour mériter un message. */
 export const OFFLINE_MIN_MS = 60 * 1000;
 
-/** Pendant l'absence, un éclat toutes les 10 minutes : de quoi forger une douzaine de fois au retour. */
-const OFFLINE_SHARD_INTERVAL_MS = 10 * 60 * 1000;
+/** Pendant l'absence, un éclat toutes les 6 minutes : 40 au retour de 4 h, de quoi forger vingt fois. */
+const OFFLINE_SHARD_INTERVAL_MS = 6 * 60 * 1000;
 
 export interface OfflineGains {
   /** Absence prise en compte, après plafond. */

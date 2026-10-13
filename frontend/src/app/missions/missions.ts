@@ -1,6 +1,5 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
-import { Companions } from '../companions/companions';
 import { Forge } from '../forge/forge';
 import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
@@ -53,7 +52,6 @@ export class Missions {
   private readonly wallet = inject(Wallet);
   private readonly shards = inject(GeodeShards);
   private readonly clock = inject(CLOCK);
-  private readonly companions = inject(Companions);
   private readonly state = signal<MissionsState>(loadState(this.counters(), dayKey(this.clock())));
 
   private readonly gauges = computed<Gauges>(() => ({
@@ -113,8 +111,6 @@ export class Missions {
     }
     this.grant(DAILY_CHEST_REWARD);
     this.save({ ...this.state(), chestClaimed: true });
-    // Petite chance d'œuf de compagnon dans le coffre du jour
-    this.companions.rollChestEgg();
   }
 
   /** Nouvelle journée : nouvelles missions du jour, mesurées à partir de maintenant. */

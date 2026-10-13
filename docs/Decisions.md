@@ -43,6 +43,15 @@ Retour à [[Accueil]].
 - **Équilibrage** : environ ×1,5 de Puissance au total ; le coût de la pioche passe à ×2,03 par niveau pour garder la pioche 30 vers le jour 50. Détails dans [[competences-et-artefacts]].
 - **Visuels** : aucun dessiné à la main ; Théo génère les icônes avec Gemini. En attendant, des ronds de couleur avec une initiale.
 
+### Refonte compagnons, évolution et équipements (13/10/2026)
+
+Demande de Théo, détaillée dans [[refonte-compagnons-evolution]]. Choix par défaut annoncés dans le fil, à confirmer :
+- **Équipements en bas** de l'écran, comme Legend of Mushroom ; les stats passent derrière un bouton rond « Stats ».
+- **Évolution par objectifs** (zone, pioche, forges, événements touchés), chacun récompensé en éclats, puis un bouton « Promotion ». Plus de coût en or ni en minerai.
+- **Œufs de compagnon** gagnés dans le **Défi de la mine**, une page d'événement de 3 jours à paliers de points. Plus d'œuf en fin de zone ni dans les coffres ; le premier œuf reste offert.
+- **Pierres d'éveil** : nouvelle ressource visible, gagnée par le défi, les doublons et les expéditions ; améliorer un compagnon = monter son étoile (1 à 5). Plus de niveaux ni de minerai à donner.
+- **Éclats** plus faciles à obtenir ; coût de la pioche réajusté au simulateur.
+
 ### Missions
 
 - Façon Legend of Mushroom : une mission principale en chaîne infinie, plus des missions du jour avec un coffre d'éclats, remises à zéro à minuit. Aucune mission impossible : les objectifs liés aux filons sont plafonnés.

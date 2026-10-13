@@ -9,7 +9,7 @@ export interface CompanionDef {
   readonly id: CompanionId;
   readonly label: string;
   readonly rarity: Rarity;
-  /** Bonus de base, à 1 étoile et au niveau 1, quand il accompagne le mineur. */
+  /** Bonus de base, à 1 étoile, quand il accompagne le mineur. */
   readonly effects: Readonly<Partial<Record<BonusId, number>>>;
   readonly description: string;
 }
@@ -17,6 +17,7 @@ export interface CompanionDef {
 /**
  * Un seul compagnon accompagne le mineur : son bonus forme une famille à part, multipliée aux autres.
  * Les autres partent en expédition. Budget simulé : environ ×1,15 de Puissance au jour 49.
+ * L'effet de base est celui d'un compagnon à 1 étoile.
  */
 export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
   canary: {
@@ -65,17 +66,14 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
 
 // ─── Œufs ──────────────────────────────────────────────────────────────────
 
-/** L'onglet s'ouvre à la zone 3, avec un premier œuf commun offert. */
+/** L'onglet s'ouvre à la zone 3, avec un premier œuf commun offert. Les suivants viennent du Défi de la mine. */
 export const COMPANIONS_UNLOCK_ZONE = 3;
 
 /** Rareté d'un œuf trouvé, en %. Affichée au joueur telle quelle. */
 export const EGG_RARITY_WEIGHTS: Readonly<Record<Rarity, number>> = { common: 60, rare: 28, epic: 10, legendary: 2 };
 
-/** Le légendaire est garanti au plus tard au 15e œuf sans légendaire (environ zone 17 pour un joueur régulier). */
+/** Le légendaire est garanti au plus tard au 15e œuf sans légendaire. */
 export const LEGENDARY_PITY = 15;
-
-/** Chance qu'un coffre enseveli (événement) ou le coffre des missions du jour contienne un œuf. */
-export const CHEST_EGG_CHANCE = 0.02;
 
 /** Éclosion : le minuteur continue jeu fermé. */
 export const HATCH_MS: Readonly<Record<Rarity, number>> = {
@@ -85,26 +83,31 @@ export const HATCH_MS: Readonly<Record<Rarity, number>> = {
   legendary: 8 * 60 * 60 * 1000,
 };
 
-// ─── Étoiles et niveaux ────────────────────────────────────────────────────
+// ─── Étoiles et pierres d'éveil ──────────────────────────────────────────────
 
-/** Chaque doublon ajoute une étoile (5 au plus), et chaque étoile au-delà de la première ajoute 25 % de l'effet de base. */
+/**
+ * Améliorer un compagnon, c'est monter son étoile, de 1 à 5, avec des pierres d'éveil.
+ * Chaque étoile au-delà de la première ajoute 50 % de l'effet de base : ×3 à 5 étoiles.
+ */
 export const MAX_STARS = 5;
-const STAR_STEP = 0.25;
-/** Un doublon d'un compagnon déjà à 5 étoiles se change en éclats. */
-export const STAR_OVERFLOW_SHARDS = 10;
+const STAR_STEP = 0.5;
 
-/** Nourri de minerais, il monte jusqu'au niveau 10 ; chaque niveau au-delà du premier ajoute 5 % de l'effet de base. */
-export const MAX_COMPANION_LEVEL = 10;
-const LEVEL_STEP = 0.05;
+/** Pierres pour passer de l'étoile `stars` à la suivante : 10, 25, 50, puis 100 (185 pour aller de 1 à 5). */
+const STAR_COSTS: readonly number[] = [10, 25, 50, 100];
 
-/** Minerais pour passer du niveau `level` au suivant : 3 au niveau 1, puis 2 de plus à chaque niveau. */
-export function feedCost(level: number): number {
-  return 1 + 2 * level;
+export function starCost(stars: number): number | null {
+  return STAR_COSTS[stars - 1] ?? null;
 }
 
-/** Multiplicateur de l'effet de base selon les étoiles et le niveau (×1 à 1 étoile niveau 1, ×2,9 au maximum). */
-export function companionEffectMultiplier(stars: number, level: number): number {
-  return (1 + STAR_STEP * (stars - 1)) * (1 + LEVEL_STEP * (level - 1));
+/** Un doublon se change en pierres d'éveil, d'autant plus que le compagnon est rare. */
+export const DUPLICATE_STONES: Readonly<Record<Rarity, number>> = { common: 3, rare: 6, epic: 12, legendary: 25 };
+
+/** Les anciennes sauvegardes avaient des niveaux payés en minerai : 2 pierres rendues par niveau au-delà du premier. */
+export const LEGACY_STONES_PER_LEVEL = 2;
+
+/** Multiplicateur de l'effet de base selon les étoiles (×1 à 1 étoile, ×3 à 5). */
+export function companionEffectMultiplier(stars: number): number {
+  return 1 + STAR_STEP * (stars - 1);
 }
 
 // ─── Expéditions ───────────────────────────────────────────────────────────
@@ -113,11 +116,11 @@ export function companionEffectMultiplier(stars: number, level: number): number 
 export const EXPEDITION_HOURS: readonly number[] = [1, 4, 8];
 
 /**
- * Les expéditions rapportent des éclats et du minerai, jamais d'or : elles n'accélèrent pas la pioche.
- * 1 éclat par heure pour un commun, plus selon la rareté ; un minerai toutes les 2 heures.
+ * Les expéditions rapportent des éclats et des pierres d'éveil, jamais d'or : elles n'accélèrent pas la pioche.
+ * Par heure : 1 éclat pour un commun, et une pierre toutes les 4 heures, plus selon la rareté.
  * Deux compagnons au plus partent en même temps : sinon toute la collection rapportait plus que l'absence.
  */
 export const EXPEDITION_SLOTS = 2;
 export const EXPEDITION_SHARDS_PER_HOUR = 1;
+export const EXPEDITION_STONES_PER_HOUR = 0.25;
 export const EXPEDITION_RARITY_BONUS: Readonly<Record<Rarity, number>> = { common: 1, rare: 1.25, epic: 1.5, legendary: 2 };
-export const EXPEDITION_HOURS_PER_ORE = 2;

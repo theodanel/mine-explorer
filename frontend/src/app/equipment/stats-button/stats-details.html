@@ -1,0 +1,18 @@
+<section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="stats-details-title">
+  <h2 id="stats-details-title">Détails des stats</h2>
+  <h3>Stats de base</h3>
+  <app-stats-panel />
+  @if (sources().length > 0) {
+    <h3>Bonus</h3>
+    <dl class="sources">
+      @for (source of sources(); track source.label) {
+        <div class="source">
+          <dt>{{ source.label }}</dt>
+          @for (line of source.lines; track line) {
+            <dd>{{ line }}</dd>
+          }
+        </div>
+      }
+    </dl>
+  }
+</section>

@@ -1,27 +1,27 @@
-// Règles pures des compagnons : œufs, éclosion, doublons, niveaux, bonus et expéditions.
+// Règles pures des compagnons : œufs, éclosion, doublons, étoiles, bonus et expéditions.
 import {
   COMPANION_IDS,
   CompanionId,
   COMPANIONS,
   companionEffectMultiplier,
+  DUPLICATE_STONES,
   EGG_RARITY_WEIGHTS,
   EXPEDITION_HOURS,
-  EXPEDITION_HOURS_PER_ORE,
   EXPEDITION_RARITY_BONUS,
-  EXPEDITION_SLOTS,
   EXPEDITION_SHARDS_PER_HOUR,
+  EXPEDITION_SLOTS,
+  EXPEDITION_STONES_PER_HOUR,
   HATCH_MS,
+  LEGACY_STONES_PER_LEVEL,
   LEGENDARY_PITY,
-  MAX_COMPANION_LEVEL,
   MAX_STARS,
-  STAR_OVERFLOW_SHARDS,
+  starCost,
 } from '../balance/companions';
 import { BonusId, Bonuses, NO_BONUSES, RARITY_IDS, Rarity } from '../balance/skill-tree';
 import type { Random } from '../shared/random';
 
 export interface OwnedCompanion {
   readonly stars: number;
-  readonly level: number;
 }
 
 export interface Expedition {
@@ -41,6 +41,8 @@ export interface CompanionState {
   /** Premier œuf offert à l'ouverture de l'onglet. */
   readonly gifted: boolean;
   readonly expeditions: Readonly<Partial<Record<CompanionId, Expedition>>>;
+  /** Pierres d'éveil : elles font monter les étoiles. */
+  readonly stones: number;
 }
 
 export const EMPTY_COMPANIONS: CompanionState = {
@@ -51,30 +53,38 @@ export const EMPTY_COMPANIONS: CompanionState = {
   sinceLegendary: 0,
   gifted: false,
   expeditions: {},
+  stones: 0,
 };
 
 export interface Hatching {
   readonly id: CompanionId;
-  /** new : premier exemplaire ; star : doublon qui ajoute une étoile ; maxed : doublon changé en éclats. */
-  readonly kind: 'new' | 'star' | 'maxed';
+  /** new : premier exemplaire ; duplicate : doublon changé en pierres d'éveil. */
+  readonly kind: 'new' | 'duplicate';
   readonly stars: number;
-  readonly shards: number;
+  readonly stones: number;
 }
 
-/** Rareté d'un œuf trouvé ; le légendaire tombe d'office au bout de la garantie. */
-export function rollEggRarity(random: Random, sinceLegendary: number): Rarity {
+const rarityRank = (rarity: Rarity): number => RARITY_IDS.indexOf(rarity);
+
+/**
+ * Rareté d'un œuf trouvé : tirée selon les chances affichées, jamais sous `minRarity`,
+ * et légendaire d'office au bout de la garantie.
+ */
+export function rollEggRarity(random: Random, sinceLegendary: number, minRarity: Rarity = 'common'): Rarity {
   if (sinceLegendary >= LEGENDARY_PITY - 1) {
     return 'legendary';
   }
   const total = RARITY_IDS.reduce((sum, rarity) => sum + EGG_RARITY_WEIGHTS[rarity], 0);
   let threshold = random() * total;
+  let rolled: Rarity = RARITY_IDS[RARITY_IDS.length - 1];
   for (const rarity of RARITY_IDS) {
     threshold -= EGG_RARITY_WEIGHTS[rarity];
     if (threshold < 0) {
-      return rarity;
+      rolled = rarity;
+      break;
     }
   }
-  return RARITY_IDS[RARITY_IDS.length - 1];
+  return rarityRank(rolled) < rarityRank(minRarity) ? minRarity : rolled;
 }
 
 /** Range un œuf trouvé ; s'il n'y a rien à couver, il passe tout de suite dans la couveuse. */
@@ -95,34 +105,49 @@ export function canHatch(state: CompanionState, now: number): boolean {
   return state.incubating !== null && now >= state.incubating.endsAt;
 }
 
-/** Fait éclore l'œuf couvé : un compagnon de sa rareté, au hasard. L'œuf suivant prend la place. */
+/** Fait éclore l'œuf couvé : un compagnon de sa rareté, au hasard. Un doublon devient des pierres d'éveil. */
 export function hatch(state: CompanionState, random: Random, now: number): { state: CompanionState; hatching: Hatching } | null {
   if (!canHatch(state, now) || state.incubating === null) {
     return null;
   }
-  const pool = COMPANION_IDS.filter((id) => COMPANIONS[id].rarity === state.incubating?.rarity);
+  const rarity = state.incubating.rarity;
+  const pool = COMPANION_IDS.filter((id) => COMPANIONS[id].rarity === rarity);
   const id = pool[Math.min(Math.floor(random() * pool.length), pool.length - 1)];
   const owned = state.owned[id];
   let hatching: Hatching;
   let next: CompanionState;
   if (owned === undefined) {
-    hatching = { id, kind: 'new', stars: 1, shards: 0 };
+    hatching = { id, kind: 'new', stars: 1, stones: 0 };
     // Le premier compagnon accompagne le mineur tout de suite
-    next = { ...state, owned: { ...state.owned, [id]: { stars: 1, level: 1 } }, active: state.active ?? id };
-  } else if (owned.stars >= MAX_STARS) {
-    hatching = { id, kind: 'maxed', stars: owned.stars, shards: STAR_OVERFLOW_SHARDS };
-    next = state;
+    next = { ...state, owned: { ...state.owned, [id]: { stars: 1 } }, active: state.active ?? id };
   } else {
-    hatching = { id, kind: 'star', stars: owned.stars + 1, shards: 0 };
-    next = { ...state, owned: { ...state.owned, [id]: { ...owned, stars: owned.stars + 1 } } };
+    const stones = DUPLICATE_STONES[rarity];
+    hatching = { id, kind: 'duplicate', stars: owned.stars, stones };
+    next = { ...state, stones: state.stones + stones };
   }
   return { state: startNextEgg({ ...next, incubating: null }, now), hatching };
 }
 
-/** Effets d'un compagnon à ses étoiles et à son niveau. */
+/** Pierres pour l'étoile suivante, ou null si le compagnon est absent ou déjà à 5 étoiles. */
+export function nextStarCost(state: CompanionState, id: CompanionId): number | null {
+  const owned = state.owned[id];
+  return owned === undefined || owned.stars >= MAX_STARS ? null : starCost(owned.stars);
+}
+
+/** Monte le compagnon d'une étoile en payant ses pierres d'éveil ; refusé s'il en manque. */
+export function raiseStar(state: CompanionState, id: CompanionId): CompanionState {
+  const owned = state.owned[id];
+  const cost = nextStarCost(state, id);
+  if (owned === undefined || cost === null || state.stones < cost) {
+    return state;
+  }
+  return { ...state, stones: state.stones - cost, owned: { ...state.owned, [id]: { stars: owned.stars + 1 } } };
+}
+
+/** Effets d'un compagnon à ses étoiles. */
 export function companionEffects(id: CompanionId, owned: OwnedCompanion): Bonuses {
   const totals: Record<BonusId, number> = { ...NO_BONUSES };
-  const multiplier = companionEffectMultiplier(owned.stars, owned.level);
+  const multiplier = companionEffectMultiplier(owned.stars);
   for (const [bonus, value] of Object.entries(COMPANIONS[id].effects) as [BonusId, number][]) {
     totals[bonus] += value * multiplier;
   }
@@ -143,29 +168,17 @@ export function setActive(state: CompanionState, id: CompanionId): CompanionStat
   return { ...state, active: id };
 }
 
-export function canFeed(state: CompanionState, id: CompanionId): boolean {
-  const owned = state.owned[id];
-  return owned !== undefined && owned.level < MAX_COMPANION_LEVEL;
-}
-
-export function feed(state: CompanionState, id: CompanionId): CompanionState {
-  const owned = state.owned[id];
-  if (owned === undefined || !canFeed(state, id)) {
-    return state;
-  }
-  return { ...state, owned: { ...state.owned, [id]: { ...owned, level: owned.level + 1 } } };
-}
-
 export interface ExpeditionLoot {
   readonly shards: number;
-  readonly ores: number;
+  readonly stones: number;
 }
 
-/** Butin d'une expédition : des éclats et du minerai, jamais d'or. */
+/** Butin d'une expédition : des éclats et des pierres d'éveil, jamais d'or. */
 export function expeditionLoot(id: CompanionId, hours: number): ExpeditionLoot {
+  const bonus = EXPEDITION_RARITY_BONUS[COMPANIONS[id].rarity];
   return {
-    shards: Math.round(hours * EXPEDITION_SHARDS_PER_HOUR * EXPEDITION_RARITY_BONUS[COMPANIONS[id].rarity]),
-    ores: Math.floor(hours / EXPEDITION_HOURS_PER_ORE),
+    shards: Math.round(hours * EXPEDITION_SHARDS_PER_HOUR * bonus),
+    stones: Math.round(hours * EXPEDITION_STONES_PER_HOUR * bonus),
   };
 }
 
@@ -186,7 +199,7 @@ export function sendOnExpedition(state: CompanionState, id: CompanionId, hours: 
   return { ...state, expeditions: { ...state.expeditions, [id]: { hours, endsAt: now + hours * 60 * 60 * 1000 } } };
 }
 
-/** Ramène un compagnon rentré ; renvoie null s'il est encore parti. */
+/** Ramène un compagnon rentré avec son butin ; renvoie null s'il est encore parti. */
 export function collectExpedition(
   state: CompanionState,
   id: CompanionId,
@@ -198,7 +211,8 @@ export function collectExpedition(
   }
   const expeditions = { ...state.expeditions };
   delete expeditions[id];
-  return { state: { ...state, expeditions }, loot: expeditionLoot(id, expedition.hours) };
+  const loot = expeditionLoot(id, expedition.hours);
+  return { state: { ...state, expeditions, stones: state.stones + loot.stones }, loot };
 }
 
 // ─── Sauvegarde ──────────────────────────────────────────────────────────────
@@ -209,23 +223,46 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const isCount = (value: unknown, min: number, max: number): boolean =>
   Number.isSafeInteger(value) && (value as number) >= min && (value as number) <= max;
 
+/**
+ * Ancienne sauvegarde (avant les pierres d'éveil) : les niveaux payés en minerai deviennent des pierres,
+ * et le compteur de pierres démarre à ce remboursement.
+ */
+export function migrateCompanionState(value: unknown): unknown {
+  if (!isRecord(value) || value['stones'] !== undefined || !isRecord(value['owned'])) {
+    return value;
+  }
+  let refund = 0;
+  const owned: Record<string, unknown> = {};
+  for (const [id, entry] of Object.entries(value['owned'])) {
+    if (isRecord(entry)) {
+      const level = entry['level'];
+      if (Number.isSafeInteger(level) && (level as number) > 1) {
+        refund += ((level as number) - 1) * LEGACY_STONES_PER_LEVEL;
+      }
+      owned[id] = { stars: entry['stars'] };
+    } else {
+      owned[id] = entry;
+    }
+  }
+  const expeditions = isRecord(value['expeditions']) ? value['expeditions'] : {};
+  return { ...value, owned, expeditions, stones: refund };
+}
+
 export function isValidCompanionState(value: unknown): value is CompanionState {
   if (!isRecord(value)) {
     return false;
   }
-  const { owned, active, eggs, incubating, sinceLegendary, gifted, expeditions } = value;
+  const { owned, active, eggs, incubating, sinceLegendary, gifted, expeditions, stones } = value;
   return (
     isRecord(owned) &&
-    Object.entries(owned).every(
-      ([id, entry]) =>
-        isCompanionId(id) && isRecord(entry) && isCount(entry['stars'], 1, MAX_STARS) && isCount(entry['level'], 1, MAX_COMPANION_LEVEL),
-    ) &&
+    Object.entries(owned).every(([id, entry]) => isCompanionId(id) && isRecord(entry) && isCount(entry['stars'], 1, MAX_STARS)) &&
     (active === null || (isCompanionId(active) && owned[active] !== undefined)) &&
     Array.isArray(eggs) &&
     eggs.every(isRarity) &&
     (incubating === null || (isRecord(incubating) && isRarity(incubating['rarity']) && Number.isFinite(incubating['endsAt']))) &&
     isCount(sinceLegendary, 0, LEGENDARY_PITY) &&
     typeof gifted === 'boolean' &&
+    isCount(stones, 0, Number.MAX_SAFE_INTEGER) &&
     isRecord(expeditions) &&
     Object.entries(expeditions).every(
       ([id, entry]) =>

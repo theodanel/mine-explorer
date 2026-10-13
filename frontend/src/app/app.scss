@@ -82,9 +82,9 @@
 .portrait {
   position: relative;
   z-index: 1;
-  width: 15cqw;
-  height: 15cqw;
-  border: 1cqw solid #2a1a0d;
+  width: 12cqw;
+  height: 12cqw;
+  border: 0.8cqw solid #2a1a0d;
   border-radius: 50%;
   background: radial-gradient(#e8b45c, #9a6230);
   box-shadow:
@@ -94,27 +94,27 @@
 
 .player-card {
   display: grid;
-  margin: 0 0 0 -3cqw;
-  padding: 1cqw 3cqw 1cqw 4.5cqw;
-  border: 0.6cqw solid #2a1a0d;
+  margin: 0 0 0 -2.5cqw;
+  padding: 0.7cqw 2.5cqw 0.7cqw 3.8cqw;
+  border: 0.5cqw solid #2a1a0d;
   border-radius: 0 2cqw 2cqw 0;
   background: linear-gradient(#5b3d24, #3d2815);
   color: #fff3d6;
 }
 
 .player-name {
-  font-size: 3.6cqw;
+  font-size: 3cqw;
   font-weight: bold;
 }
 
 .player-title {
-  font-size: 2.8cqw;
+  font-size: 2.4cqw;
   color: #e8c48a;
 }
 
 .resources {
   display: grid;
-  gap: 1.5cqw;
+  gap: 1cqw;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -124,13 +124,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5cqw;
-  min-width: 22cqw;
-  padding: 0.6cqw 2.5cqw 0.6cqw 0.8cqw;
-  border: 0.6cqw solid #2a1a0d;
+  gap: 1.2cqw;
+  min-width: 18cqw;
+  padding: 0.4cqw 2cqw 0.4cqw 0.6cqw;
+  border: 0.5cqw solid #2a1a0d;
   border-radius: 999px;
   background: rgb(20 12 6 / 75%);
-  font: bold 4cqw / 1 Arial, sans-serif;
+  font: bold 3.2cqw / 1 Arial, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -144,7 +144,7 @@
 
 .ore {
   color: #fff3d6;
-  font-size: 3.2cqw;
+  font-size: 2.7cqw;
 }
 
 .ore-label {
@@ -166,18 +166,28 @@
   inset: 15.5% 0 auto;
 }
 
-// Volume, discret sous le portrait du mineur
-.sound {
+// Rappel du Défi de la mine quand un palier attend, sous le bandeau de zone, à gauche
+.challenge-call {
   position: absolute;
-  inset: 11.5% auto auto 3cqw;
+  inset: 23% auto auto 3cqw;
   z-index: var(--z-scene-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 0.8cqw 2.5cqw 0.8cqw 1cqw;
+  font-size: 2.8cqw;
+
+  .trophy-icon {
+    width: 6cqw;
+    height: 6cqw;
+  }
 }
 
 // Compagnon à côté du mineur, au sol, entre la colonne de gauche et lui
 .buddy {
   position: absolute;
-  top: 44%;
-  left: 23cqw;
+  top: 42%;
+  left: 12cqw;
   z-index: var(--z-scene-ui);
   width: 18cqw;
 }
@@ -185,34 +195,27 @@
 // Événements de mine : dans la galerie, entre les colonnes d'équipement, au-dessus du mineur
 .events {
   position: absolute;
-  inset: 21% 20cqw 46%;
+  inset: 21% 5cqw 42%;
   z-index: var(--z-events);
 }
 
-// Colonnes d'équipement de part et d'autre du mineur
-.column-left,
-.column-right {
-  position: absolute;
-  top: 21%;
-}
-
-.column-left {
-  left: 3cqw;
-}
-
-.column-right {
-  right: 3cqw;
-}
-
-// Sorts équipés : sous l'équipement de droite, au-dessus des stats
+// Sorts équipés : à droite, juste au-dessus du panneau d'équipement
 .spells {
   position: absolute;
-  inset: 53.5% 3cqw auto auto;
+  inset: 58.5% 3cqw auto auto;
 }
 
-.stats {
+// Panneau d'équipement en bas, à la place des anciennes colonnes et du panneau de stats
+.equipment-bar {
   position: absolute;
-  inset: 61.5% 3cqw auto;
+  inset: 65% 3cqw auto;
+}
+
+// Bouton rond des stats, en bas à droite de la barre de forge
+.stats-button {
+  position: absolute;
+  inset: auto 2cqw 11.5% auto;
+  z-index: var(--z-scene-ui);
 }
 
 // Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)

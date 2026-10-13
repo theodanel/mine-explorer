@@ -337,3 +337,47 @@
     animation: none;
   }
 }
+
+// Pierres d'éveil et accès au Défi : en haut, toujours visibles
+.purse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+}
+
+.stones {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1cqw 3cqw 1cqw 1.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 35%);
+  font-size: 3.2cqw;
+
+  strong {
+    color: #7fe3d6;
+    font-size: 4cqw;
+  }
+}
+
+// Pierre d'éveil (planche 10)
+.stone-icon {
+  width: 6cqw;
+  height: 6cqw;
+  object-fit: contain;
+}
+
+.challenge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1.2cqw 3cqw 1.2cqw 1.5cqw;
+  font-size: 3.4cqw;
+}
+
+.trophy-icon {
+  width: 7cqw;
+  height: 7cqw;
+  object-fit: contain;
+}

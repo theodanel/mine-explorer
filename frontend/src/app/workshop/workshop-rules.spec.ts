@@ -1,6 +1,6 @@
 import { BASE_STATS } from '../balance/balance';
 import { workshopGoldCost, workshopMaterial, workshopOreCost, WORKSHOP_STEP } from '../balance/workshop';
-import { isValidLevels, reinforce, reservedOres, upgradeCost } from './workshop-rules';
+import { isValidLevels, reinforce, upgradeCost } from './workshop-rules';
 
 describe('workshop-rules', () => {
   it('renforce la stat principale de chaque emplacement', () => {
@@ -24,13 +24,6 @@ describe('workshop-rules', () => {
     expect(workshopMaterial(8)).toBe('mithril');
     expect(workshopMaterial(30)).toBe('divine');
     expect(upgradeCost(0, 8).ores).toEqual({ mithril: workshopOreCost(0) });
-  });
-
-  it('garde les minerais des évolutions à venir', () => {
-    // Contremaître (index 2) : il reste Maître (Mithril, Cristal) et Légende (Magma, Divin)
-    expect(reservedOres(2, 'mithril')).toBe(30);
-    expect(reservedOres(2, 'gold')).toBe(0);
-    expect(reservedOres(4, 'divine')).toBe(0);
   });
 
   it('refuse une sauvegarde invalide', () => {

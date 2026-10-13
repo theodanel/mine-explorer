@@ -26,7 +26,6 @@ describe('Companions', () => {
   it('reste fermé avant la zone 3, sans œuf', () => {
     const companions = setup(2);
     expect(companions.unlocked()).toBe(false);
-    expect(companions.findEgg()).toBeNull();
     expect(companions.incubating()).toBeNull();
   });
 
@@ -37,5 +36,18 @@ describe('Companions', () => {
     expect(companions.hatch()?.id).toBe('canary');
     expect(companions.active()).toBe('canary');
     expect(companions.bonuses().goldPct).toBeGreaterThan(0);
+  });
+
+  it('montre et dépense les pierres d\'éveil pour monter une étoile', () => {
+    const companions = setup(3);
+    now = HATCH_MS.common;
+    companions.hatch();
+    const cost = companions.starCost('canary') ?? 0;
+    expect(companions.canRaiseStar('canary')).toBe(false);
+    companions.addStones(cost);
+    expect(companions.stones()).toBe(cost);
+    expect(companions.raiseStar('canary')).toBe(true);
+    expect(companions.owned().canary?.stars).toBe(2);
+    expect(companions.stones()).toBe(0);
   });
 });

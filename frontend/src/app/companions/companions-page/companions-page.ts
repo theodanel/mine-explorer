@@ -9,12 +9,10 @@ import {
   EGG_RARITY_WEIGHTS,
   EXPEDITION_HOURS,
   LEGENDARY_PITY,
-  MAX_COMPANION_LEVEL,
   MAX_STARS,
 } from '../../balance/companions';
 import { RARITY_IDS, RARITY_LABELS } from '../../balance/skill-tree';
-import { TIER_LABELS } from '../../equipment/equipment.model';
-import { companionIconUrl, eggIconUrl, materialIconUrl } from '../../loading/game-assets';
+import { companionIconUrl, eggIconUrl } from '../../loading/game-assets';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
@@ -69,7 +67,6 @@ export class CompanionsPage {
         icon: companionIconUrl(id),
         rarity: COMPANIONS[id].rarity,
         stars: entry?.stars ?? 0,
-        level: entry?.level ?? 0,
         active: this.companions.active() === id,
         away: expedition !== undefined,
         back: expedition !== undefined && expedition.endsAt <= this.companions.now(),
@@ -87,7 +84,6 @@ export class CompanionsPage {
     }
     const def = COMPANIONS[id];
     const expedition = this.companions.expeditions()[id];
-    const material = this.companions.feedMaterial();
     return {
       id,
       label: def.label,
@@ -96,15 +92,12 @@ export class CompanionsPage {
       rarityLabel: RARITY_LABELS[def.rarity],
       description: def.description,
       stars: entry.stars,
-      level: entry.level,
-      maxLevel: MAX_COMPANION_LEVEL,
+      maxStars: MAX_STARS,
       effects: describeBonuses(companionEffects(id, entry)),
-      nextEffects: entry.level < MAX_COMPANION_LEVEL ? describeBonuses(companionEffects(id, { ...entry, level: entry.level + 1 })) : null,
+      nextEffects: entry.stars < MAX_STARS ? describeBonuses(companionEffects(id, { stars: entry.stars + 1 })) : null,
       active: this.companions.active() === id,
-      feedCost: this.companions.feedCost(id),
-      canFeed: this.companions.canFeed(id),
-      materialIcon: materialIconUrl(material),
-      materialLabel: TIER_LABELS[material],
+      starCost: this.companions.starCost(id),
+      canRaise: this.companions.canRaiseStar(id),
       expedition:
         expedition === undefined
           ? null
@@ -125,10 +118,14 @@ export class CompanionsPage {
     }
   }
 
-  protected feed(id: CompanionId): void {
-    if (this.companions.feed(id)) {
+  protected raiseStar(id: CompanionId): void {
+    if (this.companions.raiseStar(id)) {
       this.sound.play('upgrade');
     }
+  }
+
+  protected openChallenge(): void {
+    this.navigation.open('challenge');
   }
 
   protected collect(id: CompanionId): void {

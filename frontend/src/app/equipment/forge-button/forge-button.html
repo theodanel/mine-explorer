@@ -78,11 +78,15 @@
 </div>
 
 @if (filtersOpen()) {
-  <app-forge-filters (closed)="filtersOpen.set(false)" />
+  @defer (on immediate) {
+    <app-forge-filters (closed)="filtersOpen.set(false)" />
+  }
 }
 
 @if (missionsOpen()) {
-  <app-missions-dialog (closed)="missionsOpen.set(false)" />
+  @defer (on immediate) {
+    <app-missions-dialog (closed)="missionsOpen.set(false)" />
+  }
 }
 
 @if (upgradeOpen()) {

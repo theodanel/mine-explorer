@@ -7,7 +7,7 @@ import { MAX_PICKAXE_LEVEL, STAGES_PER_ZONE } from '../balance/balance';
  * « rocksBroken » compte les filons épuisés (un filon = un rocher). L'identifiant reste celui-ci
  * pour ne pas invalider les sauvegardes existantes ; seuls les libellés parlent de filons.
  */
-export const COUNTER_IDS = ['rocksBroken', 'itemsForged', 'itemsSold', 'segmentsPaid'] as const;
+export const COUNTER_IDS = ['rocksBroken', 'itemsForged', 'itemsSold', 'segmentsPaid', 'eventsTouched'] as const;
 export type CounterId = (typeof COUNTER_IDS)[number];
 export type Counters = Readonly<Record<CounterId, number>>;
 
@@ -15,7 +15,7 @@ export type Counters = Readonly<Record<CounterId, number>>;
 export type GaugeId = 'stagesReached' | 'pickaxeLevel';
 export type Gauges = Readonly<Record<GaugeId, number>>;
 
-export const EMPTY_COUNTERS: Counters = { rocksBroken: 0, itemsForged: 0, itemsSold: 0, segmentsPaid: 0 };
+export const EMPTY_COUNTERS: Counters = { rocksBroken: 0, itemsForged: 0, itemsSold: 0, segmentsPaid: 0, eventsTouched: 0 };
 
 export interface MissionReward {
   readonly shards: number;

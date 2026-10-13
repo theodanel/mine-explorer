@@ -14,7 +14,7 @@ Depuis `frontend/` :
 ## Les principes
 
 1. **Un début qui arrose, puis un rythme qui ralentit doucement.** Comme Legend of Mushroom : plus de 200 forges et 10 niveaux de pioche le premier jour, puis une centaine de forges par jour et des niveaux de plus en plus espacés.
-2. **L'or fixe le rythme, pas l'attente.** Le coût de la pioche est multiplié par 2,05 à chaque niveau alors que le revenu grandit d'environ ×1,4 : c'est le mur classique des jeux idle. Les minuteurs restent courts (8 h 30 au maximum). Quand ils duraient des jours, l'or s'entassait sans usage.
+2. **L'or fixe le rythme, pas l'attente.** Le coût de la pioche est multiplié par 2,065 à chaque niveau alors que le revenu grandit d'environ ×1,4 : c'est le mur classique des jeux idle. Les minuteurs restent courts (8 h 30 au maximum). Quand ils duraient des jours, l'or s'entassait sans usage.
 3. **Les évolutions sont les grands bonds.** Chacune multiplie la Frappe par 1,5 (×5 en Légende) : ce sont les paliers multiplicateurs qui font franchir un mur d'un coup.
 4. **Vendre compte.** Le prix de vente suit le niveau de l'objet et vaut 20 à 25 % de l'or gagné sur une partie.
 5. **Les éclats ne s'arrêtent jamais.** Un éclat peut tomber à chaque coup, en plus des filons, des missions et de l'absence : environ une forge par minute et demie de jeu actif, à tout moment de la partie.
@@ -24,28 +24,29 @@ Depuis `frontend/` :
 ## La boucle
 
 1. **Miner.** Chaque zone compte 15 filons, de 1-1 à 1-15, puis 2-1, etc. Chaque filon a un peu plus de PV que le précédent. Chaque coup rapporte 0,25 pièce par PV miné (plus le bonus du sac).
-2. **Éclats de géode.** Chaque coup a 2 % de chances d'en déterrer un (environ 37 par heure sans bonus de Vitesse). En plus, les 5 premiers filons en donnent 4 (les 5 emplacements remplis en une minute), les filons suivants 2 jusqu'à la fin de la zone 2, puis 1. Une zone terminée en donne 5, et l'absence 1 toutes les 10 minutes (24 au maximum). Les missions complètent :
+2. **Éclats de géode.** Chaque coup a 3 % de chances d'en déterrer un (environ 56 par heure sans bonus de Vitesse). En plus, les 5 premiers filons en donnent 4 (les 5 emplacements remplis en une minute), puis chaque filon 2. Une zone terminée en donne 5, et l'absence 1 toutes les 6 minutes (40 au maximum). Les missions, les objectifs d'évolution, le Défi de la mine, les événements et les expéditions complètent :
    - une mission principale à la fois, qui s'enchaîne sans fin (épuise des filons, forge, atteins un filon, paie des segments, vends, monte la pioche) ; les objectifs grandissent à chaque tour, mais les filons et les segments sont plafonnés à 3, et la mission de segments se valide d'elle-même quand la pioche est au maximum ;
    - trois missions du jour (épuise un filon, forge 10 objets, vends 5 objets) et un coffre de 10 éclats quand les trois sont récupérées, soit 27 éclats par jour. Elles changent à minuit, heure du joueur.
 3. **Forger.** 2 éclats = 1 tirage. Le palier de l'objet dépend uniquement du niveau de la pioche.
 4. **Équiper ou vendre.** La comparaison montre le gain ou la perte de Puissance. L'objet remplacé est vendu automatiquement.
 5. **Améliorer la pioche.** L'or remplit 10 segments, puis un minuteur fait passer au niveau suivant. Le minuteur continue quand le jeu est fermé.
-6. **Évoluer.** À partir de la zone 5, le mineur peut changer de forme contre des minerais et de l'or.
-7. **Absence.** Jeu fermé ou onglet caché, le mineur rapporte la moitié de l'or habituel et un éclat toutes les 10 minutes, sur 4 h au maximum. Les filons et les missions n'avancent qu'en jeu.
+6. **Évoluer.** Le mineur change de forme en remplissant des objectifs (zone, pioche, forges, événements), sans rien payer.
+7. **Absence.** Jeu fermé ou onglet caché, le mineur rapporte la moitié de l'or habituel et un éclat toutes les 6 minutes, sur 4 h au maximum. Les filons et les missions n'avancent qu'en jeu.
 
 ## Évolutions du mineur
 
-Chaque forme change le visuel et multiplie la Frappe par 1,5. Le prix en or vaut à peu près un niveau de pioche au moment où la zone est atteinte : le joueur choisit entre les deux, mais l'évolution rapporte bien plus.
+Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne en remplissant des missions rangées en **3 paliers**, façon « Adventure Rank » de Legend of Mushroom, sans rien payer. Un palier s'ouvre quand le précédent est rempli ; chaque mission remplie donne des éclats (4 par mission pour le Mineur, 6, 8 puis 10), et la promotion donne ceux qu'on a oubliés. Chaque forme multiplie toujours la Frappe par 1,5. Le tableau donne le **dernier palier** ; les deux premiers jalonnent le chemin (voir `EVOLUTION_FORMS`).
 
-| Forme | Zone à atteindre | Minerais | Or | Frappe totale |
-|---|---|---|---|---|
-| Apprenti | départ | aucun | aucun | ×1 |
-| Mineur | 5 | 30 Pierre, 30 Cuivre, 30 Fer | 150 000 | ×1,5 |
-| Contremaître | 7 | 30 Acier, 30 Or | 5 000 000 | ×2,25 |
-| Maître des profondeurs | 9 | 30 Mithril, 30 Cristal | 40 000 000 | ×3,4 |
-| Légende de la mine | 11 | 30 Magma, 30 Divin | 600 000 000 | ×5,1 |
+| Forme | Zone | Pioche | Objets forgés | Événements touchés | Frappe totale |
+|---|---|---|---|---|---|
+| Apprenti | départ | | | | ×1 |
+| Mineur | 5 | 10 | 350 | 15 | ×1,5 |
+| Contremaître | 7 | 16 | 1 000 | 50 | ×2,25 |
+| Maître des profondeurs | 9 | 20 | 1 900 | 110 | ×3,4 |
+| Légende de la mine | 12 | 24 | 4 000 | 250 | ×5,1 |
 
-- **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10). La zone 1 n'en donne pas : le bois n'est pas un minerai. Chaque filon épuisé en donne 1, et une zone terminée 20 de plus, soit 35 par zone traversée. Le coût en minerais tient en un passage : c'est l'or qui retient.
+- **Calage** : les objectifs reprennent ce que le joueur régulier avait fait quand il évoluait avec l'ancien coût en or et minerais. Simulé : Mineur jour 2,5, Contremaître jour 5, Maître jour 9, Légende jour 19.
+- **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10), 1 par filon et 20 de plus en fin de zone. Ils ne servent plus qu'à l'Atelier.
 - **Visuel** : l'Apprenti, le Contremaître et le Maître ont leur animation de frappe. Le Mineur et la Légende s'affichent en image fixe, avec un petit écrasement à chaque coup.
 
 ## Atelier
@@ -78,15 +79,15 @@ Réglages dans `frontend/src/app/balance/galleries.ts`. Idée 3 de [[idees-fun]]
 
 ## Compagnons
 
-Réglages dans `frontend/src/app/balance/companions.ts`, règles dans `companions/companion-rules.ts`. Idée 4 de [[idees-fun]], déblocage validé par Théo le 13/10/2026.
+Réglages dans `frontend/src/app/balance/companions.ts` et `balance/challenge.ts`. Revu le 13/10/2026 avec [[refonte-compagnons-evolution]].
 
-- **Œufs** : l'onglet s'ouvre à la zone 3 avec un œuf commun offert, puis un œuf par zone terminée, et 2 % de chances dans le coffre enseveli des événements et dans le coffre des missions du jour. Rareté affichée : commun 60 %, rare 28 %, épique 10 %, légendaire 2 %, légendaire garanti au 15e œuf sans légendaire.
-- **Éclosion** : un œuf à la fois, 1 h (commun), 2 h (rare), 4 h (épique), 8 h (légendaire), minuteur qui continue jeu fermé. L'œuf donne un compagnon de sa rareté : canari et taupe, chauve-souris et luciole, golem, dragonnet.
-- **Bonus** : seul le compagnon qui accompagne le mineur compte (famille à part, multipliée aux autres) : canari +5 % d'or, taupe +3 % de Frappe, chauve-souris +1,5 point de Critique, luciole +10 % de Dégâts crit., golem +5 % de Frappe et +2 points de Vitesse, dragonnet +6 % de Frappe et +15 % d'explosions. Chaque étoile (doublon) ajoute 25 % de l'effet de base, chaque niveau 5 % ; un doublon à 5 étoiles donne 10 éclats.
-- **Nourrir** : 1 + 2 × niveau minerais de la dernière zone terminée, jamais ceux réservés aux évolutions.
-- **Expéditions** : 2 compagnons au plus, 1, 4 ou 8 h, 1 éclat par heure (×1,25 rare, ×1,5 épique, ×2 légendaire) et 1 minerai toutes les 2 h. Jamais d'or.
-- **Mesure (régulier)** : environ 22 œufs en 70 jours, ×1,13 de Puissance en fin de partie, +11 % d'éclats par les expéditions. Premiers réglages écartés : 10 % d'œufs dans les coffres et des expéditions sans limite donnaient 41 œufs et plus d'éclats que l'absence ; des bonus deux fois plus forts avançaient la pioche 30 de 9 jours.
-- **Compensation** : avec les compagnons, la pioche 30 tombait au jour 42. Le segment de pioche est passé de ×2,035 à ×2,05 par niveau et la vente de ×1,65 à ×1,66 (pour que vendre garde son poids) : pioche 30 au jour 48,5 en moyenne sur 5 tirages, contre 48,2 avant les cinq idées.
+- **Œufs** : l'onglet s'ouvre à la zone 3 avec un œuf commun offert. Les suivants viennent du **Défi de la mine** (plus des fins de zone ni des coffres). Rareté affichée : commun 60 %, rare 28 %, épique 10 %, légendaire 2 %, légendaire garanti au 15e œuf sans légendaire.
+- **Défi de la mine** : un défi de 3 jours, puis le suivant. 5 points par filon épuisé, 1 par forge, 3 par événement touché. Paliers : 30 (œuf), 80 (3 pierres), 150 (20 éclats), 250 (5 pierres), 380 (40 éclats), 550 (œuf), 750 (8 pierres), 1 000 (œuf rare ou mieux). Un palier oublié est donné à la fin du défi. Simulé : 6,5 paliers par défi pour le régulier, 8 pour l'assidu.
+- **Éclosion** : un œuf à la fois, 1 h (commun), 2 h (rare), 4 h (épique), 8 h (légendaire), minuteur qui continue jeu fermé.
+- **Bonus** : seul le compagnon qui accompagne le mineur compte (famille à part, multipliée aux autres) : canari +5 % d'or, taupe +3 % de Frappe, chauve-souris +1,5 point de Critique, luciole +10 % de Dégâts crit., golem +5 % de Frappe et +2 points de Vitesse, dragonnet +6 % de Frappe et +15 % d'explosions, à 1 étoile.
+- **Étoiles et pierres d'éveil** : chaque étoile au-delà de la première ajoute 50 % de l'effet de base (×3 à 5 étoiles). Monter coûte 10, 25, 50 puis 100 pierres. Pierres : paliers du défi, doublons (3 commun, 6 rare, 12 épique, 25 légendaire), expéditions. Les anciens niveaux sont remboursés à 2 pierres par niveau.
+- **Expéditions** : 2 compagnons au plus, 1, 4 ou 8 h ; par heure 1 éclat et un quart de pierre (×1,25 rare, ×1,5 épique, ×2 légendaire). Jamais d'or.
+- **Mesure (régulier, 90 jours)** : une soixantaine d'œufs, le compagnon actif à 5 étoiles vers le jour 30, ×1,18 de Puissance en fin de partie.
 
 ## Stats
 
@@ -108,15 +109,15 @@ Stats simulées d'un joueur régulier : Frappe 566, Vitesse +13 %, Critique 12 %
 - **PV d'un filon** = 320 × 1,073^n × adoucissement, où n = (zone − 1) × 15 + (filon − 1). Une zone est environ 2,9 fois plus dure que la précédente, ce que gagne la Puissance en 2 à 3 niveaux de pioche. L'adoucissement vaut 0,1^(1 − n/14) en zone 1 et 1 ensuite : le 1-1 n'a que 32 PV (une dizaine de secondes sans équipement), et la courbe normale est rejointe au 1-15.
 - **Puissance recommandée** = la Puissance qui épuise le filon dans le temps visé : 40 secondes en zone 1, puis 30 % de plus à chaque zone.
 - **Or** = dégâts × 0,25 × (1 + Bonus d'or)
-- **Segment de pioche** = 15 × 2,05^(niveau − 1) pièces, et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,03, l'Atelier, les événements et les compagnons l'amenaient au jour 42 : le coût a été relevé pour garder le rythme.
+- **Segment de pioche** = 15 × 2,065^(niveau − 1) pièces, et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,05, les éclats plus faciles du 13/10/2026 (deux fois plus de forges) l'amenaient au jour 43 : le coût a été relevé pour garder le rythme (pioche 30 au jour 49,3 en moyenne sur 5 tirages).
 - **Minuteur d'amélioration** = 1 min × 1,25^(niveau − 1), moins de 2 jours cumulés jusqu'au niveau 30.
-- **Absence** = or de 50 % du DPS et 1 éclat toutes les 10 minutes, sur 4 h au maximum.
+- **Absence** = or de 50 % du DPS et 1 éclat toutes les 6 minutes, sur 4 h au maximum.
 - **Éclats** = 2 % de chances par coup, plus 4 par filon du 1-1 au 1-5, 2 jusqu'au 2-15, puis 1.
 - **Stat principale d'un objet** = base × croissance du palier^palier × croissance du niveau^(niveau − 1), avec une variation de ±10 %
   - Frappe : base 4, ×1,6 par palier, ×1,1 par niveau
   - Pourcentages (vitesse 5 %, critique 3 %, dégâts crit. 15 %, or 8 %) : ×1,2 par palier, ×1,01 par niveau
 - **Stats secondaires** : 50 % d'une stat principale. Aucune de Bois à Cuivre, 1 de Fer à Or, 2 de Mithril à Magma, 3 en Divin.
-- **Vente** = 5 × 1,66^(niveau − 1) pièces, ×1,5 pour un palier au-dessus de la base du niveau et ÷1,5 pour un palier en dessous. Une vente vaut environ 5 % d'un segment au niveau 10, 0,6 % au niveau 20 et 0,09 % au niveau 29 : généreuse au début, toujours utile.
+- **Vente** = 5 × 1,66^(niveau − 1) pièces, ×1,5 pour un palier au-dessus de la base du niveau et ÷1,5 pour un palier en dessous. Une vente vaut environ 5 % d'un segment au niveau 10, 0,5 % au niveau 20 et 0,07 % au niveau 29 : généreuse au début, toujours utile. Avec deux fois plus de forges, les ventes font environ 18 % de l'or d'une partie.
 - **Plafonds** : Vitesse +200 %, Critique 100 %
 
 ### Coûts, minuteurs et ventes
@@ -125,18 +126,18 @@ Stats simulées d'un joueur régulier : Frappe 566, Vitesse +13 %, Critique 12 %
 |---|---|---|---|---|
 | 1 | 15 | 150 | 1 min | 5 |
 | 2 | 31 | 310 | 1 min | 8 |
-| 3 | 63 | 630 | 2 min | 14 |
-| 5 | 265 | 2 650 | 2 min | 38 |
-| 8 | 2 282 | 22 820 | 5 min | 174 |
-| 10 | 9 591 | 95 910 | 7 min | 479 |
-| 12 | 40 307 | 403 070 | 12 min | 1 319 |
-| 15 | 347 252 | 3,5 M | 23 min | 6 032 |
-| 18 | 3 M | 29,9 M | 44 min | 27 594 |
-| 20 | 12,6 M | 125,7 M | 1,2 h | 76 037 |
-| 22 | 52,8 M | 528,4 M | 1,8 h | 209 527 |
-| 25 | 455,2 M | 4,6 Md | 3,5 h | 958 438 |
-| 28 | 3,9 Md | 39,2 Md | 6,9 h | 4,4 M |
-| 29 | 8 Md | 80,4 Md | 8,6 h | 7,3 M |
+| 3 | 64 | 640 | 2 min | 14 |
+| 5 | 273 | 2 730 | 2 min | 38 |
+| 8 | 2 402 | 24 020 | 5 min | 174 |
+| 10 | 10 242 | 102 420 | 7 min | 479 |
+| 12 | 43 673 | 436 730 | 12 min | 1 319 |
+| 15 | 384 567 | 3,8 M | 23 min | 6 032 |
+| 18 | 3,4 M | 33,9 M | 44 min | 27 594 |
+| 20 | 14,4 M | 144,4 M | 1,2 h | 76 037 |
+| 22 | 61,6 M | 615,8 M | 1,8 h | 209 527 |
+| 25 | 542,2 M | 5,4 Md | 3,5 h | 958 438 |
+| 28 | 4,8 Md | 47,7 Md | 6,9 h | 4,4 M |
+| 29 | 9,9 Md | 98,6 Md | 8,6 h | 7,3 M |
 
 ## Pioche : chances par palier
 
@@ -197,26 +198,25 @@ Sans évolution, la pioche 30 s'arrête vers la zone 7 ; avec les quatre évolut
 
 ## Courbe simulée
 
-Résultats de `tools/simulate.mts`, avec les vraies règles du jeu. Le joueur forge dès qu'il a 2 éclats, équipe ce qui augmente sa Puissance et vend le reste, évolue dès qu'il le peut, puis paie ses segments. Il dépense ses points de compétence dans la Force puis la Maîtrise, lance ses sorts en automatique et porte son meilleur artefact. `--sans-nouveautes` mesure le jeu sans arbre, sorts ni artefacts (pioche 30 au jour 53 avec l'ancien coût ×2).
+Résultats de `tools/simulate.mts`, avec les vraies règles du jeu. Le joueur forge dès qu'il a 2 éclats, équipe ce qui augmente sa Puissance et vend le reste, évolue dès qu'il le peut, puis paie ses segments. Il dépense ses points de compétence dans la Force puis la Maîtrise, lance ses sorts en automatique, porte son meilleur artefact, renforce l'Atelier, touche 80 % des événements, récupère les paliers du Défi et monte l'étoile de son compagnon. Les jours dépendent un peu du hasard : le rythme de référence est la moyenne de 5 tirages (`SEED=…`). `--sans-nouveautes` mesure le jeu sans arbre, sorts ni artefacts (pioche 30 au jour 53 avec l'ancien coût ×2).
 
 | Moment | Régulier (1 h par jour) | Assidu (3 h par jour) | Continu |
 |---|---|---|---|
 | Zone 2 | 12 min de jeu | 12 min de jeu | 12 min |
-| Pioche 10 | jour 1 | jour 1 | 2 h 40 |
-| Mineur | jour 3 | jour 1 | 8 h |
-| Contremaître | jour 6 | jour 4 | jour 3 |
-| Pioche 20 | jour 8 | jour 5 | jour 2 |
-| Maître des profondeurs | jour 12 | jour 8 | jour 3 |
-| Légende de la mine | jour 23 | jour 15 | jour 5 |
-| Pioche 30 | jour 49 | jour 34 | jour 10 |
-| Forges le premier jour | 209 | 328 | 1 131 |
-| Forges par jour ensuite | 100 à 140 | 200 à 215 | 1 200 à 1 600 |
-| Points de compétence (jour 1 / jour 7 / jour 28) | 9 / 24 / 39 | 15 / 33 / 45 | 27 / 48 / 54 |
-| Artefacts trouvés en 90 jours | 26, dont 11 différents | 51, dont 11 différents | 104 en 28 jours, dont 11 différents |
+| Pioche 10 | jour 1 | jour 1 | 2 h 10 |
+| Mineur | jour 3 | jour 1 | 2 h 25 |
+| Contremaître | jour 5 | jour 4 | 11 h |
+| Pioche 20 | jour 8 | jour 6 | jour 2 |
+| Maître des profondeurs | jour 9 | jour 6 | jour 2 |
+| Légende de la mine | jour 19 | jour 12 | jour 4 |
+| Pioche 30 | jour 49 | jour 33 | jour 10 |
+| Forges le premier jour | 293 | 523 | 1 966 |
+| Forges par jour ensuite | 190 à 280 | 350 à 430 | 1 700 à 2 000 |
+| Points de compétence (jour 1 / jour 7 / jour 28) | 9 / 27 / 42 | 15 / 33 / 48 | 30 / 48 / 54 |
 
-- **Or sur 90 jours (régulier)** : 70 % vient de l'absence, 21 % des ventes, 9 % du minage en jeu. Une heure de jeu rapporte environ 6 fois plus qu'une heure d'absence.
-- **Durée d'un filon (régulier)** : 36 s en zone 1, 2 min en zone 4, 5 min en zone 6, 8 min en zone 8, 14 min en zone 10, 27 min en zone 12, 44 min en zone 14. Les filons longs de la fin sont le mur : l'or et les éclats continuent d'arriver pendant ce temps.
-- **Éclats (régulier)** : le premier jour, 182 viennent des missions, 92 de l'absence, 84 des filons et 39 des coups. Ensuite, environ 60 par jour viennent des coups, 92 de l'absence et 60 à 80 des missions.
+- **Or sur 90 jours (régulier)** : 68 % vient de l'absence, 18 % des ventes, 13 % du minage en jeu, 1 % des événements.
+- **Durée d'un filon (régulier)** : 37 s en zone 1, 2 min en zone 4, 5 min en zone 6, 8 min en zone 8, 14 min en zone 10, 27 min en zone 12, 44 min en zone 14. Les filons longs de la fin sont le mur : l'or et les éclats continuent d'arriver pendant ce temps.
+- **Éclats (régulier, 90 jours)** : coups 12 000, absence 13 900, missions 4 400, expéditions 3 200, Défi de la mine 1 800, événements 1 300, filons 500, objectifs d'évolution 400.
 - **Après la pioche 30**, la progression ralentit fortement (zone 16 vers le jour 42, zone 17 vers le jour 65 pour le joueur régulier). L'or part alors dans l'Atelier, qui gagne environ un niveau par emplacement tous les 10 jours.
 
 ## Sauvegarde

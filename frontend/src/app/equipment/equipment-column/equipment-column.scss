@@ -56,12 +56,42 @@
   text-align: center;
 }
 
-.artifact-cell {
+.artifact-cell,
+.companion-cell {
   display: block;
 }
 
-// Case d'artefact : même cadre que les objets, bordée de la couleur de rareté
-.artifact {
+// Panneau du bas, façon Legend of Mushroom : les 5 emplacements en ligne, puis l'artefact et le compagnon
+// après un séparateur en pointillés
+.column.row {
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: center;
+  gap: 1.4cqw;
+
+  .slot {
+    width: 100%;
+    border-width: 0.6cqw;
+    border-radius: 2.2cqw;
+  }
+
+  .slot-level {
+    font-size: 2.2cqw;
+  }
+
+  .artifact-hint {
+    font-size: 1.9cqw;
+  }
+
+  .artifact-cell {
+    padding-left: 1.4cqw;
+    border-left: 0.5cqw dashed rgb(243 230 208 / 35%);
+  }
+}
+
+// Cases d'artefact et de compagnon : même cadre que les objets, bordées de la couleur de rareté
+.artifact,
+.companion {
   padding: 0;
   font: inherit;
   cursor: pointer;

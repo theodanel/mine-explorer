@@ -1,0 +1,55 @@
+<section class="page game-panel abyss" aria-labelledby="abyss-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
+    <h2 id="abyss-title">Puits sans fond</h2>
+  </header>
+
+  @if (abyss.unlocked()) {
+    <p class="intro">30 secondes pour descendre le plus bas possible avec ton build. Chaque étage rapporte un éclat, chaque record de {{ recordStep }} étages des éclats et des pierres d'éveil.</p>
+  } @else {
+    <p class="intro locked-note">Le Puits s'ouvre quand ton mineur devient <strong>{{ abyss.unlockLabel }}</strong>.</p>
+  }
+
+  <ul class="purse" aria-label="Ton Puits">
+    <li><span>Record : {{ abyss.record() }} étages</span></li>
+    <li><span>Essais : {{ abyss.runsLeft() }} / {{ abyss.dailyRuns }}</span></li>
+  </ul>
+
+  <div class="stage-area">
+    @if (abyss.descent(); as descent) {
+      <div class="descent" aria-live="polite">
+        <p class="timer">{{ timeLeft() }} s</p>
+        <p class="floor">Étage {{ floor() }}</p>
+        @if (guardian()) {
+          <p class="guardian">Gardien !</p>
+        }
+        <div class="bar" role="progressbar" aria-label="Filon de l'étage" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="floorPercent()">
+          <div class="bar-fill" [style.width.%]="floorPercent()"></div>
+        </div>
+        <p class="passed">{{ descent.floors }} étages franchis</p>
+      </div>
+    } @else {
+      @if (abyss.lastResult(); as result) {
+        <div class="result">
+          <p class="floor">Étage {{ result.floors }} atteint</p>
+          @if (result.newRecord) {
+            <p class="record">Nouveau record !</p>
+          }
+          <p>+{{ result.shards }} éclats @if (result.stones > 0) { · +{{ result.stones }} pierres d'éveil }</p>
+        </div>
+      }
+      <button
+        type="button"
+        class="game-button green go"
+        [disabled]="!abyss.unlocked() || abyss.runsLeft() === 0"
+        (click)="start()"
+      >
+        @if (abyss.runsLeft() === 0) {
+          Reviens demain
+        } @else {
+          Descendre
+        }
+      </button>
+    }
+  </div>
+</section>

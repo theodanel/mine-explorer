@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
+import { Abyss } from '../../abyss/abyss';
+import { AbyssPage } from '../../abyss/abyss-page/abyss-page';
 import { AdventuresPage } from '../../adventures/adventures-page/adventures-page';
 import { AUDIO_CONTEXT_FACTORY } from '../../audio/sound';
 import { Navigation } from '../../navigation/navigation';
@@ -45,5 +47,26 @@ describe('Pages Aventures et Campement', () => {
     fixture.detectChanges();
     expect(TestBed.inject(Camp).level('tavern')).toBe(1);
     expect(rows[0].textContent).toContain('niv. 1 / 10');
+  });
+
+  it('montre le Puits sans fond verrouillé avant le Contremaître', () => {
+    startAt(5, 0);
+    const fixture = TestBed.createComponent(AdventuresPage);
+    fixture.detectChanges();
+    const cards = fixture.nativeElement.querySelectorAll('.card') as NodeListOf<HTMLButtonElement>;
+    expect(cards[1].textContent).toContain('Puits sans fond');
+    expect(cards[1].disabled).toBe(true);
+  });
+
+  it('lance une descente depuis la page du Puits', () => {
+    startAt(8, 0);
+    localStorage.setItem('mine-explorer.evolution', '2');
+    const fixture = TestBed.createComponent(AbyssPage);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('button.go') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Étage 1');
+    expect(TestBed.inject(Abyss).runsLeft()).toBe(2);
+    TestBed.resetTestingModule();
   });
 });

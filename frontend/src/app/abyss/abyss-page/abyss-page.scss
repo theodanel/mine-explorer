@@ -1,0 +1,82 @@
+// Mise en page commune avec l'Atelier (workshop-page.scss) ; seuls les ajouts du Puits sont ici.
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 7cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.purse span {
+  font: bold 3.2cqw / 1 Arial, sans-serif;
+}
+
+// Zone centrale : la descente en cours, ou le bilan et le bouton pour repartir
+.stage-area {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 3cqw;
+  font-family: Arial, sans-serif;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.descent,
+.result {
+  display: grid;
+  justify-items: center;
+  gap: 2cqw;
+}
+
+.timer {
+  color: #ffd34d;
+  font-size: 5cqw;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+.floor {
+  color: #f3e6d0;
+  font-size: 9cqw;
+  font-weight: bold;
+}
+
+.guardian,
+.record {
+  color: #ff8a5c;
+  font-size: 4cqw;
+  font-weight: bold;
+}
+
+.passed {
+  font-size: 3.2cqw;
+  opacity: 0.85;
+}
+
+.bar {
+  width: 60cqw;
+  height: 4cqw;
+  overflow: hidden;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 2cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(#b48cff, #6a3dc4);
+}
+
+.go {
+  min-width: 45cqw;
+  padding: 3cqw 6cqw;
+  font-size: 4.5cqw;
+}

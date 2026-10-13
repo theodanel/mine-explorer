@@ -22,9 +22,11 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { Workshop } from '../workshop/workshop';
 import { Camp } from '../camp/camp';
+import { Abyss } from '../abyss/abyss';
 
 /** Toutes les clés de sauvegarde du jeu. Un joueur peut modifier n'importe laquelle dans son navigateur. */
 const KEYS = [
+  'abyss',
   'artifacts',
   'auto-forge',
   'camp',
@@ -67,6 +69,7 @@ const GARBAGE = [
   '{"zone":1e12,"stage":1,"damage":0}',
   '{"level":-5,"segments":99,"upgradeEndsAt":"bientôt"}',
   '{"owned":{"canary":{"stars":99}},"active":"canary","eggs":["mythique"],"incubating":null,"sinceLegendary":0,"gifted":true,"expeditions":{},"stones":-3}',
+  '{"record":1e9,"day":"demain","runsUsed":-2,"active":{"startedAt":0,"dps":"infini"}}',
   '{"levels":{"tavern":999,"forge":2},"wellCollectedAt":-5}',
   '{"equipped":{"pickaxe":{"id":1,"slot":"pickaxe","tier":"plutonium","level":1,"stats":{}}},"pending":null}',
 ];
@@ -86,6 +89,7 @@ const SERVICES: readonly ProviderToken<unknown>[] = [
   Artifacts,
   Workshop,
   Camp,
+  Abyss,
   Galleries,
   Companions,
   Challenge,

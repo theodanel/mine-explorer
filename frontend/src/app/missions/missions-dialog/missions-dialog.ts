@@ -1,5 +1,6 @@
 import { Component, inject, output } from '@angular/core';
 
+import { holdUserDialog } from '../../shared/overlays';
 import { MissionRow } from '../mission-row/mission-row';
 import { Missions } from '../missions';
 
@@ -13,4 +14,9 @@ import { Missions } from '../missions';
 export class MissionsDialog {
   protected readonly missions = inject(Missions);
   readonly closed = output();
+
+  constructor() {
+    // Ouverte par le joueur : les fenêtres automatiques attendent sa fermeture
+    holdUserDialog();
+  }
 }

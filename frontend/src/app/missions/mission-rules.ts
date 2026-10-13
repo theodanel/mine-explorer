@@ -1,11 +1,11 @@
 // Règles pures des missions, inspirées de Legends of Mushroom : une mission principale à la fois,
-// qui s'enchaîne sans fin, et quatre missions du jour. Elles sont la source principale d'éclats de géode.
-import { STAGES_PER_ZONE } from '../balance/balance';
+// qui s'enchaîne sans fin, et trois missions du jour avec un coffre. Elles complètent les éclats gagnés en minant.
+import { MAX_PICKAXE_LEVEL, STAGES_PER_ZONE } from '../balance/balance';
 
 /**
  * Compteurs cumulés depuis le début de la partie, alimentés par les actions du joueur.
- * « rocksBroken » compte les étapes terminées (une étape = un rocher). L'identifiant reste celui-ci
- * pour ne pas invalider les sauvegardes existantes ; seuls les libellés parlent d'étapes.
+ * « rocksBroken » compte les filons épuisés (un filon = un rocher). L'identifiant reste celui-ci
+ * pour ne pas invalider les sauvegardes existantes ; seuls les libellés parlent de filons.
  */
 export const COUNTER_IDS = ['rocksBroken', 'itemsForged', 'itemsSold', 'segmentsPaid'] as const;
 export type CounterId = (typeof COUNTER_IDS)[number];
@@ -33,18 +33,29 @@ export interface MissionDef {
 
 // ─── Missions principales ──────────────────────────────────────────────────
 
-/** Cycle de 6 missions qui revient avec des objectifs plus grands à chaque tour. */
+/**
+ * Cycle de 6 missions qui revient avec des objectifs plus grands à chaque tour.
+ * Les objectifs liés aux filons et aux segments sont plafonnés : en profondeur, un filon peut durer
+ * une demi-heure et un segment plusieurs jours d'or, et une mission impossible bloquerait toute la chaîne.
+ */
+const MAX_ROCKS_TARGET = 3;
+const MAX_SEGMENTS_TARGET = 3;
+const MAX_FORGE_TARGET = 40;
+const MAX_SELL_TARGET = 25;
+
 const MAIN_TEMPLATES: readonly ((round: number) => Omit<MissionDef, 'id'>)[] = [
-  (round) => counterMission('rocksBroken', 1 + 4 * round, (n) => (n === 1 ? 'Termine une étape' : `Termine ${n} étapes`), 4),
-  (round) => counterMission('itemsForged', 2 + round, (n) => `Forge ${n} objets`, 3),
+  (round) =>
+    counterMission('rocksBroken', Math.min(1 + round, MAX_ROCKS_TARGET), (n) => (n === 1 ? 'Épuise un filon' : `Épuise ${n} filons`), 4),
+  (round) => counterMission('itemsForged', Math.min(2 + 2 * round, MAX_FORGE_TARGET), (n) => `Forge ${n} objets`, 3),
   (round) => {
-    const target = 5 + 6 * round;
-    return { label: `Atteins l'étape ${stageName(target)}`, metric: { kind: 'gauge', id: 'stagesReached' }, target, reward: shardsOnly(5) };
+    const target = 5 + 3 * round;
+    return { label: `Atteins le filon ${stageName(target)}`, metric: { kind: 'gauge', id: 'stagesReached' }, target, reward: shardsOnly(5) };
   },
-  (round) => counterMission('segmentsPaid', 3 + 2 * round, (n) => `Paie ${n} segments de pioche`, 4),
-  (round) => counterMission('itemsSold', 1 + round, (n) => (n === 1 ? 'Vends un objet' : `Vends ${n} objets`), 3),
+  (round) => counterMission('segmentsPaid', Math.min(1 + round, MAX_SEGMENTS_TARGET), (n) => (n === 1 ? 'Paie un segment de pioche' : `Paie ${n} segments de pioche`), 4),
+  (round) => counterMission('itemsSold', Math.min(1 + 2 * round, MAX_SELL_TARGET), (n) => (n === 1 ? 'Vends un objet' : `Vends ${n} objets`), 3),
   (round) => {
-    const target = 2 + round;
+    // Au niveau maximum, la mission se valide d'elle-même : la chaîne continue
+    const target = Math.min(2 + round, MAX_PICKAXE_LEVEL);
     return { label: `Monte la pioche au niveau ${target}`, metric: { kind: 'gauge', id: 'pickaxeLevel' }, target, reward: shardsOnly(6) };
   },
 ];
@@ -59,11 +70,14 @@ export function mainMission(index: number): MissionDef {
 
 // ─── Missions du jour ──────────────────────────────────────────────────────
 
+/**
+ * Faisables en une courte session à tout moment de la partie : en profondeur, un filon peut durer
+ * plus d'une demi-heure et un segment de pioche plusieurs jours d'or, donc ni « 20 filons » ni « 5 segments ».
+ */
 export const DAILY_MISSIONS: readonly MissionDef[] = [
-  { id: 'daily-rocks', ...counterMission('rocksBroken', 20, (n) => `Termine ${n} étapes`, 5) },
-  { id: 'daily-forge', ...counterMission('itemsForged', 5, (n) => `Forge ${n} objets`, 5) },
-  { id: 'daily-segments', ...counterMission('segmentsPaid', 5, (n) => `Paie ${n} segments de pioche`, 4) },
-  { id: 'daily-sell', ...counterMission('itemsSold', 3, (n) => `Vends ${n} objets`, 3) },
+  { id: 'daily-rocks', ...counterMission('rocksBroken', 1, () => 'Épuise un filon', 6) },
+  { id: 'daily-forge', ...counterMission('itemsForged', 10, (n) => `Forge ${n} objets`, 6) },
+  { id: 'daily-sell', ...counterMission('itemsSold', 5, (n) => `Vends ${n} objets`, 5) },
 ];
 
 /** Coffre offert quand toutes les missions du jour sont récupérées. */
@@ -73,6 +87,10 @@ export const DAILY_CHEST_REWARD: MissionReward = { shards: 10, gold: 0 };
 
 /** Avancement d'une mission, plafonné à son objectif. */
 export function missionProgress(mission: MissionDef, counters: Counters, baseline: Counters, gauges: Gauges): number {
+  // Pioche au niveau maximum : plus aucun segment à payer, la mission ne doit pas bloquer la chaîne
+  if (mission.metric.kind === 'counter' && mission.metric.id === 'segmentsPaid' && gauges.pickaxeLevel >= MAX_PICKAXE_LEVEL) {
+    return mission.target;
+  }
   const value =
     mission.metric.kind === 'counter'
       ? counters[mission.metric.id] - baseline[mission.metric.id]

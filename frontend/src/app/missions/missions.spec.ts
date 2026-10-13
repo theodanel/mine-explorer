@@ -26,7 +26,8 @@ describe('Missions', () => {
     const { missions, counters, shards } = setup();
     expect(missions.main().complete).toBe(false);
     counters.record('rocksBroken');
-    expect(missions.claimableCount()).toBe(1);
+    // La mission principale et la mission du jour « Épuise un filon »
+    expect(missions.claimableCount()).toBe(2);
 
     missions.claimMain();
     expect(shards.amount()).toBe(4);

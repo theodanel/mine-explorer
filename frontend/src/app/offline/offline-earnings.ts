@@ -1,6 +1,7 @@
 import { DestroyRef, DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
 import { OFFLINE_MIN_MS, OfflineGains, offlineGains } from '../balance/balance';
+import { Camp } from '../camp/camp';
 import { Miner } from '../miner/miner';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
@@ -13,12 +14,14 @@ const HEARTBEAT_MS = 15_000;
 
 /**
  * Gains pendant l'absence : jeu fermé, ou onglet caché (la scène Pixi s'arrête alors).
- * Plafonnés à 4 h, comme dans Forge Master, pour donner une raison de revenir.
+ * Plafonnés à 4 h, comme dans Forge Master, pour donner une raison de revenir ; la Taverne et l'Entrepôt
+ * du Campement améliorent le rendement et allongent ce plafond.
  */
 @Injectable({ providedIn: 'root' })
 export class OfflineEarnings {
   private readonly clock = inject(CLOCK);
   private readonly miner = inject(Miner);
+  private readonly camp = inject(Camp);
   private readonly wallet = inject(Wallet);
   private readonly shards = inject(GeodeShards);
   private readonly document = inject(DOCUMENT);
@@ -51,7 +54,7 @@ export class OfflineEarnings {
     }
     // Sans les sorts : ils ne fonctionnent qu'en jeu
     const { stats, offlineEfficiency } = this.miner.permanent();
-    const gains = offlineGains(stats, now - lastSeen, offlineEfficiency);
+    const gains = offlineGains(stats, now - lastSeen, offlineEfficiency + this.camp.tavernBonus(), this.camp.offlineCapMs());
     if (gains.gold > 0) {
       this.wallet.add(gains.gold);
     }

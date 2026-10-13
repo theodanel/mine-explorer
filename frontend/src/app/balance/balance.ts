@@ -139,7 +139,8 @@ export const SEGMENTS_PER_LEVEL = 10;
  * les éclats rendus plus faciles (deux fois plus de forges, donc plus de ventes et de meilleurs objets).
  */
 const SEGMENT_BASE_COST = 15;
-const SEGMENT_COST_GROWTH = 2.065;
+// 2,085 depuis le Campement (14/10/2026), qui accélère l'or hors ligne : pioche 30 au jour 48,7 sur 5 tirages
+const SEGMENT_COST_GROWTH = 2.085;
 
 /** Prix en or d'un segment au niveau donné, ou null au niveau maximum. */
 export function segmentCost(pickaxeLevel: number): number | null {
@@ -405,8 +406,14 @@ export interface OfflineGains {
 }
 
 /** Gains d'une absence, plafonnée à 4 h. Les filons et les missions n'avancent qu'en jeu. */
-export function offlineGains(stats: MiningStats, elapsedMs: number, efficiency = OFFLINE_EFFICIENCY): OfflineGains {
-  const creditedMs = Math.min(Math.max(elapsedMs, 0), OFFLINE_CAP_MS);
+/** `capMs` : absence prise en compte au plus, allongée par l'Entrepôt du Campement. */
+export function offlineGains(
+  stats: MiningStats,
+  elapsedMs: number,
+  efficiency = OFFLINE_EFFICIENCY,
+  capMs = OFFLINE_CAP_MS,
+): OfflineGains {
+  const creditedMs = Math.min(Math.max(elapsedMs, 0), capMs);
   const seconds = creditedMs / 1000;
   return {
     creditedMs,

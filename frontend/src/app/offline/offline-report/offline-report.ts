@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 
 import { Overlays } from '../../shared/overlays';
-import { OFFLINE_CAP_MS } from '../../balance/balance';
+import { Camp } from '../../camp/camp';
 import { formatDuration } from '../../shared/format-duration';
 import { OfflineEarnings } from '../offline-earnings';
 
@@ -16,6 +16,7 @@ const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 export class OfflineReport {
   protected readonly earnings = inject(OfflineEarnings);
   private readonly overlays = inject(Overlays);
+  private readonly camp = inject(Camp);
   private readonly visible = this.overlays.isShown('offlineReport');
 
   constructor() {
@@ -29,8 +30,8 @@ export class OfflineReport {
     }
     return {
       duration: formatDuration(report.creditedMs),
-      capped: report.creditedMs >= OFFLINE_CAP_MS,
-      cap: formatDuration(OFFLINE_CAP_MS),
+      capped: report.creditedMs >= this.camp.offlineCapMs(),
+      cap: formatDuration(this.camp.offlineCapMs()),
       gold: NUMBER_FORMAT.format(report.gold),
       shards: report.shards,
     };

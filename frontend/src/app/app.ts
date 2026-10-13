@@ -3,6 +3,8 @@ import { Component, computed, inject } from '@angular/core';
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
 import { WorkshopPage } from './workshop/workshop-page/workshop-page';
+import { AdventuresPage } from './adventures/adventures-page/adventures-page';
+import { CampPage } from './camp/camp-page/camp-page';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
 import { ForgeButton } from './equipment/forge-button/forge-button';
 import { zoneMaterial } from './balance/balance';
@@ -47,6 +49,8 @@ import { Wallet } from './wallet/wallet';
     SkillsPage,
     ArtifactsPage,
     WorkshopPage,
+    AdventuresPage,
+    CampPage,
     FooterMenu,
     ItemCompare,
     ArtifactFound,

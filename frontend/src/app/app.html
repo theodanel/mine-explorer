@@ -100,6 +100,16 @@
         <app-challenge-page class="page-layer" />
       }
     }
+    @case ('adventures') {
+      @defer (on immediate) {
+        <app-adventures-page class="page-layer" />
+      }
+    }
+    @case ('camp') {
+      @defer (on immediate) {
+        <app-camp-page class="page-layer" />
+      }
+    }
     @case ('workshop') {
       @defer (on immediate) {
         <app-workshop-page class="page-layer" />

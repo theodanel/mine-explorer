@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 
 import { Artifacts } from '../../artifacts/artifacts';
 import { COMPANIONS_UNLOCK_ZONE } from '../../balance/companions';
+import { Camp } from '../../camp/camp';
 import { Companions } from '../../companions/companions';
 import { MENU_ICONS } from '../../loading/game-assets';
 import { Tooltip } from '../../shared/tooltip/tooltip';
@@ -11,7 +12,8 @@ import { Navigation, PageId } from '../navigation';
 
 interface Tab {
   readonly label: string;
-  readonly icon: string;
+  /** Icône peinte, ou null tant qu'elle n'est pas livrée (le libellé suffit). */
+  readonly icon: string | null;
   readonly page: PageId;
   /** Condition encore à remplir pour ouvrir ce menu (« Zone 3 »…), ou null s'il est ouvert. Le menu est alors grisé. */
   readonly locked: string | null;
@@ -33,6 +35,7 @@ export class FooterMenu {
   private readonly artifacts = inject(Artifacts);
   private readonly workshop = inject(Workshop);
   private readonly companions = inject(Companions);
+  private readonly camp = inject(Camp);
 
   protected readonly tabs = computed<readonly Tab[]>(() => [
     { label: 'Mine', icon: MENU_ICONS.mine, page: 'mine', locked: null, badge: 0, tooltip: null },
@@ -71,6 +74,14 @@ export class FooterMenu {
       tooltip: this.workshop.unlocked()
         ? null
         : `Atelier : s'ouvre quand ton mineur devient ${this.workshop.unlockLabel}.`,
+    },
+    {
+      label: 'Aventures',
+      icon: null,
+      page: 'adventures',
+      locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
+      badge: this.camp.unlocked() ? this.camp.ready() : 0,
+      tooltip: this.camp.unlocked() ? null : `Aventures : le Campement s'ouvre à la zone ${this.camp.unlockZone}.`,
     },
   ]);
 

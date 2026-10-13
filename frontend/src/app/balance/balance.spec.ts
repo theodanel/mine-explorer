@@ -51,9 +51,9 @@ describe('paliers', () => {
     const baseTier = (level: number): TierId => TIER_ORDER[Math.floor((level - 1) / 3)];
     const share = (level: number): number => sellPriceFor(baseTier(level), level) / (segmentCost(level) ?? Infinity);
     expect(share(10)).toBeGreaterThan(share(20));
-    // Environ 0,07 % au niveau 29 : faible, mais une vente compte encore quand on en fait des centaines
-    // (deux fois plus de forges depuis les éclats du 13/10/2026 : les ventes font 18 % de l'or d'une partie)
-    expect(share(29)).toBeGreaterThan(0.0006);
+    // Environ 0,06 % au niveau 29 (segments à ×2,085 depuis le Campement) : faible, mais une vente compte encore
+    // quand on en fait des centaines (deux fois plus de forges depuis les éclats du 13/10/2026)
+    expect(share(29)).toBeGreaterThan(0.0005);
   });
 });
 

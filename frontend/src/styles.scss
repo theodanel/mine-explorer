@@ -135,6 +135,8 @@ body {
   --z-page: 8;
   --z-footer: 9;
   --z-dialog: 10;
+  // Le tutoriel ne se montre qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
+  --z-tutorial: 30;
   --z-splash: 40;
   --z-tooltip: 50;
 }

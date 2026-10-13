@@ -76,6 +76,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   /** Position de la barre de vie, en pourcentage de la scène : elle suit le rocher, quelle que soit la taille de l'écran. */
   protected readonly healthBarLeft = computed(() => (this.rockTop().x / SCENE_WIDTH) * PERCENT);
   protected readonly healthBarTop = computed(() => ((this.rockTop().y - HEALTH_BAR_GAP) / SCENE_HEIGHT) * PERCENT);
+  protected readonly rockZoneTop = computed(() => (this.rockTop().y / SCENE_HEIGHT) * PERCENT);
   protected readonly healthPercent = computed(() => Math.round(this.progression.health() * PERCENT));
   protected readonly remaining = computed(() => NUMBER_FORMAT.format(this.progression.remainingHp()));
   private destroyed = false;

@@ -1,5 +1,13 @@
 <div class="frame">
   <div #stage class="stage"></div>
+  <!-- Zone du rocher, invisible : le tutoriel l'entoure pour présenter le filon -->
+  <div
+    class="rock-zone"
+    data-tuto="rock"
+    aria-hidden="true"
+    [style.left.%]="healthBarLeft()"
+    [style.top.%]="rockZoneTop()"
+  ></div>
   <div
     class="health"
     role="progressbar"

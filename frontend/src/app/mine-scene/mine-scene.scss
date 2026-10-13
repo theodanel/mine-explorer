@@ -13,6 +13,14 @@
   height: 100%;
 }
 
+.rock-zone {
+  position: absolute;
+  width: 27%;
+  height: 10%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 // Vie du filon, juste au-dessus du rocher : petite pour ne pas cacher le décor, centrée sur lui
 .health {
   position: absolute;

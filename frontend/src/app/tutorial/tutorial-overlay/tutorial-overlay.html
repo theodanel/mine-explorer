@@ -1,0 +1,35 @@
+@if (shown()) {
+  @let step = tutorial.step()!;
+  @let spot = ring()!;
+  <div class="tutorial" [class.through]="targetStep()" (click)="onBackdropClick()">
+    <div class="veil" [style.mask-image]="mask()" [style.-webkit-mask-image]="mask()"></div>
+    <div
+      class="ring"
+      aria-hidden="true"
+      [style.left.px]="spot.x - spot.radius"
+      [style.top.px]="spot.y - spot.radius"
+      [style.width.px]="spot.radius * 2"
+      [style.height.px]="spot.radius * 2"
+    ></div>
+    <section
+      class="tutorial-bubble game-panel"
+      role="dialog"
+      aria-live="polite"
+      [attr.aria-label]="step.title"
+      [class.below]="bubbleBelow()"
+      [style.top.px]="bubbleTop()"
+    >
+      <h2>{{ step.title }}</h2>
+      <p>{{ step.text }}</p>
+      <footer>
+        <span class="count">{{ tutorial.stepNumber() }} / {{ tutorial.stepCount }}</span>
+        @if (targetStep()) {
+          <span class="hint">Touche l’élément entouré</span>
+        } @else {
+          <span class="hint">Touche l’écran pour continuer</span>
+        }
+        <button type="button" class="skip" (click)="skip($event)">Passer</button>
+      </footer>
+    </section>
+  </div>
+}

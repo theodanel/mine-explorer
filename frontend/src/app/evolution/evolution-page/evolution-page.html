@@ -1,0 +1,94 @@
+<section class="page game-panel" aria-labelledby="evolution-title">
+  <header class="page-header">
+    <h2 id="evolution-title">Évolution</h2>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <div class="scroll">
+    <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
+    <article class="rank">
+      <figure class="form">
+        <img [src]="current().portraitUrl" alt="" width="160" height="160" />
+        <figcaption>{{ current().label }}</figcaption>
+      </figure>
+      @if (next(); as next) {
+        <div class="arrow" aria-hidden="true">
+          <span class="chevron">▶</span>
+          <span class="bonus">+{{ next.bonus }} %<small>Frappe</small></span>
+        </div>
+        <figure class="form next">
+          <img [src]="next.portraitUrl" alt="" width="160" height="160" />
+          <figcaption>{{ next.label }}</figcaption>
+        </figure>
+      }
+    </article>
+
+    @if (next(); as next) {
+      <p class="rank-count">Rang {{ next.rank }} sur {{ next.ranks }}</p>
+
+      <!-- Frise des paliers : on peut regarder un palier fermé, pas encore le remplir -->
+      <ol class="tiers" aria-label="Paliers de missions">
+        @for (tier of tiers(); track tier.tier) {
+          <li>
+            <button
+              type="button"
+              class="tier"
+              [class.done]="tier.done"
+              [class.current]="tier.current"
+              [class.shown]="tier.shown"
+              [class.locked]="!tier.unlocked"
+              [attr.aria-pressed]="tier.shown"
+              [attr.aria-label]="'Palier ' + tier.tier + ', ' + tier.doneCount + ' missions sur ' + tier.total"
+              (click)="showTier(tier.tier)"
+            >
+              <span class="tier-number">{{ tier.done ? '✓' : tier.tier }}</span>
+              <span class="tier-label">Palier {{ tier.tier }}</span>
+              <span class="tier-count">{{ tier.doneCount }}/{{ tier.total }}</span>
+              @if (tier.claimable > 0) {
+                <span class="tier-badge" aria-hidden="true">{{ tier.claimable }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ol>
+
+      @if (shownLocked()) {
+        <p class="locked-note">Remplis le palier précédent pour ouvrir celui-ci.</p>
+      }
+
+      <ul class="missions" [class.locked]="shownLocked()">
+        @for (mission of missions(); track mission.index) {
+          <li class="mission" [class.done]="mission.done">
+            <div class="mission-text">
+              <span class="mission-label">{{ mission.label }}</span>
+              <div class="bar" role="progressbar" aria-valuemin="0" [attr.aria-valuemax]="mission.need" [attr.aria-valuenow]="mission.have">
+                <span class="fill" [style.width.%]="mission.percent"></span>
+                <span class="count">{{ mission.haveLabel }} / {{ mission.needLabel }}</span>
+              </div>
+            </div>
+            @if (mission.claimed) {
+              <span class="claimed" aria-label="Récompense touchée">✓</span>
+            } @else {
+              <button
+                type="button"
+                class="game-button green claim"
+                [disabled]="!mission.claimable"
+                [attr.aria-label]="'Récupérer ' + mission.shards + ' éclats'"
+                (click)="claim(mission.index)"
+              >
+                <img src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{ mission.shards }}
+              </button>
+            }
+          </li>
+        }
+      </ul>
+
+      <button type="button" class="game-button promote" [class.green]="evolution.ready()" [disabled]="!evolution.ready()" (click)="promote()">
+        Promotion
+        <small>{{ evolution.ready() ? 'Devenir ' + next.label : 'Remplis les trois paliers' }}</small>
+      </button>
+    } @else {
+      <p class="ultimate">Ton mineur a atteint sa forme ultime : Légende de la mine.</p>
+    }
+  </div>
+</section>

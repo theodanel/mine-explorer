@@ -1,0 +1,339 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 2cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.close {
+  margin-left: auto;
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  color: #fff;
+  font: bold 6cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.scroll {
+  display: grid;
+  align-content: start;
+  gap: 2.5cqw;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Carte du rang : un halo doré derrière la forme visée
+.rank {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2cqw;
+  padding: 3.5cqw 2cqw 3cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3.5cqw;
+  background:
+    radial-gradient(circle at 78% 45%, rgb(255 211 77 / 30%), transparent 45%),
+    linear-gradient(#5b3d24, #2f1e10);
+  box-shadow: inset 0 0 0 0.5cqw #8a5f38;
+}
+
+.form {
+  display: grid;
+  justify-items: center;
+  gap: 1.2cqw;
+  margin: 0;
+
+  img {
+    width: 22cqw;
+    height: 22cqw;
+    border: 0.8cqw solid #1a0f07;
+    border-radius: 50%;
+    background: radial-gradient(#e8b45c, #9a6230);
+    box-shadow: 0 1cqw 0 rgb(0 0 0 / 40%);
+  }
+
+  figcaption {
+    max-width: 28cqw;
+    font-size: 3.3cqw;
+    font-weight: bold;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  &.next img {
+    border-color: #ffd34d;
+    box-shadow:
+      0 0 4cqw 0.6cqw rgb(255 211 77 / 55%),
+      0 1cqw 0 rgb(0 0 0 / 40%);
+  }
+}
+
+.arrow {
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+}
+
+.chevron {
+  color: #ffd34d;
+  font-size: 6cqw;
+}
+
+.bonus {
+  display: grid;
+  justify-items: center;
+  padding: 0.8cqw 2cqw;
+  border-radius: 2cqw;
+  background: rgb(0 0 0 / 40%);
+  color: #9dffa4;
+  font: bold 3.6cqw / 1 Arial, sans-serif;
+
+  small {
+    font-size: 2.4cqw;
+    font-weight: normal;
+    opacity: 0.85;
+  }
+}
+
+.rank-count {
+  margin: -1cqw 0 0;
+  font-size: 2.8cqw;
+  text-align: center;
+  opacity: 0.75;
+}
+
+// Frise des trois paliers, reliés par un fil
+.tiers {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 5cqw 12% auto;
+    height: 0.8cqw;
+    border-radius: 999px;
+    background: #1a0f07;
+  }
+}
+
+.tier {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+  width: 100%;
+  padding: 0 0 1cqw;
+  border: none;
+  background: none;
+  color: #f3e6d0;
+  font: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.5cqw solid #ffd34d;
+    outline-offset: 0.3cqw;
+    border-radius: 2cqw;
+  }
+
+  &.locked {
+    opacity: 0.55;
+  }
+
+  &.shown .tier-label {
+    color: #ffd34d;
+  }
+}
+
+.tier-number {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 10cqw;
+  height: 10cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#6e4a2c, #4a3019);
+  font: bold 4.2cqw / 1 Arial, sans-serif;
+
+  .current & {
+    background: linear-gradient(#ffe27a, #e09a12);
+    color: #3a2405;
+    box-shadow: 0 0 3cqw rgb(255 211 77 / 70%);
+  }
+
+  .done & {
+    background: linear-gradient(#5fd16a, #23802f);
+    color: #fff;
+  }
+
+  .shown & {
+    outline: 0.6cqw solid #ffd34d;
+    outline-offset: 0.4cqw;
+  }
+}
+
+.tier-label {
+  font-size: 2.9cqw;
+  font-weight: bold;
+}
+
+.tier-count {
+  font-size: 2.5cqw;
+  opacity: 0.8;
+}
+
+.tier-badge {
+  position: absolute;
+  top: -1cqw;
+  right: 22%;
+  display: grid;
+  place-items: center;
+  min-width: 4.5cqw;
+  height: 4.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #d0352a;
+  color: #fff;
+  font: bold 2.4cqw / 1 Arial, sans-serif;
+}
+
+.locked-note {
+  margin: 0;
+  font-size: 2.9cqw;
+  text-align: center;
+  opacity: 0.8;
+}
+
+// Missions du palier affiché : texte, barre, récompense
+.missions {
+  display: grid;
+  gap: 1.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &.locked {
+    filter: grayscale(0.7);
+    opacity: 0.6;
+  }
+}
+
+.mission {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  padding: 2cqw 2.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 2.5cqw;
+  background: linear-gradient(#4a3019, #2a1a0d);
+
+  &.done {
+    box-shadow: inset 0 0 0 0.5cqw #5fd16a;
+  }
+}
+
+.mission-text {
+  display: grid;
+  flex: 1;
+  gap: 1cqw;
+  min-width: 0;
+}
+
+.mission-label {
+  font-size: 3.3cqw;
+  font-weight: bold;
+}
+
+.bar {
+  position: relative;
+  height: 4.5cqw;
+  overflow: hidden;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #1a0f07;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(#ffe27a, #e09a12);
+}
+
+.count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
+  text-shadow: 0 0.3cqw 0 rgb(0 0 0 / 70%);
+}
+
+.claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8cqw;
+  padding: 1.2cqw 2.2cqw;
+  font-size: 3.2cqw;
+
+  img {
+    width: 4.5cqw;
+    height: 4.5cqw;
+  }
+}
+
+.claimed {
+  width: 12cqw;
+  color: #6fdc6f;
+  font: bold 5cqw / 1 Arial, sans-serif;
+  text-align: center;
+}
+
+// Gros bouton de promotion, gris tant que les trois paliers ne sont pas remplis
+.promote {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+  width: 100%;
+  margin-top: 1cqw;
+  padding: 2.8cqw;
+  font-size: 5cqw;
+
+  small {
+    font-size: 2.8cqw;
+    font-weight: normal;
+  }
+}
+
+.ultimate {
+  margin: 4cqw 0;
+  color: #ffd34d;
+  font-size: 4cqw;
+  font-weight: bold;
+  text-align: center;
+}

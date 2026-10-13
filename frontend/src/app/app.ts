@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -8,7 +8,8 @@ import { ForgeButton } from './equipment/forge-button/forge-button';
 import { zoneMaterial } from './balance/balance';
 import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
-import { EvolutionDialog } from './evolution/evolution-dialog/evolution-dialog';
+import { EvolutionPage } from './evolution/evolution-page/evolution-page';
+import { ProfilePage } from './profile/profile-page/profile-page';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
 import { EVOLUTION_VISUALS, materialIconUrl } from './loading/game-assets';
@@ -19,7 +20,6 @@ import { CompanionsPage } from './companions/companions-page/companions-page';
 import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
-import { SoundToggle } from './audio/sound-toggle/sound-toggle';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
@@ -50,9 +50,9 @@ import { Wallet } from './wallet/wallet';
     ItemCompare,
     ArtifactFound,
     OfflineReport,
-    EvolutionDialog,
+    EvolutionPage,
+    ProfilePage,
     SplashScreen,
-    SoundToggle,
     MineEventLayer,
     GalleryChoice,
     CompanionsPage,
@@ -68,7 +68,6 @@ export class App {
   protected readonly wallet = inject(Wallet);
   protected readonly shards = inject(GeodeShards);
   protected readonly evolution = inject(Evolution);
-  protected readonly evolutionOpen = signal(false);
   protected readonly navigation = inject(Navigation);
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);

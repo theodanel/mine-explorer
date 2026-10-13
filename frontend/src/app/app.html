@@ -6,8 +6,8 @@
     <button
       type="button"
       class="player"
-      (click)="evolutionOpen.set(true)"
-      aria-label="Évolution du mineur"
+      (click)="navigation.open('profile')"
+      aria-label="Profil du mineur"
     >
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
@@ -53,7 +53,6 @@
   </header>
 
   <app-zone-banner class="zone" />
-  <app-sound-toggle class="sound" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
       <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !
@@ -86,6 +85,16 @@
         <app-companions-page class="page-layer" />
       }
     }
+    @case ('profile') {
+      @defer (on immediate) {
+        <app-profile-page class="page-layer" />
+      }
+    }
+    @case ('evolution') {
+      @defer (on immediate) {
+        <app-evolution-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />
@@ -104,10 +113,5 @@
   <app-artifact-found />
   <app-companion-hatched />
   <app-offline-report />
-  @if (evolutionOpen()) {
-    @defer (on immediate) {
-      <app-evolution-dialog (closed)="evolutionOpen.set(false)" />
-    }
-  }
   <app-splash-screen />
 </main>

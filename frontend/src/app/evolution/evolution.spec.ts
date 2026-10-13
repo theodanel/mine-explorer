@@ -3,11 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { EVOLUTION_FORMS, evolutionStrikeMultiplier } from '../balance/balance';
 import { Inventory } from '../equipment/inventory';
 import { GeodeShards } from '../wallet/geode-shards';
-import { canEvolve, objectivesFor } from './evolution-rules';
+import { canEvolve, currentTier, objectivesFor } from './evolution-rules';
 import { Evolution } from './evolution';
 
 const MINER = EVOLUTION_FORMS[1];
-const targetOf = (metric: string): number => MINER.objectives.find((objective) => objective.metric === metric)?.target ?? 0;
+/** Objectif du dernier palier pour cette mesure : le remplir remplit tous les paliers. */
+const targetOf = (metric: string): number =>
+  Math.max(0, ...MINER.objectives.filter((objective) => objective.metric === metric).map((objective) => objective.target));
 
 describe('Evolution', () => {
   /** Joueur qui a rempli (ou non) les objectifs du Mineur. */
@@ -76,13 +78,28 @@ describe('Évolutions', () => {
     expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 4);
   });
 
-  it('demandent des objectifs de plus en plus grands', () => {
-    for (let index = 2; index < EVOLUTION_FORMS.length; index++) {
-      for (const objective of EVOLUTION_FORMS[index].objectives) {
-        const previous = EVOLUTION_FORMS[index - 1].objectives.find((candidate) => candidate.metric === objective.metric);
-        expect(objective.target).toBeGreaterThan(previous?.target ?? 0);
+  it("demandent des objectifs de plus en plus grands, d'un palier et d'une forme à l'autre", () => {
+    for (let index = 1; index < EVOLUTION_FORMS.length; index++) {
+      const objectives = EVOLUTION_FORMS[index].objectives;
+      for (const objective of objectives) {
+        const earlier = objectives.filter((candidate) => candidate.metric === objective.metric && candidate.tier < objective.tier);
+        for (const candidate of earlier) {
+          expect(objective.target).toBeGreaterThan(candidate.target);
+        }
+        const previousForm = EVOLUTION_FORMS[index - 1].objectives.filter((candidate) => candidate.metric === objective.metric);
+        for (const candidate of previousForm) {
+          expect(objective.target).toBeGreaterThanOrEqual(candidate.target);
+        }
       }
     }
+  });
+
+  it("n'ouvre un palier qu'une fois le précédent rempli", () => {
+    const form = EVOLUTION_FORMS[1];
+    const tierOne = { zone: 2, pickaxeLevel: 4, itemsForged: 0, eventsTouched: 99 };
+    const objectives = objectivesFor(form, tierOne, []);
+    expect(objectives.filter((objective) => objective.tier === 2).every((objective) => !objective.unlocked)).toBe(true);
+    expect(currentTier(form, { ...tierOne, itemsForged: 60 })).toBe(2);
   });
 
   it('ne promeut pas une forme sans objectif', () => {

@@ -35,15 +35,15 @@ Depuis `frontend/` :
 
 ## Évolutions du mineur
 
-Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne en remplissant des objectifs, façon « Adventure Rank » de Legend of Mushroom, sans rien payer. Chaque objectif rempli donne des éclats ; la promotion donne ceux qu'on a oubliés. Chaque forme multiplie toujours la Frappe par 1,5.
+Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne en remplissant des missions rangées en **3 paliers**, façon « Adventure Rank » de Legend of Mushroom, sans rien payer. Un palier s'ouvre quand le précédent est rempli ; chaque mission remplie donne des éclats (4 par mission pour le Mineur, 6, 8 puis 10), et la promotion donne ceux qu'on a oubliés. Chaque forme multiplie toujours la Frappe par 1,5. Le tableau donne le **dernier palier** ; les deux premiers jalonnent le chemin (voir `EVOLUTION_FORMS`).
 
-| Forme | Zone | Pioche | Objets forgés | Événements touchés | Éclats par objectif | Frappe totale |
-|---|---|---|---|---|---|---|
-| Apprenti | départ | | | | | ×1 |
-| Mineur | 5 | 10 | 350 | 15 | 10 | ×1,5 |
-| Contremaître | 7 | 16 | 1 000 | 50 | 20 | ×2,25 |
-| Maître des profondeurs | 9 | 20 | 1 900 | 110 | 30 | ×3,4 |
-| Légende de la mine | 12 | 24 | 4 000 | 250 | 40 | ×5,1 |
+| Forme | Zone | Pioche | Objets forgés | Événements touchés | Frappe totale |
+|---|---|---|---|---|---|
+| Apprenti | départ | | | | ×1 |
+| Mineur | 5 | 10 | 350 | 15 | ×1,5 |
+| Contremaître | 7 | 16 | 1 000 | 50 | ×2,25 |
+| Maître des profondeurs | 9 | 20 | 1 900 | 110 | ×3,4 |
+| Légende de la mine | 12 | 24 | 4 000 | 250 | ×5,1 |
 
 - **Calage** : les objectifs reprennent ce que le joueur régulier avait fait quand il évoluait avec l'ancien coût en or et minerais. Simulé : Mineur jour 2,5, Contremaître jour 5, Maître jour 9, Légende jour 19.
 - **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10), 1 par filon et 20 de plus en fin de zone. Ils ne servent plus qu'à l'Atelier.

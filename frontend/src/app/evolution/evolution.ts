@@ -6,7 +6,7 @@ import { MissionCounters } from '../missions/mission-counters';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
-import { canEvolve, EvolutionProgress, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
+import { canEvolve, currentTier, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
 
 const STORAGE_KEY = 'mine-explorer.evolution';
 /** Récompenses déjà touchées pour la forme suivante (index des objectifs). */
@@ -31,7 +31,7 @@ export class Evolution {
   /** Multiplicateur de Frappe cumulé de toutes les formes atteintes. */
   readonly strikeMultiplier = computed(() => evolutionStrikeMultiplier(this.formIndex()));
 
-  private readonly progress = computed<EvolutionProgress>(() => ({
+  readonly progress = computed<EvolutionProgress>(() => ({
     zone: this.progression.zone(),
     pickaxeLevel: this.forge.level(),
     itemsForged: this.counters().itemsForged,
@@ -43,13 +43,18 @@ export class Evolution {
     return form === null ? [] : objectivesFor(form, this.progress(), this.claimed());
   });
   readonly ready = computed(() => canEvolve(this.objectives()));
+  /** Palier en cours de la forme suivante. */
+  readonly tier = computed(() => {
+    const form = this.next();
+    return form === null ? 0 : currentTier(form, this.progress());
+  });
   /** Récompenses d'objectifs prêtes à toucher : pastille sur le portrait. */
-  readonly claimable = computed(() => this.objectives().filter((objective) => objective.done && !objective.claimed).length);
+  readonly claimable = computed(() => this.objectives().filter(isClaimable).length);
 
   /** Touche la récompense d'un objectif rempli. */
   claim(index: number): boolean {
     const objective = this.objectives()[index];
-    if (objective === undefined || !objective.done || objective.claimed) {
+    if (objective === undefined || !isClaimable(objective)) {
       return false;
     }
     this.shards.add(objective.shards);

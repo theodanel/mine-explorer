@@ -18,7 +18,7 @@ Demande de Théo du 13/10/2026, à partir de captures de Legend of Mushroom (éc
 
 ## 2. Évolution par objectifs (façon Adventure Rank)
 
-- La fenêtre d'évolution montre la forme actuelle → la suivante, puis **3 à 4 objectifs**, chacun avec son texte, sa barre et une récompense en éclats qu'on touche dès qu'il est rempli. Le bouton **Promotion** s'allume quand tous sont remplis.
+- Une **page Évolution** (ouverte depuis le Profil) montre la forme actuelle → la suivante et le bonus, puis une frise de **3 paliers** de missions. Un palier s'ouvre quand le précédent est rempli. Chaque mission a son texte, sa barre et une récompense en éclats qu'on touche dès qu'elle est remplie. Le bouton **Promotion** s'allume quand les trois paliers sont remplis.
 - **Plus aucun coût** : ni or, ni minerai. Le joueur évolue parce qu'il a joué, pas parce qu'il a économisé.
 - Les objectifs se lisent sur des compteurs de toute la partie (zone atteinte, niveau de pioche, objets forgés, événements de mine touchés) : un objectif déjà rempli le reste.
 - Les formes et leur bonus de Frappe (×1,5 chacune) ne changent pas. Les objectifs sont réglés pour que chaque forme arrive à peu près au même jour qu'avant (simulation).
@@ -37,6 +37,11 @@ Demande de Théo du 13/10/2026, à partir de captures de Legend of Mushroom (éc
 - Sources : paliers du défi, doublons (un doublon se change en pierres : 5 commun, 10 rare, 20 épique, 40 légendaire), expéditions (elles rapportent des éclats et des pierres, plus de minerai).
 - **Améliorer = monter d'une étoile**, de 1 à 5. Il n'y a plus de niveaux ni de minerai à donner. Chaque étoile coûte plus que la précédente et renforce nettement le bonus.
 - Les sauvegardes existantes gardent leurs étoiles ; les niveaux déjà payés sont remboursés en pierres.
+
+## Profil et paramètres
+
+- Toucher le portrait du mineur ouvre la page **Profil** : le mineur, sa forme, l'accès à l'Évolution, et les **Paramètres** (le son : fort, moyen ou coupé). Le bouton « Son » quitte l'écran de jeu.
+- Le haut de l'écran (portrait, or, éclats, minerai) est plus petit, comme la barre des sorts, pour laisser la place à la mine.
 
 ## 4. Éclats plus faciles
 

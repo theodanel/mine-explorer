@@ -267,10 +267,17 @@ export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legen
 export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'eventsTouched';
 
 export interface EvolutionObjective {
+  /** Palier de la mission, à partir de 1 : un palier s'ouvre quand le précédent est rempli. */
+  readonly tier: number;
   readonly metric: EvolutionMetric;
   readonly target: number;
-  /** Éclats offerts dès que l'objectif est rempli. */
+  /** Éclats offerts dès que la mission est remplie. */
   readonly shards: number;
+}
+
+/** Missions d'une forme, palier par palier : [palier][mesure, objectif]. Toutes rapportent les mêmes éclats. */
+function tiered(shards: number, tiers: readonly (readonly (readonly [EvolutionMetric, number])[])[]): EvolutionObjective[] {
+  return tiers.flatMap((missions, index) => missions.map(([metric, target]) => ({ tier: index + 1, metric, target, shards })));
 }
 
 export interface EvolutionForm {
@@ -283,56 +290,53 @@ export interface EvolutionForm {
 }
 
 /**
- * Formes du mineur, de la première à la dernière. Chacune se gagne en remplissant des objectifs (zone atteinte,
- * niveau de pioche, objets forgés, événements de mine touchés), sans rien payer : le joueur évolue parce qu'il a joué.
- * Chacune donne +50 % de Frappe, multipliés entre eux (×5 en Légende) : les paliers multiplicateurs des jeux idle.
- * Les objectifs sont calés sur ce que le joueur régulier a fait quand il évoluait avec l'ancien coût en or et minerais
- * (Mineur jour 3, Contremaître jour 6, Maître jour 10, Légende jour 21), un peu en dessous pour récompenser l'assidu.
+ * Formes du mineur, de la première à la dernière. Chacune se gagne en remplissant des missions rangées en 3 paliers,
+ * façon « Adventure Rank » de Legend of Mushroom, sans rien payer : le joueur évolue parce qu'il a joué.
+ * Le dernier palier reprend les objectifs calés sur ce que le joueur régulier avait fait quand il évoluait avec l'ancien
+ * coût en or et minerais : les dates ne bougent pas (simulé : Mineur jour 3, Contremaître jour 5, Maître jour 9,
+ * Légende jour 19). Les deux premiers paliers jalonnent le chemin, pour qu'il y ait toujours une mission proche.
+ * Chaque forme donne +50 % de Frappe, multipliés entre eux (×5 en Légende) : les paliers multiplicateurs des jeux idle.
  */
 export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   { id: 'apprentice', label: 'Apprenti', objectives: [], strikeBonus: 0 },
   {
     id: 'miner',
     label: 'Mineur',
-    objectives: [
-      { metric: 'zone', target: 5, shards: 10 },
-      { metric: 'pickaxeLevel', target: 10, shards: 10 },
-      { metric: 'itemsForged', target: 350, shards: 10 },
-      { metric: 'eventsTouched', target: 15, shards: 10 },
-    ],
+    objectives: tiered(4, [
+      [['zone', 2], ['pickaxeLevel', 4], ['itemsForged', 60]],
+      [['zone', 3], ['pickaxeLevel', 7], ['itemsForged', 180], ['eventsTouched', 5]],
+      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350], ['eventsTouched', 15]],
+    ]),
     strikeBonus: 0.5,
   },
   {
     id: 'foreman',
     label: 'Contremaître',
-    objectives: [
-      { metric: 'zone', target: 7, shards: 20 },
-      { metric: 'pickaxeLevel', target: 16, shards: 20 },
-      { metric: 'itemsForged', target: 1000, shards: 20 },
-      { metric: 'eventsTouched', target: 50, shards: 20 },
-    ],
+    objectives: tiered(6, [
+      [['zone', 6], ['pickaxeLevel', 12], ['itemsForged', 550]],
+      [['pickaxeLevel', 14], ['itemsForged', 750], ['eventsTouched', 30]],
+      [['zone', 7], ['pickaxeLevel', 16], ['itemsForged', 1000], ['eventsTouched', 50]],
+    ]),
     strikeBonus: 0.5,
   },
   {
     id: 'master',
     label: 'Maître des profondeurs',
-    objectives: [
-      { metric: 'zone', target: 9, shards: 30 },
-      { metric: 'pickaxeLevel', target: 20, shards: 30 },
-      { metric: 'itemsForged', target: 1900, shards: 30 },
-      { metric: 'eventsTouched', target: 110, shards: 30 },
-    ],
+    objectives: tiered(8, [
+      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 1300]],
+      [['pickaxeLevel', 19], ['itemsForged', 1600], ['eventsTouched', 80]],
+      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['eventsTouched', 110]],
+    ]),
     strikeBonus: 0.5,
   },
   {
     id: 'legend',
     label: 'Légende de la mine',
-    objectives: [
-      { metric: 'zone', target: 12, shards: 40 },
-      { metric: 'pickaxeLevel', target: 24, shards: 40 },
-      { metric: 'itemsForged', target: 4000, shards: 40 },
-      { metric: 'eventsTouched', target: 250, shards: 40 },
-    ],
+    objectives: tiered(10, [
+      [['zone', 10], ['pickaxeLevel', 22], ['itemsForged', 2600]],
+      [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['eventsTouched', 180]],
+      [['zone', 12], ['pickaxeLevel', 24], ['itemsForged', 4000], ['eventsTouched', 250]],
+    ]),
     strikeBonus: 0.5,
   },
 ];

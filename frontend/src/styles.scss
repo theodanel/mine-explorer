@@ -179,3 +179,13 @@ body {
 .tooltip-line {
   color: #e8d6b8;
 }
+
+// ─── Défilement ─────────────────────────────────────────────────────────────
+// Jeu mobile : on fait défiler au doigt, les barres de défilement n'ont rien à faire à l'écran
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

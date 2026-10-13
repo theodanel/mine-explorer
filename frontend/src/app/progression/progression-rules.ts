@@ -67,7 +67,9 @@ export function isValidProgress(value: unknown): value is Progress {
   if (!isPositiveInteger(zone) || !isPositiveInteger(stage) || stage > STAGES_PER_ZONE) {
     return false;
   }
-  return Number.isSafeInteger(damage) && (damage as number) >= 0 && (damage as number) < rockHp(zone, stage);
+  // Une zone trafiquée trop profonde donnerait un filon aux PV infinis : la partie serait bloquée
+  const hp = rockHp(zone, stage);
+  return Number.isFinite(hp) && Number.isSafeInteger(damage) && (damage as number) >= 0 && (damage as number) < hp;
 }
 
 function isPositiveInteger(value: unknown): value is number {

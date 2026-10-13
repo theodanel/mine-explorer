@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { CounterId, Counters, EMPTY_COUNTERS, isValidCounters } from './mission-rules';
+import { completeCounters, CounterId, Counters, EMPTY_COUNTERS, isValidCounters } from './mission-rules';
 
 const STORAGE_KEY = 'mine-explorer.counters';
 
@@ -26,9 +26,7 @@ function loadCounters(): Counters {
     return EMPTY_COUNTERS;
   }
   try {
-    const parsed: unknown = JSON.parse(raw);
-    // Un compteur ajouté après la sauvegarde démarre à zéro
-    const value: unknown = typeof parsed === 'object' && parsed !== null ? { ...EMPTY_COUNTERS, ...parsed } : parsed;
+    const value = completeCounters(JSON.parse(raw));
     if (isValidCounters(value)) {
       return value;
     }

@@ -110,6 +110,14 @@ export function dayKey(timestamp: number): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/**
+ * Complète une sauvegarde de compteurs écrite avant l'ajout d'un compteur : le nouveau part de zéro.
+ * Sans ça, une mise à jour du jeu invaliderait les missions et le défi des joueurs existants.
+ */
+export function completeCounters(value: unknown): unknown {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) ? { ...EMPTY_COUNTERS, ...value } : value;
+}
+
 export function isValidCounters(value: unknown): value is Counters {
   return (
     typeof value === 'object' &&

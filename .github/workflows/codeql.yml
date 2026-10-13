@@ -1,0 +1,49 @@
+# Analyse de sécurité du code (CodeQL) sur le frontend TypeScript et le backend Java.
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Chaque lundi matin, pour les nouvelles règles de détection
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyse ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # Lecture du run en cours, exigée par CodeQL sur un dépôt privé
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, java-kotlin]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+      # Le code scanning de GitHub n'est pas disponible sur ce dépôt privé :
+      # les résultats sont gardés en artefact SARIF au lieu d'être envoyés.
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}
+          upload: never
+          output: sarif-results
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codeql-${{ matrix.language }}
+          path: sarif-results
+          retention-days: 30

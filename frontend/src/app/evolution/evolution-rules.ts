@@ -26,7 +26,7 @@ const LABELS: Readonly<Record<EvolutionMetric, (target: number) => string>> = {
   zone: (target) => `Atteindre la zone ${target}`,
   pickaxeLevel: (target) => `Pioche niveau ${target}`,
   itemsForged: (target) => `Forger ${NUMBER.format(target)} objets`,
-  eventsTouched: (target) => `Toucher ${target} événements`,
+  rocksBroken: (target) => `Épuiser ${target} filons`,
 };
 
 /** Forme suivante, ou null si le mineur est déjà à sa dernière forme. */

@@ -1,6 +1,6 @@
 // Tout l'équilibrage du jeu au même endroit : chiffres, tables et formules.
 // Fichier pur (aucune dépendance Angular) pour être testé, simulé en ligne de commande et porté côté Spring.
-// Le document docs/equilibrage.md explique ces choix et la courbe de progression attendue.
+// Le document docs/game-design/equilibrage.md explique ces choix et la courbe de progression attendue.
 import type { MiningStats, SlotId, StatId, TierId } from '../equipment/equipment.model';
 
 // ─── Mineur ────────────────────────────────────────────────────────────────
@@ -263,8 +263,11 @@ export const ZONE_CLEAR_ORES = 20;
 
 export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';
 
-/** Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie. */
-export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'eventsTouched';
+/**
+ * Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie.
+ * Que des mesures qui dépendent du joueur, pas du hasard : les événements de mine en ont été retirés le 13/10/2026.
+ */
+export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'rocksBroken';
 
 export interface EvolutionObjective {
   /** Palier de la mission, à partir de 1 : un palier s'ouvre quand le précédent est rempli. */
@@ -304,8 +307,8 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     label: 'Mineur',
     objectives: tiered(4, [
       [['zone', 2], ['pickaxeLevel', 4], ['itemsForged', 60]],
-      [['zone', 3], ['pickaxeLevel', 7], ['itemsForged', 180], ['eventsTouched', 5]],
-      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350], ['eventsTouched', 15]],
+      [['zone', 3], ['pickaxeLevel', 7], ['itemsForged', 180], ['rocksBroken', 30]],
+      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350], ['rocksBroken', 60]],
     ]),
     strikeBonus: 0.5,
   },
@@ -314,8 +317,8 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     label: 'Contremaître',
     objectives: tiered(6, [
       [['zone', 6], ['pickaxeLevel', 12], ['itemsForged', 550]],
-      [['pickaxeLevel', 14], ['itemsForged', 750], ['eventsTouched', 30]],
-      [['zone', 7], ['pickaxeLevel', 16], ['itemsForged', 1000], ['eventsTouched', 50]],
+      [['pickaxeLevel', 14], ['itemsForged', 750], ['rocksBroken', 90]],
+      [['zone', 7], ['pickaxeLevel', 16], ['itemsForged', 1000], ['rocksBroken', 105]],
     ]),
     strikeBonus: 0.5,
   },
@@ -324,8 +327,8 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     label: 'Maître des profondeurs',
     objectives: tiered(8, [
       [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 1300]],
-      [['pickaxeLevel', 19], ['itemsForged', 1600], ['eventsTouched', 80]],
-      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['eventsTouched', 110]],
+      [['pickaxeLevel', 19], ['itemsForged', 1600], ['rocksBroken', 125]],
+      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['rocksBroken', 140]],
     ]),
     strikeBonus: 0.5,
   },
@@ -334,8 +337,8 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     label: 'Légende de la mine',
     objectives: tiered(10, [
       [['zone', 10], ['pickaxeLevel', 22], ['itemsForged', 2600]],
-      [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['eventsTouched', 180]],
-      [['zone', 12], ['pickaxeLevel', 24], ['itemsForged', 4000], ['eventsTouched', 250]],
+      [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['rocksBroken', 165]],
+      [['zone', 12], ['pickaxeLevel', 24], ['itemsForged', 4000], ['rocksBroken', 180]],
     ]),
     strikeBonus: 0.5,
   },

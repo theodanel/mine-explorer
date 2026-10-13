@@ -4,3 +4,6 @@ backend/data/
 # Fichiers d'OS et d'éditeur
 .DS_Store
 Thumbs.db
+
+# Rapports de couverture des tests
+frontend/coverage/

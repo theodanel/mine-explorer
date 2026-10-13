@@ -1,8 +1,9 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Assets } from 'pixi.js';
 
+import { Evolution } from '../evolution/evolution';
 import { Progression } from '../progression/progression';
-import { MINER_ATLAS_URL, UI_IMAGES, zoneBackground } from './game-assets';
+import { bodyAssetUrls, ICON_IMAGES, UI_IMAGES, zoneBackground } from './game-assets';
 
 export type LoadState = 'loading' | 'ready' | 'failed';
 
@@ -10,10 +11,13 @@ export type LoadState = 'loading' | 'ready' | 'failed';
 @Injectable({ providedIn: 'root' })
 export class AssetLoader {
   private readonly progression = inject(Progression);
+  private readonly evolution = inject(Evolution);
   private readonly loadedCount = signal(0);
   private readonly stateValue = signal<LoadState>('loading');
-  /** Atlas du mineur, fond de la zone en cours, puis les images de l'interface. */
-  private readonly total = 2 + UI_IMAGES.length;
+  /** Corps du mineur selon sa forme, fond de la zone en cours, puis les images de l'interface. */
+  private readonly bodyUrls = bodyAssetUrls(this.evolution.form().id);
+  private readonly images = [...UI_IMAGES, ...ICON_IMAGES];
+  private readonly total = this.bodyUrls.length + 1 + this.images.length;
   private started: Promise<void> | null = null;
 
   /** Avancement entre 0 et 1. */
@@ -28,9 +32,9 @@ export class AssetLoader {
 
   private async loadAll(): Promise<void> {
     const tasks = [
-      Assets.load(MINER_ATLAS_URL),
+      ...this.bodyUrls.map((url) => Assets.load(url)),
       Assets.load(zoneBackground(this.progression.zone()).url),
-      ...UI_IMAGES.map((url) => preloadImage(url)),
+      ...this.images.map((url) => preloadImage(url)),
     ].map((task) => task.then(() => this.loadedCount.update((count) => count + 1)));
     try {
       await Promise.all(tasks);

@@ -1,0 +1,38 @@
+@if (view(); as view) {
+  <div class="backdrop" (click)="artifacts.dismissFind()">
+    <section
+      class="dialog game-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="artifact-found-title"
+      [attr.data-rarity]="view.rarity"
+      (click)="$event.stopPropagation()"
+    >
+      <p class="headline">{{ view.headline }}</p>
+      <img class="found-icon" [src]="view.icon" alt="" width="160" height="160" />
+      <h2 id="artifact-found-title">{{ view.label }}</h2>
+      <p class="rarity">
+        {{ view.rarityLabel }}
+        @if (view.find.kind !== 'new') {
+          · Niveau {{ view.find.level }}
+        }
+      </p>
+      <p class="lore">« {{ view.lore }} »</p>
+      @if (view.find.kind === 'maxed') {
+        <p class="effects">Déjà au niveau maximum : changé en {{ view.find.shards }} éclats.</p>
+      } @else {
+        <ul class="effects">
+          @for (effect of view.effects; track effect) {
+            <li>{{ effect }}</li>
+          }
+        </ul>
+      }
+      <div class="actions">
+        @if (view.canEquip) {
+          <button type="button" class="game-button green" (click)="equip()">Équiper</button>
+        }
+        <button type="button" class="game-button stone" (click)="artifacts.dismissFind()">Continuer</button>
+      </div>
+    </section>
+  </div>
+}

@@ -23,6 +23,12 @@ const CHIP_COUNT = 7;
 const CHIP_DURATION_MS = 450;
 const CHIP_COLORS = [0x8a6a4f, 0x6e5440, 0xb0a090] as const;
 const CHIP_GRAVITY_PX_PER_MS2 = 0.0025;
+const BLAST_CHIPS = 14;
+const BLAST_CHIPS_HUGE = 30;
+const BLAST_COLOR = 0xff9a2e;
+const BLAST_TEXT_SIZE = 76;
+const BLAST_TEXT_SIZE_HUGE = 96;
+const BLAST_LABEL_OFFSET_Y = -230;
 
 /** Un effet vit dans le temps et se retire tout seul une fois terminé. */
 interface Effect {
@@ -118,6 +124,16 @@ export class HitEffects {
         new FloatingText(x, y + ZONE_CLEARED_OFFSET_Y, `Zone ${outcome.clearedZone} terminée !`, GOLD_COLOR, HIGHLIGHT_TEXT_SIZE),
       );
     }
+  }
+
+  /** Explosion d'un sort : plus d'éclats de roche et un « BOUM » au-dessus des dégâts. */
+  spawnBlast(x: number, y: number, outcome: StrikeOutcome, huge: boolean): void {
+    const extraChips = huge ? BLAST_CHIPS_HUGE : BLAST_CHIPS;
+    for (let i = 0; i < extraChips; i++) {
+      this.add(new RockChip(x, y));
+    }
+    this.add(new FloatingText(x, y + BLAST_LABEL_OFFSET_Y, huge ? 'GRISOU !' : 'BOUM !', BLAST_COLOR, huge ? BLAST_TEXT_SIZE_HUGE : BLAST_TEXT_SIZE));
+    this.spawn(x, y, outcome);
   }
 
   update(elapsedMs: number): void {

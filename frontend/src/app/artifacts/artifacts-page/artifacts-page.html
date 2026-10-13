@@ -1,0 +1,63 @@
+<section class="page game-panel" aria-labelledby="artifacts-title">
+  <header class="page-header">
+    <h2 id="artifacts-title">Artefacts</h2>
+    <span class="count">{{ artifacts.foundCount() }} / {{ total }} découverts</span>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <ul class="grid">
+    @for (cell of cells(); track cell.id) {
+      <li>
+        <button
+          type="button"
+          class="cell"
+          [class.found]="cell.found"
+          [class.selected]="cell.selected"
+          [attr.data-rarity]="cell.found ? cell.rarity : null"
+          [disabled]="!cell.found"
+          [attr.aria-label]="cell.found ? cell.label + ', niveau ' + cell.level : 'Artefact pas encore découvert'"
+          (click)="select(cell.id, cell.found)"
+        >
+          <img class="cell-icon" [class.unknown]="!cell.found" [src]="cell.icon" alt="" width="160" height="160" />
+          <span class="cell-label">{{ cell.label }}</span>
+          @if (cell.found) {
+            <span class="cell-level">Niv. {{ cell.level }}</span>
+            @if (cell.equipped) {
+              <span class="worn">Porté</span>
+            }
+          }
+        </button>
+      </li>
+    }
+  </ul>
+
+  @if (selected(); as artifact) {
+    <article class="detail" [attr.data-rarity]="artifact.rarity">
+      <header class="detail-header">
+        <img class="detail-icon" [src]="artifact.icon" alt="" width="160" height="160" />
+        <div>
+          <h3>{{ artifact.label }}</h3>
+          <p class="detail-kind">{{ artifact.rarityLabel }} · Niveau {{ artifact.level }}/{{ artifact.maxLevel }}</p>
+        </div>
+      </header>
+      <p class="lore">« {{ artifact.lore }} »</p>
+      <ul class="effects">
+        @for (effect of artifact.effects; track effect) {
+          <li>{{ effect }}</li>
+        }
+      </ul>
+      @if (artifact.nextEffects; as next) {
+        <p class="next">Au niveau {{ artifact.level + 1 }} (un doublon de plus) : {{ next.join(', ') }}</p>
+      } @else {
+        <p class="next">Niveau maximum : un doublon se change en 10 éclats.</p>
+      }
+      @if (artifact.equipped) {
+        <p class="worn-note">Porté dans la case d'artefact.</p>
+      } @else {
+        <button type="button" class="game-button green" (click)="artifacts.equip(artifact.id)">Équiper</button>
+      }
+    </article>
+  } @else {
+    <p class="empty">Aucun artefact pour l'instant. Termine une zone : chacune en livre un.</p>
+  }
+</section>

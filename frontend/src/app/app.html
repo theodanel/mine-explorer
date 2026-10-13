@@ -3,7 +3,12 @@
   <div class="bottom-shade" aria-hidden="true"></div>
 
   <header class="top-bar">
-    <button type="button" class="player" (click)="evolutionOpen.set(true)" aria-label="Évolution du mineur">
+    <button
+      type="button"
+      class="player"
+      (click)="evolutionOpen.set(true)"
+      aria-label="Évolution du mineur"
+    >
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
         <span class="player-name">Petit mineur</span>
@@ -14,24 +19,77 @@
       }
     </button>
     <ul class="resources">
-      <li class="resource coins" aria-label="Pièces">
+      <li
+        class="resource coins"
+        aria-label="Pièces"
+        tabindex="0"
+      >
         <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />
         <span class="coin-count">{{ wallet.coins() }}</span>
       </li>
-      <li class="resource shards" aria-label="Éclats de géode">
+      <li
+        class="resource shards"
+        aria-label="Éclats de géode"
+        tabindex="0"
+      >
         <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
         <span class="shard-count">{{ shards.amount() }}</span>
       </li>
+      @if (zoneOre(); as ore) {
+        <li
+          class="resource ore"
+          [attr.data-tier]="ore.tier"
+          [attr.aria-label]="'Minerai : ' + ore.label"
+          tabindex="0"
+        >
+          <img class="ore-icon" [src]="materialIcon(ore.tier)" alt="" width="128" height="128" />
+          <span class="ore-label">{{ ore.label }}</span>
+          <span class="ore-count">{{ ore.amount }}</span>
+        </li>
+      }
     </ul>
   </header>
 
   <app-zone-banner class="zone" />
+  <app-sound-toggle class="sound" />
+  <app-companion-buddy class="buddy" />
+  <app-mine-event-layer class="events" />
   <app-equipment-column class="column-left" [slots]="leftSlots" />
   <app-equipment-column class="column-right" [slots]="rightSlots" />
 
+  <app-spell-bar class="spells" />
   <app-stats-panel class="stats" />
   <app-forge-button class="forge" />
+
+  <!-- Les pages se chargent à la première ouverture : le jeu démarre plus vite -->
+  @switch (navigation.page()) {
+    @case ('skills') {
+      @defer (on immediate) {
+        <app-skills-page class="page-layer" />
+      }
+    }
+    @case ('artifacts') {
+      @defer (on immediate) {
+        <app-artifacts-page class="page-layer" />
+      }
+    }
+    @case ('companions') {
+      @defer (on immediate) {
+        <app-companions-page class="page-layer" />
+      }
+    }
+    @case ('workshop') {
+      @defer (on immediate) {
+        <app-workshop-page class="page-layer" />
+      }
+    }
+  }
+  <app-footer-menu class="footer" />
+
   <app-item-compare />
+  <app-gallery-choice />
+  <app-artifact-found />
+  <app-companion-hatched />
   <app-offline-report />
   @if (evolutionOpen()) {
     <app-evolution-dialog (closed)="evolutionOpen.set(false)" />

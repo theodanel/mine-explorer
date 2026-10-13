@@ -1,0 +1,181 @@
+// Calque posé sur la galerie, entre les colonnes d'équipement : seuls les événements captent le doigt
+:host {
+  display: block;
+  pointer-events: none;
+}
+
+.event {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 0.4cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  translate: -50% 0;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+    outline-offset: 0.4cqw;
+    border-radius: 2cqw;
+  }
+}
+
+.art {
+  display: block;
+  filter: drop-shadow(0 0 2cqw rgb(255 220 120 / 55%)) drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 60%));
+}
+
+// Petit écriteau sous l'objet, pour dire quoi faire
+.tag {
+  padding: 0.5cqw 2cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: rgb(20 12 6 / 80%);
+  color: #fff3d6;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+// Géode et coffre : posés au sol, ils surgissent puis respirent pour attirer l'œil
+.grounded {
+  bottom: 4%;
+  animation:
+    pop-in 0.35s cubic-bezier(0.34, 1.8, 0.64, 1),
+    breathe 1s ease-in-out 0.35s infinite alternate;
+}
+
+.geode {
+  width: 24cqw;
+}
+
+.geode.hit {
+  animation: hit-shake 0.25s;
+}
+
+.chest {
+  width: 24cqw;
+}
+
+// Le rat traverse toute la galerie en courant pendant sa durée de vie
+.rat {
+  bottom: 0;
+  left: 0;
+  animation: run-across linear forwards;
+}
+
+// Bande de 20 images de 240 × 180 : la course en boucle, 24 images par seconde
+.rat-sprite {
+  display: block;
+  width: 32cqw;
+  aspect-ratio: 240 / 180;
+  background-repeat: no-repeat;
+  background-size: 2000% 100%;
+  filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 60%));
+  animation: rat-run 0.83s steps(19) infinite;
+}
+
+// Les cristaux tombent du plafond, l'un après l'autre, puis restent au sol jusqu'à la fin
+.crystal {
+  top: 0;
+  animation: fall 2.2s ease-in both;
+
+  .art {
+    width: 9cqw;
+    filter: drop-shadow(0 0 2.5cqw rgb(110 230 255 / 90%));
+  }
+}
+
+.loot {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 1.5cqw;
+  margin: 0;
+  padding: 1cqw 3cqw 1cqw 1cqw;
+  border-radius: 999px;
+  background: rgb(20 12 6 / 85%);
+  color: #ffd34d;
+  font: bold 3.6cqw / 1 Arial, sans-serif;
+  white-space: nowrap;
+  translate: -50% 0;
+  animation: loot-rise 2s ease-out forwards;
+
+  img {
+    width: 9cqw;
+    height: 9cqw;
+    object-fit: contain;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    scale: 0.3;
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  to {
+    scale: 1.05;
+  }
+}
+
+@keyframes hit-shake {
+  25% {
+    translate: -1.5cqw 0;
+  }
+  75% {
+    translate: 1.5cqw 0;
+  }
+}
+
+@keyframes run-across {
+  from {
+    left: -15%;
+  }
+  to {
+    left: 115%;
+  }
+}
+
+@keyframes rat-run {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: 100%;
+  }
+}
+
+@keyframes fall {
+  from {
+    top: -15%;
+  }
+  to {
+    top: 70%;
+  }
+}
+
+@keyframes loot-rise {
+  70% {
+    opacity: 1;
+  }
+  to {
+    translate: -50% -8cqw;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grounded,
+  .geode.hit,
+  .rat-sprite {
+    animation: none;
+  }
+}

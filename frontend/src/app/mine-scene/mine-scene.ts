@@ -3,10 +3,11 @@ import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Te
 
 import { speedMultiplier } from '../equipment/equipment-rules';
 import { EvolutionId } from '../balance/balance';
-import { Inventory } from '../equipment/inventory';
+import { Miner } from '../miner/miner';
 import { Evolution } from '../evolution/evolution';
-import { EVOLUTION_VISUALS, MINER_ATLAS_URL, zoneBackground } from '../loading/game-assets';
-import { Mining } from '../mining/mining';
+import { APPRENTICE_STRIKE, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
+import { Mining, StrikeOutcome } from '../mining/mining';
+import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
@@ -23,21 +24,20 @@ const MINER_FEET_Y = 690;
 const MINER_ANIMATION = 'pickaxe_swing';
 // Pixi avance d'animationSpeed frame par tick (60 ticks/s) : 0.2 donne les 12 fps prévus par l'atlas
 const MINER_BASE_ANIMATION_SPEED = 0.2;
-// Réduit pour laisser la place aux colonnes d'équipement de chaque côté
-const MINER_SCALE = 0.58;
-// Les décalages ci-dessous sont en pixels de la frame source, multipliés par MINER_SCALE à l'usage
-// La pioche élargit la frame vers la droite : on décale pour centrer le corps, pas la frame
-const MINER_BODY_OFFSET_X = 40;
-// Frame où la pioche touche le sol, repérée sur la spritesheet
+// Toutes les animations de frappe ont 23 images avec l'impact sur la même : la cadence ne change pas avec la forme
+const STRIKE_FRAME_COUNT = 23;
 const IMPACT_FRAME = 10;
-// Pointe de la pioche à l'impact, par rapport à l'ancre (bas-centre) du mineur
-const IMPACT_OFFSET = { x: 118, y: -41 } as const;
 
-// Formes évoluées affichées en image fixe en attendant leur animation : un peu plus grandes que l'Apprenti,
+// Formes sans animation affichées en image fixe : un peu plus grandes que l'Apprenti,
 // avec un petit écrasement à chaque coup pour garder le rythme du minage
 const EVOLVED_HEIGHT = 300;
 const STRIKE_SQUASH_MS = 180;
 const STRIKE_SQUASH = 0.08;
+// Le Coup de grisou secoue toute la galerie : décalage maximal du décor, en pixels de scène
+const SHAKE_MS = 450;
+const SHAKE_PX = 14;
+/** Part de la secousse du grisou reprise par la dynamite. */
+const DYNAMITE_SHAKE_SHARE = 0.4;
 
 @Component({
   selector: 'app-mine-scene',
@@ -46,32 +46,49 @@ const STRIKE_SQUASH = 0.08;
 })
 export class MineScene implements AfterViewInit, OnDestroy {
   private readonly stage = viewChild.required<ElementRef<HTMLDivElement>>('stage');
-  private readonly inventory = inject(Inventory);
+  private readonly minerStats = inject(Miner);
   private readonly mining = inject(Mining);
   private readonly progression = inject(Progression);
-  private readonly app = new Application();
-  private miner: AnimatedSprite | null = null;
-  private background: Sprite | null = null;
-  /** Image fixe de la forme évoluée, posée sur l'Apprenti animé qui continue de cadencer les coups. */
-  private evolvedSprite: Sprite | null = null;
-  private evolvedScale = 1;
-  private squashMs = 0;
   private readonly evolution = inject(Evolution);
+  private readonly sound = inject(Sound);
+  private readonly app = new Application();
+  /** Mineur animé : il cadence les coups, même invisible derrière une image fixe. */
+  private miner: AnimatedSprite | null = null;
+  /** Animation affichée par `miner`, qui donne aussi le point d'impact des effets. */
+  private strike: StrikeAnimation = APPRENTICE_STRIKE;
+  private background: Sprite | null = null;
+  private staticBody: Sprite | null = null;
+  private staticScale = 1;
+  private squashMs = 0;
+  private shakeMs = 0;
+  private effects: HitEffects | null = null;
   private initialized = false;
   private destroyed = false;
 
   constructor() {
-    // Changer de bottes accélère le mineur tout de suite, sans recréer la scène
+    // Changer de bottes ou lancer Frénésie accélère le mineur tout de suite, sans recréer la scène
     effect(() => {
-      const speed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.inventory.stats());
+      const speed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
       if (this.miner) {
         this.miner.animationSpeed = speed;
+      }
+    });
+    // Explosion d'un sort : elle frappe le filon devant le mineur
+    effect(() => {
+      const blast = this.mining.blasts();
+      if (blast && this.effects && this.miner) {
+        const { impactOffset, scale } = this.strike;
+        const isFiredamp = blast.spell === 'firedamp';
+        this.effects.spawnBlast(this.miner.x + impactOffset.x * scale, this.miner.y + impactOffset.y * scale, blast.outcome, isFiredamp);
+        // Le grisou secoue toute la galerie, la dynamite juste un peu
+        this.shakeMs = isFiredamp ? SHAKE_MS : SHAKE_MS * DYNAMITE_SHAKE_SHARE;
+        this.sound.play('blast');
       }
     });
     // Nouvelle forme, nouveau visuel, sans recréer la scène
     effect(() => {
       const form = this.evolution.form().id;
-      if (this.evolvedSprite) {
+      if (this.staticBody) {
         void this.showForm(form);
       }
     });
@@ -95,14 +112,14 @@ export class MineScene implements AfterViewInit, OnDestroy {
       }
       this.mountCanvas();
 
-      const sheet = await Assets.load<Spritesheet>(MINER_ATLAS_URL);
+      const frames = await loadStrikeFrames(APPRENTICE_STRIKE);
       if (this.destroyed) {
         return;
       }
       this.background = new Sprite();
       this.app.stage.addChild(this.background);
       await this.showZoneBackground(this.progression.zone());
-      this.startMining(sheet);
+      await this.startMining(frames);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);
     }
@@ -124,23 +141,30 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.stage().nativeElement.appendChild(canvas);
   }
 
-  private startMining(sheet: Spritesheet): void {
-    const miner = createMiner(sheet);
-    miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.inventory.stats());
+  private async startMining(frames: Texture[]): Promise<void> {
+    const miner = new AnimatedSprite(frames);
+    miner.anchor.set(0.5, 1);
+    miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
+    this.placeMiner(APPRENTICE_STRIKE);
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
-    this.evolvedSprite = new Sprite();
-    this.evolvedSprite.anchor.set(0.5, 1);
-    this.evolvedSprite.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
-    this.app.stage.addChild(miner, this.evolvedSprite, effectsLayer);
-    void this.showForm(this.evolution.form().id);
+    this.effects = effects;
+    this.staticBody = new Sprite();
+    this.staticBody.anchor.set(0.5, 1);
+    this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.staticBody.visible = false;
+    this.app.stage.addChild(miner, this.staticBody, effectsLayer);
+    // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
+    await this.showForm(this.evolution.form().id);
 
     let previousFrame = miner.currentFrame;
     miner.onFrameChange = (currentFrame: number) => {
       if (hasCrossedFrame(previousFrame, currentFrame, IMPACT_FRAME)) {
         const outcome = this.mining.strike();
-        effects.spawn(miner.x + IMPACT_OFFSET.x * MINER_SCALE, miner.y + IMPACT_OFFSET.y * MINER_SCALE, outcome);
+        const { impactOffset, scale } = this.strike;
+        effects.spawn(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale, outcome);
+        this.playStrikeSounds(outcome);
         this.squashMs = STRIKE_SQUASH_MS;
       }
       previousFrame = currentFrame;
@@ -148,44 +172,97 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
+      this.updateShake(ticker.deltaMS);
     });
     miner.play();
   }
 
-  /** L'Apprenti est animé ; une forme évoluée s'affiche en image fixe par-dessus, l'animation devenant invisible. */
+  /**
+   * Une forme animée remplace les images du mineur ; une forme sans animation s'affiche en image fixe
+   * par-dessus l'Apprenti, rendu invisible mais qui continue de cadencer les coups.
+   */
   private async showForm(form: EvolutionId): Promise<void> {
-    const { bodyUrl } = EVOLUTION_VISUALS[form];
-    if (!this.miner || !this.evolvedSprite) {
-      return;
-    }
-    if (bodyUrl === null) {
-      this.miner.alpha = 1;
-      this.evolvedSprite.visible = false;
-      return;
-    }
+    const { body } = EVOLUTION_VISUALS[form];
     try {
-      const texture = await Assets.load<Texture>(bodyUrl);
-      if (this.destroyed || !this.miner || !this.evolvedSprite) {
+      if (body.kind === 'animated') {
+        await this.showStrike(body.strike);
+        if (this.staticBody) {
+          this.staticBody.visible = false;
+        }
         return;
       }
-      this.evolvedSprite.texture = texture;
-      this.evolvedScale = EVOLVED_HEIGHT / texture.height;
-      this.evolvedSprite.scale.set(this.evolvedScale);
-      this.evolvedSprite.visible = true;
+      await this.showStrike(APPRENTICE_STRIKE);
+      const texture = await Assets.load<Texture>(body.url);
+      if (this.destroyed || !this.miner || !this.staticBody) {
+        return;
+      }
+      this.staticBody.texture = texture;
+      this.staticScale = EVOLVED_HEIGHT / texture.height;
+      this.staticBody.scale.set(this.staticScale);
+      this.staticBody.visible = true;
       this.miner.alpha = 0;
     } catch (error) {
-      // On garde l'Apprenti animé plutôt qu'un mineur invisible
+      // On garde le visuel précédent plutôt qu'un mineur invisible
       console.error(`Visuel de la forme ${form} introuvable`, error);
     }
   }
 
+  private async showStrike(strike: StrikeAnimation): Promise<void> {
+    const frames = await loadStrikeFrames(strike);
+    if (this.destroyed || !this.miner) {
+      return;
+    }
+    if (this.strike !== strike) {
+      // Même nombre d'images partout : on reprend au même instant du coup, sans à-coup de cadence
+      const frame = this.miner.currentFrame;
+      const playing = this.miner.playing;
+      this.miner.textures = frames;
+      this.strike = strike;
+      this.placeMiner(strike);
+      if (playing) {
+        this.miner.gotoAndPlay(frame);
+      } else {
+        this.miner.gotoAndStop(frame);
+      }
+    }
+    this.miner.alpha = 1;
+  }
+
+  private placeMiner(strike: StrikeAnimation): void {
+    if (!this.miner) {
+      return;
+    }
+    this.miner.scale.set(strike.scale);
+    this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
+  }
+
+  /** Le coup, puis ce qu'il a fait : éclat déterré, filon qui cède. */
+  private playStrikeSounds(outcome: StrikeOutcome): void {
+    this.sound.play(outcome.critical ? 'crit' : 'strike');
+    if (outcome.reward.shards > 0) {
+      this.sound.play('shard');
+    }
+    if (outcome.rockBroken) {
+      this.sound.play('rockBreak');
+    }
+  }
+
+  private updateShake(elapsedMs: number): void {
+    if (this.shakeMs <= 0) {
+      return;
+    }
+    this.shakeMs = Math.max(this.shakeMs - elapsedMs, 0);
+    const strength = (this.shakeMs / SHAKE_MS) * SHAKE_PX;
+    this.app.stage.position.set((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength);
+  }
+
   private updateSquash(elapsedMs: number): void {
-    if (!this.evolvedSprite?.visible || this.squashMs <= 0) {
+    if (!this.staticBody?.visible || this.squashMs <= 0) {
       return;
     }
     this.squashMs = Math.max(this.squashMs - elapsedMs, 0);
     const squash = Math.sin((this.squashMs / STRIKE_SQUASH_MS) * Math.PI) * STRIKE_SQUASH;
-    this.evolvedSprite.scale.set(this.evolvedScale * (1 + squash), this.evolvedScale * (1 - squash));
+    this.staticBody.scale.set(this.staticScale * (1 + squash), this.staticScale * (1 - squash));
   }
 
   private async showZoneBackground(zone: number): Promise<void> {
@@ -207,25 +284,23 @@ export class MineScene implements AfterViewInit, OnDestroy {
 
   private destroyApp(): void {
     this.miner = null;
+    this.effects = null;
     this.background = null;
-    this.evolvedSprite = null;
+    this.staticBody = null;
     // children: true libère sprites et effets ; les textures restent en cache dans Assets pour un remontage
     this.app.destroy(true, { children: true });
   }
 }
 
-function createMiner(sheet: Spritesheet): AnimatedSprite {
+async function loadStrikeFrames(strike: StrikeAnimation): Promise<Texture[]> {
+  const sheet = await Assets.load<Spritesheet>(strike.atlasUrl);
   // L'ordre des frames vient du bloc animations de l'atlas, pas de l'ordre des clés de textures
   const frames = sheet.animations[MINER_ANIMATION];
   if (!frames) {
-    throw new Error(`Animation "${MINER_ANIMATION}" absente de ${MINER_ATLAS_URL}`);
+    throw new Error(`Animation "${MINER_ANIMATION}" absente de ${strike.atlasUrl}`);
   }
-  const miner = new AnimatedSprite(frames);
-  miner.anchor.set(0.5, 1);
-  miner.scale.set(MINER_SCALE);
-  miner.position.set(
-    SCENE_WIDTH / 2 + MINER_BODY_OFFSET_X * MINER_SCALE,
-    MINER_FEET_Y,
-  );
-  return miner;
+  if (frames.length !== STRIKE_FRAME_COUNT) {
+    throw new Error(`${strike.atlasUrl} a ${frames.length} images au lieu de ${STRIKE_FRAME_COUNT} : la cadence de minage serait faussée`);
+  }
+  return frames;
 }

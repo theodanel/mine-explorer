@@ -1,0 +1,58 @@
+<section class="page game-panel" aria-labelledby="workshop-title">
+  <header class="page-header">
+    <h2 id="workshop-title">Atelier</h2>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  @if (workshop.unlocked()) {
+    <p class="intro">Chaque niveau renforce l'emplacement, pas l'objet : le bonus reste quand tu changes d'équipement.</p>
+  } @else {
+    <p class="intro locked-note">L'Atelier s'ouvre quand ton mineur devient <strong>{{ workshop.unlockLabel }}</strong>.</p>
+  }
+
+  <ul class="purse" aria-label="Ce que tu peux dépenser">
+    <li>
+      <img src="assets/ui/coin.png" alt="" width="128" height="128" />
+      <span>{{ coins() }}</span>
+    </li>
+    <li>
+      <img [src]="material().icon" alt="" width="128" height="128" />
+      <span>{{ workshop.spendableOres() }} {{ material().label }} utilisables</span>
+      @if (workshop.reservedOres() > 0) {
+        <small>sur {{ workshop.oreStock() }} : {{ workshop.reservedOres() }} restent de côté pour devenir {{ workshop.reservedFor() }}</small>
+      }
+    </li>
+  </ul>
+
+  <ul class="slots" [class.closed]="!workshop.unlocked()">
+    @for (row of rows(); track row.slot) {
+      <li class="slot-row">
+        <span class="frame">
+          <img [src]="row.icon" alt="" width="128" height="128" />
+          <span class="level">{{ row.level }}</span>
+        </span>
+        <div class="text">
+          <h3>{{ row.label }}</h3>
+          <p class="effect">{{ row.effect }} <span class="next">→ {{ row.next }}</span></p>
+          <p class="cost">
+            <span class="price" [class.short]="row.check === 'gold'">
+              <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
+            </span>
+            <span class="price" [class.short]="row.check === 'ores'">
+              <img [src]="material().icon" alt="" width="128" height="128" />{{ row.ores }}
+            </span>
+          </p>
+        </div>
+        <button
+          type="button"
+          class="game-button green upgrade"
+          [disabled]="row.check !== 'ok'"
+          [attr.aria-label]="'Renforcer ' + row.label + (row.blocked ? ' : ' + row.blocked : '')"
+          (click)="upgrade(row.slot)"
+        >
+          Renforcer
+        </button>
+      </li>
+    }
+  </ul>
+</section>

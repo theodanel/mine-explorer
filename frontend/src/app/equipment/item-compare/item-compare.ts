@@ -1,12 +1,23 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 
+import { Overlays } from '../../shared/overlays';
+import { Sound } from '../../audio/sound';
 import { itemIconUrl } from '../../loading/game-assets';
+import { CLOCK } from '../../shared/clock';
 import { Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
 import { formatStat, formatStatDelta } from '../equipment-format';
 import { compareItems, powerDelta, sellPrice } from '../equipment-rules';
 import { Inventory } from '../inventory';
 
 type Trend = 'better' | 'worse' | 'same';
+
+/**
+ * Sur mobile, le joueur tape souvent la Forge deux fois de suite : le second appui tombait sur le fond
+ * de la fenêtre qui venait de s'ouvrir et la refermait aussitôt. Le fond ignore les appuis juste après l'ouverture,
+ * et ne ferme que sur un appui commencé sur lui : un clic fantôme, que certains navigateurs mobiles rejouent
+ * après un toucher, n'a pas d'appui avant lui et ne ferme donc rien.
+ */
+const BACKDROP_GRACE_MS = 500;
 
 @Component({
   selector: 'app-item-compare',
@@ -15,17 +26,54 @@ type Trend = 'better' | 'worse' | 'same';
 })
 export class ItemCompare {
   protected readonly inventory = inject(Inventory);
+  private readonly clock = inject(CLOCK);
+  private readonly sound = inject(Sound);
+  private readonly overlays = inject(Overlays);
+  /** Montrée seulement à son tour : sur la mine, sans autre fenêtre ouverte. */
+  private readonly visible = this.overlays.isShown('itemCompare');
+  private openedAt = 0;
+  private backdropPressedAt: number | null = null;
+
+  constructor() {
+    this.overlays.register('itemCompare', this.inventory.reviewing);
+    // Lire l'identifiant fait repartir le délai pour chaque nouvel objet, même si la fenêtre ne s'est pas fermée entre-temps
+    effect(() => {
+      const shownId = this.visible() ? this.inventory.pending()?.id : undefined;
+      if (shownId !== undefined) {
+        this.openedAt = this.clock();
+      }
+    });
+  }
+
+  protected sell(): void {
+    this.inventory.sellPending();
+    this.sound.play('sell');
+  }
+
+  protected pressBackdrop(event: PointerEvent): void {
+    this.backdropPressedAt = event.target === event.currentTarget ? this.clock() : null;
+  }
+
+  protected closeFromBackdrop(event: MouseEvent): void {
+    const pressedAt = this.backdropPressedAt;
+    this.backdropPressedAt = null;
+    if (event.target !== event.currentTarget || pressedAt === null || pressedAt - this.openedAt < BACKDROP_GRACE_MS) {
+      return;
+    }
+    this.inventory.closeReview();
+  }
 
   /** Tout ce que la fenêtre affiche, ou null quand aucun objet n'attend. */
   protected readonly view = computed(() => {
     const candidate = this.inventory.pending();
-    if (candidate === null) {
+    if (candidate === null || !this.visible()) {
       return null;
     }
     const equipped = this.inventory.equipped();
     const current = equipped[candidate.slot];
     const delta = powerDelta(equipped, candidate);
     return {
+      isPrevious: this.inventory.pendingWasEquipped(),
       power: this.inventory.power() + delta,
       powerDelta: delta,
       powerTrend: trendOf(delta),
@@ -42,7 +90,6 @@ export class ItemCompare {
         trend: trendOf(after - before),
       })),
       sellPrice: sellPrice(candidate),
-      replacedSellPrice: current ? sellPrice(current) : null,
     };
   });
 }

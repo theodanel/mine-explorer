@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  pointer-events: none;
+}
+
+.sprite {
+  display: block;
+  width: 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 55%));
+  animation-name: play;
+  animation-iteration-count: infinite;
+}
+
+.still {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 55%));
+  transform-origin: bottom center;
+  animation: breathe 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes play {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: 100%;
+  }
+}
+
+@keyframes breathe {
+  to {
+    scale: 1.04 0.97;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite,
+  .still {
+    animation: none;
+  }
+}

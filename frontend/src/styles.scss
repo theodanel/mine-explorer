@@ -29,6 +29,21 @@ body {
 [data-tier='magma'] { --tier-color: #ff5a2e; }
 [data-tier='divine'] { --tier-color: #fff1b8; }
 
+// Couleurs de rareté des sorts et des artefacts
+[data-rarity='common'] { --rarity-color: #9aa3ad; }
+[data-rarity='rare'] { --rarity-color: #3d8bff; }
+[data-rarity='epic'] { --rarity-color: #a45cff; }
+[data-rarity='legendary'] { --rarity-color: #ff9a2e; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 // Icône de ressource à la taille du texte qui l'accompagne
 .resource-icon {
   width: 1.2em;
@@ -110,4 +125,57 @@ body {
     0 1.5cqw 0 rgb(0 0 0 / 45%);
   color: #f3e6d0;
   font-family: Arial, sans-serif;
+}
+
+// ─── Empilement des interfaces ──────────────────────────────────────────────
+// Une seule échelle pour tout le jeu (règles dans app/shared/overlays.ts) : de la mine aux infobulles.
+:root {
+  --z-scene-ui: 2;
+  --z-events: 3;
+  --z-page: 8;
+  --z-footer: 9;
+  --z-dialog: 10;
+  --z-splash: 40;
+  --z-tooltip: 50;
+}
+
+// ─── Infobulles (directive appTooltip) ─────────────────────────────────────
+// Insérées par la directive directement dans le cadre de jeu : styles globaux, hors des composants
+
+.tooltip {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  max-width: 60cqw;
+  padding: 1.5cqw 2.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 2cqw;
+  background: rgb(36 23 13 / 95%);
+  box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 50%);
+  color: #fff3d6;
+  font: 3.2cqw / 1.35 Arial, sans-serif;
+  pointer-events: none;
+}
+
+.tooltip-card {
+  display: grid;
+  gap: 0.8cqw;
+  min-width: 40cqw;
+}
+
+.tooltip-title {
+  font-size: 3.6cqw;
+}
+
+.tooltip-badge {
+  justify-self: start;
+  padding: 0.3cqw 1.5cqw;
+  border-radius: 1cqw;
+  background: var(--tier-color, #5a4636);
+  color: #1a0f07;
+  font-size: 2.8cqw;
+  font-weight: bold;
+}
+
+.tooltip-line {
+  color: #e8d6b8;
 }

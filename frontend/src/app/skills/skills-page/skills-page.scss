@@ -1,0 +1,384 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 2.5cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+// Couleur de chaque branche, reprise par l'onglet, l'arbre et sa corde
+[data-branch='force'] { --branch-color: #e2553a; }
+[data-branch='prospecting'] { --branch-color: #f2c230; }
+[data-branch='mastery'] { --branch-color: #4fa3e0; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+    text-shadow: 0 0.5cqw 0 rgb(0 0 0 / 50%);
+  }
+}
+
+.header-icon {
+  width: 11cqw;
+  height: 11cqw;
+  margin: -2cqw 0;
+  filter: drop-shadow(0 0.5cqw 0.4cqw rgb(0 0 0 / 50%));
+}
+
+.points {
+  padding: 1cqw 3cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#ffd34d, #c48a1a);
+  box-shadow: 0 0.5cqw 0 #6b4510;
+  color: #2a1a0d;
+  font: bold 3.4cqw / 1 Arial, sans-serif;
+}
+
+.close {
+  margin-left: auto;
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  box-shadow: 0 0.6cqw 0 #561109;
+  color: #fff;
+  font: bold 6cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+// Onglets de branches : planchettes teintées, celle ouverte est enfoncée et éclairée
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2cqw;
+}
+
+.tab {
+  display: grid;
+  gap: 0.3cqw;
+  padding: 1.5cqw 1cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 2.5cqw;
+  background: linear-gradient(color-mix(in srgb, var(--branch-color) 35%, #4a3019), #2a1a0d);
+  box-shadow: 0 0.8cqw 0 #1a0f07;
+  color: #f3e6d0;
+  font: bold 3.4cqw / 1.1 Arial, sans-serif;
+  cursor: pointer;
+  opacity: 0.75;
+
+  &:focus-visible {
+    outline: 0.7cqw solid #ffd34d;
+    outline-offset: 0.4cqw;
+  }
+}
+
+.tab.current {
+  background: linear-gradient(var(--branch-color), color-mix(in srgb, var(--branch-color) 55%, #1a0f07));
+  box-shadow: 0 0.3cqw 0 #1a0f07;
+  color: #fff;
+  opacity: 1;
+  text-shadow: 0 0.4cqw 0 rgb(0 0 0 / 45%);
+  transform: translateY(0.5cqw);
+}
+
+.tab-spent {
+  font-size: 2.4cqw;
+  font-weight: normal;
+}
+
+// L'arbre : une galerie sombre, les rangées reliées par une corde à la couleur de la branche
+.tree {
+  position: relative;
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 1.5cqw;
+  min-height: 0;
+  padding: 2cqw 3cqw 3cqw;
+  overflow-y: auto;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background:
+    radial-gradient(circle at 50% 0, color-mix(in srgb, var(--branch-color) 18%, transparent), transparent 70%),
+    linear-gradient(#24170d, #160d06);
+  box-shadow: inset 0 0 3cqw rgb(0 0 0 / 60%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 9cqw;
+    bottom: 8cqw;
+    left: 50%;
+    width: 1cqw;
+    border-radius: 999px;
+    background: linear-gradient(color-mix(in srgb, var(--branch-color) 70%, #1a0f07), rgb(255 255 255 / 8%));
+    transform: translateX(-50%);
+  }
+}
+
+.branch-summary {
+  margin: 0 0 1cqw;
+  color: #e8d6b8;
+  font-size: 3cqw;
+  font-style: italic;
+  text-align: center;
+}
+
+.tier {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+}
+
+.tier-nodes {
+  display: flex;
+  justify-content: center;
+  gap: 8cqw;
+}
+
+// Rangée fermée : on voit ce qui attend, sans pouvoir y toucher
+.closed .node {
+  filter: grayscale(0.85) brightness(0.55);
+}
+
+.tier-lock {
+  position: relative;
+  z-index: 1;
+  padding: 0.6cqw 2.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: rgb(26 15 7 / 90%);
+  color: #e8c48a;
+  font-size: 2.6cqw;
+}
+
+.node {
+  --edge-color: var(--branch-color);
+
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.8cqw;
+  width: 22cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #f3e6d0;
+  font: inherit;
+  cursor: pointer;
+
+  &[data-rarity] {
+    --edge-color: var(--rarity-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    .frame {
+      outline: 0.7cqw solid #ffd34d;
+      outline-offset: 0.5cqw;
+    }
+  }
+}
+
+// Médaillon : l'icône peinte sur un fond de pierre, cerclé de la couleur de la branche ou de la rareté
+.frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 16cqw;
+  height: 16cqw;
+  border: 0.7cqw solid #1a0f07;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #5a4a3e, #2a2019 75%);
+  box-shadow:
+    inset 0 0 0 0.7cqw color-mix(in srgb, var(--edge-color) 45%, #3a2a1c),
+    0 1cqw 0 rgb(0 0 0 / 45%);
+  transition: transform 0.15s;
+}
+
+.node-icon {
+  width: 82%;
+  height: 82%;
+  filter: drop-shadow(0 0.5cqw 0.4cqw rgb(0 0 0 / 55%));
+}
+
+// Pas encore appris : l'icône reste éteinte
+.node:not(.learned) .node-icon {
+  filter: grayscale(0.6) brightness(0.75) drop-shadow(0 0.5cqw 0.4cqw rgb(0 0 0 / 55%));
+}
+
+.learned .frame {
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--edge-color) 45%, #5a4a3e), #2a2019 75%);
+  box-shadow:
+    inset 0 0 0 0.8cqw var(--edge-color),
+    0 1cqw 0 rgb(0 0 0 / 45%);
+}
+
+.maxed .frame {
+  box-shadow:
+    inset 0 0 0 0.8cqw var(--edge-color),
+    0 0 3cqw 0.5cqw color-mix(in srgb, var(--edge-color) 60%, transparent),
+    0 1cqw 0 rgb(0 0 0 / 45%);
+}
+
+// Apprenable : le médaillon respire pour montrer où dépenser ses points
+.learnable .frame {
+  animation: learnable-pulse 1.1s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.selected .frame {
+  transform: scale(1.08);
+  outline: 0.8cqw solid #ffd34d;
+  outline-offset: 0.4cqw;
+}
+
+.node-rank {
+  position: absolute;
+  bottom: -1.5cqw;
+  padding: 0.3cqw 1.6cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#5b3d24, #3d2815);
+  font-size: 2.4cqw;
+  font-weight: bold;
+}
+
+.equipped-mark {
+  position: absolute;
+  top: -1cqw;
+  right: -2cqw;
+  padding: 0.2cqw 1cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #23802f;
+  font-size: 2cqw;
+  font-weight: bold;
+}
+
+.node-label {
+  margin-top: 1.2cqw;
+  font-size: 2.8cqw;
+  font-weight: bold;
+  line-height: 1.15;
+  text-align: center;
+  text-shadow: 0 0.4cqw 0 rgb(0 0 0 / 60%);
+}
+
+// Détail du nœud choisi : son icône en grand, ses effets et les actions
+.detail {
+  --edge-color: #8a5f38;
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1cqw 3cqw;
+  padding: 2cqw 3cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background: linear-gradient(#3b2716, #24170d);
+  box-shadow: inset 0 0 0 0.5cqw color-mix(in srgb, var(--edge-color) 70%, transparent);
+
+  &[data-rarity] {
+    --edge-color: var(--rarity-color);
+  }
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    font-size: 4.2cqw;
+  }
+}
+
+.detail-icon {
+  width: 16cqw;
+  height: 16cqw;
+  filter: drop-shadow(0 0.6cqw 0.5cqw rgb(0 0 0 / 55%));
+}
+
+.detail-body {
+  display: grid;
+  gap: 0.8cqw;
+}
+
+.detail-kind {
+  color: color-mix(in srgb, var(--edge-color) 60%, #fff);
+  font-size: 2.8cqw;
+  font-weight: bold;
+}
+
+.detail-summary,
+.effect,
+.blocker {
+  font-size: 2.8cqw;
+  line-height: 1.3;
+}
+
+.effect.next {
+  color: #9dffa4;
+}
+
+.blocker {
+  color: #ffb09a;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 2cqw;
+
+  .game-button {
+    padding: 1.5cqw 2.5cqw;
+    font-size: 3cqw;
+  }
+}
+
+.equip {
+  display: flex;
+  gap: 1.5cqw;
+}
+
+.page-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.small {
+  padding: 1.5cqw 3cqw;
+  font-size: 3cqw;
+}
+
+.respec-question {
+  font-size: 3cqw;
+}
+
+@keyframes learnable-pulse {
+  to {
+    box-shadow:
+      inset 0 0 0 0.7cqw color-mix(in srgb, var(--edge-color) 45%, #3a2a1c),
+      0 0 0 0.8cqw #9dffa4,
+      0 1cqw 0 rgb(0 0 0 / 45%);
+  }
+}

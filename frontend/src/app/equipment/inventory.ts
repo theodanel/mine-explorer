@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, InjectionToken, signal } from '@angular/core';
 
 import { FORGE_SHARD_COST } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
@@ -15,6 +15,21 @@ import { Item } from './equipment.model';
 const STORAGE_KEY = 'mine-explorer.equipment';
 
 /**
+ * Durée de l'animation de forge : l'objet n'est montré qu'à la fin, pour qu'on voie la pioche frapper
+ * avant chaque tirage, même en forge automatique. 0 dans les tests.
+ */
+export const FORGE_ANIMATION_MS = new InjectionToken<number>('FORGE_ANIMATION_MS', {
+  providedIn: 'root',
+  factory: () => 900,
+});
+
+/** Dernier objet sorti de la forge, pour l'animation. `key` change à chaque tirage. */
+export interface ForgedEvent {
+  readonly key: number;
+  readonly item: Item;
+}
+
+/**
  * Équipement porté et objet sorti de la Forge.
  * Pour le MVP tout se passe en local : le serveur fera les tirages et les transactions plus tard.
  */
@@ -28,9 +43,30 @@ export class Inventory {
   private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
   private readonly state = signal<EquipmentSave>(loadSave());
+  private readonly animationMs = inject(FORGE_ANIMATION_MS);
+  private readonly forgingState = signal(false);
+  private readonly lastForgedState = signal<ForgedEvent | null>(null);
+  private forgedCount = 0;
+  private forgingTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Vrai pendant l'animation de forge : l'objet tiré n'est pas encore montré. */
+  readonly forging = this.forgingState.asReadonly();
+  readonly lastForged = this.lastForgedState.asReadonly();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.forgingTimer));
+  }
 
   readonly equipped = computed(() => this.state().equipped);
   readonly pending = computed(() => this.state().pending);
+  /**
+   * Le joueur peut fermer la comparaison sans choisir : l'objet reste en attente (et sauvegardé),
+   * la Forge le lui remontre au prochain appui. État d'affichage seulement : au rechargement, la fenêtre revient.
+   */
+  private readonly reviewClosed = signal(false);
+  readonly reviewing = computed(() => this.pending() !== null && !this.reviewClosed() && !this.forging());
+  /** Vrai quand l'objet en attente est l'ancien, revenu après un remplacement (et non un objet tout juste forgé). */
+  private readonly pendingIsPrevious = signal(false);
+  readonly pendingWasEquipped = this.pendingIsPrevious.asReadonly();
   /** Stats de l'équipement, avec le bonus de Frappe des évolutions du mineur. */
   readonly stats = computed(() => {
     const stats = computeStats(this.equipped());
@@ -38,27 +74,50 @@ export class Inventory {
   });
   readonly power = computed(() => computePower(this.stats()));
   readonly forgeCost = FORGE_SHARD_COST;
-  readonly canForge = computed(() => this.pending() === null && this.shards.amount() >= FORGE_SHARD_COST);
+  readonly canForge = computed(() => this.pending() === null && !this.forging() && this.shards.amount() >= FORGE_SHARD_COST);
 
   /** Paye la Forge en éclats et sort un objet. Refusé si un objet attend déjà ou si les éclats manquent. */
   forge(): boolean {
     if (this.pending() !== null || !this.shards.spend(FORGE_SHARD_COST)) {
       return false;
     }
-    this.save({ ...this.state(), pending: rollItem(this.random, this.createId, this.forgeLevel()) });
+    const item = rollItem(this.random, this.createId, this.forgeLevel());
+    this.save({ ...this.state(), pending: item });
+    this.reviewClosed.set(false);
+    this.pendingIsPrevious.set(false);
+    this.lastForgedState.set({ key: ++this.forgedCount, item });
+    this.startForgingAnimation();
     this.missionCounters.record('itemsForged');
     return true;
   }
 
-  /** Équipe l'objet en attente ; celui qu'il remplace est vendu automatiquement. */
+  private startForgingAnimation(): void {
+    if (this.animationMs <= 0) {
+      return;
+    }
+    clearTimeout(this.forgingTimer);
+    this.forgingState.set(true);
+    this.forgingTimer = setTimeout(() => this.forgingState.set(false), this.animationMs);
+  }
+
+  closeReview(): void {
+    this.reviewClosed.set(true);
+  }
+
+  reopenReview(): void {
+    this.reviewClosed.set(false);
+  }
+
+  /**
+   * Équipe l'objet en attente. L'objet qu'il remplace n'est pas vendu : il devient l'objet en attente,
+   * pour que le joueur puisse le remettre s'il change d'avis. Seul « Vendre » vend.
+   */
   equipPending(): void {
     const item = this.requirePending();
-    const replaced = this.equipped()[item.slot];
-    if (replaced) {
-      this.wallet.add(sellPrice(replaced));
-      this.missionCounters.record('itemsSold');
-    }
-    this.save({ equipped: { ...this.equipped(), [item.slot]: item }, pending: null });
+    const replaced = this.equipped()[item.slot] ?? null;
+    this.save({ equipped: { ...this.equipped(), [item.slot]: item }, pending: replaced });
+    this.pendingIsPrevious.set(replaced !== null);
+    this.reviewClosed.set(false);
   }
 
   sellPending(): void {
@@ -66,6 +125,7 @@ export class Inventory {
     this.wallet.add(sellPrice(item));
     this.missionCounters.record('itemsSold');
     this.save({ ...this.state(), pending: null });
+    this.pendingIsPrevious.set(false);
   }
 
   private requirePending(): Item {

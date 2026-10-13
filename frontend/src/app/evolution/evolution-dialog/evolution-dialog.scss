@@ -2,7 +2,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-dialog);
   display: grid;
   place-items: center;
   padding: 4cqw;
@@ -122,11 +122,8 @@
 }
 
 .tier-swatch {
-  width: 3.4cqw;
-  height: 3.4cqw;
-  border: 0.4cqw solid #1a0f07;
-  border-radius: 0.8cqw;
-  background: var(--tier-color);
+  width: 6cqw;
+  height: 6cqw;
 }
 
 .evolve {

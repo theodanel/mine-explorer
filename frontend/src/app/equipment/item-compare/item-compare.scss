@@ -1,6 +1,7 @@
 .backdrop {
   position: absolute;
   inset: 0;
+  z-index: var(--z-dialog);
   display: grid;
   place-items: center;
   padding: 5cqw;
@@ -117,6 +118,13 @@ h2 {
   &[data-trend='better'] { color: #6fdc6f; }
   &[data-trend='worse'] { color: #ff6b5e; }
   &[data-trend='same'] { opacity: 0.6; }
+}
+
+.swap-hint {
+  margin: 3cqw 0 0;
+  color: #e8c48a;
+  font-size: 3.2cqw;
+  text-align: center;
 }
 
 .actions {

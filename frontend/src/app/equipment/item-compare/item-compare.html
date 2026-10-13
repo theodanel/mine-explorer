@@ -1,9 +1,16 @@
 @if (view(); as view) {
-  <div class="backdrop">
-    <section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="item-compare-title">
+  <!-- Cliquer à côté ferme sans vendre ni équiper : l'objet attend, la Forge le remontre -->
+  <div class="backdrop" (pointerdown)="pressBackdrop($event)" (click)="closeFromBackdrop($event)">
+    <section
+      class="dialog game-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="item-compare-title"
+      (click)="$event.stopPropagation()"
+    >
       <h2 id="item-compare-title">
         <img class="title-icon" [src]="view.iconUrl" alt="" width="128" height="128" />
-        Nouveau : {{ view.slot.label }}
+        {{ view.isPrevious ? 'Ancien' : 'Nouveau' }} : {{ view.slot.label }}
         <span class="tier" [attr.data-tier]="view.candidate.tier"
           >{{ view.candidate.tierLabel }} · Niv. {{ view.candidate.level }}</span
         >
@@ -34,7 +41,7 @@
                 <span class="tier">Aucun</span>
               }
             </th>
-            <th scope="col">Nouveau</th>
+            <th scope="col">{{ view.isPrevious ? 'Ancien' : 'Nouveau' }}</th>
             <th scope="col"><span class="visually-hidden">Écart</span></th>
           </tr>
         </thead>
@@ -50,15 +57,19 @@
         </tbody>
       </table>
 
+      @if (view.isPrevious) {
+        <p class="swap-hint">Ton ancien objet est ici : remets-le, ou vends-le.</p>
+      }
+
       <div class="actions">
-        <button type="button" class="game-button stone sell" (click)="inventory.sellPending()">
+        <button type="button" class="game-button stone sell" (click)="sell()">
           Vendre
           <span class="price">+{{ view.sellPrice }}</span>
         </button>
         <button type="button" class="game-button green equip" (click)="inventory.equipPending()">
-          Équiper
-          @if (view.replacedSellPrice !== null) {
-            <span class="price">ancien vendu +{{ view.replacedSellPrice }}</span>
+          {{ view.current ? 'Remplacer' : 'Équiper' }}
+          @if (view.current) {
+            <span class="price">l'objet porté revient ici</span>
           }
         </button>
       </div>

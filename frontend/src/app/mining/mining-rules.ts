@@ -1,11 +1,27 @@
-import { goldForDamage, ZONE_CLEAR_SHARDS } from '../balance/balance';
+import { goldForDamage, shardsForStage, ZONE_CLEAR_SHARDS } from '../balance/balance';
 
 export interface StrikeReward {
   readonly gold: number;
   readonly shards: number;
 }
 
-/** Butin d'un coup : de l'or pour chaque PV miné, et un lot d'éclats si le coup termine la zone. */
-export function strikeReward(damage: number, goldBonus: number, zoneCleared: boolean): StrikeReward {
-  return { gold: goldForDamage(damage, goldBonus), shards: zoneCleared ? ZONE_CLEAR_SHARDS : 0 };
+export interface StrikeContext {
+  /** Filon frappé, avant que le coup ne fasse passer au suivant. */
+  readonly zone: number;
+  readonly stage: number;
+  readonly stageCleared: boolean;
+  readonly zoneCleared: boolean;
+  /** Le coup a déterré un éclat (tiré au hasard par l'appelant, selon SHARD_FIND_CHANCE). */
+  readonly foundShard: boolean;
+}
+
+/**
+ * Butin d'un coup : de l'or pour chaque PV miné, parfois un éclat déterré,
+ * des éclats quand le filon est épuisé et un bonus en fin de zone.
+ */
+export function strikeReward(damage: number, goldBonus: number, context: StrikeContext): StrikeReward {
+  const foundShards = context.foundShard ? 1 : 0;
+  const stageShards = context.stageCleared ? shardsForStage(context.zone, context.stage) : 0;
+  const zoneShards = context.zoneCleared ? ZONE_CLEAR_SHARDS : 0;
+  return { gold: goldForDamage(damage, goldBonus), shards: foundShards + stageShards + zoneShards };
 }

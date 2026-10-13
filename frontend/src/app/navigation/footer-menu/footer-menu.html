@@ -1,0 +1,21 @@
+<nav class="footer" aria-label="Menus du jeu">
+  @for (tab of tabs(); track tab.label) {
+    <span class="tab-wrapper" [appTooltip]="tab.tooltip">
+      <button
+        type="button"
+        class="tab"
+        [class.current]="navigation.page() === tab.page"
+        [class.soon]="tab.locked !== null"
+        [disabled]="tab.locked !== null"
+        [attr.aria-current]="navigation.page() === tab.page ? 'page' : null"
+        (click)="open(tab)"
+      >
+        <img class="tab-icon" [src]="tab.icon" alt="" width="160" height="160" />
+        <span class="tab-label">{{ tab.locked ?? tab.label }}</span>
+        @if (tab.badge > 0) {
+          <span class="badge" [attr.aria-label]="tab.badge + ' nouveauté(s)'">{{ tab.badge }}</span>
+        }
+      </button>
+    </span>
+  }
+</nav>

@@ -1,11 +1,10 @@
 import { DestroyRef, DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
 import { zoneMaterial } from '../balance/balance';
-import { Rarity } from '../balance/skill-tree';
 import { CRYSTAL_RAIN_COUNT, EVENT_LIFETIME_MS, GEODE_TAPS, MineEventId } from '../balance/mine-events';
-import { Companions } from '../companions/companions';
 import { TierId } from '../equipment/equipment.model';
 import { Miner } from '../miner/miner';
+import { MissionCounters } from '../missions/mission-counters';
 import { Navigation } from '../navigation/navigation';
 import { Ores } from '../ores/ores';
 import { Progression } from '../progression/progression';
@@ -40,8 +39,6 @@ export interface ActiveEvent {
 export interface EventLoot {
   readonly key: number;
   readonly id: MineEventId;
-  /** Œuf de compagnon trouvé dans le coffre, ou null. */
-  readonly egg: Rarity | null;
   readonly gold: number;
   readonly shards: number;
   readonly ore: { readonly tier: TierId; readonly amount: number } | null;
@@ -63,7 +60,9 @@ export class MineEvents {
   private readonly shards = inject(GeodeShards);
   private readonly ores = inject(Ores);
   private readonly progression = inject(Progression);
-  private readonly companions = inject(Companions);
+  private readonly missionCounters = inject(MissionCounters);
+  /** Événement déjà compté comme touché (la pluie rapporte plusieurs fois, elle compte une fois). */
+  private countedKey = 0;
 
   private readonly activeState = signal<ActiveEvent | null>(null);
   private readonly lootState = signal<EventLoot | null>(null);
@@ -150,12 +149,18 @@ export class MineEvents {
   }
 
   private finish(id: MineEventId): boolean {
-    this.activeState.set(null);
+    // Le butin d'abord : il lit l'événement en cours pour le compter comme touché
     this.collect(id);
+    this.activeState.set(null);
     return true;
   }
 
   private collect(id: MineEventId): void {
+    const key = this.active()?.key ?? 0;
+    if (key !== this.countedKey) {
+      this.countedKey = key;
+      this.missionCounters.record('eventsTouched');
+    }
     const gain = eventGain(id, this.miner.permanent().stats);
     if (gain.gold > 0) {
       this.wallet.add(gain.gold);
@@ -168,7 +173,6 @@ export class MineEvents {
     if (ore !== null) {
       this.ores.add(ore.tier, ore.amount);
     }
-    const egg = id === 'buriedChest' ? this.companions.rollChestEgg() : null;
-    this.lootState.set({ key: ++this.lootCount, id, egg, gold: gain.gold, shards: gain.shards, ore });
+    this.lootState.set({ key: ++this.lootCount, id, gold: gain.gold, shards: gain.shards, ore });
   }
 }

@@ -27,33 +27,38 @@
 
     @if (next(); as next) {
       <p class="bonus">Bonus : +{{ next.bonus }} % de Frappe</p>
-      <ul class="requirements">
-        @for (requirement of requirements(); track requirement.label) {
-          <li [class.met]="requirement.met" [attr.data-tier]="requirement.tier">
-            @if (requirement.tier) {
-              <img class="tier-swatch" [src]="materialIcon(requirement.tier)" alt="" width="128" height="128" />
+      <p class="intro">Remplis tous les objectifs pour la promotion. Chacun rapporte des éclats.</p>
+      <ul class="objectives">
+        @for (objective of objectives(); track objective.index) {
+          <li class="objective" [class.done]="objective.done">
+            <div class="objective-text">
+              <span class="objective-label">{{ objective.label }}</span>
+              <div class="objective-bar" role="progressbar" aria-valuemin="0" [attr.aria-valuemax]="objective.needRaw" [attr.aria-valuenow]="objective.haveRaw">
+                <span class="objective-fill" [style.width.%]="objective.percent"></span>
+                <span class="objective-count">{{ objective.have }} / {{ objective.need }}</span>
+              </div>
+            </div>
+            @if (objective.claimed) {
+              <span class="claimed" aria-label="Récompense touchée">✓</span>
+            } @else {
+              <button
+                type="button"
+                class="game-button green claim"
+                [disabled]="!objective.done"
+                [attr.aria-label]="'Récupérer ' + objective.shards + ' éclats'"
+                (click)="claim(objective.index)"
+              >
+                <img src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{ objective.shards }}
+              </button>
             }
-            <span class="requirement-label">{{ requirement.label }}</span>
-            <span class="requirement-count">{{ requirement.have }} / {{ requirement.need }}</span>
           </li>
         }
       </ul>
       <button type="button" class="game-button green evolve" [disabled]="!evolution.ready()" (click)="evolve()">
-        Évoluer en {{ next.label }}
+        Promotion : {{ next.label }}
       </button>
     } @else {
       <p class="bonus">Ton mineur a atteint sa forme ultime.</p>
-    }
-
-    @if (stock().length > 0) {
-      <h3>Minerais récoltés</h3>
-      <ul class="stock">
-        @for (ore of stock(); track ore.tier) {
-          <li [attr.data-tier]="ore.tier">
-            <img class="tier-swatch" [src]="materialIcon(ore.tier)" alt="" width="128" height="128" />{{ ore.label }} <strong>{{ ore.amount }}</strong>
-          </li>
-        }
-      </ul>
     }
   </section>
 </div>

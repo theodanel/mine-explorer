@@ -2,24 +2,20 @@ import { Component, computed, inject, output } from '@angular/core';
 
 import { holdUserDialog } from '../../shared/overlays';
 import { Sound } from '../../audio/sound';
-import { TIER_IDS, TIER_LABELS } from '../../equipment/equipment.model';
-import { EVOLUTION_VISUALS, materialIconUrl } from '../../loading/game-assets';
-import { Ores } from '../../ores/ores';
+import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Evolution } from '../evolution';
 
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 const PERCENT = 100;
 
-/** Fenêtre d'évolution : forme actuelle, forme suivante, conditions et minerais en stock. */
+/** Fenêtre d'évolution, façon « Adventure Rank » : forme actuelle, suivante, objectifs et promotion. */
 @Component({
   selector: 'app-evolution-dialog',
   templateUrl: './evolution-dialog.html',
   styleUrl: './evolution-dialog.scss',
 })
 export class EvolutionDialog {
-  protected readonly materialIcon = materialIconUrl;
   protected readonly evolution = inject(Evolution);
-  private readonly ores = inject(Ores);
   private readonly sound = inject(Sound);
   readonly closed = output();
 
@@ -51,20 +47,20 @@ export class EvolutionDialog {
     };
   });
 
-  protected readonly requirements = computed(() =>
-    this.evolution.requirements().map((requirement) => ({
-      ...requirement,
-      have: NUMBER_FORMAT.format(requirement.have),
-      need: NUMBER_FORMAT.format(requirement.need),
+  protected readonly objectives = computed(() =>
+    this.evolution.objectives().map((objective) => ({
+      ...objective,
+      haveRaw: objective.have,
+      needRaw: objective.need,
+      have: NUMBER_FORMAT.format(objective.have),
+      need: NUMBER_FORMAT.format(objective.need),
+      percent: Math.round((objective.have / objective.need) * PERCENT),
     })),
   );
 
-  /** Minerais déjà récoltés, pour que le joueur sache où il en est même hors des conditions. */
-  protected readonly stock = computed(() =>
-    TIER_IDS.filter((tier) => this.ores.stock()[tier] > 0).map((tier) => ({
-      tier,
-      label: TIER_LABELS[tier],
-      amount: NUMBER_FORMAT.format(this.ores.stock()[tier]),
-    })),
-  );
+  protected claim(index: number): void {
+    if (this.evolution.claim(index)) {
+      this.sound.play('shard');
+    }
+  }
 }

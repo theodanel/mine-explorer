@@ -32,9 +32,8 @@ describe('Workshop', () => {
     expect(TestBed.inject(Ores).stock().mithril).toBe(40 - (cost.ores.mithril ?? 0));
   });
 
-  it('ne touche pas au minerai gardé pour l\'évolution suivante', () => {
-    const workshop = setup(2, cost.gold, { mithril: 30 });
-    expect(workshop.spendableOres()).toBe(0);
+  it('refuse sans assez de minerai', () => {
+    const workshop = setup(2, cost.gold, { mithril: 1 });
     expect(workshop.check('pickaxe')).toBe('ores');
   });
 

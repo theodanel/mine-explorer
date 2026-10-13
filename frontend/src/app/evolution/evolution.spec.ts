@@ -1,78 +1,91 @@
 import { TestBed } from '@angular/core/testing';
 
-import { EVOLUTION_FORMS, evolutionStrikeMultiplier, zoneMaterial } from '../balance/balance';
+import { EVOLUTION_FORMS, evolutionStrikeMultiplier } from '../balance/balance';
 import { Inventory } from '../equipment/inventory';
-import { Ores } from '../ores/ores';
-import { Wallet } from '../wallet/wallet';
-import { canEvolve } from './evolution-rules';
+import { GeodeShards } from '../wallet/geode-shards';
+import { canEvolve, objectivesFor } from './evolution-rules';
 import { Evolution } from './evolution';
 
 const MINER = EVOLUTION_FORMS[1];
+const targetOf = (metric: string): number => MINER.objectives.find((objective) => objective.metric === metric)?.target ?? 0;
 
 describe('Evolution', () => {
-  function setup(zone: number, coins: number): { evolution: Evolution; ores: Ores; wallet: Wallet } {
+  /** Joueur qui a rempli (ou non) les objectifs du Mineur. */
+  function setup(done: boolean): Evolution {
     localStorage.clear();
-    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 1, damage: 0 }));
-    localStorage.setItem('mine-explorer.coins', String(coins));
-    return { evolution: TestBed.inject(Evolution), ores: TestBed.inject(Ores), wallet: TestBed.inject(Wallet) };
-  }
-
-  function giveOres(ores: Ores): void {
-    for (const [tier, amount] of Object.entries(MINER.ores)) {
-      ores.add(tier as keyof typeof MINER.ores, amount ?? 0);
-    }
+    const factor = done ? 1 : 0.5;
+    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone: Math.ceil(targetOf('zone') * factor), stage: 1, damage: 0 }));
+    localStorage.setItem('mine-explorer.pickaxe', JSON.stringify({ level: Math.ceil(targetOf('pickaxeLevel') * factor), segments: 0, upgradeEndsAt: null }));
+    localStorage.setItem(
+      'mine-explorer.counters',
+      JSON.stringify({
+        rocksBroken: 0,
+        itemsForged: Math.ceil(targetOf('itemsForged') * factor),
+        itemsSold: 0,
+        segmentsPaid: 0,
+        eventsTouched: Math.ceil(targetOf('eventsTouched') * factor),
+      }),
+    );
+    return TestBed.inject(Evolution);
   }
 
   it('commence en Apprenti', () => {
-    const { evolution } = setup(1, 0);
+    const evolution = setup(false);
     expect(evolution.form().id).toBe('apprentice');
     expect(evolution.next()?.id).toBe('miner');
   });
 
-  it('attend la bonne zone, même avec les minerais et l\'or', () => {
-    const { evolution, ores } = setup(MINER.minZone - 1, MINER.gold);
-    giveOres(ores);
+  it('refuse la promotion tant qu\'un objectif manque', () => {
+    const evolution = setup(false);
     expect(evolution.ready()).toBe(false);
     expect(evolution.evolve()).toBe(false);
   });
 
-  it('évolue en payant minerais et or', () => {
-    const { evolution, ores, wallet } = setup(MINER.minZone, MINER.gold + 10);
-    giveOres(ores);
-    expect(evolution.ready()).toBe(true);
+  it('donne les éclats d\'un objectif rempli, une seule fois', () => {
+    const evolution = setup(true);
+    const shards = TestBed.inject(GeodeShards);
+    const before = shards.amount();
+    expect(evolution.claim(0)).toBe(true);
+    expect(shards.amount()).toBe(before + MINER.objectives[0].shards);
+    expect(evolution.claim(0)).toBe(false);
+  });
+
+  it('promeut sans rien payer, et donne les récompenses oubliées', () => {
+    const evolution = setup(true);
+    const shards = TestBed.inject(GeodeShards);
+    const before = shards.amount();
+    evolution.claim(0);
     expect(evolution.evolve()).toBe(true);
     expect(evolution.form().id).toBe('miner');
-    expect(wallet.coins()).toBe(10);
-    expect(ores.stock().stone).toBe(0);
-    expect(localStorage.getItem('mine-explorer.evolution')).toBe('1');
+    const total = MINER.objectives.reduce((sum, objective) => sum + objective.shards, 0);
+    expect(shards.amount()).toBe(before + total);
+    expect(evolution.claimable()).toBe(0);
   });
 
   it('augmente la Frappe de l\'inventaire', () => {
-    const { evolution, ores } = setup(MINER.minZone, MINER.gold);
-    giveOres(ores);
+    const evolution = setup(true);
     const inventory = TestBed.inject(Inventory);
     const before = inventory.stats().strikePower;
     evolution.evolve();
-    expect(inventory.stats().strikePower).toBeCloseTo(before * 1.5);
+    expect(inventory.stats().strikePower).toBeCloseTo(before * evolutionStrikeMultiplier(1));
   });
 });
 
-describe('règles d\'évolution', () => {
+describe('Évolutions', () => {
   it('multiplient les bonus de Frappe entre eux', () => {
-    expect(evolutionStrikeMultiplier(0)).toBe(1);
-    expect(evolutionStrikeMultiplier(2)).toBeCloseTo(2.25);
+    expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 4);
   });
 
-  it('demandent les minerais des zones déjà traversées', () => {
-    for (const form of EVOLUTION_FORMS) {
-      const reachable = new Set(Array.from({ length: form.minZone - 1 }, (_, index) => zoneMaterial(index + 1)));
-      for (const tier of Object.keys(form.ores)) {
-        expect(reachable.has(tier as never)).toBe(true);
+  it('demandent des objectifs de plus en plus grands', () => {
+    for (let index = 2; index < EVOLUTION_FORMS.length; index++) {
+      for (const objective of EVOLUTION_FORMS[index].objectives) {
+        const previous = EVOLUTION_FORMS[index - 1].objectives.find((candidate) => candidate.metric === objective.metric);
+        expect(objective.target).toBeGreaterThan(previous?.target ?? 0);
       }
     }
   });
 
-  it('refusent tant qu\'une condition manque', () => {
-    expect(canEvolve([{ label: 'Or', have: 0, need: 1, met: false, tier: null }])).toBe(false);
+  it('ne promeut pas une forme sans objectif', () => {
+    expect(canEvolve(objectivesFor(EVOLUTION_FORMS[0], { zone: 99, pickaxeLevel: 30, itemsForged: 1e6, eventsTouched: 1e6 }, []))).toBe(false);
   });
 });

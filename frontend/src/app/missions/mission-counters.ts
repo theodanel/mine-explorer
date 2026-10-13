@@ -26,7 +26,9 @@ function loadCounters(): Counters {
     return EMPTY_COUNTERS;
   }
   try {
-    const value: unknown = JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
+    // Un compteur ajouté après la sauvegarde démarre à zéro
+    const value: unknown = typeof parsed === 'object' && parsed !== null ? { ...EMPTY_COUNTERS, ...parsed } : parsed;
     if (isValidCounters(value)) {
       return value;
     }

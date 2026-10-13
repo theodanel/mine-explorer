@@ -3,7 +3,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { CHALLENGE_MILESTONES, ChallengeReward } from '../balance/challenge';
 import { Companions } from '../companions/companions';
 import { MissionCounters } from '../missions/mission-counters';
-import { Counters, EMPTY_COUNTERS, isValidCounters } from '../missions/mission-rules';
+import { completeCounters, Counters, isValidCounters } from '../missions/mission-rules';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
@@ -105,7 +105,7 @@ function loadState(now: number, counters: Counters): ChallengeState {
     const value: unknown = JSON.parse(raw);
     if (typeof value === 'object' && value !== null) {
       const { period, baseline, claimed } = value as Record<string, unknown>;
-      const fullBaseline: unknown = typeof baseline === 'object' && baseline !== null ? { ...EMPTY_COUNTERS, ...baseline } : baseline;
+      const fullBaseline = completeCounters(baseline);
       if (
         Number.isSafeInteger(period) &&
         isValidCounters(fullBaseline) &&

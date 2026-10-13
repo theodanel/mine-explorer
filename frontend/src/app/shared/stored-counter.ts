@@ -17,7 +17,8 @@ export class StoredCounter {
 
   add(amount: number): void {
     assertValidAmount(amount);
-    this.amountState.update((current) => current + amount);
+    // Plafonné : au-delà, le nombre ne serait plus exact et la sauvegarde serait rejetée au rechargement
+    this.amountState.update((current) => Math.min(current + amount, Number.MAX_SAFE_INTEGER));
     this.persist();
   }
 

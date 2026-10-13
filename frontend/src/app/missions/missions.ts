@@ -19,6 +19,7 @@ import {
   MissionDef,
   missionProgress,
   MissionReward,
+  completeCounters,
 } from './mission-rules';
 
 const STORAGE_KEY = 'mine-explorer.missions';
@@ -158,7 +159,7 @@ function loadState(counters: Counters, today: string): MissionsState {
     return fresh;
   }
   try {
-    const value: unknown = JSON.parse(raw);
+    const value = migrateState(JSON.parse(raw));
     if (isValidState(value)) {
       return value.day === today ? value : { ...value, ...freshDay(today, counters) };
     }
@@ -167,6 +168,15 @@ function loadState(counters: Counters, today: string): MissionsState {
   }
   console.warn('Sauvegarde des missions invalide ignorée');
   return fresh;
+}
+
+/** Les points de départ des missions gagnent aussi les compteurs ajoutés depuis la sauvegarde. */
+function migrateState(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+  const state = value as Record<string, unknown>;
+  return { ...state, mainBaseline: completeCounters(state['mainBaseline']), dayBaseline: completeCounters(state['dayBaseline']) };
 }
 
 function isValidState(value: unknown): value is MissionsState {

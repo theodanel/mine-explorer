@@ -21,6 +21,16 @@ Les en-têtes HTTP de sécurité sont dans `frontend/public/_headers`, copié à
 
 [PROBABLE] Les intitulés exacts des menus Cloudflare peuvent changer ; les permissions à donner restent celles-ci.
 
+## Domaine personnalisé
+
+Le jeu peut être servi sur un sous-domaine de `bouncylab.ovh` (par exemple `mine.bouncylab.ovh`) sans déplacer le domaine d'OVH :
+
+1. Cloudflare, projet Pages `mine-explorer`, *Custom domains*, *Set up a custom domain* : saisir `mine.bouncylab.ovh`.
+2. Chez OVH, zone DNS de `bouncylab.ovh` : ajouter un enregistrement `CNAME` `mine` vers `mine-explorer.pages.dev`.
+3. Cloudflare vérifie le domaine et émet le certificat HTTPS tout seul.
+
+Le domaine nu (`bouncylab.ovh` sans sous-domaine) demande en revanche de confier les serveurs DNS du domaine à Cloudflare. Les en-têtes de `_headers` s'appliquent sur les deux adresses ; HSTS ne concerne que le sous-domaine du jeu et ses propres sous-domaines, pas le reste de `bouncylab.ovh`. L'adresse `mine-explorer.pages.dev` reste joignable : si l'accès est restreint, la règle Cloudflare Access doit couvrir les deux.
+
 ## Restreindre l'accès (recommandé pour une version de test)
 
 Par défaut, l'adresse `*.pages.dev` est publique. Pour la réserver à quelques personnes, **Cloudflare Access** (offre Zero Trust, gratuite jusqu'à 50 utilisateurs [PROBABLE]) demande une connexion avant d'ouvrir le site : *Zero Trust → Access → Applications → Add an application → Self-hosted*, domaine du projet Pages, règle « Emails » avec les adresses autorisées (code reçu par e-mail). **Pas encore activé** : à décider par Théo.

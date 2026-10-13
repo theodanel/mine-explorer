@@ -1,0 +1,43 @@
+<section class="page game-panel" aria-labelledby="challenge-title">
+  <header class="page-header">
+    <h2 id="challenge-title">Défi de la mine</h2>
+    <button type="button" class="close" aria-label="Revenir aux compagnons" (click)="back()">×</button>
+  </header>
+
+  <div class="scroll">
+    <article class="summary">
+      <p class="points"><strong>{{ challenge.points() }}</strong> points</p>
+      <p class="time">Nouveau défi dans {{ timeLeft() }}</p>
+      <div class="bar" role="progressbar" aria-label="Avancée du défi" aria-valuemin="0" [attr.aria-valuemax]="maxPoints" [attr.aria-valuenow]="challenge.points()">
+        <span class="fill" [style.width.%]="progressPercent()"></span>
+      </div>
+      <ul class="rules">
+        @for (rule of rules; track rule.label) {
+          <li>{{ rule.label }} <strong>+{{ rule.points }}</strong></li>
+        }
+      </ul>
+    </article>
+
+    <ul class="milestones">
+      @for (milestone of milestones(); track milestone.index) {
+        <li class="milestone" [class.reached]="milestone.reached" [class.claimed]="milestone.claimed">
+          <span class="milestone-points">{{ milestone.points }}</span>
+          <span class="reward">
+            @if (milestone.icon) {
+              <img [src]="milestone.icon" alt="" width="128" height="128" />
+            } @else {
+              <span class="stone-mark" aria-hidden="true">◆</span>
+            }
+            {{ milestone.label }}
+          </span>
+          @if (milestone.claimed) {
+            <span class="done" aria-label="Récupéré">✓</span>
+          } @else {
+            <button type="button" class="game-button green" [disabled]="!milestone.reached" (click)="claim(milestone.index)">Récupérer</button>
+          }
+        </li>
+      }
+    </ul>
+    <p class="hint">Un palier atteint et oublié est donné automatiquement à la fin du défi.</p>
+  </div>
+</section>

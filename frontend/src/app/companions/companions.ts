@@ -1,30 +1,27 @@
 import { computed, DestroyRef, effect, inject, Injectable, signal } from '@angular/core';
 
-import { CHEST_EGG_CHANCE, COMPANION_IDS, CompanionId, COMPANIONS_UNLOCK_ZONE, feedCost } from '../balance/companions';
+import { COMPANION_IDS, CompanionId, COMPANIONS_UNLOCK_ZONE } from '../balance/companions';
 import { Rarity } from '../balance/skill-tree';
-import { workshopMaterial } from '../balance/workshop';
-import { Evolution } from '../evolution/evolution';
-import { Ores } from '../ores/ores';
 import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import { GeodeShards } from '../wallet/geode-shards';
-import { reservedOres } from '../workshop/workshop-rules';
 import {
   activeCompanionBonuses,
   addEgg,
-  canFeed,
   canHatch,
   canSend,
   collectExpedition,
   CompanionState,
   EMPTY_COMPANIONS,
   ExpeditionLoot,
-  feed,
   hatch,
   Hatching,
   isValidCompanionState,
+  migrateCompanionState,
+  nextStarCost,
+  raiseStar,
   rollEggRarity,
   sendOnExpedition,
   setActive,
@@ -35,14 +32,13 @@ const STORAGE_KEY = 'mine-explorer.companions';
 const TICK_MS = 1000;
 
 /**
- * Compagnons : œufs trouvés en jouant, éclosion par minuteur (qui continue jeu fermé), un compagnon qui accompagne
- * le mineur et donne son bonus, les autres en expédition. L'onglet s'ouvre à la zone 3 avec un œuf commun offert.
+ * Compagnons : œufs gagnés au Défi de la mine, éclosion par minuteur (qui continue jeu fermé), un compagnon
+ * qui accompagne le mineur et donne son bonus, les autres en expédition. Les pierres d'éveil font monter les étoiles.
+ * L'onglet s'ouvre à la zone 3 avec un œuf commun offert.
  */
 @Injectable({ providedIn: 'root' })
 export class Companions {
   private readonly progression = inject(Progression);
-  private readonly evolution = inject(Evolution);
-  private readonly ores = inject(Ores);
   private readonly shards = inject(GeodeShards);
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
@@ -57,23 +53,22 @@ export class Companions {
   readonly incubating = computed(() => this.state().incubating);
   readonly expeditions = computed(() => this.state().expeditions);
   readonly sinceLegendary = computed(() => this.state().sinceLegendary);
+  /** Pierres d'éveil en stock. */
+  readonly stones = computed(() => this.state().stones);
   readonly unlocked = computed(() => this.progression.zone() >= COMPANIONS_UNLOCK_ZONE);
   readonly bonuses = computed(() => activeCompanionBonuses(this.state()));
   readonly hatchReady = computed(() => canHatch(this.state(), this.now()));
   /** Compagnon tout juste éclos, pour la fenêtre de découverte. */
   readonly hatching = this.lastHatching.asReadonly();
-  /** Ce qui attend le joueur dans l'onglet : un œuf prêt, des compagnons rentrés d'expédition. */
+  /** Nombre de compagnons différents trouvés. */
+  readonly foundCount = computed(() => COMPANION_IDS.filter((id) => this.owned()[id] !== undefined).length);
+  /** Ce qui attend le joueur dans l'onglet : un œuf prêt, des compagnons rentrés, une étoile payable. */
   readonly ready = computed(
     () =>
       (this.hatchReady() ? 1 : 0) +
-      Object.values(this.expeditions()).filter((expedition) => expedition !== undefined && expedition.endsAt <= this.now()).length,
+      Object.values(this.expeditions()).filter((expedition) => expedition !== undefined && expedition.endsAt <= this.now()).length +
+      COMPANION_IDS.filter((id) => this.canRaiseStar(id)).length,
   );
-  /** Minerai pour nourrir : celui de la dernière zone terminée, comme à l'Atelier. */
-  readonly feedMaterial = computed(() => workshopMaterial(this.progression.zone()));
-  readonly spendableOres = computed(() => {
-    const tier = this.feedMaterial();
-    return Math.max(this.ores.stock()[tier] - reservedOres(this.evolution.index(), tier), 0);
-  });
 
   constructor() {
     const timer = setInterval(() => this.nowState.set(this.clock()), TICK_MS);
@@ -86,19 +81,18 @@ export class Companions {
     });
   }
 
-  /** Un œuf trouvé (fin de zone). Rien avant l'ouverture de l'onglet. */
-  findEgg(): Rarity | null {
-    if (!this.unlocked()) {
-      return null;
-    }
-    const rarity = rollEggRarity(this.random, this.state().sinceLegendary);
+  /** Un œuf gagné (Défi de la mine), jamais sous la rareté donnée. */
+  addEgg(minRarity: Rarity = 'common'): Rarity {
+    const rarity = rollEggRarity(this.random, this.state().sinceLegendary, minRarity);
     this.save(addEgg(this.state(), rarity, this.clock()));
     return rarity;
   }
 
-  /** Petite chance d'œuf dans un coffre (coffre enseveli, coffre des missions du jour). */
-  rollChestEgg(): Rarity | null {
-    return this.random() < CHEST_EGG_CHANCE ? this.findEgg() : null;
+  addStones(amount: number): void {
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+      throw new RangeError(`Quantité de pierres d'éveil invalide : ${amount}`);
+    }
+    this.save({ ...this.state(), stones: this.state().stones + amount });
   }
 
   hatch(): Hatching | null {
@@ -107,9 +101,6 @@ export class Companions {
       return null;
     }
     this.save(result.state);
-    if (result.hatching.shards > 0) {
-      this.shards.add(result.hatching.shards);
-    }
     this.lastHatching.set(result.hatching);
     return result.hatching;
   }
@@ -122,20 +113,21 @@ export class Companions {
     this.save(setActive(this.state(), id));
   }
 
-  feedCost(id: CompanionId): number {
-    return feedCost(this.state().owned[id]?.level ?? 1);
+  /** Pierres pour l'étoile suivante, ou null au maximum. */
+  starCost(id: CompanionId): number | null {
+    return nextStarCost(this.state(), id);
   }
 
-  canFeed(id: CompanionId): boolean {
-    return canFeed(this.state(), id) && this.spendableOres() >= this.feedCost(id);
+  canRaiseStar(id: CompanionId): boolean {
+    const cost = this.starCost(id);
+    return cost !== null && this.stones() >= cost;
   }
 
-  feed(id: CompanionId): boolean {
-    if (!this.canFeed(id)) {
+  raiseStar(id: CompanionId): boolean {
+    if (!this.canRaiseStar(id)) {
       return false;
     }
-    this.ores.spend({ [this.feedMaterial()]: this.feedCost(id) });
-    this.save(feed(this.state(), id));
+    this.save(raiseStar(this.state(), id));
     return true;
   }
 
@@ -156,14 +148,8 @@ export class Companions {
     if (result.loot.shards > 0) {
       this.shards.add(result.loot.shards);
     }
-    if (result.loot.ores > 0) {
-      this.ores.add(this.feedMaterial(), result.loot.ores);
-    }
     return result.loot;
   }
-
-  /** Nombre de compagnons différents trouvés. */
-  readonly foundCount = computed(() => COMPANION_IDS.filter((id) => this.owned()[id] !== undefined).length);
 
   private save(next: CompanionState): void {
     this.state.set(next);
@@ -177,7 +163,7 @@ function loadState(): CompanionState {
     return EMPTY_COMPANIONS;
   }
   try {
-    const value: unknown = JSON.parse(raw);
+    const value = migrateCompanionState(JSON.parse(raw));
     if (isValidCompanionState(value)) {
       return value;
     }

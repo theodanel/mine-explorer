@@ -1,0 +1,185 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 2.5cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.close {
+  margin-left: auto;
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  color: #fff;
+  font: bold 6cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.scroll {
+  display: grid;
+  align-content: start;
+  gap: 2.5cqw;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// En-tête du défi : les points, le temps restant et ce qui rapporte
+.summary {
+  display: grid;
+  gap: 1.5cqw;
+  padding: 3cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background: radial-gradient(circle at 50% 0%, rgb(255 210 90 / 22%), transparent 60%), linear-gradient(#4a3019, #2a1a0d);
+
+  p {
+    margin: 0;
+  }
+}
+
+.points {
+  font-size: 4cqw;
+  text-align: center;
+
+  strong {
+    color: #ffd34d;
+    font-size: 8cqw;
+  }
+}
+
+.time {
+  font-size: 3cqw;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.bar {
+  position: relative;
+  height: 3.5cqw;
+  overflow: hidden;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #1a0f07;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(#ffe27a, #e09a12);
+}
+
+.rules {
+  display: grid;
+  gap: 0.6cqw;
+  margin: 0;
+  padding: 0;
+  font-size: 3cqw;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  strong {
+    color: #9dffa4;
+  }
+}
+
+.milestones {
+  display: grid;
+  gap: 1.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  padding: 1.8cqw 2.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 2.5cqw;
+  background: linear-gradient(#3b2716, #24170d);
+  opacity: 0.7;
+
+  &.reached {
+    opacity: 1;
+    box-shadow: inset 0 0 0 0.5cqw #ffd34d;
+  }
+
+  &.claimed {
+    box-shadow: none;
+    opacity: 0.6;
+  }
+
+  .game-button {
+    padding: 1.6cqw 3cqw;
+    font-size: 3.2cqw;
+  }
+}
+
+.milestone-points {
+  min-width: 11cqw;
+  color: #ffd34d;
+  font: bold 4cqw / 1 Arial, sans-serif;
+  text-align: center;
+}
+
+.reward {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 1.5cqw;
+  font-size: 3.3cqw;
+
+  img {
+    width: 7cqw;
+    height: 7cqw;
+    object-fit: contain;
+  }
+}
+
+// Pierre d'éveil en attendant son icône (planche 10)
+.stone-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 7cqw;
+  color: #3fc7b5;
+  font-size: 5cqw;
+  text-shadow: 0 0 1.5cqw rgb(255 210 90 / 70%);
+}
+
+.done {
+  width: 12cqw;
+  color: #6fdc6f;
+  font: bold 5cqw / 1 Arial, sans-serif;
+  text-align: center;
+}
+
+.hint {
+  margin: 0;
+  font-size: 2.8cqw;
+  text-align: center;
+  opacity: 0.75;
+}

@@ -337,3 +337,37 @@
     animation: none;
   }
 }
+
+// Pierres d'éveil et accès au Défi : en haut, toujours visibles
+.purse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+}
+
+.stones {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1cqw 3cqw 1cqw 1.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 35%);
+  font-size: 3.2cqw;
+
+  strong {
+    color: #7fe3d6;
+    font-size: 4cqw;
+  }
+}
+
+// Pierre d'éveil en attendant son icône (planche 10) : un losange turquoise
+.stone-mark {
+  color: #3fc7b5;
+  text-shadow: 0 0 1.5cqw rgb(255 210 90 / 70%);
+}
+
+.challenge {
+  padding: 1.8cqw 3.5cqw;
+  font-size: 3.4cqw;
+}

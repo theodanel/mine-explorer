@@ -6,7 +6,6 @@ import { SpellId } from '../balance/skill-tree';
 import { Artifacts } from '../artifacts/artifacts';
 import { HitResult, resolveHit } from '../equipment/equipment-rules';
 import { TierId } from '../equipment/equipment.model';
-import { Companions } from '../companions/companions';
 import { Galleries } from '../galleries/galleries';
 import { scaleAmount } from '../galleries/gallery-rules';
 import { Miner } from '../miner/miner';
@@ -50,7 +49,6 @@ export class Mining {
   private readonly ores = inject(Ores);
   private readonly artifacts = inject(Artifacts);
   private readonly galleries = inject(Galleries);
-  private readonly companions = inject(Companions);
   private readonly lastBlast = signal<BlastEvent | null>(null);
   private blastCount = 0;
 
@@ -93,7 +91,6 @@ export class Mining {
       // Chaque zone terminée livre un artefact : la découverte récompense le cap franchi
       this.artifacts.discover();
       this.galleries.offerFor(clearedZone + 1);
-      this.companions.findEgg();
     }
     const baseReward = strikeReward(hit.damage, this.miner.current().stats.goldBonus, {
       zone,

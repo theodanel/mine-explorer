@@ -12,8 +12,8 @@
       <img class="hatched-icon" [src]="view.icon" alt="" width="200" height="200" />
       <h2 id="companion-hatched-title">{{ view.label }}</h2>
       <p class="rarity">{{ view.rarityLabel }} · {{ view.stars }} ★</p>
-      @if (view.kind === 'maxed') {
-        <p class="description">Il a déjà toutes ses étoiles : l'œuf se change en {{ view.shards }} éclats.</p>
+      @if (view.kind === 'duplicate') {
+        <p class="description">Ce doublon se change en {{ view.stones }} pierres d'éveil : elles font monter ses étoiles.</p>
       } @else {
         <p class="description">{{ view.description }}</p>
       }

@@ -8,8 +8,7 @@ import { Companions } from '../companions';
 
 const HEADLINES = {
   new: 'Nouveau compagnon !',
-  star: 'Une étoile de plus !',
-  maxed: 'Déjà 5 étoiles',
+  duplicate: 'Déjà dans ta collection',
 } as const;
 
 /** Fenêtre d'éclosion : le compagnon sorti de l'œuf, ou l'étoile gagnée par un doublon. */

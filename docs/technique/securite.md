@@ -55,5 +55,5 @@ Pas de route exposée et non déployé. Réglages par défaut sûrs déjà en pl
 |---|---|
 | Dépendances npm | `npm audit --audit-level=high` à chaque CI, Dependabot chaque semaine |
 | Dépendances Maven et actions GitHub | Dependabot chaque semaine |
-| Code | CodeQL à chaque PR et chaque lundi |
+| Code | CodeQL à chaque PR et chaque lundi (résultats en artefact, voir [[ci-cd]]) |
 | En-têtes | Après tout changement de `_headers` ou d'une bibliothèque de rendu : `npm run build` puis `node tools/serve-dist.mjs`, console du navigateur sans violation |

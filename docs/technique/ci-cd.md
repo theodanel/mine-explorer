@@ -22,9 +22,11 @@ Protections du pipeline :
 
 ## Analyse de sécurité (`.github/workflows/codeql.yml`)
 
-CodeQL analyse le TypeScript et le Java (requêtes `security-extended`) sur chaque PR, sur `main` et chaque lundi. Les alertes apparaissent dans l'onglet *Security* du dépôt.
+CodeQL analyse le TypeScript et le Java (requêtes `security-extended`) sur chaque PR, sur `main` et chaque lundi.
 
-[PROBABLE] Sur un dépôt **privé**, l'analyse de code de GitHub demande GitHub Advanced Security (payant). Sans elle, ce workflow échoue à l'envoi des résultats : il faut alors rendre le dépôt public ou désactiver ce workflow. À vérifier dans *Settings → Code security* du dépôt.
+Le *code scanning* de GitHub n'est pas activé sur ce dépôt privé (il demande GitHub Code Security, payant). Les résultats ne peuvent donc pas être envoyés à l'onglet *Security* : ils sont gardés 30 jours en artefact SARIF (`codeql-javascript-typescript`, `codeql-java-kotlin`) sur la page du run, lisibles avec l'extension SARIF Viewer de VS Code. Une alerte ne bloque pas la CI. Si le dépôt devient public ou que Code Security est activé, retirer `upload: never` et l'étape d'artefact pour retrouver les alertes dans GitHub.
+
+Première analyse (13/10/2026) : 0 alerte en TypeScript, 0 en Java.
 
 ## Mises à jour des dépendances (`.github/dependabot.yml`)
 

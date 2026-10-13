@@ -1,0 +1,29 @@
+@if (visible()) {
+  <div class="backdrop" (click)="galleries.closeDialog()">
+    <section
+      class="dialog game-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gallery-choice-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="gallery-choice-title">Embranchement !</h2>
+      <p class="intro">Deux galeries mènent à la zone {{ progression.zone() }}. Choisis la tienne : son effet dure toute la zone.</p>
+      <div class="cards">
+        @for (card of cards(); track card.id) {
+          <button type="button" class="card" (click)="choose(card.id)">
+            <img [src]="card.icon" alt="" width="161" height="149" />
+            <strong>{{ card.label }}</strong>
+            <span class="gain">{{ card.gain }}</span>
+            <span class="cost">{{ card.cost }}</span>
+          </button>
+        }
+      </div>
+      <button type="button" class="game-button stone neutral" (click)="galleries.decline()">
+        <img [src]="neutralIcon" alt="" width="161" height="149" />
+        Galerie ordinaire, sans effet
+      </button>
+      <p class="hint">Tu peux aussi choisir plus tard, tant que le premier filon de la zone n'est pas épuisé.</p>
+    </section>
+  </div>
+}

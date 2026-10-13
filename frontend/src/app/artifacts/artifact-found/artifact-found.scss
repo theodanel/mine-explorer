@@ -1,0 +1,90 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: 8cqw;
+  background: rgb(0 0 0 / 65%);
+}
+
+.dialog {
+  display: grid;
+  justify-items: center;
+  gap: 2cqw;
+  width: 100%;
+  padding: 6cqw 5cqw 5cqw;
+  text-align: center;
+  // Halo à la couleur de la rareté : un légendaire doit se voir de loin
+  box-shadow:
+    inset 0 0 0 0.7cqw #8a5f38,
+    inset 0 0 0 1.2cqw #1a0f07,
+    0 0 8cqw 2cqw color-mix(in srgb, var(--rarity-color) 60%, transparent);
+  animation: found-pop 0.35s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 6cqw;
+  }
+}
+
+.headline {
+  color: #ffd34d;
+  font-size: 4.2cqw;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3cqw;
+}
+
+.found-icon {
+  width: 34cqw;
+  height: 34cqw;
+  filter: drop-shadow(0 0 4cqw color-mix(in srgb, var(--rarity-color) 70%, transparent));
+}
+
+.rarity {
+  color: var(--rarity-color);
+  font-size: 3.6cqw;
+  font-weight: bold;
+}
+
+.lore {
+  font-size: 3.4cqw;
+  font-style: italic;
+  line-height: 1.35;
+  opacity: 0.9;
+}
+
+.effects {
+  margin: 0;
+  padding: 0;
+  color: #9dffa4;
+  font-size: 3.6cqw;
+  list-style: none;
+}
+
+.actions {
+  display: flex;
+  gap: 3cqw;
+  margin-top: 2cqw;
+
+  .game-button {
+    padding: 2.5cqw 5cqw;
+    font-size: 4cqw;
+  }
+}
+
+@keyframes found-pop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+}

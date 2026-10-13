@@ -7,18 +7,28 @@
   <ul class="cards">
     @for (adventure of adventures(); track adventure.page) {
       <li>
-        <button type="button" class="card" [class.locked]="adventure.locked !== null" [disabled]="adventure.locked !== null" (click)="open(adventure)">
+        <button
+          type="button"
+          class="card"
+          [class.locked]="adventure.locked !== null"
+          [disabled]="adventure.locked !== null"
+          [style.background-image]="adventure.scene"
+          (click)="open(adventure)"
+        >
+          <span class="shade" aria-hidden="true"></span>
           <img class="card-icon" [src]="adventure.icon" alt="" width="192" height="192" />
           <span class="card-text">
             <strong>{{ adventure.title }}</strong>
-            <span>{{ adventure.text }}</span>
+            <span class="pitch">{{ adventure.text }}</span>
+            @if (adventure.locked; as locked) {
+              <span class="chip lock">Débloqué : {{ locked }}</span>
+            } @else if (adventure.status; as status) {
+              <span class="chip ready">{{ status }}</span>
+            }
           </span>
-          @if (adventure.locked; as locked) {
-            <span class="pill">{{ locked }}</span>
-          } @else if (adventure.badge > 0) {
-            <span class="pill ready">{{ adventure.badge }}</span>
+          @if (adventure.locked === null) {
+            <span class="go" aria-hidden="true">Entrer</span>
           }
-          <span class="chevron" aria-hidden="true">›</span>
         </button>
       </li>
     }

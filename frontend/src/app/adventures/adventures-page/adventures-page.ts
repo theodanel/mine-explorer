@@ -8,11 +8,14 @@ import { Navigation, PageId } from '../../navigation/navigation';
 interface Adventure {
   readonly page: PageId;
   readonly icon: string;
+  /** Décor de l'aventure, montré en fond de sa carte. */
+  readonly scene: string;
   readonly title: string;
   readonly text: string;
   /** Condition encore à remplir, ou null quand l'aventure est ouverte. */
   readonly locked: string | null;
-  readonly badge: number;
+  /** Ce qui attend le joueur (« 3 / 3 essais », « 12 éclats au puits »…), ou null. */
+  readonly status: string | null;
 }
 
 /** Aventures : les activités à côté de la mine, regroupées dans un seul onglet pour garder la barre du bas lisible. */
@@ -30,18 +33,20 @@ export class AdventuresPage {
     {
       page: 'camp',
       icon: ADVENTURE_IMAGES.campCard,
+      scene: `url(${ADVENTURE_IMAGES.campBackground})`,
       title: 'Campement',
-      text: 'Fais grandir ton camp : meilleurs gains hors ligne, absence plus longue, éclats passifs.',
+      text: 'Fais grandir ton village de mineurs.',
       locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
-      badge: this.camp.unlocked() ? this.camp.ready() : 0,
+      status: this.campStatus(),
     },
     {
       page: 'abyss',
       icon: ADVENTURE_IMAGES.abyssCard,
+      scene: `url(${ADVENTURE_IMAGES.abyssBackground})`,
       title: 'Puits sans fond',
-      text: `30 secondes pour descendre le plus bas possible : c'est là que ton build compte. ${this.abyss.dailyRuns} essais par jour.`,
+      text: 'Descends le plus bas possible en 30 secondes.',
       locked: this.abyss.unlocked() ? null : this.abyss.unlockLabel,
-      badge: this.abyss.unlocked() ? this.abyss.runsLeft() : 0,
+      status: this.abyss.unlocked() ? `${this.abyss.runsLeft()} / ${this.abyss.dailyRuns} essais` : null,
     },
   ]);
 
@@ -53,5 +58,17 @@ export class AdventuresPage {
 
   protected close(): void {
     this.navigation.open('mine');
+  }
+
+  private campStatus(): string | null {
+    if (!this.camp.unlocked()) {
+      return null;
+    }
+    const stock = this.camp.wellStock();
+    if (stock > 0) {
+      return `${stock} éclats au puits`;
+    }
+    const ready = this.camp.ready();
+    return ready > 0 ? `${ready} bâtiment${ready > 1 ? 's' : ''} à agrandir` : null;
   }
 }

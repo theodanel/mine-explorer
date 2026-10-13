@@ -1,0 +1,59 @@
+@if (event(); as event) {
+  @switch (event.id) {
+    @case ('giantGeode') {
+      <button
+        type="button"
+        class="event grounded"
+        [style.left]="event.left"
+        [attr.aria-label]="'Géode géante : encore ' + event.tapsLeft + ' coups'"
+        (click)="tap()"
+      >
+        <!-- Rejouer la secousse à chaque coup : la clé change avec le nombre de coups -->
+        @for (shake of [event.taps]; track shake) {
+          <img class="art geode" [class.hit]="event.taps > 0" [src]="event.geodeImage" alt="" />
+        }
+        <span class="tag">Encore {{ event.tapsLeft }} coup{{ event.tapsLeft > 1 ? 's' : '' }}</span>
+      </button>
+    }
+    @case ('buriedChest') {
+      <button type="button" class="event grounded" [style.left]="event.left" aria-label="Ouvrir le coffre enseveli" (click)="tap()">
+        <img class="art chest" [src]="images.chestClosed" alt="" />
+        <span class="tag">Coffre enseveli</span>
+      </button>
+    }
+    @case ('thiefRat') {
+      <button
+        type="button"
+        class="event rat"
+        [style.animation-duration]="event.duration"
+        aria-label="Attraper le rat voleur"
+        (click)="tap()"
+      >
+        <span class="rat-sprite" [style.background-image]="'url(' + images.ratStrip + ')'"></span>
+        <span class="tag">Rat voleur !</span>
+      </button>
+    }
+    @case ('crystalRain') {
+      @for (crystal of event.crystals; track crystal.index) {
+        @if (crystal.left) {
+          <button
+            type="button"
+            class="event crystal"
+            [style.left]="crystal.x"
+            [style.animation-delay]="crystal.delay"
+            aria-label="Attraper le cristal"
+            (click)="tap(crystal.index)"
+          >
+            <img class="art" [src]="images.crystal" alt="" />
+          </button>
+        }
+      }
+    }
+  }
+}
+@for (loot of loot(); track loot.key) {
+  <p class="loot" role="status">
+    <img [src]="loot.icon" alt="" />
+    {{ loot.text }}
+  </p>
+}

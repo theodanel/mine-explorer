@@ -10,7 +10,11 @@
         [attr.aria-current]="navigation.page() === tab.page ? 'page' : null"
         (click)="open(tab)"
       >
-        <img class="tab-icon" [src]="tab.icon" alt="" width="160" height="160" />
+        @if (tab.icon; as icon) {
+          <img class="tab-icon" [src]="icon" alt="" width="160" height="160" />
+        } @else {
+          <span class="tab-icon" aria-hidden="true"></span>
+        }
         <span class="tab-label">{{ tab.locked ?? tab.label }}</span>
         @if (tab.badge > 0) {
           <span class="badge" [attr.aria-label]="tab.badge + ' nouveauté(s)'">{{ tab.badge }}</span>

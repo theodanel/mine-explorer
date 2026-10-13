@@ -1,0 +1,51 @@
+// Mise en page commune avec l'Atelier (workshop-page.scss) ; seuls les ajouts du Campement sont ici.
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 7cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+// Pas encore d'image de bâtiment (prompts Gemini, planche 11) : le nom tient lieu d'icône
+.building-frame {
+  display: grid;
+  place-items: center;
+}
+
+.building-name {
+  padding: 0 1cqw;
+  color: #f3e6d0;
+  font: bold 2.6cqw / 1.1 Arial, sans-serif;
+  text-align: center;
+}
+
+.level-of {
+  font-size: 2.6cqw;
+  font-weight: normal;
+  opacity: 0.75;
+}
+
+.role {
+  margin: 0.4cqw 0;
+  font-size: 2.8cqw;
+  opacity: 0.85;
+}
+
+.well {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  margin: 1cqw 0;
+  color: #d9b8ff;
+  font: bold 3cqw / 1 Arial, sans-serif;
+}
+
+.collect {
+  padding: 1cqw 3cqw;
+  font-size: 2.8cqw;
+}

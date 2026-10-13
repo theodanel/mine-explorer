@@ -1,0 +1,25 @@
+<section class="page game-panel" aria-labelledby="adventures-title">
+  <header class="page-header">
+    <h2 id="adventures-title">Aventures</h2>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <ul class="cards">
+    @for (adventure of adventures(); track adventure.page) {
+      <li>
+        <button type="button" class="card" [class.locked]="adventure.locked !== null" [disabled]="adventure.locked !== null" (click)="open(adventure)">
+          <span class="card-text">
+            <strong>{{ adventure.title }}</strong>
+            <span>{{ adventure.text }}</span>
+          </span>
+          @if (adventure.locked; as locked) {
+            <span class="pill">{{ locked }}</span>
+          } @else if (adventure.badge > 0) {
+            <span class="pill ready">{{ adventure.badge }}</span>
+          }
+          <span class="chevron" aria-hidden="true">›</span>
+        </button>
+      </li>
+    }
+  </ul>
+</section>

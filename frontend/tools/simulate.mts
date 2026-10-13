@@ -68,6 +68,18 @@ import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
 import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
 import { workshopMaterial } from '../src/app/balance/workshop.ts';
+import { BUILDING_IDS, CAMP_UNLOCK_ZONE, type BuildingId } from '../src/app/balance/camp.ts';
+import {
+  buildingCost,
+  buildingLevel,
+  collectedAt,
+  EMPTY_CAMP,
+  isMaxLevel,
+  offlineCapMs,
+  tavernBonus,
+  wellStock,
+  type CampState,
+} from '../src/app/camp/camp-rules.ts';
 import {
   activeCompanionBonuses,
   addEgg,
@@ -90,6 +102,7 @@ const withNewSystems = !process.argv.includes('--sans-nouveautes');
 const withWorkshop = withNewSystems && !process.argv.includes('--sans-atelier');
 const withEvents = withNewSystems && !process.argv.includes('--sans-evenements');
 const withCompanions = withNewSystems && !process.argv.includes('--sans-compagnons');
+const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -101,6 +114,8 @@ const GALLERY_PREFERENCE: readonly GalleryId[] = ['goldVein', 'unstable', 'flood
  * la pioche reste la priorité, l'Atelier prend les petites sommes, puis tout l'or une fois la pioche au maximum.
  */
 const WORKSHOP_SHARE_OF_SEGMENT = Number(process.env.WORKSHOP_SHARE ?? 0.25);
+/** Le joueur simulé met au Campement au plus ce multiple d'un segment de pioche : la pioche reste prioritaire. */
+const CAMP_SHARE_OF_SEGMENT = Number(process.env.CAMP_SHARE ?? 2);
 
 const HOUR = 3600;
 const DAY = 24 * HOUR;
@@ -287,7 +302,9 @@ let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
 // ─── Mesures ────────────────────────────────────────────────────────────────
-const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0 };
+const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
+let camp: CampState = EMPTY_CAMP;
+let goldCamp = 0;
 let goldEvents = 0;
 let eventsSeen = 0;
 let forges = 0;
@@ -444,6 +461,38 @@ function payWorkshop(now: number): void {
     workshop = { ...workshop, [best.slot]: slotLevel(workshop, best.slot) + 1 };
   }
   refresh(now);
+}
+
+/** Construit le bâtiment le moins cher, tant que c'est abordable : le joueur fait grandir son camp au fil de l'eau. */
+function payCamp(now: number): void {
+  if (!withCamp || progress.zone < CAMP_UNLOCK_ZONE) return;
+  const budget = pickaxe.level >= MAX_PICKAXE_LEVEL ? Infinity : (segmentCost(pickaxe.level) ?? 0) * CAMP_SHARE_OF_SEGMENT;
+  for (let guard = 0; guard < 10; guard++) {
+    const options = BUILDING_IDS.filter((id) => !isMaxLevel(camp.levels, id))
+      .map((id) => ({ id, cost: buildingCost(buildingLevel(camp.levels, id), progress.zone) }))
+      .filter(({ cost }) => {
+        const [[tier, need]] = Object.entries(cost.ores) as [TierId, number][];
+        return cost.gold <= gold && cost.gold <= budget && ores[tier] >= need;
+      })
+      .sort((a, b) => a.cost.gold - b.cost.gold);
+    const pick = options[0];
+    if (pick === undefined) break;
+    for (const [tier, need] of Object.entries(pick.cost.ores)) ores[tier as TierId] -= need ?? 0;
+    gold -= pick.cost.gold;
+    goldCamp += pick.cost.gold;
+    const building: BuildingId = pick.id;
+    const levels = { ...camp.levels, [building]: buildingLevel(camp.levels, building) + 1 };
+    camp = { levels, wellCollectedAt: building === 'well' && camp.wellCollectedAt === null ? now * 1000 : camp.wellCollectedAt };
+  }
+}
+
+/** Récolte du puits du Campement en revenant. */
+function collectWell(now: number): void {
+  const stock = wellStock(camp, now * 1000);
+  if (stock === 0) return;
+  shards += stock;
+  shardSources.puits += stock;
+  camp = { ...camp, wellCollectedAt: collectedAt(camp, now * 1000, stock) };
 }
 
 /** Ce que l'Atelier ajoute à la Puissance permanente. */
@@ -630,13 +679,19 @@ for (let day = 0; day < days; day++) {
     const end = start + minutes * 60;
     if (start > lastSeen && profile !== 'continu') {
       const permanent = permanentProfile();
-      const gains = offlineGains(permanent.stats, (start - lastSeen) * 1000, permanent.offlineEfficiency);
+      const gains = offlineGains(
+        permanent.stats,
+        (start - lastSeen) * 1000,
+        permanent.offlineEfficiency + tavernBonus(camp.levels),
+        offlineCapMs(camp.levels),
+      );
       gold += gains.gold;
       goldOffline += gains.gold;
       shards += gains.shards;
       shardSources.absence += gains.shards;
     }
     runExpeditions(start);
+    collectWell(start);
     // Les sorts reprennent prêts à chaque session : le joueur les relance en revenant
     for (const slot of spellSlots) {
       slot.readyAt = Math.min(slot.readyAt, start);
@@ -662,6 +717,7 @@ for (let day = 0; day < days; day++) {
         runChallenge(now);
         tendCompanions(now);
         payWorkshop(now);
+        payCamp(now);
         lastDecisionAt = now;
         nextDecision = now + 5;
       }
@@ -675,7 +731,8 @@ for (let day = 0; day < days; day++) {
         `Puissance ${big(powerOf(permanentProfile().stats))}, ${forges - forgesBefore} forges (éclats : coups ${got('coups')}, filons ${got('filons')}, ` +
         `zones ${got('zones')}, missions ${got('missions')}, absence ${got('absence')}, événements ${got('evenements')}), or en stock ${big(gold)}, ` +
         `points ${pointsSpent(ranks)}/${pointsEarned(progress.zone)}, artefacts ${Object.keys(artifacts.owned).length}, ` +
-        `atelier ${SLOT_IDS.map((slot) => slotLevel(workshop, slot)).join('/')} (×${workshopPower().toFixed(2)})`,
+        `atelier ${SLOT_IDS.map((slot) => slotLevel(workshop, slot)).join('/')} (×${workshopPower().toFixed(2)}), ` +
+        `campement ${BUILDING_IDS.map((id) => buildingLevel(camp.levels, id)).join('/')}`,
     );
   }
 }
@@ -706,6 +763,12 @@ if (withWorkshop) {
   console.log(
     `Atelier : niveaux ${SLOT_IDS.map((slot) => `${slot} ${slotLevel(workshop, slot)}`).join(', ')}, ` +
       `×${workshopPower().toFixed(2)} de Puissance, ${big(goldWorkshop)} d'or dépensé`,
+  );
+}
+if (withCamp) {
+  console.log(
+    `Campement : ${BUILDING_IDS.map((id) => `${id} ${buildingLevel(camp.levels, id)}`).join(', ')}, ${big(goldCamp)} d'or dépensé, ` +
+      `${shardSources.puits} éclats du puits`,
   );
 }
 console.log(`Galeries (${galleryStrategy}) : ${Object.entries(galleryCounts).map(([id, count]) => `${id} ${count}`).join(', ')}`);

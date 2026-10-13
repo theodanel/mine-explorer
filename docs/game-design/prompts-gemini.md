@@ -589,3 +589,33 @@ Visuels de [[refonte-compagnons-evolution]]. Colle le bloc « Style commun », p
 A wide horizontal banner for a mining challenge event, 3:1 ratio: a wooden signboard nailed to two mine support beams, decorated with a crossed pickaxe and hammer in the center, scattered glowing purple geode shards and a cracked rock pile at each end, a lantern hanging from the left beam. Empty center area of the signboard for a title added in code, no text.
 ```
 
+
+## Puits sans fond et Campement (14/10/2026)
+
+Visuels de [[puits-sans-fond]] et [[campement]]. Pour la planche : colle le bloc « Style commun », puis la « Règle de planche », puis le prompt. Pour les deux fonds : colle seulement leur prompt (pas de fond vert, ce sont des décors plein écran). Dépose tout dans `art-source/aventures/` : `planche-11.png`, `fond-puits.png`, `fond-campement.png`. En attendant, le jeu affiche du texte sur des boutons en bois.
+
+**Planche 11 : aventures** (grille 4 × 2, de gauche à droite puis de haut en bas)
+
+```
+8 icons for a mining game, grid of 4 columns and 2 rows, all icons at the same scale:
+1. a rolled old treasure map tied with a red ribbon, crossed behind it a small pickaxe and a lit torch
+2. a round stone well shaft seen from slightly above, endless black darkness inside, a frayed rope hanging down into it, small glowing purple crystals on its rim
+3. a cozy little miners' camp: two small canvas tents, a crackling campfire and a wooden signpost, on a patch of rocky ground
+4. a small wooden tavern hut with a hanging sign showing a foaming mug, a warm glowing window
+5. a sturdy wooden storage shed with stacked crates and barrels in front, an iron padlock on the door
+6. a small stone water well with a little wooden roof and a crank, its bucket overflowing with glowing purple crystal shards
+7. a carved stone tablet with a big downward arrow and depth notches, a small gold star at the bottom notch
+8. an ornate brass hourglass with glowing purple sand
+```
+
+**Fond du Puits sans fond**
+
+```
+Vertical mobile game background, 9:16 portrait (1080x1920), hand-painted 2D cartoon style, soft painterly shading, thick dark outlines, same art direction as a cute chibi idle mining RPG. A deep vertical mine shaft seen from the side, going down into darkness: rough rock walls on the left and right with small ledges, wooden beams and ropes, glowing purple and cyan crystals that get rarer as it goes deeper, the bottom fading into pure black. A flat rocky ledge at about 66% of the image height where a small character can stand in the center. No characters, no creatures, no text, no UI. The top 15% is darker and simple (a title bar goes there), the bottom 30% is plain dark rock (menus cover it).
+```
+
+**Fond du Campement**
+
+```
+Vertical mobile game background, 9:16 portrait (1080x1920), hand-painted 2D cartoon style, soft painterly shading, thick dark outlines, warm cozy lighting, same art direction as a cute chibi idle mining RPG. A wide underground cavern turned into a small miners' camp: a flat clearing with packed earth, a central campfire, warm lanterns on wooden poles, mine cart rails along the back wall, cave ceiling with hanging roots. Leave three empty flat building spots on the ground (left, center-back, right) where buildings will be placed. No buildings, no characters, no creatures, no text, no UI. The top 15% is darker and simple, the bottom 30% is plain dark ground.
+```

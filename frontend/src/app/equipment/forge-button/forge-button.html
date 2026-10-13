@@ -1,5 +1,9 @@
 <div class="forge-bar">
-  <button type="button" class="game-button wood side-button" (click)="upgradeOpen.set(true)">
+  <button
+    type="button"
+    class="game-button wood side-button"
+    (click)="upgradeOpen.set(true)"
+  >
     <span class="side-title">Pioche</span>
     <span class="side-level">Niv. {{ forge.level() }}</span>
     @if (upgradeTimeLeft(); as timeLeft) {
@@ -7,20 +11,57 @@
     }
   </button>
 
-  <button
-    type="button"
-    class="forge"
-    [attr.aria-label]="'Forger un objet pour ' + inventory.forgeCost + ' éclats de géode'"
-    (click)="inventory.forge()"
-    [disabled]="!inventory.canForge()"
+  <span
+    class="forge-wrapper"
   >
-    <img class="forge-icon" src="assets/ui/forge-icon.png" alt="" width="128" height="128" />
-    <span class="forge-cost" aria-hidden="true"
-      ><img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
-        inventory.forgeCost
-      }}</span
+    <button
+      type="button"
+      class="forge"
+      [attr.aria-label]="forgeLabel()"
+      (click)="onForgeClick()"
+      [disabled]="!inventory.canForge() && !inventory.pending()"
     >
-  </button>
+      <img class="forge-icon" [class.striking]="inventory.forging()" src="assets/ui/forge-icon.png" alt="" width="128" height="128" />
+      <span class="forge-cost" aria-hidden="true"
+        ><img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
+          inventory.forgeCost
+        }}</span
+      >
+      @if (inventory.pending()) {
+        <span class="badge" aria-hidden="true">!</span>
+      }
+    </button>
+    <!-- Animation de forge : étincelles et objet qui monte, rejouées à chaque tirage -->
+    @for (pop of forgedPop(); track pop.key) {
+      <span class="forge-burst" [attr.data-tier]="pop.tier" aria-hidden="true"></span>
+      <span class="forged-pop" [attr.data-tier]="pop.tier" aria-hidden="true">
+        <img [src]="pop.icon" alt="" width="128" height="128" />
+        @if (pop.sold !== null) {
+          <span class="sold-tag">Vendu +{{ pop.sold }}</span>
+        }
+      </span>
+    }
+    <!-- Forge automatique : l'interrupteur et ses filtres, collés à la forge -->
+    <span class="forge-tools">
+      <button
+        type="button"
+        class="tool auto"
+        [class.on]="autoForge.enabled()"
+        [attr.aria-pressed]="autoForge.enabled()"
+        (click)="autoForge.setEnabled(!autoForge.enabled())"
+      >
+        Auto
+      </button>
+      <button
+        type="button"
+        class="tool filters"
+        [class.on]="autoForge.filtered()"
+        (click)="filtersOpen.set(true)"
+      >
+        Filtres
+      </button>
+    </span>
+  </span>
 
   <button
     type="button"
@@ -35,6 +76,10 @@
     }
   </button>
 </div>
+
+@if (filtersOpen()) {
+  <app-forge-filters (closed)="filtersOpen.set(false)" />
+}
 
 @if (missionsOpen()) {
   <app-missions-dialog (closed)="missionsOpen.set(false)" />
@@ -78,7 +123,7 @@
         <tbody>
           @for (row of odds().rows; track row.tier) {
             <tr [attr.data-tier]="row.tier" [class.unreachable]="!row.reachable">
-              <th scope="row"><span class="tier-swatch" aria-hidden="true"></span>{{ row.label }}</th>
+              <th scope="row"><img class="tier-swatch" [src]="materialIcon(row.tier)" alt="" width="128" height="128" />{{ row.label }}</th>
               <td>{{ row.current }}</td>
               @if (row.next !== null) {
                 <td class="next">{{ row.next }}</td>

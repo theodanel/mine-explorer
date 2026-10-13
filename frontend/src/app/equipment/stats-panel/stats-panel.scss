@@ -4,7 +4,7 @@
 
 // Planche de bois cloutée plutôt que le cadre crème de la référence, pour coller à la mine
 .panel {
-  padding: 2.5cqw 3.5cqw 3cqw;
+  padding: 2cqw 2.5cqw;
   border: 0.9cqw solid #2a1a0d;
   border-radius: 3.5cqw;
   background:
@@ -17,36 +17,40 @@
   font-family: Arial, sans-serif;
 }
 
+// Titre gardé pour les lecteurs d'écran : la place manque depuis l'arrivée de la barre de menus et des sorts
 .title {
-  margin: 0 0 2cqw;
-  font-size: 3.6cqw;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.3cqw;
-  opacity: 0.85;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5cqw 3cqw;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5cqw;
   margin: 0;
 }
 
 .stat {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template: 'icon label' auto 'icon value' auto / auto 1fr;
   align-items: center;
-  gap: 1.5cqw;
-  padding: 1cqw 2cqw;
+  column-gap: 1.5cqw;
+  padding: 1cqw 1.5cqw;
   border-radius: 2cqw;
   background: rgb(0 0 0 / 22%);
 
   dt {
-    font-size: 3.4cqw;
+    grid-area: label;
+    font-size: 2.7cqw;
+    opacity: 0.85;
   }
 
   dd {
+    grid-area: value;
     margin: 0;
     font-size: 3.6cqw;
     font-weight: bold;
@@ -54,7 +58,17 @@
   }
 }
 
+// Une stat gonflée par un sort en cours passe au vert le temps de l'effet
+.boosted {
+  background: rgb(60 170 70 / 35%);
+
+  dd {
+    color: #9dffa4;
+  }
+}
+
 .stat-icon {
-  width: 6cqw;
-  height: 6cqw;
+  grid-area: icon;
+  width: 6.5cqw;
+  height: 6.5cqw;
 }

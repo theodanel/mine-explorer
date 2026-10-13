@@ -57,14 +57,16 @@ export const TIER_LABELS: Readonly<Record<TierId, string>> = {
 
 interface StatDefinition {
   readonly label: string;
+  /** Explication affichée en infobulle. */
+  readonly description: string;
   /** Les dégâts sont entiers ; les autres stats sont des pourcentages. */
   readonly kind: 'integer' | 'percent';
 }
 
 export const STATS: Readonly<Record<StatId, StatDefinition>> = {
-  strikePower: { label: 'Frappe', kind: 'integer' },
-  miningSpeed: { label: 'Vitesse', kind: 'percent' },
-  critChance: { label: 'Critique', kind: 'percent' },
-  critDamage: { label: 'Dégâts crit.', kind: 'percent' },
-  goldBonus: { label: 'Bonus d\'or', kind: 'percent' },
+  strikePower: { label: 'Frappe', description: 'Dégâts de chaque coup de pioche.', kind: 'integer' },
+  miningSpeed: { label: 'Vitesse', description: 'Coups de pioche en plus par seconde.', kind: 'percent' },
+  critChance: { label: 'Critique', description: 'Chance qu\'un coup soit critique.', kind: 'percent' },
+  critDamage: { label: 'Dégâts crit.', description: 'Dégâts en plus d\'un coup critique.', kind: 'percent' },
+  goldBonus: { label: 'Bonus d\'or', description: 'Or en plus gagné en minant.', kind: 'percent' },
 };

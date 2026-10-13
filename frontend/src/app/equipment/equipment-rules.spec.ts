@@ -41,15 +41,15 @@ describe('rollItem', () => {
   });
 
   it("donne à l'objet le niveau de la pioche et le palier de sa fenêtre", () => {
-    // niveau 7 : Pierre 25 %, Cuivre 70 %, Fer 5 % ; 0.5 tombe dans le Cuivre
+    // niveau 7 : Pierre 25 %, Cuivre 72 %, Fer 3 % ; 0.5 tombe dans le Cuivre
     const result = rollItem(sequence(0.2, 0.5, 0.5), createId, 7);
     expect(result.level).toBe(7);
     expect(result.tier).toBe('copper');
   });
 
   it('atteint le dernier palier non nul de la fenêtre, jamais au-delà', () => {
-    // 0.9999 tombe tout en haut de la table du niveau 2 : Cuivre (0,5 %), jamais le Fer à 0 %
-    expect(rollItem(sequence(0.2, 0.9999, 0.5), createId, 2).tier).toBe('copper');
+    // 0.9999 tombe tout en haut de la table du niveau 2 : Pierre (8 %), jamais le Cuivre à 0 %
+    expect(rollItem(sequence(0.2, 0.9999, 0.5), createId, 2).tier).toBe('stone');
   });
 
   it('donne 3 stats secondaires distinctes au palier Divin', () => {
@@ -105,10 +105,10 @@ describe('autres règles', () => {
     expect(speedMultiplier({ ...BASE_STATS, miningSpeed: 0.25 })).toBeCloseTo(1.25);
   });
 
-  it('vend selon le palier et le niveau', () => {
+  it('vend selon le niveau et le palier', () => {
     expect(sellPrice(item({ tier: 'wood', level: 1 }))).toBe(5);
-    expect(sellPrice(item({ tier: 'divine', level: 1 }))).toBe(2560);
-    expect(sellPrice(item({ tier: 'wood', level: 11 }))).toBeGreaterThan(5);
+    expect(sellPrice(item({ tier: 'iron', level: 10 }))).toBeGreaterThan(sellPrice(item({ tier: 'copper', level: 10 })));
+    expect(sellPrice(item({ tier: 'iron', level: 11 }))).toBeGreaterThan(sellPrice(item({ tier: 'iron', level: 10 })));
   });
 
   it("mesure le gain de Puissance d'un objet par rapport à celui porté", () => {

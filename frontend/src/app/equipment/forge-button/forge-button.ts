@@ -1,13 +1,20 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+
+import { forgeSound } from '../../audio/sound-catalog';
+import { Sound } from '../../audio/sound';
 
 import { MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
+import { AutoForge } from '../../forge/auto-forge';
 import { Forge } from '../../forge/forge';
+import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
+import { ForgeFiltersDialog } from '../../forge/forge-filters/forge-filters';
 import { Missions } from '../../missions/missions';
+import { Overlays } from '../../shared/overlays';
 import { MissionsDialog } from '../../missions/missions-dialog/missions-dialog';
 import { formatDuration } from '../../shared/format-duration';
 import { GeodeShards } from '../../wallet/geode-shards';
 import { Wallet } from '../../wallet/wallet';
-import { TIER_IDS, TIER_LABELS } from '../equipment.model';
+import { SLOTS, TIER_IDS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
 
 const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
@@ -18,11 +25,12 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
-  imports: [MissionsDialog],
+  imports: [MissionsDialog, ForgeFiltersDialog],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })
 export class ForgeButton {
+  protected readonly materialIcon = materialIconUrl;
   protected readonly inventory = inject(Inventory);
   protected readonly forge = inject(Forge);
   protected readonly wallet = inject(Wallet);
@@ -30,6 +38,61 @@ export class ForgeButton {
   protected readonly upgradeOpen = signal(false);
   protected readonly missionsOpen = signal(false);
   protected readonly missions = inject(Missions);
+  protected readonly autoForge = inject(AutoForge);
+  protected readonly filtersOpen = signal(false);
+  private readonly sound = inject(Sound);
+  private readonly overlays = inject(Overlays);
+
+  /**
+   * Animation de forge : la pioche frappe, des étincelles de la couleur du palier jaillissent et l'objet monte
+   * au-dessus de la forge. La liste à un élément rejoue l'animation à chaque tirage.
+   */
+  protected readonly forgedPop = computed(() => {
+    const forged = this.inventory.lastForged();
+    if (forged === null) {
+      return [];
+    }
+    const { item } = forged;
+    const sold = this.autoForge.lastSold();
+    return [
+      {
+        key: forged.key,
+        tier: item.tier,
+        icon: itemIconUrl(item.slot, item.tier, SLOTS[item.slot].iconUrl),
+        sold: sold !== null && sold.id === item.id ? sold.price : null,
+      },
+    ];
+  });
+
+  constructor() {
+    // La fenêtre d'amélioration de la pioche est ouverte par le joueur : les fenêtres automatiques attendent
+    effect((onCleanup) => {
+      if (this.upgradeOpen()) {
+        onCleanup(this.overlays.openUserDialog());
+      }
+    });
+    effect(() => {
+      const forged = this.inventory.lastForged();
+      if (forged !== null) {
+        this.sound.play(forgeSound(forged.item.tier));
+      }
+    });
+  }
+
+  protected readonly forgeLabel = computed(() =>
+    this.inventory.pending()
+      ? 'Revoir l\'objet forgé en attente'
+      : `Forger un objet pour ${this.inventory.forgeCost} éclats de géode`,
+  );
+
+  /** Tant qu'un objet attend un choix, la Forge le remontre au lieu d'en forger un autre. */
+  protected onForgeClick(): void {
+    if (this.inventory.pending()) {
+      this.inventory.reopenReview();
+    } else {
+      this.inventory.forge();
+    }
+  }
 
   /** Compte à rebours de l'amélioration en cours, ou null. */
   protected readonly upgradeTimeLeft = computed(() => {

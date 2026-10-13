@@ -1,18 +1,42 @@
 <ul class="column">
   @for (cell of cells(); track cell.key) {
-    @if (cell.locked) {
-      <li class="slot locked" aria-label="Emplacement verrouillé"></li>
-    } @else {
-      <li
-        class="slot"
-        [attr.data-tier]="cell.tier"
-        [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
-      >
-        <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
-        @if (cell.level !== null) {
-          <span class="slot-level">Niv. {{ cell.level }}</span>
-        }
-      </li>
+    @switch (cell.kind) {
+      @case ('locked') {
+        <li class="slot locked" aria-label="Emplacement verrouillé" tabindex="0" [appTooltip]="cell.tooltip"></li>
+      }
+      @case ('artifact') {
+        <li class="artifact-cell" [appTooltip]="cell.tooltip">
+          <button
+            type="button"
+            class="slot artifact"
+            [class.empty-artifact]="cell.empty"
+            [attr.data-rarity]="cell.empty ? null : cell.rarity"
+            [attr.aria-label]="cell.empty ? 'Artefact : aucun' : 'Artefact : ' + cell.label + ', niveau ' + cell.level"
+            (click)="openArtifacts()"
+          >
+            @if (!cell.empty) {
+              <img class="slot-icon" [src]="cell.icon" alt="" width="160" height="160" />
+              <span class="slot-level">Niv. {{ cell.level }}</span>
+            } @else {
+              <span class="artifact-hint">Artefact</span>
+            }
+          </button>
+        </li>
+      }
+      @case ('item') {
+        <li
+          class="slot"
+          tabindex="0"
+          [appTooltip]="cell.tooltip"
+          [attr.data-tier]="cell.tier"
+          [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
+        >
+          <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
+          @if (cell.level !== null) {
+            <span class="slot-level">Niv. {{ cell.level }}</span>
+          }
+        </li>
+      }
     }
   }
 </ul>

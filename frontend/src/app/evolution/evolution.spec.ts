@@ -21,11 +21,11 @@ describe('Evolution', () => {
     localStorage.setItem(
       'mine-explorer.counters',
       JSON.stringify({
-        rocksBroken: 0,
         itemsForged: Math.ceil(targetOf('itemsForged') * factor),
         itemsSold: 0,
         segmentsPaid: 0,
-        eventsTouched: Math.ceil(targetOf('eventsTouched') * factor),
+        eventsTouched: 0,
+        rocksBroken: Math.ceil(targetOf('rocksBroken') * factor),
       }),
     );
     return TestBed.inject(Evolution);
@@ -96,13 +96,13 @@ describe('Évolutions', () => {
 
   it("n'ouvre un palier qu'une fois le précédent rempli", () => {
     const form = EVOLUTION_FORMS[1];
-    const tierOne = { zone: 2, pickaxeLevel: 4, itemsForged: 0, eventsTouched: 99 };
+    const tierOne = { zone: 2, pickaxeLevel: 4, itemsForged: 0, rocksBroken: 99 };
     const objectives = objectivesFor(form, tierOne, []);
     expect(objectives.filter((objective) => objective.tier === 2).every((objective) => !objective.unlocked)).toBe(true);
     expect(currentTier(form, { ...tierOne, itemsForged: 60 })).toBe(2);
   });
 
   it('ne promeut pas une forme sans objectif', () => {
-    expect(canEvolve(objectivesFor(EVOLUTION_FORMS[0], { zone: 99, pickaxeLevel: 30, itemsForged: 1e6, eventsTouched: 1e6 }, []))).toBe(false);
+    expect(canEvolve(objectivesFor(EVOLUTION_FORMS[0], { zone: 99, pickaxeLevel: 30, itemsForged: 1e6, rocksBroken: 1e6 }, []))).toBe(false);
   });
 });

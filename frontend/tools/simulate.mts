@@ -402,7 +402,7 @@ function payPickaxe(now: number): void {
 function tryEvolve(now: number): void {
   const next = EVOLUTION_FORMS[formIndex + 1];
   if (!next) return;
-  const progressNow = { zone: progress.zone, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, eventsTouched: counters.eventsTouched };
+  const progressNow = { zone: progress.zone, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
   const reward = unclaimedShards(objectives);
@@ -410,7 +410,7 @@ function tryEvolve(now: number): void {
   shardSources.evolution += reward;
   formIndex++;
   refresh(now);
-  milestones.push(`${fmt(now)} : évolution ${next.label} (zone ${progress.zone}, pioche ${pickaxe.level}, forges ${counters.itemsForged}, événements ${counters.eventsTouched})`);
+  milestones.push(`${fmt(now)} : évolution ${next.label} (zone ${progress.zone}, pioche ${pickaxe.level}, forges ${counters.itemsForged}, événements ${counters.eventsTouched}, segments ${counters.segmentsPaid}, filons ${counters.rocksBroken}, ventes ${counters.itemsSold})`);
 }
 
 /** Renforce l'emplacement qui rapporte le plus de Puissance (l'or compte pour un cinquième), tant que c'est abordable. */

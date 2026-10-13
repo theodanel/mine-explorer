@@ -35,7 +35,7 @@ export class Evolution {
     zone: this.progression.zone(),
     pickaxeLevel: this.forge.level(),
     itemsForged: this.counters().itemsForged,
-    eventsTouched: this.counters().eventsTouched,
+    rocksBroken: this.counters().rocksBroken,
   }));
 
   readonly objectives = computed(() => {

@@ -35,6 +35,15 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: none
           queries: security-extended
+      # Le code scanning de GitHub n'est pas disponible sur ce dépôt privé :
+      # les résultats sont gardés en artefact SARIF au lieu d'être envoyés.
       - uses: github/codeql-action/analyze@v3
         with:
           category: /language:${{ matrix.language }}
+          upload: never
+          output: sarif-results
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codeql-${{ matrix.language }}
+          path: sarif-results
+          retention-days: 30

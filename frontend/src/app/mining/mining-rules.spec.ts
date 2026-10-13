@@ -37,8 +37,8 @@ describe('shardsForStage', () => {
     expect(shardsForStage(2, 15)).toBe(2);
   });
 
-  it('donne ensuite un éclat par filon', () => {
-    expect(shardsForStage(3, 1)).toBe(1);
-    expect(shardsForStage(9, 15)).toBe(1);
+  it('donne ensuite deux éclats par filon', () => {
+    expect(shardsForStage(3, 1)).toBe(2);
+    expect(shardsForStage(9, 15)).toBe(2);
   });
 });

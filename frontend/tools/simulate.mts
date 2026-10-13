@@ -56,21 +56,25 @@ import {
 } from '../src/app/artifacts/artifact-rules.ts';
 import { minerProfile, NO_BUFFS, type MinerProfile, type SpellBuffs } from '../src/app/miner/miner-rules.ts';
 import { WORKSHOP_UNLOCK_FORM, type WorkshopLevels } from '../src/app/balance/workshop.ts';
-import { reinforce, reservedOres, slotLevel, upgradeCost } from '../src/app/workshop/workshop-rules.ts';
+import { reinforce, slotLevel, upgradeCost } from '../src/app/workshop/workshop-rules.ts';
+import { canEvolve, objectivesFor, unclaimedShards } from '../src/app/evolution/evolution-rules.ts';
 import { SLOT_IDS, type SlotId } from '../src/app/equipment/equipment.model.ts';
 import { CRYSTAL_RAIN_COUNT, EVENT_TOUCH_RATE } from '../src/app/balance/mine-events.ts';
 import { eventGain, nextEventDelayMs, rollEventId } from '../src/app/mine-events/mine-event-rules.ts';
 import { GALLERIES, type GalleryId } from '../src/app/balance/galleries.ts';
 import { rollOffer, scaleAmount } from '../src/app/galleries/gallery-rules.ts';
-import { CHEST_EGG_CHANCE, COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, feedCost, type CompanionId } from '../src/app/balance/companions.ts';
+import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId } from '../src/app/balance/companions.ts';
+import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
+import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
+import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
 import { workshopMaterial } from '../src/app/balance/workshop.ts';
 import {
   activeCompanionBonuses,
   addEgg,
-  canFeed,
   collectExpedition,
   EMPTY_COMPANIONS,
-  feed,
+  raiseStar,
+  nextStarCost,
   hatch,
   rollEggRarity,
   sendOnExpedition,
@@ -153,13 +157,45 @@ const companionRandom = (): number => {
 let eggsFound = 0;
 let legendaryAt = '';
 
-function findEgg(now: number): void {
+function findEgg(now: number, minRarity: 'common' | 'rare' = 'common'): void {
   if (!withCompanions || progress.zone < COMPANIONS_UNLOCK_ZONE) return;
   eggsFound++;
-  companions = addEgg(companions, rollEggRarity(companionRandom, companions.sinceLegendary), now * 1000);
+  companions = addEgg(companions, rollEggRarity(companionRandom, companions.sinceLegendary, minRarity), now * 1000);
 }
 
-/** Le joueur simulé fait éclore, garde le compagnon qui rapporte le plus, nourrit avec le minerai en trop. */
+// ─── Défi de la mine ────────────────────────────────────────────────────────
+let challengePeriodIndex = -1;
+let challengeBaseline: Counters = EMPTY_COUNTERS;
+let challengeClaimed: number[] = [];
+let challengeMilestonesReached = 0;
+let challengesPlayed = 0;
+
+/** Le joueur récupère chaque palier atteint ; un nouveau défi commence tous les 3 jours. */
+function runChallenge(now: number): void {
+  if (!withCompanions || progress.zone < COMPANIONS_UNLOCK_ZONE) return;
+  const period = Math.floor(now / DAY / CHALLENGE_DAYS);
+  if (period !== challengePeriodIndex) {
+    challengePeriodIndex = period;
+    challengeBaseline = counters;
+    challengeClaimed = [];
+    challengesPlayed++;
+  }
+  const points = challengePoints(counters, challengeBaseline);
+  CHALLENGE_MILESTONES.forEach((milestone, index) => {
+    if (points < milestone.points || challengeClaimed.includes(index)) return;
+    challengeClaimed.push(index);
+    challengeMilestonesReached++;
+    const reward = milestone.reward;
+    if (reward.kind === 'egg') findEgg(now, reward.minRarity === 'rare' ? 'rare' : 'common');
+    if (reward.kind === 'stones') companions = { ...companions, stones: companions.stones + reward.amount };
+    if (reward.kind === 'shards') {
+      shards += reward.amount;
+      shardSources.defi += reward.amount;
+    }
+  });
+}
+
+/** Le joueur simulé fait éclore, garde le compagnon qui rapporte le plus, et monte son étoile dès qu'il peut. */
 function tendCompanions(now: number): void {
   if (!withCompanions || progress.zone < COMPANIONS_UNLOCK_ZONE) return;
   if (!companions.gifted) {
@@ -168,7 +204,6 @@ function tendCompanions(now: number): void {
   }
   for (let result = hatch(companions, companionRandom, now * 1000); result !== null; result = hatch(companions, companionRandom, now * 1000)) {
     companions = result.state;
-    shards += result.hatching.shards;
     if (result.hatching.kind === 'new' && COMPANIONS[result.hatching.id].rarity === 'legendary' && legendaryAt === '') {
       legendaryAt = `${fmt(now)} (œuf n° ${eggsFound})`;
     }
@@ -185,13 +220,11 @@ function tendCompanions(now: number): void {
     }
   }
   if (best !== null) companions = setActive(companions, best);
-  const tier = workshopMaterial(progress.zone);
   const active = companions.active;
-  while (active !== null && canFeed(companions, active)) {
-    const cost = feedCost(companions.owned[active]?.level ?? 1);
-    if (ores[tier] - reservedOres(formIndex, tier) < cost) break;
-    ores[tier] -= cost;
-    companions = feed(companions, active);
+  while (active !== null) {
+    const cost = nextStarCost(companions, active);
+    if (cost === null || companions.stones < cost) break;
+    companions = raiseStar(companions, active);
   }
   refresh(now);
 }
@@ -205,7 +238,6 @@ function runExpeditions(now: number): void {
       companions = back.state;
       shards += back.loot.shards;
       shardSources.expeditions += back.loot.shards;
-      ores[workshopMaterial(progress.zone)] += back.loot.ores;
     }
     companions = sendOnExpedition(companions, id, 4, now * 1000);
   }
@@ -255,7 +287,7 @@ let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
 // ─── Mesures ────────────────────────────────────────────────────────────────
-const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0 };
+const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0 };
 let goldEvents = 0;
 let eventsSeen = 0;
 let forges = 0;
@@ -366,16 +398,19 @@ function payPickaxe(now: number): void {
   if (pickaxe.segments === SEGMENTS_PER_LEVEL) pickaxe.upgradeEndsAt = now + upgradeDurationMs(pickaxe.level) / 1000;
 }
 
+/** Promotion dès que les objectifs de la forme suivante sont remplis ; leurs éclats sont touchés au passage. */
 function tryEvolve(now: number): void {
   const next = EVOLUTION_FORMS[formIndex + 1];
-  if (!next || progress.zone < next.minZone || gold < next.gold) return;
-  const oreOk = Object.entries(next.ores).every(([tier, need]) => ores[tier as TierId] >= (need ?? 0));
-  if (!oreOk) return;
-  for (const [tier, need] of Object.entries(next.ores)) ores[tier as TierId] -= need ?? 0;
-  gold -= next.gold;
+  if (!next) return;
+  const progressNow = { zone: progress.zone, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, eventsTouched: counters.eventsTouched };
+  const objectives = objectivesFor(next, progressNow, []);
+  if (!canEvolve(objectives)) return;
+  const reward = unclaimedShards(objectives);
+  shards += reward;
+  shardSources.evolution += reward;
   formIndex++;
   refresh(now);
-  milestones.push(`${fmt(now)} : évolution ${next.label} (zone ${progress.zone}, pioche ${pickaxe.level})`);
+  milestones.push(`${fmt(now)} : évolution ${next.label} (zone ${progress.zone}, pioche ${pickaxe.level}, forges ${counters.itemsForged}, événements ${counters.eventsTouched})`);
 }
 
 /** Renforce l'emplacement qui rapporte le plus de Puissance (l'or compte pour un cinquième), tant que c'est abordable. */
@@ -397,7 +432,7 @@ function payWorkshop(now: number): void {
     for (const slot of SLOT_IDS) {
       const cost = upgradeCost(slotLevel(workshop, slot), progress.zone);
       const [[tier, need]] = Object.entries(cost.ores) as [TierId, number][];
-      if (cost.gold > gold || cost.gold > budget || ores[tier] - reservedOres(formIndex, tier) < need) continue;
+      if (cost.gold > gold || cost.gold > budget || ores[tier] < need) continue;
       const gain = (value({ ...workshop, [slot]: slotLevel(workshop, slot) + 1 }) - current) / cost.gold;
       if (best === null || gain > best.gain) best = { slot, gain };
     }
@@ -494,7 +529,6 @@ function claimMissions(): void {
   }
   if (!chestClaimed && dailyClaimed.size === DAILY_MISSIONS.length) {
     chestClaimed = true;
-    if (companionRandom() < CHEST_EGG_CHANCE) findEgg(lastDecisionAt);
     shards += DAILY_CHEST_REWARD.shards;
     shardSources.missions += DAILY_CHEST_REWARD.shards;
   }
@@ -522,7 +556,6 @@ function dealDamage(now: number, damage: number): void {
       shards += ZONE_CLEAR_SHARDS;
       shardSources.zones += ZONE_CLEAR_SHARDS;
       findArtifact(now);
-      findEgg(now);
       spendPoints(now);
       chooseGallery();
     }
@@ -571,6 +604,7 @@ function strike(now: number, interval: number): void {
 function mineEvent(now: number): void {
   eventsSeen++;
   if (eventRandom() >= EVENT_TOUCH_RATE) return;
+  record('eventsTouched');
   const id = rollEventId(eventRandom);
   const gain = eventGain(id, permanentProfile().stats);
   const times = id === 'crystalRain' ? CRYSTAL_RAIN_COUNT : 1;
@@ -580,7 +614,6 @@ function mineEvent(now: number): void {
   shardSources.evenements += gain.shards * times;
   const tier = zoneMaterial(progress.zone);
   if (tier !== null) ores[tier] += gain.ores * times;
-  if (id === 'buriedChest' && companionRandom() < CHEST_EGG_CHANCE) findEgg(now);
 }
 
 // ─── Boucle ─────────────────────────────────────────────────────────────────
@@ -626,6 +659,7 @@ for (let day = 0; day < days; day++) {
         forgeAll(now);
         tryEvolve(now);
         payPickaxe(now);
+        runChallenge(now);
         tendCompanions(now);
         payWorkshop(now);
         lastDecisionAt = now;
@@ -676,11 +710,11 @@ if (withWorkshop) {
 }
 console.log(`Galeries (${galleryStrategy}) : ${Object.entries(galleryCounts).map(([id, count]) => `${id} ${count}`).join(', ')}`);
 if (withCompanions) {
-  const owned = COMPANION_IDS.filter((id) => companions.owned[id] !== undefined).map((id) => `${id} ${companions.owned[id]?.stars}★ niv. ${companions.owned[id]?.level}`);
+  const owned = COMPANION_IDS.filter((id) => companions.owned[id] !== undefined).map((id) => `${id} ${companions.owned[id]?.stars}★`);
   const without = powerOf(minerProfile(gear, families().slice(0, 2), NO_BUFFS).stats);
   console.log(
     `Compagnons : ${eggsFound} œufs, ${owned.join(', ')}, actif ${companions.active}, ×${(powerOf(finalStats) / without).toFixed(2)} de Puissance, ` +
-      `premier légendaire ${legendaryAt || 'jamais'}`,
+      `premier légendaire ${legendaryAt || 'jamais'}, ${challengesPlayed} défis, ${(challengeMilestonesReached / Math.max(challengesPlayed, 1)).toFixed(1)} paliers par défi, ${companions.stones} pierres en stock`,
   );
 }
 console.log(`Minerais en stock : ${TIER_IDS.filter((t) => ores[t] > 0).map((t) => `${t} ${ores[t]}`).join(', ')}`);

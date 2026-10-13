@@ -178,8 +178,16 @@
   position: absolute;
   inset: 27% auto auto 3cqw;
   z-index: var(--z-scene-ui);
-  padding: 1cqw 2.5cqw;
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 0.8cqw 2.5cqw 0.8cqw 1cqw;
   font-size: 2.8cqw;
+
+  .trophy-icon {
+    width: 6cqw;
+    height: 6cqw;
+  }
 }
 
 // Compagnon à côté du mineur, au sol, entre la colonne de gauche et lui

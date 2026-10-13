@@ -2,8 +2,9 @@
   display: block;
 }
 
-// Bouton rond en bois, en attendant l'icône du parchemin (planche 10)
+// Bouton rond en bois avec le parchemin (planche 10), comme celui de Legend of Mushroom
 .stats-button {
+  position: relative;
   display: grid;
   place-items: center;
   width: 11cqw;
@@ -20,6 +21,22 @@
   &:focus-visible {
     outline: 0.6cqw solid #ffd34d;
     outline-offset: 0.3cqw;
+  }
+
+  img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 0.4cqw 0.3cqw rgb(0 0 0 / 50%));
+  }
+
+  span {
+    position: absolute;
+    bottom: -1.6cqw;
+    padding: 0.2cqw 1.2cqw;
+    border-radius: 999px;
+    background: rgb(20 12 6 / 85%);
+    font-size: 2.2cqw;
   }
 }
 

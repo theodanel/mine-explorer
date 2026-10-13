@@ -3,15 +3,15 @@ import { Component, computed, inject } from '@angular/core';
 import { Sound } from '../../audio/sound';
 import { CHALLENGE_MILESTONES, CHALLENGE_POINTS, ChallengeReward } from '../../balance/challenge';
 import { RARITY_LABELS } from '../../balance/skill-tree';
-import { eggIconUrl } from '../../loading/game-assets';
+import { eggIconUrl, REFONTE_IMAGES } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
 import { Challenge } from '../challenge';
 
 const SHARD_ICON = 'assets/ui/geode-shard.png';
 
-/** Texte et icône d'une récompense de palier. Les pierres d'éveil attendent leur icône (planche 10). */
-function describeReward(reward: ChallengeReward): { readonly label: string; readonly icon: string | null } {
+/** Texte et icône d'une récompense de palier. */
+function describeReward(reward: ChallengeReward): { readonly label: string; readonly icon: string } {
   switch (reward.kind) {
     case 'egg':
       return {
@@ -19,7 +19,7 @@ function describeReward(reward: ChallengeReward): { readonly label: string; read
         icon: eggIconUrl(reward.minRarity),
       };
     case 'stones':
-      return { label: `${reward.amount} pierres d'éveil`, icon: null };
+      return { label: `${reward.amount} pierres d'éveil`, icon: REFONTE_IMAGES.awakeningStone };
     case 'shards':
       return { label: `${reward.amount} éclats`, icon: SHARD_ICON };
   }
@@ -35,6 +35,7 @@ export class ChallengePage {
   protected readonly challenge = inject(Challenge);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
+  protected readonly banner = REFONTE_IMAGES.challengeBanner;
 
   protected readonly rules = [
     { label: 'Filon épuisé', points: CHALLENGE_POINTS.rocksBroken },

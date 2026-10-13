@@ -14,11 +14,28 @@
 .page-header {
   display: flex;
   align-items: center;
-  gap: 3cqw;
+  gap: 2cqw;
+}
+
+// Bannière en bois de Gemini, le titre posé au centre de la planche
+.banner {
+  position: relative;
+  flex: 1;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 
   h2 {
+    position: absolute;
+    inset: 38% 0 auto;
     margin: 0;
-    font-size: 6cqw;
+    color: #fff3d6;
+    font-size: 5cqw;
+    text-align: center;
+    text-shadow: 0 0.4cqw 0 rgb(0 0 0 / 70%);
   }
 }
 
@@ -158,16 +175,6 @@
     height: 7cqw;
     object-fit: contain;
   }
-}
-
-// Pierre d'éveil en attendant son icône (planche 10)
-.stone-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 7cqw;
-  color: #3fc7b5;
-  font-size: 5cqw;
-  text-shadow: 0 0 1.5cqw rgb(255 210 90 / 70%);
 }
 
 .done {

@@ -361,13 +361,23 @@
   }
 }
 
-// Pierre d'éveil en attendant son icône (planche 10) : un losange turquoise
-.stone-mark {
-  color: #3fc7b5;
-  text-shadow: 0 0 1.5cqw rgb(255 210 90 / 70%);
+// Pierre d'éveil (planche 10)
+.stone-icon {
+  width: 6cqw;
+  height: 6cqw;
+  object-fit: contain;
 }
 
 .challenge {
-  padding: 1.8cqw 3.5cqw;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1.2cqw 3cqw 1.2cqw 1.5cqw;
   font-size: 3.4cqw;
+}
+
+.trophy-icon {
+  width: 7cqw;
+  height: 7cqw;
+  object-fit: contain;
 }

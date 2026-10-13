@@ -1,6 +1,10 @@
 <section class="page game-panel" aria-labelledby="challenge-title">
   <header class="page-header">
-    <h2 id="challenge-title">Défi de la mine</h2>
+    <!-- Bannière du défi : le titre est écrit sur la planche -->
+    <div class="banner">
+      <img [src]="banner" alt="" width="720" height="221" />
+      <h2 id="challenge-title">Défi de la mine</h2>
+    </div>
     <button type="button" class="close" aria-label="Revenir aux compagnons" (click)="back()">×</button>
   </header>
 
@@ -23,11 +27,7 @@
         <li class="milestone" [class.reached]="milestone.reached" [class.claimed]="milestone.claimed">
           <span class="milestone-points">{{ milestone.points }}</span>
           <span class="reward">
-            @if (milestone.icon) {
-              <img [src]="milestone.icon" alt="" width="128" height="128" />
-            } @else {
-              <span class="stone-mark" aria-hidden="true">◆</span>
-            }
+            <img [src]="milestone.icon" alt="" width="128" height="128" />
             {{ milestone.label }}
           </span>
           @if (milestone.claimed) {

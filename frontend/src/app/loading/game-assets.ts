@@ -143,7 +143,16 @@ export const COMPANION_ANIMATIONS: Readonly<Partial<Record<CompanionId, { readon
   dragonling: { url: 'assets/companions/dragonling-idle.webp', frames: 33, frameWidth: 199, frameHeight: 200 },
 };
 
+/** Icônes de la refonte (planche 10) : pierre d'éveil, trophée du Défi, parchemin des stats, et la bannière du Défi. */
+export const REFONTE_IMAGES = {
+  awakeningStone: 'assets/ui/refonte/awakening-stone.png',
+  challengeTrophy: 'assets/ui/refonte/challenge-trophy.png',
+  statsScroll: 'assets/ui/refonte/stats-scroll.png',
+  challengeBanner: 'assets/ui/refonte/challenge-banner.png',
+} as const;
+
 export const ICON_IMAGES: readonly string[] = [
+  ...Object.values(REFONTE_IMAGES),
   ...COMPANION_IDS.map(companionIconUrl),
   ...RARITY_IDS.map(eggIconUrl),
   ...GALLERY_IDS.map(galleryIconUrl),

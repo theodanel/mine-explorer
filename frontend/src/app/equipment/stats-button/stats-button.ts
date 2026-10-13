@@ -53,7 +53,10 @@ export class StatsDetails {
   selector: 'app-stats-button',
   imports: [StatsDetails],
   template: `
-    <button type="button" class="stats-button" aria-label="Détails des stats" (click)="open.set(true)">Stats</button>
+    <button type="button" class="stats-button" aria-label="Détails des stats" (click)="open.set(true)">
+      <img src="assets/ui/refonte/stats-scroll.png" alt="" width="160" height="160" />
+      <span>Stats</span>
+    </button>
     @if (open()) {
       <div class="backdrop" (click)="open.set(false)">
         @defer (on immediate) {

@@ -55,7 +55,9 @@
   <app-zone-banner class="zone" />
   <app-sound-toggle class="sound" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
-    <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">Défi : récompense !</button>
+    <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
+      <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !
+    </button>
   }
   <app-companion-buddy class="buddy" />
   <app-mine-event-layer class="events" />

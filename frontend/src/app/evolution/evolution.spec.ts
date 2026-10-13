@@ -53,14 +53,14 @@ describe('Evolution', () => {
     const inventory = TestBed.inject(Inventory);
     const before = inventory.stats().strikePower;
     evolution.evolve();
-    expect(inventory.stats().strikePower).toBeCloseTo(before * 1.25);
+    expect(inventory.stats().strikePower).toBeCloseTo(before * 1.5);
   });
 });
 
 describe('règles d\'évolution', () => {
-  it('cumulent les bonus de Frappe', () => {
+  it('multiplient les bonus de Frappe entre eux', () => {
     expect(evolutionStrikeMultiplier(0)).toBe(1);
-    expect(evolutionStrikeMultiplier(2)).toBeCloseTo(1.5625);
+    expect(evolutionStrikeMultiplier(2)).toBeCloseTo(2.25);
   });
 
   it('demandent les minerais des zones déjà traversées', () => {

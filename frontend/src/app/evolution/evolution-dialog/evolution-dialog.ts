@@ -1,7 +1,9 @@
 import { Component, computed, inject, output } from '@angular/core';
 
+import { holdUserDialog } from '../../shared/overlays';
+import { Sound } from '../../audio/sound';
 import { TIER_IDS, TIER_LABELS } from '../../equipment/equipment.model';
-import { EVOLUTION_VISUALS } from '../../loading/game-assets';
+import { EVOLUTION_VISUALS, materialIconUrl } from '../../loading/game-assets';
 import { Ores } from '../../ores/ores';
 import { Evolution } from '../evolution';
 
@@ -15,9 +17,22 @@ const PERCENT = 100;
   styleUrl: './evolution-dialog.scss',
 })
 export class EvolutionDialog {
+  protected readonly materialIcon = materialIconUrl;
   protected readonly evolution = inject(Evolution);
   private readonly ores = inject(Ores);
+  private readonly sound = inject(Sound);
   readonly closed = output();
+
+  constructor() {
+    // Ouverte par le joueur : les fenêtres automatiques attendent sa fermeture
+    holdUserDialog();
+  }
+
+  protected evolve(): void {
+    if (this.evolution.evolve()) {
+      this.sound.play('upgrade');
+    }
+  }
 
   protected readonly current = computed(() => {
     const form = this.evolution.form();

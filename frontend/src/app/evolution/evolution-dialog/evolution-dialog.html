@@ -31,14 +31,14 @@
         @for (requirement of requirements(); track requirement.label) {
           <li [class.met]="requirement.met" [attr.data-tier]="requirement.tier">
             @if (requirement.tier) {
-              <span class="tier-swatch" aria-hidden="true"></span>
+              <img class="tier-swatch" [src]="materialIcon(requirement.tier)" alt="" width="128" height="128" />
             }
             <span class="requirement-label">{{ requirement.label }}</span>
             <span class="requirement-count">{{ requirement.have }} / {{ requirement.need }}</span>
           </li>
         }
       </ul>
-      <button type="button" class="game-button green evolve" [disabled]="!evolution.ready()" (click)="evolution.evolve()">
+      <button type="button" class="game-button green evolve" [disabled]="!evolution.ready()" (click)="evolve()">
         Évoluer en {{ next.label }}
       </button>
     } @else {
@@ -50,7 +50,7 @@
       <ul class="stock">
         @for (ore of stock(); track ore.tier) {
           <li [attr.data-tier]="ore.tier">
-            <span class="tier-swatch" aria-hidden="true"></span>{{ ore.label }} <strong>{{ ore.amount }}</strong>
+            <img class="tier-swatch" [src]="materialIcon(ore.tier)" alt="" width="128" height="128" />{{ ore.label }} <strong>{{ ore.amount }}</strong>
           </li>
         }
       </ul>

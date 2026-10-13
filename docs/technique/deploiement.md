@@ -10,7 +10,7 @@ Les en-têtes HTTP de sécurité sont dans `frontend/public/_headers`, copié à
 
 ## Mise en place (une seule fois)
 
-1. **Créer le projet Cloudflare Pages** : tableau de bord Cloudflare, *Workers & Pages*, *Create*, onglet *Pages*, *Upload assets* (« Direct Upload »). Nom du projet : `mine-explorer`. Il n'est pas relié à GitHub : c'est la CI qui publie.
+1. **Créer le projet Cloudflare Pages** : *Workers & Pages*, *Create application*, *Get started* sur « Drag and drop your files ». Nom du projet : `mine-explorer`. Le tableau de bord exige un premier envoi : y déposer le dossier `frontend/dist/frontend/browser` d'un `npm run build` local, puis *Deploy site*. Les déploiements suivants viennent de la CI. Vérifier ensuite dans *Settings* que la branche de production est `main`.
 2. **Créer un jeton d'API** : *My Profile*, *API Tokens*, *Create Token*, modèle *Edit Cloudflare Workers* ou jeton personnalisé avec la seule permission *Account → Cloudflare Pages → Edit*, limité au compte concerné. Le copier une fois.
 3. **Relever l'identifiant du compte** : visible sur la page d'accueil du compte (*Account ID*).
 4. **Dans GitHub** (*Settings → Environments*) : créer l'environnement `production`, y ajouter
@@ -25,7 +25,7 @@ Les en-têtes HTTP de sécurité sont dans `frontend/public/_headers`, copié à
 
 Le jeu peut être servi sur un sous-domaine de `bouncylab.ovh` (par exemple `mine.bouncylab.ovh`) sans déplacer le domaine d'OVH :
 
-1. Cloudflare, projet Pages `mine-explorer`, *Custom domains*, *Set up a custom domain* : saisir `mine.bouncylab.ovh`.
+1. Cloudflare, projet Pages `mine-explorer`, *Custom domains*, *Set up a domain* : saisir `mine.bouncylab.ovh`. Cette étape vient **avant** le CNAME, sinon le domaine répond en erreur 522.
 2. Chez OVH, zone DNS de `bouncylab.ovh` : ajouter un enregistrement `CNAME` `mine` vers `mine-explorer.pages.dev`.
 3. Cloudflare vérifie le domaine et émet le certificat HTTPS tout seul.
 

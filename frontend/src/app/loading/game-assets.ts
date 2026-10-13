@@ -45,6 +45,14 @@ const FOREMAN_STRIKE: StrikeAnimation = {
   impactOffset: { x: 119, y: -44 },
 };
 
+const LEGEND_STRIKE: StrikeAnimation = {
+  atlasUrl: 'assets/characters/evolutions/legende-frappe.json',
+  // Images de 397 × 360 découpées par art-source/animations/decouper-frappe.py ; mesures sur ses grilles
+  scale: 0.83,
+  bodyOffsetX: 5,
+  impactOffset: { x: 122, y: -30 },
+};
+
 const MASTER_STRIKE: StrikeAnimation = {
   atlasUrl: 'assets/characters/evolutions/maitre-frappe.json',
   // Les cornes du casque le rendent plus haut que le Contremaître
@@ -201,7 +209,7 @@ export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> =
   miner: { portraitUrl: 'assets/evolutions/mineur-portrait.webp', body: { kind: 'animated', strike: MINER_STRIKE } },
   foreman: { portraitUrl: 'assets/evolutions/contremaitre-portrait.webp', body: { kind: 'animated', strike: FOREMAN_STRIKE } },
   master: { portraitUrl: 'assets/evolutions/maitre-portrait.webp', body: { kind: 'animated', strike: MASTER_STRIKE } },
-  legend: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'static', url: 'assets/evolutions/legende.webp' } },
+  legend: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'animated', strike: LEGEND_STRIKE } },
 };
 
 /** Fichiers du corps d'une forme à précharger, en plus de l'Apprenti qui cadence toujours les coups. */

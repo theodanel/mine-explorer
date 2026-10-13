@@ -36,17 +36,20 @@ describe('Pages Aventures et Campement', () => {
     expect(TestBed.inject(Navigation).page()).toBe('camp');
   });
 
-  it('construit la Taverne depuis sa ligne', () => {
+  it('construit la Taverne depuis sa fiche, puis montre le bâtiment touché', () => {
     startAt(5, buildingCost(0, 5).gold);
     const fixture = TestBed.createComponent(CampPage);
     fixture.detectChanges();
-    const rows = fixture.nativeElement.querySelectorAll('.slot-row') as NodeListOf<HTMLElement>;
-    expect(rows).toHaveLength(3);
-    expect(rows[0].textContent).toContain('Taverne');
-    (rows[0].querySelector('button.upgrade') as HTMLButtonElement).click();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('.building')).toHaveLength(3);
+    expect(element.querySelector('.sheet h3')?.textContent).toContain('Taverne');
+    (element.querySelector('.sheet button.upgrade') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(TestBed.inject(Camp).level('tavern')).toBe(1);
-    expect(rows[0].textContent).toContain('niv. 1 / 10');
+    expect(element.querySelector('.sheet')?.textContent).toContain('Niveau 1 / 10');
+    (element.querySelectorAll('.building')[2] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('.sheet h3')?.textContent).toContain('Puits');
   });
 
   it('montre le Puits sans fond verrouillé avant le Contremaître', () => {

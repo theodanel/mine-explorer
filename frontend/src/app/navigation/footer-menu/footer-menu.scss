@@ -4,9 +4,11 @@
 
 // Planche de bois sur toute la largeur, comme les barres d'onglets des jeux mobiles
 .footer {
+  // Autant de colonnes que d'onglets, sur une seule ligne : un menu ajouté ne passe jamais à la ligne
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1cqw;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.8cqw;
   height: 100%;
   padding: 1.2cqw 1.5cqw 1.8cqw;
   border-top: 0.8cqw solid #1a0f07;
@@ -34,7 +36,7 @@
   background: linear-gradient(#6e4a2c, #4a3019);
   box-shadow: 0 0.8cqw 0 #24170d;
   color: #f3e6d0;
-  font: bold 2.5cqw / 1.1 Arial, sans-serif;
+  font: bold 2.2cqw / 1.1 Arial, sans-serif;
   cursor: pointer;
 
   &:focus-visible {
@@ -57,14 +59,19 @@
 }
 
 .tab-icon {
-  width: 9.5cqw;
-  height: 9.5cqw;
+  width: 8.5cqw;
+  height: 8.5cqw;
+  object-fit: contain;
   margin-top: -3.5cqw;
   filter: drop-shadow(0 0.5cqw 0.3cqw rgb(0 0 0 / 50%));
 }
 
 .tab-label {
-  font-size: 2.5cqw;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 2.2cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .badge {

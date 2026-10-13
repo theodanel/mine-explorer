@@ -1,61 +1,78 @@
-<section class="page game-panel" aria-labelledby="camp-title" [style.background-image]="background">
+<section class="page game-panel" aria-labelledby="camp-title">
   <header class="page-header">
     <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
     <h2 id="camp-title">Campement</h2>
+    <ul class="purse" aria-label="Ce que tu peux dépenser">
+      <li><img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ coins() }}</li>
+      <li><img [src]="material().icon" alt="" width="128" height="128" />{{ camp.spendableOres() }}</li>
+    </ul>
   </header>
 
-  @if (camp.unlocked()) {
-    <p class="intro">Ton camp grandit lentement : reviens chaque jour récolter le puits et agrandir un bâtiment.</p>
-  } @else {
-    <p class="intro locked-note">Le Campement s'ouvre à la <strong>zone {{ camp.unlockZone }}</strong>.</p>
-  }
-
-  <ul class="purse" aria-label="Ce que tu peux dépenser">
-    <li>
-      <img src="assets/ui/coin.png" alt="" width="128" height="128" />
-      <span>{{ coins() }}</span>
-    </li>
-    <li>
-      <img [src]="material().icon" alt="" width="128" height="128" />
-      <span>{{ camp.spendableOres() }} {{ material().label }}</span>
-    </li>
-  </ul>
-
-  <ul class="slots" [class.closed]="!camp.unlocked()">
+  <!-- Vue du camp : les bâtiments posés sur leurs emplacements du décor -->
+  <div class="village" [class.closed]="!camp.unlocked()" [style.background-image]="scene">
     @for (row of rows(); track row.building) {
-      <li class="slot-row">
-        <span class="frame">
-          <img [src]="row.icon" alt="" width="192" height="192" />
-          <span class="level">{{ row.level }}</span>
-        </span>
-        <div class="text">
-          <h3>{{ row.label }} <span class="level-of">niv. {{ row.level }} / {{ row.maxLevel }}</span></h3>
-          <p class="role">{{ row.role }}</p>
-          <p class="effect">
-            {{ row.effect }}
-            @if (row.next; as next) {
-              <span class="next">→ {{ next }}</span>
-            }
-          </p>
-          @if (row.building === 'well' && row.level > 0) {
-            <p class="well">
-              <span>{{ camp.wellStock() }} éclats prêts</span>
-              <button type="button" class="game-button wood collect" [disabled]="camp.wellStock() === 0" (click)="collect()">
-                Récolter
-              </button>
-            </p>
-          }
-          @if (row.next !== null) {
-            <p class="cost">
-              <span class="price" [class.short]="row.check === 'gold'">
-                <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
-              </span>
-              <span class="price" [class.short]="row.check === 'ores'">
-                <img [src]="material().icon" alt="" width="128" height="128" />{{ row.ores }}
-              </span>
-            </p>
-          }
+      <button
+        type="button"
+        class="building"
+        [class.selected]="row.building === selected()"
+        [class.unbuilt]="row.level === 0"
+        [style.left.%]="row.spot.x"
+        [style.top.%]="row.spot.y"
+        [attr.aria-pressed]="row.building === selected()"
+        [attr.aria-label]="row.label + ', niveau ' + row.level"
+        (click)="selected.set(row.building)"
+      >
+        @if (row.building === 'well' && camp.wellStock() > 0) {
+          <span class="bubble">+{{ camp.wellStock() }}</span>
+        }
+        <img [src]="row.icon" alt="" width="192" height="192" />
+        <span class="tag">{{ row.level === 0 ? 'À construire' : 'Niv. ' + row.level }}</span>
+      </button>
+    }
+    @if (!camp.unlocked()) {
+      <p class="locked-note">Le Campement s'ouvre à la <strong>zone {{ camp.unlockZone }}</strong>.</p>
+    }
+  </div>
+
+  @let row = detail();
+  <article class="sheet" aria-live="polite">
+    <header class="sheet-header">
+      <img [src]="row.icon" alt="" width="192" height="192" />
+      <div>
+        <h3>{{ row.label }}</h3>
+        <span class="level-chip">Niveau {{ row.level }} / {{ row.maxLevel }}</span>
+      </div>
+    </header>
+    <p class="role">{{ row.role }}</p>
+
+    <dl class="effects">
+      <div>
+        <dt>Maintenant</dt>
+        <dd>{{ row.level === 0 ? 'Pas encore construit' : row.effect }}</dd>
+      </div>
+      @if (row.next; as next) {
+        <div class="next">
+          <dt>Niveau {{ row.level + 1 }}</dt>
+          <dd>{{ next }}</dd>
         </div>
+      }
+    </dl>
+
+    @if (row.building === 'well' && row.level > 0) {
+      <div class="harvest">
+        <span><strong>{{ camp.wellStock() }}</strong> éclats prêts</span>
+        <button type="button" class="game-button wood collect" [disabled]="camp.wellStock() === 0" (click)="collect()">Récolter</button>
+      </div>
+    }
+
+    @if (row.next !== null) {
+      <div class="buy">
+        <span class="price" [class.short]="row.check === 'gold'">
+          <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
+        </span>
+        <span class="price" [class.short]="row.check === 'ores'">
+          <img [src]="material().icon" alt="" width="128" height="128" />{{ row.ores }} {{ material().label }}
+        </span>
         <button
           type="button"
           class="game-button green upgrade"
@@ -63,9 +80,14 @@
           [attr.aria-label]="row.action + ' : ' + row.label + (row.blocked ? ' (' + row.blocked + ')' : '')"
           (click)="build(row.building)"
         >
-          {{ row.check === 'max' ? 'Max' : row.action }}
+          {{ row.action }}
         </button>
-      </li>
+      </div>
+      @if (row.blocked; as blocked) {
+        <p class="blocked">{{ blocked }}</p>
+      }
+    } @else {
+      <p class="maxed">Bâtiment au niveau maximal</p>
     }
-  </ul>
+  </article>
 </section>

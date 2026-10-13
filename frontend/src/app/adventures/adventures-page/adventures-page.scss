@@ -17,7 +17,9 @@
 
   h2 {
     margin: 0;
-    font-size: 6cqw;
+    color: #ffd34d;
+    font-size: 6.5cqw;
+    text-shadow: 0 0.5cqw 0 #1a0f07;
   }
 }
 
@@ -36,67 +38,116 @@
 .cards {
   display: grid;
   align-content: start;
-  gap: 3cqw;
+  gap: 4cqw;
   margin: 0;
   padding: 0;
   overflow-y: auto;
   list-style: none;
 }
 
+// Carte-portail : le décor de l'aventure en fond, encadré de bois sombre comme les autres panneaux
 .card {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 3cqw;
   width: 100%;
+  min-height: 46cqw;
   padding: 4cqw;
-  border: 0.6cqw solid #1a0f07;
-  border-radius: 3cqw;
-  background: linear-gradient(#6b4527, #3f2513);
+  overflow: hidden;
+  border: 0.8cqw solid #1a0f07;
+  border-radius: 3.5cqw;
+  background-color: #24170d;
+  background-position: center 62%;
+  background-size: cover;
+  box-shadow:
+    inset 0 0 0 0.6cqw #8a5f38,
+    0 1.2cqw 0 rgb(0 0 0 / 45%);
   color: #f3e6d0;
   font-family: Arial, sans-serif;
   text-align: left;
   cursor: pointer;
+  transition: transform 0.12s ease-out;
+
+  &:active:not(:disabled) {
+    transform: translateY(0.6cqw);
+  }
+
+  &:focus-visible {
+    outline: 0.7cqw solid #ffd34d;
+    outline-offset: 0.5cqw;
+  }
 
   &.locked {
-    filter: grayscale(0.8);
-    opacity: 0.7;
+    filter: grayscale(0.85) brightness(0.7);
     cursor: default;
   }
 }
 
+// Le décor reste visible en haut et s'assombrit vers le bas, où se lit le texte
+.shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 20%, rgb(15 9 4 / 92%) 85%);
+}
+
+.card-icon,
+.card-text,
+.go {
+  position: relative;
+}
+
 .card-icon {
-  width: 16cqw;
-  height: 16cqw;
+  width: 20cqw;
+  height: 20cqw;
+  flex: none;
   object-fit: contain;
-  filter: drop-shadow(0 0.5cqw 0.3cqw rgb(0 0 0 / 50%));
+  filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 70%));
 }
 
 .card-text {
   display: grid;
   flex: 1;
-  gap: 1cqw;
-  font-size: 3cqw;
-  line-height: 1.3;
+  gap: 1.2cqw;
 
   strong {
     color: #ffd34d;
-    font-size: 4.6cqw;
+    font-size: 5cqw;
+    text-shadow: 0 0.4cqw 0 #1a0f07;
+    white-space: nowrap;
   }
 }
 
-.pill {
+.pitch {
+  font-size: 3.2cqw;
+  line-height: 1.3;
+}
+
+.chip {
+  justify-self: start;
   padding: 1cqw 2.5cqw;
+  border: 0.4cqw solid #1a0f07;
   border-radius: 999px;
-  background: rgb(0 0 0 / 45%);
   font: bold 2.8cqw / 1 Arial, sans-serif;
-  white-space: nowrap;
 
   &.ready {
-    background: #e2492f;
+    background: linear-gradient(#5fd16a, #23802f);
+    color: #fff;
+  }
+
+  &.lock {
+    background: rgb(0 0 0 / 55%);
+    color: #e8d8bd;
   }
 }
 
-.chevron {
-  font-size: 7cqw;
-  opacity: 0.7;
+.go {
+  align-self: center;
+  padding: 2cqw 3.5cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 2.5cqw;
+  background: linear-gradient(#ffd34d, #e09a12);
+  box-shadow: 0 0.8cqw 0 #6b3f07;
+  color: #3a2405;
+  font: bold 3.4cqw / 1 Arial, sans-serif;
 }

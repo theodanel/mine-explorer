@@ -1,8 +1,33 @@
-// Mise en page commune avec l'Atelier (workshop-page.scss) ; seuls les ajouts du Campement sont ici.
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 3cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+
+  h2 {
+    margin: 0;
+    color: #ffd34d;
+    font-size: 6cqw;
+    text-shadow: 0 0.5cqw 0 #1a0f07;
+  }
+}
 
 .back {
   width: 9cqw;
   height: 9cqw;
+  flex: none;
   border: 0.6cqw solid #1a0f07;
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
@@ -11,34 +36,269 @@
   cursor: pointer;
 }
 
-// Décor du Campement derrière la page (assombri dans le composant)
-.page {
-  background-size: cover;
-  background-position: center;
+.purse {
+  display: grid;
+  gap: 1cqw;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1cqw;
+    padding: 0.6cqw 2cqw 0.6cqw 1cqw;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 45%);
+    font: bold 3cqw / 1 Arial, sans-serif;
+  }
+
+  img {
+    width: 4.5cqw;
+    height: 4.5cqw;
+    object-fit: contain;
+  }
 }
 
-.level-of {
-  font-size: 2.6cqw;
-  font-weight: normal;
-  opacity: 0.75;
+// Vue du camp : le décor Gemini, cadré sur le sol et ses trois emplacements libres
+.village {
+  position: relative;
+  aspect-ratio: 572 / 400;
+  overflow: hidden;
+  border: 0.8cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background-color: #24170d;
+  background-position: 0 48%;
+  background-size: 100% auto;
+  box-shadow:
+    inset 0 0 0 0.6cqw #8a5f38,
+    0 1cqw 0 rgb(0 0 0 / 45%);
+
+  &.closed .building {
+    filter: grayscale(1) brightness(0.6);
+    pointer-events: none;
+  }
+}
+
+.building {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  width: 24cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  // Le point d'emplacement est le pied du bâtiment
+  transform: translate(-50%, -100%);
+  transition: transform 0.12s ease-out;
+
+  img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 1cqw 0.8cqw rgb(0 0 0 / 65%));
+  }
+
+  &.unbuilt img {
+    filter: grayscale(0.9) brightness(0.55) drop-shadow(0 1cqw 0.8cqw rgb(0 0 0 / 65%));
+    opacity: 0.85;
+  }
+
+  &.selected {
+    transform: translate(-50%, -100%) scale(1.08);
+
+    .tag {
+      background: linear-gradient(#ffd34d, #e09a12);
+      color: #3a2405;
+    }
+  }
+
+  &:focus-visible {
+    outline: 0.7cqw solid #ffd34d;
+    outline-offset: 0.5cqw;
+  }
+}
+
+.tag {
+  position: relative;
+  z-index: 1;
+  margin-top: -2cqw;
+  padding: 0.8cqw 2cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: rgb(20 12 6 / 85%);
+  color: #f3e6d0;
+  font: bold 2.6cqw / 1 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+// Éclats prêts au puits : une bulle qui attire l'œil
+.bubble {
+  position: absolute;
+  top: -2cqw;
+  right: 0;
+  padding: 0.8cqw 2cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#c79bff, #7a46d6);
+  color: #fff;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
+  animation: bob 1s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes bob {
+  to {
+    transform: translateY(-1cqw);
+  }
+}
+
+.locked-note {
+  position: absolute;
+  inset: auto 0 4cqw;
+  margin: 0 4cqw;
+  padding: 2cqw;
+  border-radius: 2cqw;
+  background: rgb(0 0 0 / 70%);
+  font-size: 3.2cqw;
+  text-align: center;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+// Fiche du bâtiment choisi : planche claire sur le panneau sombre
+.sheet {
+  display: grid;
+  align-content: start;
+  gap: 2.2cqw;
+  min-height: 0;
+  padding: 3.5cqw;
+  overflow-y: auto;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background: linear-gradient(#5a3b22, #3d2715);
+  box-shadow: inset 0 0.6cqw 0 rgb(255 255 255 / 8%);
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+
+  img {
+    width: 14cqw;
+    height: 14cqw;
+    object-fit: contain;
+  }
+
+  h3 {
+    margin: 0 0 1cqw;
+    font-size: 5cqw;
+  }
+}
+
+.level-chip {
+  padding: 0.8cqw 2.2cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 40%);
+  font: bold 2.8cqw / 1 Arial, sans-serif;
 }
 
 .role {
-  margin: 0.4cqw 0;
-  font-size: 2.8cqw;
-  opacity: 0.85;
+  margin: 0;
+  font-size: 3.1cqw;
+  line-height: 1.35;
+  opacity: 0.9;
 }
 
-.well {
+.effects {
+  display: grid;
+  gap: 1.2cqw;
+  margin: 0;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 2cqw;
+    padding: 1.6cqw 2.4cqw;
+    border-radius: 2cqw;
+    background: rgb(0 0 0 / 30%);
+  }
+
+  dt {
+    font-size: 2.8cqw;
+    opacity: 0.8;
+  }
+
+  dd {
+    margin: 0;
+    font: bold 3cqw / 1.2 Arial, sans-serif;
+    text-align: right;
+  }
+
+  .next dd {
+    color: #7ee08a;
+  }
+}
+
+.harvest {
   display: flex;
   align-items: center;
-  gap: 2cqw;
-  margin: 1cqw 0;
-  color: #d9b8ff;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  justify-content: space-between;
+  padding: 1.6cqw 2.4cqw;
+  border-radius: 2cqw;
+  background: rgb(122 70 214 / 30%);
+  font-size: 3.2cqw;
+
+  strong {
+    color: #d9b8ff;
+  }
 }
 
 .collect {
-  padding: 1cqw 3cqw;
+  padding: 1.6cqw 3.5cqw;
+  font-size: 3cqw;
+}
+
+.buy {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  font: bold 3.2cqw / 1 Arial, sans-serif;
+
+  img {
+    width: 5cqw;
+    height: 5cqw;
+    object-fit: contain;
+  }
+
+  &.short {
+    color: #ff7a6b;
+  }
+}
+
+.upgrade {
+  margin-left: auto;
+  padding: 2.4cqw 4.5cqw;
+  font-size: 3.6cqw;
+}
+
+.blocked,
+.maxed {
+  margin: 0;
   font-size: 2.8cqw;
+  text-align: right;
+  opacity: 0.75;
 }

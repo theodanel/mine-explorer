@@ -14,7 +14,7 @@ Depuis `frontend/` :
 ## Les principes
 
 1. **Un début qui arrose, puis un rythme qui ralentit doucement.** Comme Legend of Mushroom : plus de 200 forges et 10 niveaux de pioche le premier jour, puis une centaine de forges par jour et des niveaux de plus en plus espacés.
-2. **L'or fixe le rythme, pas l'attente.** Le coût de la pioche est multiplié par 2,065 à chaque niveau alors que le revenu grandit d'environ ×1,4 : c'est le mur classique des jeux idle. Les minuteurs restent courts (8 h 30 au maximum). Quand ils duraient des jours, l'or s'entassait sans usage.
+2. **L'or fixe le rythme, pas l'attente.** Le coût de la pioche est multiplié par 2,09 à chaque niveau alors que le revenu grandit d'environ ×1,4 : c'est le mur classique des jeux idle. Les minuteurs restent courts (8 h 30 au maximum). Quand ils duraient des jours, l'or s'entassait sans usage.
 3. **Les évolutions sont les grands bonds.** Chacune multiplie la Frappe par 1,5 (×5 en Légende) : ce sont les paliers multiplicateurs qui font franchir un mur d'un coup.
 4. **Vendre compte.** Le prix de vente suit le niveau de l'objet et vaut 20 à 25 % de l'or gagné sur une partie.
 5. **Les éclats ne s'arrêtent jamais.** Un éclat peut tomber à chaque coup, en plus des filons, des missions et de l'absence : environ une forge par minute et demie de jeu actif, à tout moment de la partie.
@@ -40,14 +40,14 @@ Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne
 | Forme | Zone | Pioche | Objets forgés | Filons épuisés | Frappe totale |
 |---|---|---|---|---|---|
 | Apprenti | départ | | | | ×1 |
-| Mineur | 5 | 10 | 350 | 60 | ×1,5 |
-| Contremaître | 7 | 16 | 1 000 | 105 | ×2,25 |
+| Mineur | 4 | 8 | 220 | 45 | ×1,5 |
+| Contremaître | 6 | 13 | 600 | 80 | ×2,25 |
 | Maître des profondeurs | 9 | 20 | 1 900 | 140 | ×3,4 |
 | Légende de la mine | 12 | 24 | 4 000 | 180 | ×5,1 |
 
-- **Calage** : les objectifs reprennent ce que le joueur régulier avait fait quand il évoluait avec l'ancien coût en or et minerais. Simulé : Mineur jour 2,5, Contremaître jour 5, Maître jour 9, Légende jour 19.
+- **Calage** : les objectifs reprenaient d'abord ce que le joueur régulier faisait avec l'ancien coût en or et minerais. Le 14/10/2026, Théo a demandé un Mineur et un Contremaître plus rapides, pour ouvrir plus tôt l'Atelier et le Puits sans fond : leurs objectifs ont baissé (Contremaître en zone 6 et pioche 13 au lieu de 7 et 16), et l'Atelier coûte désormais au départ des segments de la pioche 14 au lieu de 17, pour être vraiment utilisable à son ouverture. Simulé (régulier) : Mineur en 12 h (deuxième session du premier jour), Contremaître jour 2,8 (au lieu de 4,5), Maître jour 7,9, Légende jour 16,3. Pour que la fin de partie reste longue, le segment de pioche passe à ×2,09 : pioche 30 au jour 47,8 en moyenne sur 5 tirages.
 - **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10), 1 par filon et 20 de plus en fin de zone. Ils ne servent plus qu'à l'Atelier.
-- **Visuel** : l'Apprenti, le Contremaître et le Maître ont leur animation de frappe. Le Mineur et la Légende s'affichent en image fixe, avec un petit écrasement à chaque coup.
+- **Visuel** : les cinq formes ont leur animation de frappe (Mineur et Légende depuis le 14/10/2026, découpées par `art-source/animations/decouper-frappe.py`).
 
 ## Atelier
 
@@ -111,7 +111,7 @@ Stats simulées d'un joueur régulier : Frappe 566, Vitesse +13 %, Critique 12 %
 - **PV d'un filon** = 320 × 1,073^n × adoucissement, où n = (zone − 1) × 15 + (filon − 1). Une zone est environ 2,9 fois plus dure que la précédente, ce que gagne la Puissance en 2 à 3 niveaux de pioche. L'adoucissement vaut 0,1^(1 − n/60) dans les zones 1 à 4 et 1 ensuite : le 1-1 n'a que 32 PV (une dizaine de secondes sans équipement), les PV sont divisés par 4 environ en zone 2 et par 2,4 en zone 3, et la courbe normale est rejointe au 5-1. Jusqu'au 13/10/2026, l'adoucissement s'arrêtait au 1-15 et les zones 2 et 3 demandaient plusieurs minutes par filon.
 - **Puissance recommandée** = la Puissance qui épuise le filon dans le temps visé : 40 secondes en zone 1, puis 30 % de plus à chaque zone.
 - **Or** = dégâts × 0,34 × (1 + Bonus d'or). C'était 0,25 tant que le sac portait toujours de l'or : l'or est devenu un choix de build, le revenu de base compense.
-- **Segment de pioche** = 15 × 2,065^(niveau − 1) pièces, et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,05, les éclats plus faciles du 13/10/2026 (deux fois plus de forges) l'amenaient au jour 43 : le coût a été relevé pour garder le rythme (pioche 30 au jour 49,3 en moyenne sur 5 tirages).
+- **Segment de pioche** = 15 × 2,09^(niveau − 1) pièces (2,065 jusqu'au Campement, 2,085 avec lui, 2,09 depuis les évolutions plus rapides du 14/10/2026), et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,05, les éclats plus faciles du 13/10/2026 (deux fois plus de forges) l'amenaient au jour 43 : le coût a été relevé pour garder le rythme (pioche 30 au jour 49,3 en moyenne sur 5 tirages).
 - **Minuteur d'amélioration** = 1 min × 1,25^(niveau − 1), moins de 2 jours cumulés jusqu'au niveau 30.
 - **Absence** = or de 50 % du DPS et 1 éclat toutes les 6 minutes, sur 4 h au maximum.
 - **Éclats** = 4 % de chances par coup, plus 4 par filon du 1-1 au 1-5, 3 jusqu'au 4-15, puis 2.
@@ -206,8 +206,8 @@ Résultats de `tools/simulate.mts`, avec les vraies règles du jeu. Le joueur fo
 |---|---|---|---|
 | Zone 2 | 12 min de jeu | 12 min de jeu | 12 min |
 | Pioche 10 | jour 1 | jour 1 | 2 h 10 |
-| Mineur | jour 3 | jour 1 | 2 h 25 |
-| Contremaître | jour 5 | jour 4 | 11 h |
+| Mineur | jour 1 (12 h) | jour 1 | 2 h 25 |
+| Contremaître | jour 3 | jour 4 | 11 h |
 | Pioche 20 | jour 8 | jour 6 | jour 2 |
 | Maître des profondeurs | jour 9 | jour 6 | jour 2 |
 | Légende de la mine | jour 19 | jour 12 | jour 4 |

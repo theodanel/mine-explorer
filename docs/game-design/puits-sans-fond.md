@@ -25,7 +25,7 @@ Simulé (joueur 1 h par jour, 5 tirages, Campement compris) :
 
 ## Visuels
 
-En attente des images Gemini (planche 11 et fond du Puits, voir [[prompts-gemini]]). En attendant, la page affiche le chrono, l'étage en cours et sa barre de vie.
+Planche 11 et fond du Puits livrés le 14/10/2026 (sources dans `art-source/aventures/`) : carte des Aventures, tablette du record, sablier des essais et décor de la page.
 
 ## Pistes
 

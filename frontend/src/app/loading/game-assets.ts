@@ -130,7 +130,26 @@ export const MENU_ICONS = {
   artifacts: 'assets/ui/menu/artifacts.png',
   companions: 'assets/ui/menu/companions.png',
   workshop: 'assets/ui/menu/workshop.png',
+  adventures: 'assets/ui/aventures/aventures.webp',
 } as const;
+
+/** Visuels des Aventures (planche 11 et deux fonds, Gemini) : chargés avec leurs pages. */
+export const ADVENTURE_IMAGES = {
+  abyssCard: 'assets/ui/aventures/puits-sans-fond.webp',
+  campCard: 'assets/ui/aventures/campement.webp',
+  tavern: 'assets/ui/aventures/taverne.webp',
+  warehouse: 'assets/ui/aventures/entrepot.webp',
+  well: 'assets/ui/aventures/puits.webp',
+  record: 'assets/ui/aventures/record.webp',
+  hourglass: 'assets/ui/aventures/sablier.webp',
+  abyssBackground: 'assets/backgrounds/aventure-puits.webp',
+  campBackground: 'assets/backgrounds/aventure-campement.webp',
+} as const;
+
+/** Fond d'une page d'aventure : le décor, assombri pour que le texte reste lisible par-dessus. */
+export function pageBackground(url: string): string {
+  return `linear-gradient(rgb(20 12 6 / 55%), rgb(20 12 6 / 70%)), url(${url})`;
+}
 
 /** Préchargées avec l'interface : la barre de menus et les sorts s'affichent sans clignoter. */
 /** Visuels des événements de mine (planche 6 et rat voleur). La géode a 4 états, du plus fermé au plus ouvert. */

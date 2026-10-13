@@ -11,17 +11,10 @@
   cursor: pointer;
 }
 
-// Pas encore d'image de bâtiment (prompts Gemini, planche 11) : le nom tient lieu d'icône
-.building-frame {
-  display: grid;
-  place-items: center;
-}
-
-.building-name {
-  padding: 0 1cqw;
-  color: #f3e6d0;
-  font: bold 2.6cqw / 1.1 Arial, sans-serif;
-  text-align: center;
+// Décor du Campement derrière la page (assombri dans le composant)
+.page {
+  background-size: cover;
+  background-position: center;
 }
 
 .level-of {

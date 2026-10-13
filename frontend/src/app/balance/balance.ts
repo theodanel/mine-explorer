@@ -130,7 +130,7 @@ export const MAX_PICKAXE_LEVEL = 30;
 export const SEGMENTS_PER_LEVEL = 10;
 
 /**
- * L'or est le vrai régulateur du rythme. Le coût est multiplié par 2,065 à chaque niveau alors que la Puissance,
+ * L'or est le vrai régulateur du rythme. Le coût est multiplié par 2,09 à chaque niveau alors que la Puissance,
  * donc le revenu, grandit d'environ ×1,4 : chaque niveau demande un peu plus de temps que le précédent, le mur
  * classique des jeux idle (coûts exponentiels, production plus lente). Résultat simulé pour un joueur qui joue 1 h
  * par jour, avec tous les systèmes (arbre, sorts, artefacts, Atelier, événements, galeries, compagnons, évolution
@@ -139,8 +139,9 @@ export const SEGMENTS_PER_LEVEL = 10;
  * les éclats rendus plus faciles (deux fois plus de forges, donc plus de ventes et de meilleurs objets).
  */
 const SEGMENT_BASE_COST = 15;
-// 2,085 depuis le Campement (14/10/2026), qui accélère l'or hors ligne : pioche 30 au jour 48,7 sur 5 tirages
-const SEGMENT_COST_GROWTH = 2.085;
+// 2,085 avec le Campement (14/10/2026), qui accélère l'or hors ligne, puis 2,09 avec le Mineur et le Contremaître
+// plus rapides et l'Atelier moins cher à l'ouverture : pioche 30 au jour 47,8 sur 5 tirages
+const SEGMENT_COST_GROWTH = 2.09;
 
 /** Prix en or d'un segment au niveau donné, ou null au niveau maximum. */
 export function segmentCost(pickaxeLevel: number): number | null {
@@ -343,9 +344,9 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     id: 'miner',
     label: 'Mineur',
     objectives: tiered(4, [
-      [['zone', 2], ['pickaxeLevel', 4], ['itemsForged', 60]],
-      [['zone', 3], ['pickaxeLevel', 7], ['itemsForged', 180], ['rocksBroken', 30]],
-      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350], ['rocksBroken', 60]],
+      [['zone', 2], ['pickaxeLevel', 3], ['itemsForged', 40]],
+      [['zone', 3], ['pickaxeLevel', 6], ['itemsForged', 120], ['rocksBroken', 25]],
+      [['zone', 4], ['pickaxeLevel', 8], ['itemsForged', 220], ['rocksBroken', 45]],
     ]),
     strikeBonus: 0.5,
   },
@@ -353,9 +354,9 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     id: 'foreman',
     label: 'Contremaître',
     objectives: tiered(6, [
-      [['zone', 6], ['pickaxeLevel', 12], ['itemsForged', 550]],
-      [['pickaxeLevel', 14], ['itemsForged', 750], ['rocksBroken', 90]],
-      [['zone', 7], ['pickaxeLevel', 16], ['itemsForged', 1000], ['rocksBroken', 105]],
+      [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350]],
+      [['pickaxeLevel', 12], ['itemsForged', 480], ['rocksBroken', 65]],
+      [['zone', 6], ['pickaxeLevel', 13], ['itemsForged', 600], ['rocksBroken', 80]],
     ]),
     strikeBonus: 0.5,
   },

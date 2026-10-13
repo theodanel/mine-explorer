@@ -8,6 +8,7 @@
     @for (adventure of adventures(); track adventure.page) {
       <li>
         <button type="button" class="card" [class.locked]="adventure.locked !== null" [disabled]="adventure.locked !== null" (click)="open(adventure)">
+          <img class="card-icon" [src]="adventure.icon" alt="" width="192" height="192" />
           <span class="card-text">
             <strong>{{ adventure.title }}</strong>
             <span>{{ adventure.text }}</span>

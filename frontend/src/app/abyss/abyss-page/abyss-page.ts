@@ -2,6 +2,7 @@ import { Component, computed, effect, inject } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
 import { GUARDIAN_EVERY, RECORD_STEP } from '../../balance/abyss';
+import { ADVENTURE_IMAGES, pageBackground } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Abyss } from '../abyss';
 
@@ -21,6 +22,8 @@ export class AbyssPage {
   private readonly sound = inject(Sound);
 
   protected readonly recordStep = RECORD_STEP;
+  protected readonly images = ADVENTURE_IMAGES;
+  protected readonly background = pageBackground(ADVENTURE_IMAGES.abyssBackground);
   /** Étage en train d'être cassé (un de plus que les étages franchis). */
   protected readonly floor = computed(() => (this.abyss.descent()?.floors ?? 0) + 1);
   protected readonly guardian = computed(() => this.floor() % GUARDIAN_EVERY === 0);

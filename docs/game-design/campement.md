@@ -22,9 +22,9 @@ L'absence rapporte environ les deux tiers de l'or d'une partie : la Taverne et l
 
 Simulé (joueur 1 h par jour, 5 tirages) :
 - premiers bâtiments au jour 3, niveau 5 partout au jour 14, niveau 8 au jour 28, maximum vers le jour 56 ;
-- pioche 30 au jour 48,7 (48,0 avant le Campement) ; évolutions inchangées (0,9 / 4,5 / 7,9 / 16,8) ;
+- pioche 30 au jour 48,7 (48,0 avant le Campement) ; évolutions inchangées (0,9 / 4,5 / 7,9 / 16,8). Depuis, les évolutions plus rapides du 14/10/2026 ont porté le segment de pioche à ×2,09 (voir [[equilibrage]]) ;
 - le puits rapporte environ 3 900 éclats sur 70 jours, un peu plus de 10 % des éclats d'une partie.
 
 ## Visuels
 
-En attente des images Gemini (planche 11 et fond du Campement, voir [[prompts-gemini]]). En attendant, les bâtiments sont présentés par leur nom.
+Planche 11 et fond du Campement livrés le 14/10/2026 (sources dans `art-source/aventures/`) : icônes des trois bâtiments, carte des Aventures et décor de la page.

@@ -13,6 +13,7 @@ import {
   type Counters,
 } from '../src/app/missions/mission-rules.ts';
 import {
+  damagePerSecond,
   EVOLUTION_FORMS,
   evolutionStrikeMultiplier,
   FORGE_SHARD_COST,
@@ -69,6 +70,8 @@ import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
 import { workshopMaterial } from '../src/app/balance/workshop.ts';
 import { BUILDING_IDS, CAMP_UNLOCK_ZONE, type BuildingId } from '../src/app/balance/camp.ts';
+import { ABYSS_DAILY_RUNS, ABYSS_RUN_MS, ABYSS_UNLOCK_FORM } from '../src/app/balance/abyss.ts';
+import { descend, runReward } from '../src/app/abyss/abyss-rules.ts';
 import {
   buildingCost,
   buildingLevel,
@@ -103,6 +106,7 @@ const withWorkshop = withNewSystems && !process.argv.includes('--sans-atelier');
 const withEvents = withNewSystems && !process.argv.includes('--sans-evenements');
 const withCompanions = withNewSystems && !process.argv.includes('--sans-compagnons');
 const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
+const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -304,6 +308,10 @@ let profileNow: MinerProfile = profileAt(0);
 // ─── Mesures ────────────────────────────────────────────────────────────────
 const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
 let camp: CampState = EMPTY_CAMP;
+let abyssRecord = 0;
+let abyssRuns = 0;
+let abyssStones = 0;
+let abyssShards = 0;
 let goldCamp = 0;
 let goldEvents = 0;
 let eventsSeen = 0;
@@ -483,6 +491,23 @@ function payCamp(now: number): void {
     const building: BuildingId = pick.id;
     const levels = { ...camp.levels, [building]: buildingLevel(camp.levels, building) + 1 };
     camp = { levels, wellCollectedAt: building === 'well' && camp.wellCollectedAt === null ? now * 1000 : camp.wellCollectedAt };
+  }
+}
+
+/** Descentes du Puits sans fond : le joueur joue ses essais dès la première session du jour. */
+function playAbyss(): void {
+  const unlockIndex = EVOLUTION_FORMS.findIndex((form) => form.id === ABYSS_UNLOCK_FORM);
+  if (!withAbyss || formIndex < unlockIndex) return;
+  const dps = damagePerSecond(permanentProfile().stats);
+  for (let run = 0; run < ABYSS_DAILY_RUNS; run++) {
+    const { floors } = descend(dps * (ABYSS_RUN_MS / 1000));
+    const reward = runReward(floors, abyssRecord);
+    abyssRecord = Math.max(abyssRecord, floors);
+    shards += reward.shards;
+    abyssShards += reward.shards;
+    abyssStones += reward.stones;
+    if (withCompanions) companions = { ...companions, stones: companions.stones + reward.stones };
+    abyssRuns++;
   }
 }
 
@@ -674,6 +699,7 @@ for (let day = 0; day < days; day++) {
   chestClaimed = false;
   const forgesBefore = forges;
   const shardsBefore = { ...shardSources };
+  let abyssPlayedToday = false;
   for (const [startHour, minutes] of SESSIONS[profile]) {
     const start = day * DAY + startHour * HOUR;
     const end = start + minutes * 60;
@@ -692,6 +718,10 @@ for (let day = 0; day < days; day++) {
     }
     runExpeditions(start);
     collectWell(start);
+    if (!abyssPlayedToday) {
+      playAbyss();
+      abyssPlayedToday = true;
+    }
     // Les sorts reprennent prêts à chaque session : le joueur les relance en revenant
     for (const slot of spellSlots) {
       slot.readyAt = Math.min(slot.readyAt, start);
@@ -732,7 +762,7 @@ for (let day = 0; day < days; day++) {
         `zones ${got('zones')}, missions ${got('missions')}, absence ${got('absence')}, événements ${got('evenements')}), or en stock ${big(gold)}, ` +
         `points ${pointsSpent(ranks)}/${pointsEarned(progress.zone)}, artefacts ${Object.keys(artifacts.owned).length}, ` +
         `atelier ${SLOT_IDS.map((slot) => slotLevel(workshop, slot)).join('/')} (×${workshopPower().toFixed(2)}), ` +
-        `campement ${BUILDING_IDS.map((id) => buildingLevel(camp.levels, id)).join('/')}`,
+        `campement ${BUILDING_IDS.map((id) => buildingLevel(camp.levels, id)).join('/')}, puits record ${abyssRecord}`,
     );
   }
 }
@@ -764,6 +794,9 @@ if (withWorkshop) {
     `Atelier : niveaux ${SLOT_IDS.map((slot) => `${slot} ${slotLevel(workshop, slot)}`).join(', ')}, ` +
       `×${workshopPower().toFixed(2)} de Puissance, ${big(goldWorkshop)} d'or dépensé`,
   );
+}
+if (withAbyss) {
+  console.log(`Puits sans fond : record ${abyssRecord} étages, ${abyssRuns} descentes, ${abyssShards} éclats, ${abyssStones} pierres d'éveil`);
 }
 if (withCamp) {
   console.log(

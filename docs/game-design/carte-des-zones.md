@@ -27,9 +27,9 @@ Demande de Théo (14/10/2026) : toucher « Zone 8 » ouvre une carte des zones f
 
 Chaque pièce affiche le minerai de sa qualité et le stock. Quand il manque, un bouton « Miner ce minerai en zone N » y emmène directement, si la zone est déjà terminée.
 
-## Visuel du fond de carte (à valider avec Théo)
+## Visuel du fond de carte
 
-En attendant, la carte est sur un sol de mine sombre, avec un sentier en pointillés dessiné par le jeu. Le fond doit **se répéter verticalement** sans couture et laisser le centre dégagé : c'est le jeu qui place les zones et trace le sentier par-dessus. Référence à joindre : `art-source/backgrounds/zone4.png`. Dépose le résultat dans `art-source/ui/carte-fond.png`.
+Livré par Théo le 14/10/2026 (`art-source/ui/carte-fond.png`). Son haut et son bas ne se raccordent pas : `art-source/ui/decouper-ui.py` l'empile sous son reflet vertical pour en faire une tuile sans couture. La carte la répète, calée en bas, si bien que la zone 1 part des rails peints. Le sentier en pointillés reste tracé par le jeu. Prompt utilisé :
 
 ```
 Vertical mobile game background tile, 9:16 portrait (1080x1920), hand-painted 2D cartoon style, NOT a photo, NOT a 3D render, soft painterly shading, thick dark outlines, warm cozy lighting, same art direction as a cute chibi idle mining RPG and as the attached reference image. Top-down view of an underground mine floor, like a level map in a mobile puzzle game: packed brown earth in the middle, with rocks, small glowing crystals, wooden support beams, bits of old rail track, mushrooms and lanterns along the left and right edges. The central 60% of the width stays calm and plain (game icons and a path will be placed on top). The image must tile seamlessly vertically: the top edge continues exactly into the bottom edge. No characters, no text, no numbers, no UI, no path drawn in the middle.

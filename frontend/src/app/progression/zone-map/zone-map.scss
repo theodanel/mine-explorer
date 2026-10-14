@@ -41,15 +41,16 @@
   opacity: 0.85;
 }
 
-// La carte défile ; en attendant son décor peint, un sol de mine sombre
+// La carte défile sur le sol de la mine (une tuile sans couture qui se répète), calé en bas : la zone 1 part des rails
 .scroll {
   min-height: 0;
   overflow-y: auto;
   border: 0.6cqw solid #1a0f07;
   border-radius: 3cqw;
   background:
-    radial-gradient(ellipse at 50% 30%, rgb(255 190 110 / 10%), transparent 60%),
-    linear-gradient(#3a2716, #22160c);
+    linear-gradient(rgb(20 12 6 / 25%), rgb(20 12 6 / 25%)) local,
+    url('/assets/ui/refonte/carte-fond.webp') center bottom / 100% auto repeat-y local,
+    #2a1b0e;
 }
 
 .map {

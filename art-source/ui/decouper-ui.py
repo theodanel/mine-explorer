@@ -4,6 +4,8 @@
   laisserait une auréole verte), puis l'image est exportée en WebP 512 px.
 - pieces.png (déjà détouré) : la pièce d'or à gauche, l'éclat à droite, recadrés sur leur contenu, en WebP 96 px.
 - loterie.png (déjà détouré) : l'icône de la loterie du jour, recadrée, en WebP 160 px.
+- carte-fond.png : le sol de la carte des zones. Son haut et son bas ne se raccordent pas : on l'empile sous
+  son reflet vertical, ce qui donne une tuile sans couture (chaque jonction est un miroir).
 
 Usage, depuis la racine du dépôt : python art-source/ui/decouper-ui.py
 """
@@ -62,6 +64,12 @@ def main() -> None:
     half = pieces.width // 2
     for name, box in (("coin-small", (0, 0, half, pieces.height)), ("shard-small", (half, 0, pieces.width, pieces.height))):
         square(crop_to_content(pieces.crop(box)), ICON_SIZE).save(OUTPUT / f"{name}.webp", quality=WEBP_QUALITY)
+
+    ground = Image.open(SOURCE / "carte-fond.png").convert("RGB")
+    tile = Image.new("RGB", (ground.width, ground.height * 2))
+    tile.paste(ground.transpose(Image.FLIP_TOP_BOTTOM), (0, 0))
+    tile.paste(ground, (0, ground.height))
+    tile.save(OUTPUT / "carte-fond.webp", quality=WEBP_QUALITY)
 
     lottery = crop_to_content(Image.open(SOURCE / "loterie.png").convert("RGBA"))
     square(lottery, LOTTERY_SIZE).save(OUTPUT / "lottery.webp", quality=WEBP_QUALITY)

@@ -23,14 +23,14 @@ Retour à [[Accueil]]. Écrite le 14/10/2026, quand Théo a donné carte blanche
 
 - Forge : enclume au centre, cadres de qualité, micro-animations (PR #32).
 - Bandeaux de couleur sur toutes les pages, fenêtre des stats avec la Puissance en vedette et des stats en couleurs, compteurs du haut abrégés (« 45 M ») (PR #33).
-- Artefacts et compagnons encadrés aux couleurs de leur rareté (commun gris, rare bleu, épique violet, légendaire orange), boutons verts qui brillent quand l'action est possible, critiques dorés qui jaillissent dans la mine.
+- Artefacts et compagnons encadrés aux couleurs de leur rareté (commun gris, rare bleu, épique violet, légendaire orange), boutons verts qui brillent quand l'action est possible, critiques dorés qui jaillissent dans la mine (PR #34).
+- Récompenses : rayons de lumière qui tournent derrière le coffre du Puits (plus vifs sur un record), l'artefact trouvé, le compagnon éclos et la forme visée quand la promotion est prête. Les pièces et les éclats gagnés (missions, coffre du jour, paliers d'évolution, Défi, expéditions, rapport d'absence) s'envolent du bouton jusqu'au compteur du haut, qui sursaute à leur arrivée.
 
 ## Prochaines étapes
 
-- **Récompenses** : un éventail de rayons derrière chaque gain important (mission, palier d'évolution, record du Puits, objet de haute qualité), et une pluie de pièces ou d'éclats qui file vers le compteur.
+- **Forge** : rayons derrière un objet forgé de haute qualité.
 - **Mine** : barre de vie du filon plus vivante.
 
-## Visuels à demander
+## Visuels
 
-- Un **éventail de rayons lumineux** (fond vert), pour les récompenses.
-- Une **pièce** et un **éclat** isolés, plus petits que les icônes actuelles, pour les pluies de gains.
+Les rayons (`art-source/ui/rayons.png`, fond vert) et les petites pièces (`art-source/ui/pieces.png`) sont préparés par `python art-source/ui/decouper-ui.py`, qui écrit `rays.webp`, `coin-small.webp` et `shard-small.webp` dans `frontend/public/assets/ui/refonte/`.

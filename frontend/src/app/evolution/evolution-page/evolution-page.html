@@ -17,7 +17,8 @@
           <span class="bonus">+{{ next.bonus }} %<small>Frappe</small></span>
         </div>
         <figure class="form next">
-          <img [src]="next.portraitUrl" alt="" width="160" height="160" />
+          <!-- Promotion prête : la forme visée rayonne, pour donner envie d'appuyer -->
+          <span [class.rays]="evolution.ready()"><img [src]="next.portraitUrl" alt="" width="160" height="160" /></span>
           <figcaption>{{ next.label }}</figcaption>
         </figure>
       }
@@ -74,6 +75,7 @@
                 class="game-button green claim"
                 [disabled]="!mission.claimable"
                 [attr.aria-label]="'Récupérer ' + mission.shards + ' éclats'"
+                appRewardFlight
                 (click)="claim(mission.index)"
               >
                 <img src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{ mission.shards }}

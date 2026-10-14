@@ -431,6 +431,11 @@
   }
 }
 
+// Les rayons accompagnent chaque bilan, plus vifs quand un record tombe
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
 .chest {
   width: 38cqw;
   height: auto;

@@ -160,11 +160,49 @@ body {
   }
 }
 
+// Rayons de lumière qui tournent derrière une grosse récompense (coffre, artefact, compagnon, promotion) :
+// le signal « tu as gagné quelque chose » des jeux du genre. Sur un conteneur, l'image reste au premier plan.
+.rays {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -45%;
+    z-index: -1;
+    background: url('/assets/ui/refonte/rays.webp') center / contain no-repeat;
+    pointer-events: none;
+    animation: rays-spin 14s linear infinite;
+  }
+}
+
+@keyframes rays-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+// Compteur du haut qui sursaute quand une récompense y arrive
+.counter-bump {
+  animation: counter-bump 0.35s ease-out;
+}
+
+@keyframes counter-bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+
 // Mouvement réduit demandé par le système : toutes les boucles décoratives s'arrêtent
 @media (prefers-reduced-motion: reduce) {
   .breathe,
   .bounce,
   .halo::before,
+  .rays::before,
+  .counter-bump,
   .item-frame::after {
     animation: none;
   }
@@ -332,6 +370,7 @@ body {
   --z-page: 8;
   --z-footer: 9;
   --z-dialog: 10;
+  --z-flight: 20;
   // Le tutoriel ne se montre qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
   --z-tutorial: 30;
   --z-splash: 40;

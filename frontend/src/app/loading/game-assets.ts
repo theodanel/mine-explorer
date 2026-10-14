@@ -71,25 +71,40 @@ interface ZoneBackground {
 const ZONE1_FLOOR_Y = 850;
 const OTHER_ZONES_FLOOR_Y = 735;
 
-/** Un fond par palier de matériau : Bois, Pierre, Cuivre… jusqu'à Divin en zone 10. */
-const ZONE_BACKGROUNDS: readonly ZoneBackground[] = Array.from({ length: 10 }, (_, index) => ({
-  url: `assets/backgrounds/zone${index + 1}.webp`,
-  floorY: index === 0 ? ZONE1_FLOOR_Y : OTHER_ZONES_FLOOR_Y,
-}));
+/**
+ * Hauteur du sol des décors des zones 11 à 20, mesurée sur chaque image : Gemini ne pose pas le sol tout à fait
+ * au même endroit d'une image à l'autre.
+ */
+const DEEP_ZONES_FLOOR_Y: Readonly<Record<number, number>> = {
+  11: 744, 12: 752, 13: 728, 15: 707, 16: 742, 17: 748, 18: 758, 19: 748, 20: 686,
+};
 
-/** Au-delà de la zone 10, on reste dans le sanctuaire Divin, le dernier palier, en attendant de nouveaux décors. */
+/** Zones dont le décor n'est pas encore livré : elles reprennent celui d'une zone proche (obsidienne → magma). */
+const STAND_IN_ZONE: Readonly<Record<number, number>> = { 14: 9 };
+
+/** Dernière zone qui a son propre décor ; au-delà, on reste dans le Cœur du monde. */
+export const LAST_DECORATED_ZONE = 20;
+
+/** Zone dont on affiche le décor et le rocher. */
+function visualZone(zone: number): number {
+  const clamped = Math.min(Math.max(zone, 1), LAST_DECORATED_ZONE);
+  return STAND_IN_ZONE[clamped] ?? clamped;
+}
+
+/** Un fond par zone : les paliers de matériaux jusqu'à Divin en zone 10, puis la mine de plus en plus étrange. */
 export function zoneBackground(zone: number): ZoneBackground {
-  const index = Math.min(Math.max(zone, 1), ZONE_BACKGROUNDS.length) - 1;
-  return ZONE_BACKGROUNDS[index];
+  const shown = visualZone(zone);
+  const floorY = shown === 1 ? ZONE1_FLOOR_Y : (DEEP_ZONES_FLOOR_Y[shown] ?? OTHER_ZONES_FLOOR_Y);
+  return { url: `assets/backgrounds/zone${shown}.webp`, floorY };
 }
 
 /**
  * Rocher que frappe le mineur, un par zone et assorti à son décor. Les images viennent de Gemini
- * (prompts dans docs/game-design/prompts-gemini.md) : tant qu'une image manque, la scène n'affiche que la barre de vie.
+ * (prompts dans docs/game-design/prompts-gemini.md et zones-11-20.md) : tant qu'une image manque, la scène
+ * n'affiche que la barre de vie.
  */
 export function rockUrl(zone: number): string {
-  const index = Math.min(Math.max(zone, 1), ZONE_BACKGROUNDS.length);
-  return `assets/rocks/zone${index}.webp`;
+  return `assets/rocks/zone${visualZone(zone)}.webp`;
 }
 
 /** Images de l'interface, préchargées pour éviter qu'elles n'apparaissent une à une au lancement. */

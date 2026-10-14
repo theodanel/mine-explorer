@@ -60,6 +60,7 @@
             [class.found]="cell.found"
             [class.selected]="cell.selected"
             [attr.data-rarity]="cell.found ? cell.rarity : null"
+          [class.item-frame]="cell.found"
             [disabled]="!cell.found"
             [attr.aria-label]="cell.found ? cell.label + ', ' + cell.stars + ' étoiles' : 'Compagnon pas encore trouvé'"
             (click)="select(cell.id, cell.found)"

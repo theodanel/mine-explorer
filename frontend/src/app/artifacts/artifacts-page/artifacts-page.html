@@ -14,6 +14,7 @@
           [class.found]="cell.found"
           [class.selected]="cell.selected"
           [attr.data-rarity]="cell.found ? cell.rarity : null"
+          [class.item-frame]="cell.found"
           [disabled]="!cell.found"
           [attr.aria-label]="cell.found ? cell.label + ', niveau ' + cell.level : 'Artefact pas encore découvert'"
           (click)="select(cell.id, cell.found)"

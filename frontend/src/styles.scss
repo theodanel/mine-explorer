@@ -67,7 +67,9 @@ body {
   &[data-tier='mithril']::after,
   &[data-tier='crystal']::after,
   &[data-tier='magma']::after,
-  &[data-tier='divine']::after {
+  &[data-tier='divine']::after,
+  &[data-rarity='epic']::after,
+  &[data-rarity='legendary']::after {
     content: '';
     position: absolute;
     inset: -20% auto -20% 0;
@@ -204,11 +206,11 @@ body {
   }
 }
 
-// Couleurs de rareté des sorts et des artefacts
-[data-rarity='common'] { --rarity-color: #9aa3ad; }
-[data-rarity='rare'] { --rarity-color: #3d8bff; }
-[data-rarity='epic'] { --rarity-color: #a45cff; }
-[data-rarity='legendary'] { --rarity-color: #ff9a2e; }
+// Couleurs de rareté des sorts, des artefacts et des compagnons ; les cadres (.item-frame) reprennent l'échelle des objets
+[data-rarity='common'] { --rarity-color: #9aa3ad; --frame-light: #c3c9d1; --frame-dark: #5d636b; }
+[data-rarity='rare'] { --rarity-color: #3d8bff; --frame-light: #6fb6ff; --frame-dark: #1d4f9c; }
+[data-rarity='epic'] { --rarity-color: #a45cff; --frame-light: #c48bff; --frame-dark: #5a259e; }
+[data-rarity='legendary'] { --rarity-color: #ff9a2e; --frame-light: #ffb347; --frame-dark: #a3500c; }
 
 .visually-hidden {
   position: absolute;
@@ -272,6 +274,26 @@ body {
     --face-top: #5fd16a;
     --face-bottom: #23802f;
     --depth: #11461a;
+
+    // Une action possible brille : un reflet passe sur le bouton vert de temps en temps
+    &:not(:disabled) {
+      overflow: hidden;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: -20% auto -20% 0;
+        width: 30%;
+        background: linear-gradient(100deg, transparent, rgb(255 255 255 / 45%), transparent);
+        pointer-events: none;
+        transform: translateX(-150%) skewX(-15deg);
+        animation: frame-shine 3.6s ease-in-out infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+          animation: none;
+        }
+      }
+    }
   }
 
   &.red {

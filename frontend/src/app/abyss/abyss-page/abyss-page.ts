@@ -48,8 +48,17 @@ export class AbyssPage {
   protected readonly images = { ...ADVENTURE_IMAGES, chest: EVENT_IMAGES.chestOpen, timeCrystal: EVENT_IMAGES.crystal };
   protected readonly recordStep = RECORD_STEP;
   protected readonly scene = `url(${ADVENTURE_IMAGES.abyssBackground})`;
-  protected readonly rock = computed(() => rockUrl(this.progression.zone()));
-  protected readonly trapIcon = spellIconUrl('dynamite');
+  /** Image du rocher de l'étage : le piège et le gardien ont la leur, les autres reprennent le rocher de la zone. */
+  protected readonly rock = computed(() => {
+    switch (this.floor()?.kind) {
+      case 'trap':
+        return ADVENTURE_IMAGES.trapRock;
+      case 'guardian':
+        return ADVENTURE_IMAGES.guardianRock;
+      default:
+        return rockUrl(this.progression.zone());
+    }
+  });
   protected readonly minerAtlas = computed(() => {
     const body = EVOLUTION_VISUALS[this.evolution.form().id].body;
     return body.kind === 'animated' ? body.strike.atlasUrl : null;

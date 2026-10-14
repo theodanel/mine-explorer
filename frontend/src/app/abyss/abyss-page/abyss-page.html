@@ -41,9 +41,6 @@
         </div>
         <button type="button" class="rock-button" aria-label="Frapper le rocher" (pointerdown)="tapRock($event)">
           <img class="rock" [src]="rock()" alt="" width="398" height="260" />
-          @if (floor.kind === 'trap') {
-            <img class="dynamite" [src]="trapIcon" alt="" width="128" height="128" />
-          }
         </button>
         @if (floor.weakPoint; as weak) {
           <button

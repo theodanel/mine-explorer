@@ -247,28 +247,6 @@
   transition: transform 0.05s;
 }
 
-// Gardien : en attendant son image, le rocher de la zone, plus gros et chargé de cristaux
-.guardian .rock {
-  filter: drop-shadow(0 0 3cqw rgb(170 90 255 / 80%)) saturate(1.4) hue-rotate(220deg);
-  transform: scale(1.25);
-  transform-origin: bottom center;
-}
-
-.dynamite {
-  position: absolute;
-  top: -2cqw;
-  left: 50%;
-  width: 14cqw;
-  transform: translateX(-50%) rotate(-10deg);
-  animation: fizz 0.25s ease-in-out infinite alternate;
-}
-
-@keyframes fizz {
-  to {
-    transform: translateX(-50%) rotate(8deg);
-  }
-}
-
 .fuse {
   width: 70%;
   height: 2.2cqw;

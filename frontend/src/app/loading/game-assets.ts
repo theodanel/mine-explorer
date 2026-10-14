@@ -180,14 +180,16 @@ export const EVENT_IMAGES = {
   ratStrip: 'assets/events/rat-thief.webp',
 } as const;
 
-/**
- * Visuels du Wagonnet fou. En attendant les images Gemini (prompts dans docs/game-design/wagonnet-fou.md),
- * des visuels du jeu servent de remplaçants : la mine de fer et ses rails, le sac de pièces, la chauve-souris.
- */
+/** Visuels du Wagonnet fou (Gemini, préparés par art-source/aventures/preparer-wagonnet.py). */
 export const MINECART_IMAGES = {
-  card: EVENT_IMAGES.coinSack,
-  background: 'assets/backgrounds/zone4.webp',
-  bat: 'assets/companions/bat.png',
+  card: 'assets/ui/aventures/wagonnet-carte.webp',
+  background: 'assets/backgrounds/aventure-wagonnet.webp',
+  /** Découpe du fond autour des rails : la voie de course, en perspective. */
+  track: 'assets/backgrounds/aventure-wagonnet-voie.webp',
+  cart: 'assets/ui/aventures/wagonnet.webp',
+  bat: 'assets/ui/aventures/chauve-souris.webp',
+  rockfall: 'assets/ui/aventures/eboulement.webp',
+  brokenRail: 'assets/ui/aventures/rail-casse.webp',
   nugget: 'assets/ui/refonte/coin-small.webp',
 } as const;
 

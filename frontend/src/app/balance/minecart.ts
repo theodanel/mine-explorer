@@ -2,8 +2,8 @@
 // Fichier pur. Voir docs/game-design/wagonnet-fou.md.
 import { type EvolutionId, goldForDamage, recommendedPower, rockHp } from './balance';
 
-/** Le Wagonnet s'ouvre au Maître des profondeurs : une nouveauté après le Puits (Contremaître). */
-export const MINECART_UNLOCK_FORM: EvolutionId = 'master';
+/** Le Wagonnet s'ouvre au Contremaître, avec le Puits (choix de Théo, 14/10/2026 ; d'abord prévu au Maître). */
+export const MINECART_UNLOCK_FORM: EvolutionId = 'foreman';
 
 /** Courses par jour, remises à 3 à minuit (heure du joueur). */
 export const MINECART_DAILY_RUNS = 3;

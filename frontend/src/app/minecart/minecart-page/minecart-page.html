@@ -29,47 +29,31 @@
       #track
       class="track"
       [class.shake]="shake()"
+      [style.background-image]="track"
       role="application"
       aria-label="Voie du wagonnet : glisse ou touche à gauche ou à droite pour changer de voie"
       (pointerdown)="pointerDown($event)"
       (pointerup)="pointerUp($event, track)"
     >
-      <svg class="rails" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        @for (sleeper of sleepers(); track $index) {
-          <line class="sleeper" [attr.x1]="50 - sleeper.half" [attr.x2]="50 + sleeper.half" [attr.y1]="sleeper.y" [attr.y2]="sleeper.y" />
-        }
-        @for (rail of rails; track $index) {
-          <line class="rail" [attr.x1]="rail.x1" [attr.y1]="rail.y1" [attr.x2]="rail.x2" [attr.y2]="rail.y2" />
-        }
-      </svg>
-
       @if (fork(); as fork) {
         <span class="fork-sign" [style.top.%]="fork.top" aria-hidden="true">Aiguillage</span>
       }
 
       @for (thing of things(); track thing.id) {
-        @if (thing.icon; as icon) {
-          <img
-            class="thing"
-            [class]="thing.kind"
-            [src]="icon"
-            alt=""
-            width="128"
-            height="128"
-            [style.left.%]="thing.left"
-            [style.top.%]="thing.top"
-            [style.--scale]="thing.scale"
-          />
-        } @else {
-          <!-- Rail cassé : un trou dans la voie, en attendant son image -->
-          <span class="thing gap" [style.left.%]="thing.left" [style.top.%]="thing.top" [style.--scale]="thing.scale"></span>
-        }
+        <img
+          class="thing"
+          [class]="thing.kind"
+          [src]="thing.icon"
+          alt=""
+          width="256"
+          height="256"
+          [style.left.%]="thing.left"
+          [style.top.%]="thing.top"
+          [style.--scale]="thing.scale"
+        />
       }
 
-      <div class="cart" [class.hurt]="shake()" [style.left.%]="cartLeft()" aria-hidden="true">
-        <img [src]="portrait()" alt="" width="160" height="160" />
-        <span class="cart-box"></span>
-      </div>
+      <img class="cart" [class.hurt]="shake()" [style.left.%]="cartLeft()" [src]="images.cart" alt="" width="256" height="256" />
 
       @if (flash(); as text) {
         <p class="flash">{{ text }}</p>

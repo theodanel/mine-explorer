@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -85,6 +85,8 @@ export class App {
   protected readonly navigation = inject(Navigation);
   protected readonly playerName = inject(PlayerName);
   protected readonly online = inject(ONLINE_CONFIG).enabled;
+  /** Discussion entre joueurs pas encore ouverte : l'icône annonce seulement qu'elle arrive. */
+  protected readonly chatNote = signal(false);
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);

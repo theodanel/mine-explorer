@@ -53,9 +53,17 @@
   </header>
 
   @if (online) {
-    <button type="button" class="side-link" aria-label="Classement" (click)="navigation.open('leaderboard')">
-      <img src="assets/ui/leaderboard.png" alt="" width="128" height="128" />
-    </button>
+    <nav class="side-links" aria-label="Jeu en ligne">
+      <button type="button" class="side-link" aria-label="Classement" (click)="navigation.open('leaderboard')">
+        <img src="assets/ui/leaderboard.png" alt="" width="128" height="128" />
+      </button>
+      <button type="button" class="side-link" aria-label="Discussion" (click)="chatNote.set(!chatNote())">
+        <img src="assets/ui/chat.png" alt="" width="128" height="128" />
+      </button>
+      @if (chatNote()) {
+        <p class="side-note" role="status">La discussion entre joueurs arrive bientôt.</p>
+      }
+    </nav>
   }
   <app-zone-banner class="zone" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {

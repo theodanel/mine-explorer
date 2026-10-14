@@ -11,7 +11,7 @@
       <article class="card miner">
         <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
         <div class="miner-text">
-          <h3>Petit mineur</h3>
+          <h3>{{ playerName.label() }}</h3>
           <p class="form">{{ evolution.form().label }}</p>
           <p class="zone">Zone {{ progression.zone() }}</p>
         </div>

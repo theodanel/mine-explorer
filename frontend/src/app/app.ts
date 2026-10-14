@@ -1,4 +1,4 @@
-import { Component, computed, inject, Injector } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -13,8 +13,8 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
-import { AccountPrompt } from './online/account-prompt/account-prompt';
-import { ONLINE_CONFIG } from './online/online-config';
+import { OnlineLayer } from './online/online-layer';
+import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
 import { EVOLUTION_VISUALS, materialIconUrl } from './loading/game-assets';
@@ -61,7 +61,7 @@ import { Wallet } from './wallet/wallet';
     OfflineReport,
     EvolutionPage,
     ProfilePage,
-    AccountPrompt,
+    OnlineLayer,
     SplashScreen,
     TutorialOverlay,
     MineEventLayer,
@@ -80,6 +80,7 @@ export class App {
   protected readonly shards = inject(GeodeShards);
   protected readonly evolution = inject(Evolution);
   protected readonly navigation = inject(Navigation);
+  protected readonly playerName = inject(PlayerName);
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);
@@ -98,11 +99,5 @@ export class App {
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page
     inject(SpellCaster);
-    // Synchronisation de la partie avec le cloud, chargée seulement si le jeu en ligne est allumé :
-    // éteint (production pour l'instant), son code ne pèse rien au démarrage
-    if (inject(ONLINE_CONFIG).enabled) {
-      const injector = inject(Injector);
-      void import('./online/cloud-sync').then(({ CloudSync }) => injector.get(CloudSync));
-    }
   }
 }

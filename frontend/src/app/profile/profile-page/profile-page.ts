@@ -8,6 +8,7 @@ import { AccountCard } from '../../online/account-card/account-card';
 import { LeaderboardPage } from '../../online/leaderboard-page/leaderboard-page';
 import { OnlineAccount } from '../../online/online-account';
 import { Progression } from '../../progression/progression';
+import { PlayerName } from '../../shared/player-name';
 
 /** Volumes proposés, du plus fort au coupé. */
 const VOLUME_OPTIONS = [
@@ -28,6 +29,7 @@ export class ProfilePage {
   protected readonly evolution = inject(Evolution);
   protected readonly progression = inject(Progression);
   protected readonly sound = inject(Sound);
+  protected readonly playerName = inject(PlayerName);
   protected readonly online = inject(OnlineAccount).enabled;
   protected readonly leaderboardOpen = signal(false);
   private readonly navigation = inject(Navigation);

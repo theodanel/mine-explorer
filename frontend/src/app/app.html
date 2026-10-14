@@ -11,7 +11,7 @@
     >
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
-        <span class="player-name">Petit mineur</span>
+        <span class="player-name">{{ playerName.label() }}</span>
         <span class="player-title">{{ evolution.form().label }}</span>
       </span>
       @if (evolution.ready()) {
@@ -130,8 +130,8 @@
     <app-artifact-found />
     <app-companion-hatched />
     <app-offline-report />
-    <!-- Proposition de relier un compte : ne s'affiche jamais quand le jeu en ligne est éteint -->
-    <app-account-prompt />
+    <!-- Synchronisation de la partie et bulle pour relier un compte : inactives quand le jeu en ligne est éteint -->
+    <app-online-layer />
   }
   <!-- Tutoriel du premier lancement : il attend la fin du chargement, rien ne presse -->
   @defer (on idle) {

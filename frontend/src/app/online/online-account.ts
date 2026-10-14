@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 
+import { PlayerName } from '../shared/player-name';
 import { OnlineApi } from './online-api';
 import { ONLINE_CONFIG } from './online-config';
 import { isProfile, Profile } from './online-rules';
@@ -33,6 +34,7 @@ export class OnlineAccount {
   private readonly config = inject(ONLINE_CONFIG);
   private readonly api = inject(OnlineApi);
   private readonly navigate = inject(NAVIGATE);
+  private readonly playerName = inject(PlayerName);
   private readonly current = signal<AccountState>(this.config.enabled ? { kind: 'loading' } : { kind: 'disabled' });
 
   readonly state = this.current.asReadonly();
@@ -48,11 +50,21 @@ export class OnlineAccount {
   async refresh(): Promise<void> {
     const result = await this.api.get('/api/me');
     if (result.ok && isProfile(result.body)) {
-      this.current.set({ kind: 'signed-in', profile: result.body });
+      this.setState({ kind: 'signed-in', profile: result.body });
     } else if (!result.ok && result.status === 401) {
-      this.current.set({ kind: 'signed-out' });
+      this.setState({ kind: 'signed-out' });
     } else {
-      this.current.set({ kind: 'offline' });
+      this.setState({ kind: 'offline' });
+    }
+  }
+
+  /** Le nom affiché dans le jeu suit le compte : le pseudo une fois connecté, « Petit mineur » sinon. */
+  private setState(state: AccountState): void {
+    this.current.set(state);
+    if (state.kind === 'signed-in') {
+      this.playerName.set(state.profile.pseudo);
+    } else if (state.kind === 'signed-out') {
+      this.playerName.set(null);
     }
   }
 
@@ -62,19 +74,19 @@ export class OnlineAccount {
 
   async signOut(): Promise<void> {
     await this.api.write('POST', '/api/logout');
-    this.current.set({ kind: 'signed-out' });
+    this.setState({ kind: 'signed-out' });
   }
 
   async signOutEverywhere(): Promise<void> {
     await this.api.write('POST', '/api/me/logout-everywhere');
-    this.current.set({ kind: 'signed-out' });
+    this.setState({ kind: 'signed-out' });
   }
 
   /** Renvoie un message d'erreur à afficher, ou null si le pseudo a changé. */
   async rename(pseudo: string): Promise<string | null> {
     const result = await this.api.write('PUT', '/api/me/pseudo', { pseudo });
     if (result.ok && isProfile(result.body)) {
-      this.current.set({ kind: 'signed-in', profile: result.body });
+      this.setState({ kind: 'signed-in', profile: result.body });
       return null;
     }
     return (!result.ok && result.code !== null ? PSEUDO_ERRORS[result.code] : undefined) ?? 'Pseudo non enregistré, réessaie.';
@@ -90,7 +102,7 @@ export class OnlineAccount {
   async deleteAccount(): Promise<boolean> {
     const result = await this.api.write('DELETE', '/api/me');
     if (result.ok) {
-      this.current.set({ kind: 'signed-out' });
+      this.setState({ kind: 'signed-out' });
     }
     return result.ok;
   }

@@ -2,6 +2,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { Overlays } from '../shared/overlays';
+import { PlayerName } from '../shared/player-name';
 import { AccountCard } from './account-card/account-card';
 import { AccountPrompt } from './account-prompt/account-prompt';
 import { CloudSync, RELOAD } from './cloud-sync';
@@ -143,6 +144,7 @@ describe('Jeu en ligne', () => {
   it('première connexion : la partie locale part dans le cloud', async () => {
     const { sync } = setup();
     await settle();
+    expect(TestBed.inject(PlayerName).label()).toBe('Mineur-12');
     expect(sync.state().kind).toBe('synced');
     expect(server.cloud?.data).toEqual({
       'mine-explorer.progress': '{"zone":4,"stage":2,"damage":0}',
@@ -201,6 +203,7 @@ describe('Jeu en ligne', () => {
     await account.signOut();
     expect(account.state().kind).toBe('signed-out');
     expect(localStorage.getItem('mine-explorer-cloud')).toBeNull();
+    expect(TestBed.inject(PlayerName).label()).toBe('Petit mineur');
   });
 
   it('la carte Compte propose la connexion, puis montre le pseudo et la sauvegarde', async () => {

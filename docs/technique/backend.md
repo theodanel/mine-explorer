@@ -39,7 +39,7 @@ Toutes les réponses d'erreur sont en `application/problem+json` avec un `code` 
 | `POST /api/me/logout-everywhere` | oui | Ferme toutes les sessions du joueur, sur tous les appareils |
 | `POST /api/logout` | oui | Ferme la session en cours (204) |
 | `GET /api/save` | oui | `{version, updatedAt, data}` ou 404 `no-save` |
-| `PUT /api/save` | oui | `{expectedVersion, data}` → `{version, updatedAt}`. Erreurs : 409 `save-conflict` (avec `currentVersion`), 422 `implausible-progress`, 400 `save-invalid`, 413 `save-too-large` |
+| `PUT /api/save` | oui | `{expectedVersion, data}` → `{version, updatedAt}`. Erreurs : 409 `save-conflict` (avec `currentVersion`, sauf si deux appareils écrivent au même instant), 422 `implausible-progress`, 400 `save-invalid`, 413 `save-too-large`, 401 `account-gone` (compte supprimé depuis un autre appareil) |
 | `GET /api/leaderboard/depth` et `/abyss` | non | `{top: [{rank, pseudo, value}], me}` : 100 premiers, et la place du joueur s'il est connecté |
 | `GET /actuator/health` | non | `{"status":"UP"}`, sans détail, pour l'hébergeur |
 
@@ -66,16 +66,20 @@ Limites assumées : l'or, l'équipement et le reste de la partie ne sont pas vé
 | Vol de session par un script (XSS) | Aucun jeton dans le navigateur : session en base, cookie `MINE_SESSION` `HttpOnly`, `Secure`, `SameSite=Lax` |
 | Requête forgée depuis un autre site (CSRF) | Jeton CSRF obligatoire sur toute écriture (en-tête `X-XSRF-TOKEN`), masqué différemment à chaque réponse ; cookie `SameSite=Lax` en plus |
 | Appel de l'API depuis un autre site | CORS limité à l'adresse du jeu, avec cookies ; tout autre `Origin` reçoit 403 |
-| Interception du code de connexion | Flux « authorization code » avec PKCE (S256), `state` et `nonce` ; signature, émetteur, audience et expiration du jeton d'identité vérifiés par Spring Security |
+| Interception du code de connexion | Flux « authorization code » avec PKCE (S256), `state` et `nonce` ; signature, émetteur, audience, expiration et nonce du jeton d'identité vérifiés par Spring Security (testé de bout en bout avec un faux Google dans `GoogleLoginFlowTests`) ; adresse de retour fixée en production |
 | Redirection ouverte après connexion | Retour toujours vers l'adresse fixe `mine.front.url` |
 | Accès à la partie d'un autre joueur (IDOR) | Aucun identifiant dans les routes : le joueur vient toujours de la session (testé dans `SaveApiTests`) |
-| Force brute, abus | Limite par adresse IP et par minute : 10 connexions, 30 écritures, 120 lectures ; corps de requête limité à 512 Ko, refusé avant lecture |
-| Session volée ou appareil perdu | Expiration après 14 jours d'inactivité, 60 jours au plus ; « se déconnecter partout » ; suppression de compte |
+| Force brute, abus | Limite par adresse IP et par minute : 10 connexions, 30 écritures, 120 lectures (adresses IPv6 regroupées par bloc /64, qu'un abonné reçoit en entier) ; corps de requête limité à 512 Ko, refusé avant lecture |
+| Session volée ou appareil perdu | Expiration après 14 jours d'inactivité, 60 jours au plus ; « se déconnecter partout » ; suppression de compte ; nouvel identifiant de session à la connexion |
+| Base remplie de sessions anonymes | Session sans connexion (jeton CSRF, connexion Google en cours) : 30 minutes ; 14 jours seulement une fois connecté |
 | Route oubliée | Tout ce qui n'est pas listé est refusé (`denyAll`) |
 | Fuite d'informations internes | `ProblemDetail` génériques, aucune trace, en-têtes `nosniff`, `X-Frame-Options: DENY`, CSP `default-src 'none'`, `no-store` |
 | Données personnelles | Ni e-mail ni nom : Google n'est interrogé qu'avec le scope `openid`, seul l'identifiant opaque du compte est gardé. Pseudo provisoire « Mineur-123456 » |
 | Secrets | Aucun dans le dépôt : variables d'environnement, secrets Fly.io |
+| Dépendance vulnérable | Versions corrigées de Tomcat et Jackson imposées dans `pom.xml` tant que Spring Boot ne les inclut pas (voir [[audit-securite-backend]]) |
 | Conteneur | Utilisateur sans privilèges, JRE seul, sans sources ni outils de compilation |
+
+Audit complet du 14/10/2026, constats et points à décider : [[audit-securite-backend]].
 
 La limite de requêtes vit en mémoire : elle suppose **une seule machine** (réglé dans `fly.toml`). Derrière le proxy de Fly.io, l'adresse du joueur est lue dans l'en-tête `Fly-Client-IP` (profil `prod` uniquement : ailleurs, un client pourrait l'inventer) [PROBABLE : en-tête posé par le proxy Fly.io, à vérifier au premier déploiement dans les journaux].
 

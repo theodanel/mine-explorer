@@ -42,7 +42,7 @@ Pour y arriver : PixiJS est importé dans sa variante sans `eval` (`pixi.js/unsa
 
 ## Backend
 
-Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`.
+Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `GoogleLoginFlowTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`, `ProductionProfileTests`. Audit complet du 14/10/2026 : [[audit-securite-backend]].
 
 ## Limites assumées
 
@@ -55,6 +55,6 @@ Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protection
 | Contrôle | Où |
 |---|---|
 | Dépendances npm | `npm audit --audit-level=high` à chaque CI, Dependabot chaque semaine |
-| Dépendances Maven et actions GitHub | Dependabot chaque semaine |
+| Dépendances Maven et actions GitHub | Dependabot chaque semaine (mises à jour de versions). **Pas d'alerte de faille** : alertes Dependabot désactivées sur le dépôt et aucun audit Maven en CI, voir [[audit-securite-backend]] |
 | Code | CodeQL à chaque PR et chaque lundi (résultats en artefact, voir [[ci-cd]]) |
 | En-têtes | Après tout changement de `_headers` ou d'une bibliothèque de rendu : `npm run build` puis `node tools/serve-dist.mjs`, console du navigateur sans violation |

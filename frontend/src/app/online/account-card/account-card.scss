@@ -1,3 +1,5 @@
+// Carte Compte : volontairement plus sobre que le reste de l'interface (pas de boutons « jeu ») :
+// c'est là que le joueur confie son compte, l'aspect doit inspirer confiance.
 :host {
   display: grid;
   gap: 2.5cqw;
@@ -13,98 +15,207 @@
 
 .card {
   display: grid;
-  gap: 2cqw;
-  padding: 3cqw;
-  border: 0.6cqw solid #1a0f07;
+  gap: 2.4cqw;
+  padding: 3.5cqw;
+  border: 0.4cqw solid rgb(255 255 255 / 12%);
   border-radius: 3cqw;
-  background: linear-gradient(#4a3019, #2a1a0d);
+  background: rgb(0 0 0 / 30%);
   color: #f3e6d0;
+  font-family: Arial, sans-serif;
 }
 
 p {
   margin: 0;
+  line-height: 1.35;
 }
 
-.hint {
-  font-size: 2.9cqw;
-  opacity: 0.8;
+.lead {
+  font-size: 4.2cqw;
+  font-weight: bold;
+}
+
+.muted,
+.privacy {
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
+.privacy {
+  font-size: 2.6cqw;
 }
 
 .error {
   color: #ff9b85;
-  font-size: 2.9cqw;
+  font-size: 3cqw;
 }
 
-.game-button {
-  padding: 2cqw 3cqw;
-  font-size: 3.4cqw;
+button {
+  font: bold 3.2cqw / 1.2 Arial, sans-serif;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.5cqw solid #ffd34d;
+    outline-offset: 0.4cqw;
+  }
 }
 
-.pseudo {
+.primary,
+.secondary,
+.danger {
+  padding: 2cqw 3.5cqw;
+  border-radius: 2cqw;
+}
+
+.primary {
+  border: none;
+  background: #2f8f3f;
+  color: #fff;
+}
+
+.secondary {
+  border: 0.3cqw solid rgb(255 255 255 / 30%);
+  background: transparent;
+  color: #f3e6d0;
+
+  &.small {
+    padding: 1.2cqw 2.4cqw;
+    font-size: 2.8cqw;
+  }
+}
+
+.danger {
+  border: none;
+  background: #b3261e;
+  color: #fff;
+}
+
+// Ligne de menu, comme dans les réglages d'une appli
+.row {
   display: flex;
-  align-items: baseline;
-  gap: 2cqw;
-  font-size: 4.4cqw;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2.2cqw 0;
+  border: none;
+  border-top: 0.3cqw solid rgb(255 255 255 / 10%);
+  background: none;
+  color: inherit;
+  font-weight: normal;
+  text-align: left;
+
+  span {
+    color: #ffd34d;
+  }
+}
+
+.danger-text {
+  color: #ff9b85;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 10cqw;
+  height: 10cqw;
+  border-radius: 50%;
+  background: #8a5f38;
+  font: bold 5cqw / 1 Arial, sans-serif;
+}
+
+.who {
+  display: grid;
+  flex: 1;
+  gap: 0.6cqw;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-size: 4.2cqw;
+    text-overflow: ellipsis;
+  }
 }
 
 .pseudo-form {
   display: flex;
-  align-items: center;
+  flex: 1;
   gap: 2cqw;
-  font-size: 3.4cqw;
 
   input {
     flex: 1;
     min-width: 0;
-    padding: 1.4cqw 2cqw;
-    border: 0.5cqw solid #1a0f07;
+    padding: 1.6cqw 2cqw;
+    border: 0.3cqw solid rgb(255 255 255 / 30%);
     border-radius: 2cqw;
+    background: rgb(0 0 0 / 30%);
+    color: #fff;
     font: 3.6cqw Arial, sans-serif;
   }
 }
 
-.conflict,
-.actions,
-.manage {
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+// Point de couleur devant l'état de la sauvegarde
+.status {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2cqw;
-}
-
-.conflict p {
-  font-size: 3.2cqw;
-}
-
-.manage {
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  gap: 1.6cqw;
   font-size: 3cqw;
 
+  &::before {
+    content: '';
+    flex: none;
+    width: 2cqw;
+    height: 2cqw;
+    border-radius: 50%;
+    background: var(--dot);
+  }
+
+  &.ok {
+    --dot: #5fd16a;
+  }
+
+  &.pending {
+    --dot: #ffd34d;
+  }
+
+  &.ko {
+    --dot: #ff6b57;
+  }
+}
+
+.conflict,
+.danger-zone {
+  display: grid;
+  gap: 2cqw;
+  padding: 3cqw;
+  border-radius: 2cqw;
+  background: rgb(255 211 77 / 10%);
+  font-size: 3cqw;
+}
+
+.danger-zone {
+  background: rgb(179 38 30 / 18%);
+}
+
+.manage {
+  display: grid;
+  font-size: 3.2cqw;
+
   summary {
+    padding: 1.6cqw 0;
     cursor: pointer;
     opacity: 0.8;
   }
-}
-
-.link {
-  padding: 0;
-  border: none;
-  background: none;
-  color: #ffd34d;
-  font: 3cqw Arial, sans-serif;
-  text-decoration: underline;
-  cursor: pointer;
-
-  &.danger {
-    color: #ff9b85;
-  }
-}
-
-.export {
-  overflow: auto;
-  max-width: 100%;
-  max-height: 40cqw;
-  font-size: 2.4cqw;
-  white-space: pre-wrap;
-  word-break: break-all;
 }

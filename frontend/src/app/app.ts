@@ -13,6 +13,7 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
+import { AccountPrompt } from './online/account-prompt/account-prompt';
 import { ONLINE_CONFIG } from './online/online-config';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
@@ -60,6 +61,7 @@ import { Wallet } from './wallet/wallet';
     OfflineReport,
     EvolutionPage,
     ProfilePage,
+    AccountPrompt,
     SplashScreen,
     TutorialOverlay,
     MineEventLayer,

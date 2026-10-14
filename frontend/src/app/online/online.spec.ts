@@ -1,7 +1,9 @@
 // Comptes et synchronisation contre un faux serveur : mêmes routes, codes d'erreur et jeton CSRF que le backend.
 import { TestBed } from '@angular/core/testing';
 
+import { Overlays } from '../shared/overlays';
 import { AccountCard } from './account-card/account-card';
+import { AccountPrompt } from './account-prompt/account-prompt';
 import { CloudSync, RELOAD } from './cloud-sync';
 import { NAVIGATE, OnlineAccount } from './online-account';
 import { FETCH } from './online-api';
@@ -208,13 +210,38 @@ describe('Jeu en ligne', () => {
     await settle();
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.textContent).toContain('Se connecter avec Google');
+    expect(root.textContent).toContain('Continuer avec Google');
 
     server.signedIn = true;
     await TestBed.inject(OnlineAccount).refresh();
     await settle();
     fixture.detectChanges();
     expect(root.textContent).toContain('Mineur-12');
-    expect(root.textContent).toContain('Partie sauvegardée dans le cloud');
+    expect(root.textContent).toContain('Sauvegarde automatique');
+  });
+
+  it('propose de relier un compte après la première évolution, puis se tait 3 jours après « Plus tard »', async () => {
+    server.signedIn = false;
+    localStorage.setItem('mine-explorer.evolution', '1');
+    setup();
+    const fixture = TestBed.createComponent(AccountPrompt);
+    await settle();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.textContent).toContain('Ne perds pas ta partie');
+
+    (root.querySelector('.later') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(root.textContent).not.toContain('Ne perds pas ta partie');
+    expect(TestBed.inject(Overlays).shown()).toBeNull();
+  });
+
+  it('ne dérange pas un joueur qui débute', async () => {
+    server.signedIn = false;
+    setup();
+    const fixture = TestBed.createComponent(AccountPrompt);
+    await settle();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Ne perds pas ta partie');
   });
 });

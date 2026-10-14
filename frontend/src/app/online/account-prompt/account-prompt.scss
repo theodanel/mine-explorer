@@ -1,0 +1,47 @@
+// Bulle posée sous la bannière de zone, sans fond bloquant : la forge et le jeu restent accessibles
+.bubble {
+  position: absolute;
+  top: 26cqw;
+  right: 4cqw;
+  left: 4cqw;
+  z-index: var(--z-dialog);
+  display: grid;
+  gap: 2.2cqw;
+  padding: 4cqw;
+  border: 0.4cqw solid rgb(255 255 255 / 15%);
+  border-radius: 3.5cqw;
+  background: rgb(24 16 9 / 94%);
+  box-shadow: 0 1.5cqw 4cqw rgb(0 0 0 / 50%);
+  color: #f3e6d0;
+  font-family: Arial, sans-serif;
+}
+
+p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.title {
+  font-size: 4.4cqw;
+  font-weight: bold;
+}
+
+.text {
+  font-size: 3.2cqw;
+  opacity: 0.85;
+}
+
+.later {
+  justify-self: center;
+  padding: 1.4cqw 3cqw;
+  border: none;
+  background: none;
+  color: #f3e6d0;
+  font: 3.2cqw Arial, sans-serif;
+  opacity: 0.75;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.5cqw solid #ffd34d;
+  }
+}

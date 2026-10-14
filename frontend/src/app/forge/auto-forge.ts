@@ -92,7 +92,8 @@ function loadSettings(): AutoForgeSettings {
     if (typeof value === 'object' && value !== null) {
       const { enabled, filters } = value as Record<string, unknown>;
       if (typeof enabled === 'boolean' && isValidFilters(filters)) {
-        return { enabled, filters };
+        // Réglages d'avant l'option « toujours montrer » : elle part désactivée
+        return { enabled, filters: { ...filters, keepFromTier: filters.keepFromTier ?? null } };
       }
     }
   } catch {

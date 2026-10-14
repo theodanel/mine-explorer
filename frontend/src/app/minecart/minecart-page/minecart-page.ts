@@ -22,13 +22,6 @@ const NEAR_Y = 95;
 const FAR_SCALE = 0.2;
 /** Écart entre deux voies au premier plan, mesuré sur les rails de l'image. */
 const LANE_SPACING = 29.4;
-/**
- * Défilement du tunnel : deux copies du décor grossissent vers le point de fuite (ses rails restent en place,
- * les traverses et les poutres foncent vers le joueur), l'une relayant l'autre en fondu. Un cycle = 3 m parcourus,
- * pour un grossissement ×1,35, l'écart entre deux poutres de l'image.
- */
-const LOOP_METERS = 3;
-const LOOP_ZOOM = 1.35;
 /** Un glissement plus court que ça est un simple toucher. */
 const SWIPE_PX = 24;
 const SHAKE_MS = 350;
@@ -48,12 +41,10 @@ function laneX(lane: number, scale: number): number {
   return 50 + (lane - 1) * LANE_SPACING * scale;
 }
 
-/** Une copie du décor à la phase `phase` (0 à 1) de son cycle : elle grossit, apparaît puis s'efface. */
-function tunnelLayer(phase: number): { transform: string; opacity: number } {
-  return { transform: `scale(${LOOP_ZOOM ** phase})`, opacity: 1 - Math.abs(2 * phase - 1) };
-}
-
-/** Wagonnet fou : la course vue de dos, le tunnel qui défile, et le bilan. */
+/**
+ * Wagonnet fou : la course vue de dos et le bilan. Le tunnel reste fixe (Théo trouvait l'effet de zoom
+ * affreux) : la vitesse se lit aux obstacles qui arrivent et aux traits de vitesse.
+ */
 @Component({
   selector: 'app-minecart-page',
   templateUrl: './minecart-page.html',
@@ -96,10 +87,6 @@ export class MinecartPage {
   protected readonly rush = computed(() => {
     const ride = this.ride();
     return ride === null ? 0 : Math.min(Math.max((speedOf(ride) - START_SPEED) / (MAX_SPEED - START_SPEED), 0), 1);
-  });
-  protected readonly tunnel = computed(() => {
-    const phase = ((this.ride()?.distance ?? 0) / LOOP_METERS) % 1;
-    return [tunnelLayer(phase), tunnelLayer((phase + 0.5) % 1)];
   });
   /** Les objets sur la voie, projetés en perspective, du plus lointain au plus proche. */
   protected readonly things = computed(() => {

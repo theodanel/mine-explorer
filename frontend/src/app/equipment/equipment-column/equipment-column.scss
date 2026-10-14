@@ -22,7 +22,7 @@
 
   // Artefact, compagnon et case verrouillée gardent le bois ; les objets prennent leur cadre de qualité
   &:not(.item-frame) {
-    border: 0.9cqw solid #2a1a0d;
+    border: 0.45cqw solid rgb(26 15 7 / 75%);
     background: linear-gradient(#5b3d24, #3d2815);
     box-shadow: 0 0.8cqw 0 rgb(0 0 0 / 35%);
   }

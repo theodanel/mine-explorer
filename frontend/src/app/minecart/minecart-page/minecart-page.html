@@ -36,9 +36,7 @@
     >
       <!-- La scène garde les proportions du tunnel : la perspective des objets tombe juste sur ses rails -->
       <div class="stage" [style.--vanishing-y.%]="vanishingY" [style.--rush]="rush()">
-        @for (layer of tunnel(); track $index) {
-          <div class="tunnel" [style.background-image]="scene" [style.transform]="layer.transform" [style.opacity]="layer.opacity"></div>
-        }
+        <div class="tunnel" [style.background-image]="scene"></div>
         <div class="speed-lines" aria-hidden="true"></div>
 
         @if (fork(); as fork) {

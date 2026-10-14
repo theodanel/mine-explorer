@@ -25,7 +25,7 @@ Demande de Théo (14/10/2026) : toucher « Zone 8 » ouvre une carte des zones f
 
 ## Atelier
 
-Chaque pièce affiche le minerai de sa qualité et le stock. Quand il manque, un bouton « Miner ce minerai en zone N » y emmène directement, si la zone est déjà terminée.
+Chaque pièce affiche le minerai de sa qualité et le stock. Quand il manque, un bouton « Miner en zone N » y emmène directement, si la zone est déjà terminée.
 
 ## Visuel du fond de carte
 

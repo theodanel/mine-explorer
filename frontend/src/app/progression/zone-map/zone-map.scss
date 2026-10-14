@@ -26,7 +26,7 @@
   margin-left: auto;
   width: 9cqw;
   height: 9cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
@@ -45,7 +45,7 @@
 .scroll {
   min-height: 0;
   overflow-y: auto;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 3cqw;
   background:
     linear-gradient(rgb(20 12 6 / 25%), rgb(20 12 6 / 25%)) local,
@@ -96,7 +96,7 @@
   width: 22cqw;
   height: 22cqw;
   padding: 0;
-  border: 1cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: #120b06;
   box-shadow: 0 1.2cqw 0 rgb(0 0 0 / 50%);
@@ -208,7 +208,7 @@
   left: 50%;
   width: 13cqw;
   height: 13cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: radial-gradient(#e8b45c, #9a6230);
   transform: translateX(-50%);
@@ -246,7 +246,7 @@
   display: grid;
   gap: 2cqw;
   padding: 3cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 3cqw;
   background: linear-gradient(#5b3d24, #2f1e10);
   box-shadow:
@@ -274,7 +274,7 @@
   width: 16cqw;
   height: 16cqw;
   flex: none;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background-position: center 55%;
   background-size: 200% auto;

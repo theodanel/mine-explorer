@@ -11,7 +11,7 @@
 }
 
 .side-button {
-  width: 20cqw;
+  width: 18cqw;
 }
 
 // Pastille rouge : une récompense de mission attend
@@ -40,13 +40,13 @@
 }
 
 .side-title {
-  font-size: 3.2cqw;
+  font-size: 2.9cqw;
 }
 
 .side-level {
   color: #ffd34d;
-  font-size: 5cqw;
-  text-shadow: 0 0.4cqw 0 #1a0f07;
+  font-size: 4.3cqw;
+  text-shadow: 0 0.3cqw 0.3cqw rgb(26 15 7 / 70%);
 }
 
 .side-timer {
@@ -76,10 +76,10 @@
 
 .tool {
   padding: 0.8cqw 2cqw;
-  border: 0.5cqw solid #1a0f07;
+  border: 0.35cqw solid rgb(26 15 7 / 70%);
   border-radius: 999px;
   background: linear-gradient(#6e4a2c, #4a3019);
-  box-shadow: 0 0.5cqw 0 #24170d;
+  box-shadow: 0 0.4cqw 0.8cqw rgb(0 0 0 / 35%);
   color: #f3e6d0;
   font: bold 2.7cqw / 1 Arial, sans-serif;
   cursor: pointer;
@@ -185,7 +185,7 @@
   gap: 1cqw;
   margin-top: -1.5cqw;
   padding: 0.8cqw 3cqw;
-  border: 0.6cqw solid #2a1a0d;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 2cqw;
   background: linear-gradient(#5b3d24, #3d2815);
   box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 15%);
@@ -228,7 +228,7 @@
 .close {
   width: 8cqw;
   height: 8cqw;
-  border: 0.6cqw solid #2a1a0d;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
   box-shadow: 0 0.6cqw 0 #5a170b;
@@ -349,7 +349,7 @@
   gap: 1cqw;
   margin: 0 0 3cqw;
   padding: 1cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 2cqw;
   background: #1a0f07;
   list-style: none;

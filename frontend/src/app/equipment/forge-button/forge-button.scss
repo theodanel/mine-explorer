@@ -45,7 +45,8 @@
 
 .side-level {
   color: #ffd34d;
-  font-size: 3.6cqw;
+  font-size: 5cqw;
+  text-shadow: 0 0.4cqw 0 #1a0f07;
 }
 
 .side-timer {
@@ -122,35 +123,67 @@
   }
 }
 
-.forge-icon {
-  width: 17cqw;
-  height: 17cqw;
-  // Le halo de l'image d'origine se mélangeait au fond vert : on le recrée ici
-  filter: drop-shadow(0 0 1.5cqw rgb(190 110 255 / 80%));
-  animation: forge-glow 1.6s ease-in-out infinite alternate;
+// Enclume : grande, au centre de la forge
+.anvil {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24cqw;
+  height: 20cqw;
 
   .forge:disabled & {
-    filter: grayscale(0.8) brightness(0.7);
-    animation: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
+    filter: grayscale(0.7) brightness(0.65);
   }
 }
 
-@keyframes forge-glow {
+.anvil-img {
+  position: relative;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 1cqw 0.8cqw rgb(0 0 0 / 55%));
+}
+
+// Respiration lente tant qu'une forge est possible : elle invite à toucher
+.ready .anvil-img {
+  animation: anvil-breathe 2s ease-in-out infinite alternate;
+}
+
+@keyframes anvil-breathe {
   to {
-    filter: drop-shadow(0 0 3cqw rgb(190 110 255 / 100%));
+    transform: scale(1.04);
   }
 }
 
-// Socle du coût, posé sous la pioche
+// Braises du socle : une lueur orange qui pulse sous l'enclume
+.embers {
+  position: absolute;
+  inset: 38% 8% 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 70%, rgb(255 140 40 / 85%), rgb(255 80 20 / 35%) 45%, transparent 72%);
+  opacity: 0.55;
+  animation: embers 1.3s ease-in-out infinite alternate;
+
+  .forge:disabled & {
+    animation: none;
+    opacity: 0.15;
+  }
+}
+
+@keyframes embers {
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+// Socle du coût, posé sous l'enclume
 .forge-cost {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 1cqw;
-  margin-top: -2.5cqw;
+  margin-top: -1.5cqw;
   padding: 0.8cqw 3cqw;
   border: 0.6cqw solid #2a1a0d;
   border-radius: 2cqw;
@@ -364,11 +397,15 @@
 
 // ─── Animation de forge (0,9 s, la durée pendant laquelle l'objet reste caché) ───
 
-// La pioche se lève, frappe l'enclume, puis rebondit
-.forge-icon.striking {
-  animation: forge-strike 0.9s cubic-bezier(0.3, 0, 0.3, 1);
+// L'enclume se tend, encaisse le coup au moment où partent les étincelles, puis rebondit
+.striking .anvil-img {
+  animation: forge-strike 0.9s ease-out;
+}
 
-  @media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
+  .ready .anvil-img,
+  .striking .anvil-img,
+  .embers {
     animation: none;
   }
 }
@@ -407,14 +444,12 @@
   translate: -50% 0;
   animation: forged-rise 1s ease-out 0.35s;
 
+  // Le cadre de qualité vient de .item-frame (styles.scss) ; ici seulement la taille et l'auréole
   img {
-    width: 13cqw;
-    height: 13cqw;
+    width: 14cqw;
+    height: 14cqw;
     padding: 1cqw;
-    border: 0.5cqw solid #1a0f07;
-    border-radius: 2.5cqw;
-    background: radial-gradient(circle, color-mix(in srgb, var(--tier-color) 55%, #2a1a0d), #2a1a0d);
-    box-shadow: 0 0 3cqw 0.8cqw color-mix(in srgb, var(--tier-color) 80%, transparent);
+    filter: drop-shadow(0 0 2.5cqw var(--frame-light, #ffd34d));
   }
 }
 
@@ -429,23 +464,23 @@
 
 @keyframes forge-strike {
   0% {
-    rotate: 0deg;
+    transform: none;
   }
+
   30% {
-    rotate: -35deg;
-    scale: 1.08;
+    transform: translateY(-1cqw) scale(1.05);
   }
-  42% {
-    rotate: 18deg;
-    scale: 0.92;
+
+  40% {
+    transform: translateY(1.2cqw) scale(1.1, 0.88);
   }
+
   60% {
-    rotate: -6deg;
-    scale: 1.04;
+    transform: translateY(-0.6cqw) scale(0.97, 1.04);
   }
+
   100% {
-    rotate: 0deg;
-    scale: 1;
+    transform: none;
   }
 }
 

@@ -23,21 +23,25 @@
       (click)="onForgeClick()"
       [disabled]="!inventory.canForge() && !inventory.pending()"
     >
-      <img class="forge-icon" [class.striking]="inventory.forging()" src="assets/ui/forge-icon.png" alt="" width="128" height="128" />
+      <!-- L'enclume, pièce maîtresse : elle respire quand on peut forger, ses braises rougeoient, et elle encaisse le coup -->
+      <span class="anvil" [class.ready]="inventory.canForge()" [class.striking]="inventory.forging()">
+        <span class="embers" aria-hidden="true"></span>
+        <img class="anvil-img" src="assets/ui/forge-anvil.webp" alt="" width="320" height="314" />
+      </span>
       <span class="forge-cost" aria-hidden="true"
         ><img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
           inventory.forgeCost
         }}</span
       >
       @if (inventory.pending()) {
-        <span class="badge" aria-hidden="true">!</span>
+        <span class="badge bounce" aria-hidden="true">!</span>
       }
     </button>
     <!-- Animation de forge : étincelles et objet qui monte, rejouées à chaque tirage -->
     @for (pop of forgedPop(); track pop.key) {
       <span class="forge-burst" [attr.data-tier]="pop.tier" aria-hidden="true"></span>
       <span class="forged-pop" [attr.data-tier]="pop.tier" aria-hidden="true">
-        <img [src]="pop.icon" alt="" width="128" height="128" />
+        <img class="item-frame" [attr.data-tier]="pop.tier" [src]="pop.icon" alt="" width="128" height="128" />
         @if (pop.sold !== null) {
           <span class="sold-tag">Vendu +{{ pop.sold }}</span>
         }
@@ -75,7 +79,7 @@
     <span class="side-title">Missions</span>
     <span class="side-level">{{ missions.main().progress }} / {{ missions.main().mission.target }}</span>
     @if (missions.claimableCount() > 0) {
-      <span class="badge" aria-hidden="true">{{ missions.claimableCount() }}</span>
+      <span class="badge bounce" aria-hidden="true">{{ missions.claimableCount() }}</span>
     }
   </button>
 </div>

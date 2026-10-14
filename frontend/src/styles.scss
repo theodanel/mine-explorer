@@ -29,6 +29,145 @@ body {
 [data-tier='magma'] { --tier-color: #ff5a2e; }
 [data-tier='divine'] { --tier-color: #fff1b8; }
 
+// Cadres de qualité des objets (forge, inventaire, emplacements équipés), sur l'échelle des jeux du genre :
+// gris, vert, bleu, violet, orange, rouge puis irisé. Deux paliers de matériau par couleur au début, un ensuite.
+[data-tier='wood'] { --frame-light: #b8bec7; --frame-dark: #5d636b; }
+[data-tier='stone'] { --frame-light: #d3d8de; --frame-dark: #6f767e; }
+[data-tier='copper'] { --frame-light: #7ee38b; --frame-dark: #1f7a32; }
+[data-tier='iron'] { --frame-light: #4fd16a; --frame-dark: #13612a; }
+[data-tier='steel'] { --frame-light: #6fb6ff; --frame-dark: #1d4f9c; }
+[data-tier='gold'] { --frame-light: #3d8bff; --frame-dark: #163a87; }
+[data-tier='mithril'] { --frame-light: #c48bff; --frame-dark: #5a259e; }
+[data-tier='crystal'] { --frame-light: #ffb347; --frame-dark: #a3500c; }
+[data-tier='magma'] { --frame-light: #ff6b5a; --frame-dark: #8e1a12; }
+[data-tier='divine'] { --frame-light: #fff4b8; --frame-dark: #7a5bd6; }
+
+/**
+ * Case d'objet colorée par sa qualité : bordure claire, fond en dégradé, reflet en haut. À poser avec data-tier.
+ * Les qualités hautes (violet et au-delà) ont en plus un reflet diagonal qui passe en boucle.
+ */
+.item-frame {
+  position: relative;
+  overflow: hidden;
+  border: 0.7cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background:
+    linear-gradient(rgb(255 255 255 / 28%), transparent 45%),
+    linear-gradient(var(--frame-light, #6b4a2c), var(--frame-dark, #3d2815));
+  box-shadow:
+    inset 0 0 0 0.5cqw color-mix(in srgb, var(--frame-light, #8a5f38) 85%, #fff),
+    0 0.8cqw 0 rgb(0 0 0 / 40%);
+
+  &[data-tier='divine'] {
+    background:
+      linear-gradient(rgb(255 255 255 / 30%), transparent 45%),
+      linear-gradient(135deg, #ff9ad5, #ffe27a 30%, #8dffcf 55%, #8ab8ff 78%, #d59bff);
+  }
+
+  &[data-tier='mithril']::after,
+  &[data-tier='crystal']::after,
+  &[data-tier='magma']::after,
+  &[data-tier='divine']::after {
+    content: '';
+    position: absolute;
+    inset: -20% auto -20% 0;
+    width: 35%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 55%), transparent);
+    pointer-events: none;
+    transform: translateX(-150%) skewX(-15deg);
+    animation: frame-shine 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes frame-shine {
+  60%,
+  100% {
+    transform: translateX(400%) skewX(-15deg);
+  }
+}
+
+// Niveau ou qualité écrit sur une case : gras avec contour sombre, lisible sur toutes les couleurs
+.frame-label {
+  color: #fff;
+  font-weight: bold;
+  text-shadow:
+    0.25cqw 0.25cqw 0 #1a0f07,
+    -0.25cqw 0.25cqw 0 #1a0f07,
+    0.25cqw -0.25cqw 0 #1a0f07,
+    -0.25cqw -0.25cqw 0 #1a0f07;
+}
+
+// Micro-animations partagées : uniquement transform et opacity, pour rester fluides sur téléphone
+.breathe {
+  animation: breathe 2s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  to {
+    transform: scale(1.04);
+  }
+}
+
+.halo {
+  position: relative;
+  // Le halo passe derrière l'élément sans disparaître derrière le fond de son parent
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 211 77 / 75%), transparent 70%);
+    pointer-events: none;
+    animation: halo 1.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes halo {
+  from {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+// Pastille qui rebondit de temps en temps : un saut toutes les 3 secondes
+.bounce {
+  animation: bounce 3s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  88% {
+    transform: translateY(-1.5cqw);
+  }
+
+  94% {
+    transform: translateY(0.3cqw);
+  }
+}
+
+// Mouvement réduit demandé par le système : toutes les boucles décoratives s'arrêtent
+@media (prefers-reduced-motion: reduce) {
+  .breathe,
+  .bounce,
+  .halo::before,
+  .item-frame::after {
+    animation: none;
+  }
+}
+
 // Couleurs de rareté des sorts et des artefacts
 [data-rarity='common'] { --rarity-color: #9aa3ad; }
 [data-rarity='rare'] { --rarity-color: #3d8bff; }

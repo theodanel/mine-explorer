@@ -97,6 +97,7 @@ export const UI_IMAGES: readonly string[] = [
   'assets/ui/coin.png',
   'assets/ui/geode-shard.png',
   'assets/ui/forge-icon.png',
+  'assets/ui/forge-anvil.webp',
   'assets/ui/miner-portrait.png',
   'assets/ui/helmet.png',
   'assets/ui/pickaxe.png',

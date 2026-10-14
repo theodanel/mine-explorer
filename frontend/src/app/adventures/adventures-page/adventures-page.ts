@@ -2,9 +2,10 @@ import { Component, computed, inject } from '@angular/core';
 
 import { Abyss } from '../../abyss/abyss';
 import { Camp } from '../../camp/camp';
+import { ForgeExpress } from '../../forge-express/forge-express';
 import { Merchant } from '../../merchant/merchant';
 import { Minehunt } from '../../minehunt/minehunt';
-import { ADVENTURE_IMAGES, MERCHANT_IMAGES, MINEHUNT_IMAGES } from '../../loading/game-assets';
+import { ADVENTURE_IMAGES, FORGE_EXPRESS_IMAGES, MERCHANT_IMAGES, MINEHUNT_IMAGES } from '../../loading/game-assets';
 import { Navigation, PageId } from '../../navigation/navigation';
 
 interface Adventure {
@@ -34,6 +35,7 @@ export class AdventuresPage {
   private readonly abyss = inject(Abyss);
   private readonly minehunt = inject(Minehunt);
   private readonly merchant = inject(Merchant);
+  private readonly forgeExpress = inject(ForgeExpress);
 
   protected readonly adventures = computed<readonly Adventure[]>(() => [
     {
@@ -62,6 +64,15 @@ export class AdventuresPage {
       text: 'Creuse la paroi, devine où dort le grisou, remonte avec le butin.',
       locked: this.minehunt.unlocked() ? null : `Débloqué : ${this.minehunt.unlockLabel}`,
       status: this.minehunt.unlocked() ? `${this.minehunt.runsLeft()} / ${this.minehunt.dailyRuns} parties` : null,
+    },
+    {
+      page: 'forge-express',
+      icon: FORGE_EXPRESS_IMAGES.card,
+      scene: `url(${FORGE_EXPRESS_IMAGES.background})`,
+      title: 'Forge express',
+      text: 'Frappe en rythme à l’enclume pour forger un objet d’exception.',
+      locked: this.forgeExpress.unlocked() ? null : `Débloqué : ${this.forgeExpress.unlockLabel}`,
+      status: this.forgeExpress.unlocked() ? `${this.forgeExpress.runsLeft()} / ${this.forgeExpress.dailyRuns} parties` : null,
     },
     this.merchantCard(),
   ]);

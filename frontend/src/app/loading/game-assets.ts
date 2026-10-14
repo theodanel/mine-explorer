@@ -191,6 +191,17 @@ export const MERCHANT_IMAGES = {
 } as const;
 
 /**
+ * Visuels de la Forge express : l'enclume de la Forge, et en attendant les images Gemini, la pioche en guise de
+ * marteau (le lingot est dessiné en CSS).
+ */
+export const FORGE_EXPRESS_IMAGES = {
+  anvil: 'assets/ui/forge-anvil.webp',
+  hammer: 'assets/ui/pickaxe.png',
+  card: 'assets/ui/forge-anvil.webp',
+  background: 'assets/backgrounds/zone5.webp',
+} as const;
+
+/**
  * Visuels de la Chasse au filon. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
  * des visuels du jeu servent de remplaçants : le coffre des événements, la pépite volante, la mine de fer.
  */

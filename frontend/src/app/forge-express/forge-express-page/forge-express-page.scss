@@ -1,0 +1,357 @@
+:host {
+  display: block;
+}
+
+.page {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 3cqw;
+  height: 100%;
+  padding: 4cqw;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  border: 0.4cqw solid rgb(26 15 7 / 70%);
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 6.5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.chip {
+  margin-left: auto;
+  padding: 1cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 40%);
+  font: bold 3cqw / 1 Arial, sans-serif;
+}
+
+// Les 10 frappes, en pastilles qui se colorent selon la note
+.strikes {
+  display: flex;
+  justify-content: center;
+  gap: 1.5cqw;
+}
+
+.dot {
+  width: 4.5cqw;
+  height: 4.5cqw;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 40%);
+  box-shadow: inset 0 0 0 0.35cqw rgb(255 255 255 / 15%);
+  transition: background 0.2s;
+
+  &.perfect {
+    background: #ffd34d;
+    box-shadow: 0 0 2cqw rgb(255 211 77 / 70%);
+  }
+
+  &.good {
+    background: #7ee08a;
+  }
+
+  &.fair {
+    background: #7fb8ff;
+  }
+
+  &.miss {
+    background: #e86a3c;
+  }
+}
+
+// La jauge de chaleur : zones concentriques au centre, aiguille qui glisse
+.gauge {
+  position: relative;
+  height: 7cqw;
+  margin: 0 2cqw;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3a1b10, #6b2a14 30%, #6b2a14 70%, #3a1b10);
+  box-shadow:
+    inset 0 0.5cqw 1cqw rgb(0 0 0 / 50%),
+    0 0 0 0.4cqw rgb(26 15 7 / 70%);
+}
+
+.zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+  &.fair {
+    background: rgb(255 140 60 / 35%);
+  }
+
+  &.good {
+    background: rgb(255 190 80 / 55%);
+  }
+
+  &.perfect {
+    background: linear-gradient(#fff2b0, #ffd34d);
+    box-shadow: 0 0 2cqw rgb(255 211 77 / 80%);
+  }
+}
+
+.needle {
+  position: absolute;
+  top: -1cqw;
+  bottom: -1cqw;
+  width: 1.4cqw;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 1.5cqw rgb(255 255 255 / 80%);
+  transform: translateX(-50%);
+}
+
+// L'enclume : toute la zone se tape
+.anvil-area {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.anvil {
+  width: 70cqw;
+  height: auto;
+  filter: drop-shadow(0 2cqw 2cqw rgb(0 0 0 / 60%));
+}
+
+// Lingot posé sur l'enclume, en attendant son image : sa lueur suit la chaleur
+.ingot {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  z-index: 1;
+  width: 26cqw;
+  height: 7cqw;
+  border-radius: 1.5cqw;
+  background: linear-gradient(
+    color-mix(in srgb, #ffe27a calc(var(--glow) * 100%), #a3271a),
+    color-mix(in srgb, #ff9a3c calc(var(--glow) * 100%), #5a1208)
+  );
+  box-shadow: 0 0 calc(2cqw + var(--glow) * 5cqw) rgb(255 150 60 / calc(30% + var(--glow) * 60%));
+  transform: translateX(-50%);
+}
+
+.hammer {
+  position: absolute;
+  top: 2%;
+  right: 12%;
+  z-index: 2;
+  width: 28cqw;
+  height: auto;
+  transform-origin: 85% 85%;
+  transform: rotate(25deg);
+  transition: transform 0.08s ease-in;
+  filter: drop-shadow(0 1cqw 1cqw rgb(0 0 0 / 50%));
+
+  .swing & {
+    transform: rotate(-35deg) translate(-4cqw, 4cqw);
+  }
+}
+
+.sparks {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  z-index: 3;
+  width: 30cqw;
+  height: 30cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 240 180 / 95%) 5%, rgb(255 170 60 / 70%) 25%, transparent 60%);
+  transform: translate(-50%, -50%);
+  animation: burst 0.22s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes burst {
+  from {
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+}
+
+.pop {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  z-index: 4;
+  color: #fff3d6;
+  font: bold 7cqw / 1 Arial, sans-serif;
+  text-shadow: 0 0.6cqw 0.6cqw rgb(0 0 0 / 60%);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: rise 0.65s ease-out forwards;
+
+  &.perfect {
+    color: #ffd34d;
+  }
+
+  &.miss {
+    color: #ff8a6a;
+  }
+
+  small {
+    font-size: 4.5cqw;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translate(-50%, 2cqw) scale(0.8);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -6cqw) scale(1.1);
+  }
+}
+
+.tip {
+  margin: 0;
+  font-size: 3.2cqw;
+  text-align: center;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.result {
+  position: absolute;
+  right: 6cqw;
+  bottom: 6cqw;
+  left: 6cqw;
+  z-index: 5;
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  padding: 4cqw;
+  border-radius: 4cqw;
+  background: linear-gradient(rgb(62 42 24 / 97%), rgb(39 26 15 / 97%));
+  box-shadow:
+    inset 0 0 0 0.45cqw rgb(138 95 56 / 70%),
+    0 2cqw 4cqw rgb(0 0 0 / 50%);
+  text-align: center;
+  animation: appear 0.35s ease-out;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: #ffd34d;
+    font-size: 5cqw;
+  }
+
+  p {
+    font-size: 3.2cqw;
+    opacity: 0.85;
+  }
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
+.item {
+  width: 22cqw;
+  height: 22cqw;
+  padding: 2cqw;
+  object-fit: contain;
+}
+
+.lobby {
+  display: grid;
+  grid-row: 2 / -1;
+  align-content: center;
+  justify-items: center;
+  gap: 3.5cqw;
+  text-align: center;
+}
+
+.hero {
+  width: 50cqw;
+  height: auto;
+  filter: drop-shadow(0 1.5cqw 1cqw rgb(0 0 0 / 60%));
+}
+
+.rules {
+  display: grid;
+  gap: 1.8cqw;
+  margin: 0;
+  padding: 3.5cqw 4cqw;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 80%);
+  font-size: 3.2cqw;
+  line-height: 1.35;
+  text-align: left;
+  list-style: none;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.go {
+  min-width: 50cqw;
+  padding: 3cqw 6cqw;
+  font-size: 4.8cqw;
+}
+
+.runs {
+  margin: 0;
+  font-size: 3.2cqw;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparks,
+  .pop,
+  .result {
+    animation: none;
+  }
+}

@@ -29,6 +29,7 @@ const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = {
   abyss: 'adventures',
   minehunt: 'adventures',
   merchant: 'adventures',
+  'forge-express': 'adventures',
   challenge: 'companions',
 };
 

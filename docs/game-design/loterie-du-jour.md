@@ -26,6 +26,8 @@ Demande de Théo (14/10/2026) : une loterie quotidienne qui donne une ressource 
 
 Fenêtre « Loterie du jour » : les six cases encadrées aux couleurs de leur rareté, avec leur chance. Au tirage, une lumière fait deux tours puis ralentit jusqu'au lot gagné, qui rayonne ; l'or et les éclats s'envolent jusqu'aux compteurs.
 
+Icône : roue de la fortune (`art-source/ui/loterie.png`, préparée par `art-source/ui/decouper-ui.py`).
+
 ## Technique
 
 Chiffres dans `frontend/src/app/balance/lottery.ts`, règles pures dans `lottery/lottery-rules.ts` (lots du jour, tirage, générateur à graine), état dans `lottery/lottery.ts` (sauvegarde `mine-explorer.lottery` : jour du dernier tirage).

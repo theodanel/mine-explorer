@@ -4,10 +4,10 @@
       <button
         type="button"
         class="tab"
-        [class.current]="navigation.page() === tab.page"
+        [class.current]="currentTab() === tab.page"
         [class.soon]="tab.locked !== null"
         [disabled]="tab.locked !== null"
-        [attr.aria-current]="navigation.page() === tab.page ? 'page' : null"
+        [attr.aria-current]="currentTab() === tab.page ? 'page' : null"
         (click)="open(tab)"
       >
         @if (tab.icon; as icon) {

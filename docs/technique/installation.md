@@ -33,9 +33,11 @@ Pour tester sur téléphone dans le même réseau : `npx ng serve --host 0.0.0.0
 
 ```bash
 cd backend
-./mvnw spring-boot:run    # http://localhost:8080 (Windows : .\mvnw.cmd)
-./mvnw verify             # build et tests
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev   # http://localhost:8080 (Windows : .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev")
+./mvnw verify                                            # build et tests
 ```
+
+Le profil `dev` est obligatoire (base H2 locale, front attendu sur le port 4200). Connexion Google en local : voir [[backend]].
 
 ## Réinitialiser une partie
 

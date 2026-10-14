@@ -1,5 +1,5 @@
 # Intégration et déploiement continus de Mine Explorer.
-# Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend.
+# Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build, tests et image Docker du backend.
 # Sur une PR verte de Théo, ou de Dependabot en version mineure ou corrective : fusion automatique.
 # Sur main uniquement, quand tout est vert : déploiement du frontend sur Cloudflare Pages.
 name: CI
@@ -56,7 +56,7 @@ jobs:
           if-no-files-found: error
 
   backend:
-    name: Backend (build et tests)
+    name: Backend (build, tests et image Docker)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -73,6 +73,9 @@ jobs:
           cache: maven
       - name: Build et tests
         run: sh ./mvnw -B -ntp verify
+      # Vérifie que l'image de production se construit (rien n'est publié)
+      - name: Image Docker
+        run: docker build -t mine-explorer-api:ci .
 
   automerge:
     name: Fusion automatique

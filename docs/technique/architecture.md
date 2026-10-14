@@ -10,7 +10,7 @@ mine-explorer/
 │   ├── src/app/       Code applicatif, un dossier par domaine
 │   ├── public/        Fichiers servis tels quels (images, sons, _headers)
 │   └── tools/         Outils en ligne de commande (simulateur, tableaux, serveur de vérification)
-├── backend/           Spring Boot 4.1, Java 21 (squelette, non déployé)
+├── backend/           Spring Boot 4.1, Java 21 : comptes, sauvegarde cloud, classement (non déployé)
 ├── art-source/        Visuels d'origine (Gemini) avant découpe
 ├── docs/              Coffre Obsidian : game-design/ et technique/
 └── .github/           CI/CD, CodeQL, Dependabot
@@ -74,4 +74,4 @@ La sauvegarde vit dans le `localStorage` du navigateur, propre à chaque adresse
 
 ## Backend
 
-Squelette Spring Boot 4.1 (Web MVC, Data JPA, Validation, Flyway, H2). Aucune route métier : seules les réponses d'erreur par défaut existent, sans trace interne (voir [[securite]]). Il n'est ni déployé ni appelé par le frontend. Sa place à terme : calculer les gains et valider les actions côté serveur, pour qu'un joueur ne puisse plus tricher en modifiant sa sauvegarde.
+Spring Boot 4.1 (Web MVC, Data JPA, Validation, Flyway, Spring Security OAuth2, Spring Session JDBC), PostgreSQL en production et H2 en local. Il gère la connexion Google, une copie de la partie par joueur (clés `mine-explorer.*` du `localStorage`) avec verrou optimiste, un anti-triche de plausibilité et deux classements. Le jeu continue de tourner dans le navigateur. Détails, API et mise en ligne : [[backend]]. Il n'est pas encore déployé ni appelé par le frontend.

@@ -9,7 +9,7 @@ Déclenché sur chaque pull request et chaque push sur `main`.
 | Job | Étapes | Bloquant |
 |---|---|---|
 | **Frontend** | `npm ci`, lint, tests et couverture, build de production, `npm audit --audit-level=high` | Oui |
-| **Backend** | `./mvnw verify` (build et tests) sur Java 21 | Oui |
+| **Backend** | `./mvnw verify` (build et tests) sur Java 21, puis construction de l'image Docker (rien n'est publié) | Oui |
 | **Fusion automatique** | Fusionne la PR, puis relance la CI sur `main` pour déployer | Seulement sur une PR éligible, après les deux jobs verts |
 | **Déploiement** | Publie le build sur Cloudflare Pages | Seulement sur `main` (push ou relance), après les deux jobs verts |
 

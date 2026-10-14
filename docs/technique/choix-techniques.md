@@ -15,9 +15,15 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 
 ## Sauvegarde dans le navigateur, pas encore de serveur
 
-- **Décision** : l'état est dans le `localStorage` ; le backend n'est pas déployé.
+- **Décision** : l'état est dans le `localStorage`. Le backend (comptes, sauvegarde cloud) en garde une copie quand le joueur se connecte, sans remplacer la sauvegarde locale : le jeu reste jouable hors connexion.
 - **Raison** : pour une première version de test, un site statique suffit, ne coûte rien, et n'expose aucune surface d'attaque serveur (pas de base, pas d'API, pas de compte).
 - **En échange** : triche locale possible, partie liée à un navigateur et un appareil. À revoir dès qu'il y aura classement, synchronisation entre appareils ou achats.
+
+## Comptes et sauvegarde cloud : Spring Security, Fly.io et Neon
+
+- **Décision** : connexion Google gérée directement par Spring Security (OpenID Connect), session en base (Spring Session JDBC) et cookie `HttpOnly`, serveur sur Fly.io (Paris), base PostgreSQL chez Neon. Anti-triche de plausibilité plutôt que serveur autoritaire.
+- **Raison** : aucun mot de passe stocké, aucun service d'authentification tiers payant, données chez nous ; pas de jeton dans le navigateur, donc rien à voler par un script ; aucun serveur à administrer pour quelques euros par mois. La plausibilité bloque l'essentiel de la triche au classement sans porter toute l'économie en Java pendant qu'elle change encore.
+- **En échange** : deux fournisseurs de plus ; la limite de requêtes en mémoire suppose une seule machine ; la courbe de référence de l'anti-triche est à relever après chaque rééquilibrage. Limite de requêtes écrite à la main (une quarantaine de lignes) plutôt qu'avec Bucket4j, pour ne pas ajouter de dépendance tant qu'une seule machine tourne.
 
 ## Hébergement sur Cloudflare Pages, déployé par la CI
 

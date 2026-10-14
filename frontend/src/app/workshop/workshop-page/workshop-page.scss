@@ -211,3 +211,15 @@
   padding: 2.2cqw 3cqw;
   font-size: 3.4cqw;
 }
+
+// Raccourci vers la zone où se mine le minerai qui manque
+.farm-link {
+  justify-self: start;
+  padding: 0.8cqw 2.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#7fe8ff, #2a9bc4);
+  color: #082a36;
+  font: bold 2.8cqw / 1.2 Arial, sans-serif;
+  cursor: pointer;
+}

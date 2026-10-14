@@ -1,11 +1,20 @@
 <section class="banner" aria-label="Avancée dans la mine">
-  <h2
-    class="label"
-    tabindex="0"
-  >
-    Zone {{ progression.zone() }}
-    <span class="stage">Filon {{ progression.progress().stage }} / {{ stagesPerZone }}</span>
+  <!-- Toucher la zone ouvre la carte des zones -->
+  <h2 class="title">
+    <button type="button" class="label" aria-label="Ouvrir la carte des zones" (click)="openMap()">
+      @if (progression.farmZone(); as farm) {
+        Zone {{ farm }}
+        <span class="stage">Filons sans fin</span>
+      } @else {
+        Zone {{ progression.zone() }}
+        <span class="stage">Filon {{ progression.progress().stage }} / {{ stagesPerZone }}</span>
+      }
+      <span class="map-hint" aria-hidden="true">▾</span>
+    </button>
   </h2>
+  @if (progression.farmZone() !== null) {
+    <button type="button" class="resume" (click)="progression.stopFarm()">Reprendre la zone {{ progression.zone() }}</button>
+  }
   @if (galleries.offer() !== null) {
     <button type="button" class="gallery choose" (click)="galleries.reopenDialog()">Choisir la galerie</button>
   } @else if (galleries.current() !== 'neutral') {

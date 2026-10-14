@@ -108,9 +108,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
         void this.showForm(form);
       }
     });
-    // Nouvelle zone, nouveau décor : le fond suivant se charge pendant que le mineur continue
+    // Nouvelle zone (ou retour dans une zone passée), nouveau décor : le fond se charge pendant que le mineur continue
     effect(() => {
-      const zone = this.progression.zone();
+      const zone = this.progression.playingZone();
       if (this.background) {
         void this.showZoneBackground(zone);
         void this.rock.show(zone);
@@ -135,8 +135,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
       }
       this.background = new Sprite();
       this.app.stage.addChild(this.background, this.rock.sprite);
-      await this.showZoneBackground(this.progression.zone());
-      void this.rock.show(this.progression.zone());
+      await this.showZoneBackground(this.progression.playingZone());
+      void this.rock.show(this.progression.playingZone());
       await this.startMining(frames);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);

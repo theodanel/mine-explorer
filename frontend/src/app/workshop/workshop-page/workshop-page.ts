@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
-import { WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopMaterial } from '../../balance/workshop';
+import { tierZone, WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopMaterial } from '../../balance/workshop';
 import { SLOT_IDS, SLOTS, STATS, SlotId, TIER_LABELS } from '../../equipment/equipment.model';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Ores } from '../../ores/ores';
+import { Progression } from '../../progression/progression';
 import { Wallet } from '../../wallet/wallet';
 import { UpgradeCheck, Workshop } from '../workshop';
 
@@ -30,6 +31,7 @@ export class WorkshopPage {
   protected readonly workshop = inject(Workshop);
   private readonly wallet = inject(Wallet);
   private readonly ores = inject(Ores);
+  private readonly progression = inject(Progression);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
 
@@ -56,12 +58,26 @@ export class WorkshopPage {
         ore:
           cost === null || material === null
             ? null
-            : { icon: materialIconUrl(material), need: cost.ores[material] ?? 0, stock: this.ores.stock()[material] },
+            : {
+                icon: materialIconUrl(material),
+                need: cost.ores[material] ?? 0,
+                stock: this.ores.stock()[material],
+                // Zone où se mine ce minerai : on peut y revenir si elle est déjà terminée
+                zone: tierZone(material),
+                canFarm: tierZone(material) < this.progression.zone() && tierZone(material) !== this.progression.farmZone(),
+              },
         check,
         blocked: check === 'ok' ? null : BLOCKED_TEXT[check],
       };
     }),
   );
+
+  /** Revient miner le minerai qui manque, dans sa zone. */
+  protected farm(zone: number): void {
+    if (this.progression.startFarm(zone)) {
+      this.navigation.open('mine');
+    }
+  }
 
   protected upgrade(slot: SlotId): void {
     if (this.workshop.upgrade(slot)) {

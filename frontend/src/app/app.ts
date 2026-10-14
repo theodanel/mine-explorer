@@ -7,6 +7,7 @@ import { AdventuresPage } from './adventures/adventures-page/adventures-page';
 import { CampPage } from './camp/camp-page/camp-page';
 import { AbyssPage } from './abyss/abyss-page/abyss-page';
 import { MinecartPage } from './minecart/minecart-page/minecart-page';
+import { ZoneMap } from './progression/zone-map/zone-map';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
 import { ForgeButton } from './equipment/forge-button/forge-button';
 import { zoneMaterial } from './balance/balance';
@@ -67,6 +68,7 @@ function resourceLabel(amount: number): string {
     CampPage,
     AbyssPage,
     MinecartPage,
+    ZoneMap,
     FooterMenu,
     ItemCompare,
     ArtifactFound,
@@ -98,7 +100,7 @@ export class App {
 
   /** Minerai que donne la zone en cours, affiché en haut pour voir la récolte avancer (aucun en zone 1). */
   protected readonly zoneOre = computed(() => {
-    const tier = zoneMaterial(this.progression.zone());
+    const tier = zoneMaterial(this.progression.playingZone());
     return tier === null ? null : { tier, label: TIER_LABELS[tier], amount: this.ores.stock()[tier] };
   });
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);

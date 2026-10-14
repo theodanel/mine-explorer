@@ -111,6 +111,11 @@
         <app-abyss-page class="page-layer" />
       }
     }
+    @case ('zones') {
+      @defer (on immediate) {
+        <app-zone-map class="page-layer" />
+      }
+    }
     @case ('minecart') {
       @defer (on immediate) {
         <app-minecart-page class="page-layer" />

@@ -9,17 +9,38 @@
   font-family: Arial, sans-serif;
 }
 
+.title {
+  margin: 0;
+}
+
+// Le bandeau est un bouton : il ouvre la carte des zones
 .label {
   display: flex;
   align-items: baseline;
   gap: 2cqw;
-  margin: 0;
-  padding: 0.8cqw 4cqw;
+  padding: 0.8cqw 3cqw 0.8cqw 4cqw;
+  border: none;
   border-radius: 2cqw;
   background: rgb(0 0 0 / 50%);
   color: #f3e6d0;
-  font-size: 4.5cqw;
-  font-weight: bold;
+  font: bold 4.5cqw / 1.2 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.map-hint {
+  color: #ffd34d;
+  font-size: 3.4cqw;
+}
+
+// En zone passée : rappel pour reprendre la progression
+.resume {
+  padding: 1cqw 3cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#7fe8ff, #2a9bc4);
+  color: #082a36;
+  font: bold 3cqw / 1 Arial, sans-serif;
+  cursor: pointer;
 }
 
 .stage {

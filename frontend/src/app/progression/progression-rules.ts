@@ -91,3 +91,54 @@ export function isValidProgress(value: unknown): value is Progress {
 function isPositiveInteger(value: unknown): value is number {
   return Number.isSafeInteger(value) && (value as number) >= 1;
 }
+
+// ─── Retour dans une zone passée ───────────────────────────────────────────
+
+/**
+ * Retour dans une zone déjà terminée, pour y récolter son minerai : les filons y sont sans fin (aucun ne fait
+ * avancer), tous de la résistance du dernier filon de la zone. La progression principale attend, intacte.
+ */
+export interface Farm {
+  readonly zone: number;
+  /** PV déjà minés sur le filon en cours. */
+  readonly damage: number;
+}
+
+export function farmRockHp(zone: number): number {
+  return rockHp(zone, STAGES_PER_ZONE);
+}
+
+/** On ne revient que dans une zone déjà terminée. */
+export function canFarm(progress: Progress, zone: number): boolean {
+  return Number.isSafeInteger(zone) && zone >= 1 && zone < progress.zone;
+}
+
+export interface FarmHit {
+  readonly farm: Farm;
+  readonly rockBroken: boolean;
+  /** PV réellement minés : les dégâts en trop ne rapportent rien, d'où un or réduit dans une zone facile. */
+  readonly mined: number;
+}
+
+export function applyFarmDamage(farm: Farm, damage: number): FarmHit {
+  const hp = farmRockHp(farm.zone);
+  const mined = Math.min(damage, hp - farm.damage);
+  const total = farm.damage + damage;
+  return total < hp
+    ? { farm: { ...farm, damage: total }, rockBroken: false, mined }
+    : { farm: { ...farm, damage: 0 }, rockBroken: true, mined };
+}
+
+export function isValidFarm(value: unknown, progress: Progress): value is Farm {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const { zone, damage } = value as Record<string, unknown>;
+  return (
+    isPositiveInteger(zone) &&
+    canFarm(progress, zone) &&
+    Number.isSafeInteger(damage) &&
+    (damage as number) >= 0 &&
+    (damage as number) < farmRockHp(zone)
+  );
+}

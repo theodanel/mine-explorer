@@ -181,6 +181,16 @@ export const EVENT_IMAGES = {
 } as const;
 
 /**
+ * Visuels du Marchand nain. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
+ * le sac de pièces tient lieu de marchand et le Campement d'étal ; les traces de pas attendent leur image.
+ */
+export const MERCHANT_IMAGES = {
+  merchant: EVENT_IMAGES.coinSack,
+  stall: 'assets/backgrounds/aventure-campement.webp',
+  footprints: null as string | null,
+} as const;
+
+/**
  * Visuels de la Chasse au filon. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
  * des visuels du jeu servent de remplaçants : le coffre des événements, la pépite volante, la mine de fer.
  */

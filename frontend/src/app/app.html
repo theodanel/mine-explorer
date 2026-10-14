@@ -54,6 +54,7 @@
 
   <app-zone-banner class="zone" />
   <app-lottery-button class="lottery" />
+  <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
       <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !
@@ -114,6 +115,11 @@
     @case ('zones') {
       @defer (on immediate) {
         <app-zone-map class="page-layer" />
+      }
+    }
+    @case ('merchant') {
+      @defer (on immediate) {
+        <app-merchant-page class="page-layer" />
       }
     }
     @case ('minehunt') {

@@ -42,6 +42,9 @@ import { ZoneBanner } from './progression/zone-banner/zone-banner';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
 
+/** Durée d'affichage du message « discussion bientôt disponible ». */
+const CHAT_NOTE_MS = 2500;
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -87,6 +90,7 @@ export class App {
   protected readonly online = inject(ONLINE_CONFIG).enabled;
   /** Discussion entre joueurs pas encore ouverte : l'icône annonce seulement qu'elle arrive. */
   protected readonly chatNote = signal(false);
+  private chatNoteTimer: ReturnType<typeof setTimeout> | undefined;
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);
@@ -101,6 +105,13 @@ export class App {
 
   // Panneau du bas : les 5 emplacements, puis l'artefact et le compagnon
   protected readonly equipmentSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag', 'gloves', 'boots', 'artifact', 'companion'];
+
+  /** Le message disparaît seul après quelques secondes. */
+  protected showChatNote(): void {
+    this.chatNote.set(true);
+    clearTimeout(this.chatNoteTimer);
+    this.chatNoteTimer = setTimeout(() => this.chatNote.set(false), CHAT_NOTE_MS);
+  }
 
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page

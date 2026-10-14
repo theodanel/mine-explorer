@@ -115,25 +115,25 @@ describe('Page du Défi de la mine', () => {
 });
 
 describe('Page Atelier', () => {
-  it('reste fermée avant le Contremaître', () => {
+  it('reste fermée avant le Mineur', () => {
     save({ progress: { zone: 3, stage: 1, damage: 0 } });
     const { root } = render(WorkshopPage);
-    expect(root.textContent).toContain('Contremaître');
+    expect(root.textContent).toContain('Mineur');
     expect([...root.querySelectorAll<HTMLButtonElement>('.upgrade')].every((button) => button.disabled)).toBe(true);
   });
 
-  it('renforce un emplacement quand l\'or et le minerai suffisent', () => {
+  it('renforce la pièce portée quand l\'or et le minerai suffisent', () => {
     save({
       progress: { zone: 8, stage: 1, damage: 0 },
-      evolution: '2',
-      coins: String(workshopGoldCost(0) * 5),
-      ores: { wood: 0, stone: 0, copper: 0, iron: 0, steel: 0, gold: 0, mithril: 50, crystal: 0, magma: 0, divine: 0 },
+      evolution: '1',
+      coins: String(workshopGoldCost('steel', 0) * 5),
+      ores: { wood: 0, stone: 0, copper: 0, iron: 0, steel: 50, gold: 0, mithril: 0, crystal: 0, magma: 0, divine: 0 },
+      equipment: { equipped: { boots: { id: 'b1', slot: 'boots', tier: 'steel', level: 10, stats: { strikePower: 5 } } }, pending: null },
     });
     const { fixture, root } = render(WorkshopPage);
     click(root, '.upgrade:not([disabled])');
     fixture.detectChanges();
-    const workshop = TestBed.inject(Workshop);
-    expect(Object.values(workshop.levels()).reduce((sum, level) => sum + (level ?? 0), 0)).toBe(1);
+    expect(TestBed.inject(Workshop).levels()).toEqual({ boots: { steel: 1 } });
   });
 });
 

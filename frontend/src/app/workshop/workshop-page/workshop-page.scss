@@ -113,16 +113,14 @@
   box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 8%);
 }
 
-// Cadre de l'emplacement, comme dans les colonnes d'équipement, avec son niveau en médaille
+// Cadre de la pièce, aux couleurs de sa qualité (cadre partagé .item-frame), avec son niveau en médaille
 .frame {
   position: relative;
   display: grid;
   place-items: center;
   width: 15cqw;
   height: 15cqw;
-  border: 0.6cqw solid #1a0f07;
-  border-radius: 2.5cqw;
-  background: linear-gradient(#6e4a2c, #4a3019);
+  overflow: visible;
 
   img {
     width: 80%;
@@ -162,6 +160,11 @@
   }
 }
 
+.hint {
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
 .effect {
   color: #9dffa4;
   font-size: 3.1cqw;
@@ -192,6 +195,11 @@
   img {
     width: 4.5cqw;
     height: 4.5cqw;
+  }
+
+  small {
+    font-size: 2.4cqw;
+    opacity: 0.7;
   }
 
   &.short {

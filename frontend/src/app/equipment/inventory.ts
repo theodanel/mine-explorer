@@ -10,7 +10,7 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { computePower, computeStats, rollItem, sellPrice } from './equipment-rules';
 import { EMPTY_SAVE, EquipmentSave, parseEquipmentSave } from './equipment-save';
-import { Item } from './equipment.model';
+import { EquippedItems, Item, MiningStats } from './equipment.model';
 
 const STORAGE_KEY = 'mine-explorer.equipment';
 
@@ -68,13 +68,16 @@ export class Inventory {
   private readonly pendingIsPrevious = signal(false);
   readonly pendingWasEquipped = this.pendingIsPrevious.asReadonly();
   /** Stats de l'équipement, avec le bonus de Frappe des évolutions du mineur. */
-  readonly stats = computed(() => {
-    const stats = computeStats(this.equipped());
-    return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
-  });
+  readonly stats = computed(() => this.statsOf(this.equipped()));
   readonly power = computed(() => computePower(this.stats()));
   readonly forgeCost = FORGE_SHARD_COST;
   readonly canForge = computed(() => this.pending() === null && !this.forging() && this.shards.amount() >= FORGE_SHARD_COST);
+
+  /** Stats d'un équipement, porté ou envisagé, avec le bonus de Frappe des évolutions du mineur. */
+  statsOf(equipped: EquippedItems): MiningStats {
+    const stats = computeStats(equipped);
+    return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
+  }
 
   /** Paye la Forge en éclats et sort un objet. Refusé si un objet attend déjà ou si les éclats manquent. */
   forge(): boolean {

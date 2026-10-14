@@ -11,6 +11,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[recherche-equilibrage]] : comment Forge Master et Legend of Mushroom gèrent leur progression (minuteurs, coûts exponentiels).
 - [[ressources-game-design]] : synthèse des articles partagés (Deconstructor of Fun sur LoM, Math of Idle Games III sur le prestige, exemple de GDD) et chiffres des jeux de référence.
 - [[competences-et-artefacts]] : arbre de compétences, sorts actifs et artefacts (budget de puissance, tables, découvertes).
+- [[atelier]] : renforcement de l'équipement par qualité, niveaux 1 à 50, prix et ouverture au Mineur (14/10/2026).
 - [[idees-fun]] : ce qui rendrait le jeu plus fun et plus addictif (Atelier, événements de mine, embranchements, compagnons, son), avec l'équilibrage de chaque idée.
 - [[refonte-compagnons-evolution]] : équipements en bas, évolution par objectifs, Défi de la mine et pierres d'éveil, éclats plus faciles (13/10/2026).
 - [[puits-sans-fond]] : 3 descentes chronométrées par jour, étages de plus en plus durs, record personnel (14/10/2026).

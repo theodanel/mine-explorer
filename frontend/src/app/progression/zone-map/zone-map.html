@@ -1,0 +1,79 @@
+<section class="page game-panel" data-theme="teal" aria-labelledby="zone-map-title">
+  <header class="page-header">
+    <h2 id="zone-map-title">Carte des zones</h2>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <p class="intro">Reviens dans une zone terminée pour y miner son minerai sans fin : c'est plus facile, mais l'or est plus maigre.</p>
+
+  <div class="scroll">
+    <div class="map" [style.height]="nodes().length * stepCqw + 'cqw'">
+      <svg class="trail" [attr.viewBox]="'0 0 100 ' + nodes().length" preserveAspectRatio="none" aria-hidden="true">
+        <path [attr.d]="path()" />
+      </svg>
+
+      <ol class="nodes">
+        @for (node of nodes(); track node.zone; let index = $index) {
+          <li class="node-slot" [style.top]="index * stepCqw + 'cqw'" [style.left.%]="node.left">
+            <button
+              type="button"
+              class="node"
+              [class]="node.status"
+              [class.here]="node.here"
+              [class.selected]="selected() === node.zone"
+              [disabled]="node.status === 'future'"
+              [attr.aria-label]="node.status === 'future' ? 'Zone ' + node.zone + ', pas encore atteinte' : 'Zone ' + node.zone + ', ' + node.name"
+              (click)="select(node.zone)"
+            >
+              <span class="thumb" [style.background-image]="node.scene"></span>
+              <span class="number">{{ node.zone }}</span>
+              @if (node.status === 'future') {
+                <span class="mystery" aria-hidden="true">?</span>
+              } @else if (node.status === 'done' && !node.here) {
+                <span class="check" aria-hidden="true">✓</span>
+              }
+              @if (node.here) {
+                <img class="you" [src]="portrait()" alt="" width="160" height="160" />
+              }
+            </button>
+            <span class="caption">
+              {{ node.name }}
+              @if (node.status !== 'future' && node.material; as material) {
+                <img [src]="material.icon" alt="" width="128" height="128" />
+              }
+            </span>
+          </li>
+        }
+      </ol>
+    </div>
+  </div>
+
+  @if (detail(); as zone) {
+    <aside class="sheet" aria-live="polite">
+      <div class="sheet-head">
+        <span class="sheet-thumb" [style.background-image]="zone.scene"></span>
+        <div>
+          <h3>Zone {{ zone.zone }} · {{ zone.name }}</h3>
+          @if (zone.material; as material) {
+            <p class="ore"><img [src]="material.icon" alt="" width="128" height="128" />{{ material.label }} : {{ zone.stock }} en stock</p>
+          } @else {
+            <p class="ore">Pas de minerai : le bois ne se renforce qu'à l'or.</p>
+          }
+        </div>
+      </div>
+      @if (zone.status === 'current') {
+        @if (progression.farmZone() !== null) {
+          <button type="button" class="game-button green" (click)="resume()">Reprendre ma progression</button>
+        } @else {
+          <p class="note">Tu es ici : filon {{ progression.progress().stage }} sur 15.</p>
+        }
+      } @else if (zone.farming) {
+        <p class="note">Tu mines ici, sans fin.</p>
+        <button type="button" class="game-button green" (click)="resume()">Reprendre la zone {{ progression.zone() }}</button>
+      } @else {
+        <p class="note">Filons sans fin, faciles à casser. Moins d'or, pas d'éclats de filon, et ils ne comptent pas pour les missions.</p>
+        <button type="button" class="game-button green" (click)="farm(zone.zone)">Miner ici</button>
+      }
+    </aside>
+  }
+</section>

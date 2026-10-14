@@ -75,13 +75,18 @@ export class Mining {
   }
 
   private dealDamage(hit: HitResult, foundShard: boolean): StrikeOutcome {
-    const { zone, stage } = this.progression.progress();
+    const { zone: frontier, stage } = this.progression.progress();
+    const zone = this.progression.playingZone();
     const gallery = this.galleries.modifiers();
     // Une galerie plus dure encaisse moins de chaque coup ; l'or reste calculé sur les dégâts du coup
-    const { rockBroken, clearedZone } = this.progression.hit(scaleAmount(hit.damage, 1 / gallery.hardness, this.random));
+    const struck = this.progression.hit(scaleAmount(hit.damage, 1 / gallery.hardness, this.random));
+    const { rockBroken, clearedZone, farming } = struck;
     let ore: StrikeOutcome['ore'] = null;
     if (rockBroken) {
-      this.missionCounters.record('rocksBroken');
+      // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
+      if (!farming) {
+        this.missionCounters.record('rocksBroken');
+      }
       // Le minerai est celui de la zone où le filon a été épuisé, même si ce coup fait passer à la suivante
       const tier = zoneMaterial(zone);
       if (tier !== null) {
@@ -95,10 +100,11 @@ export class Mining {
       this.galleries.offerFor(clearedZone + 1);
       this.companions.grantZoneEggs(clearedZone);
     }
-    const baseReward = strikeReward(hit.damage, this.miner.current().stats.goldBonus, {
-      zone,
+    // En zone passée, seuls les PV vraiment minés rapportent de l'or, et un filon épuisé ne donne pas d'éclats
+    const baseReward = strikeReward(farming ? struck.mined : hit.damage, this.miner.current().stats.goldBonus, {
+      zone: farming ? zone : frontier,
       stage,
-      stageCleared: rockBroken,
+      stageCleared: rockBroken && !farming,
       zoneCleared: clearedZone !== null,
       foundShard,
     });

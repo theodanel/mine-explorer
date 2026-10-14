@@ -208,8 +208,8 @@ body {
   }
 }
 
-// Thème de couleur de chaque page : un bandeau de titre vif et un fond légèrement teinté, pour qu'on reconnaisse
-// d'un coup d'œil où l'on est (Compétences en bleu, Artefacts en violet…), comme les jeux du genre.
+// Thème de couleur de chaque page : un bandeau de titre en bois à peine teinté, souligné d'un filet de couleur,
+// pour qu'on reconnaisse où l'on est (Compétences en bleu, Artefacts en violet…) sans rompre avec le bois du panneau.
 [data-theme='sapphire'] { --theme-light: #5aa2ff; --theme-dark: #1d4a9e; }
 [data-theme='amethyst'] { --theme-light: #b77cff; --theme-dark: #5326a0; }
 [data-theme='emerald'] { --theme-light: #4fd47a; --theme-dark: #17703a; }
@@ -219,7 +219,7 @@ body {
 
 .game-panel[data-theme] {
   background:
-    linear-gradient(color-mix(in srgb, var(--theme-dark) 35%, transparent), transparent 35%),
+    linear-gradient(color-mix(in srgb, var(--theme-dark) 15%, transparent), transparent 30%),
     linear-gradient(#3b2716, #24170d);
 
   > .page-header {
@@ -228,12 +228,13 @@ body {
     border-bottom: 0.7cqw solid #1a0f07;
     border-radius: 3.4cqw 3.4cqw 0 0;
     background:
-      linear-gradient(rgb(255 255 255 / 30%), transparent 55%),
-      linear-gradient(var(--theme-light), var(--theme-dark));
-    box-shadow: inset 0 -0.6cqw 0 rgb(0 0 0 / 25%);
+      linear-gradient(rgb(255 255 255 / 12%), transparent 55%),
+      linear-gradient(color-mix(in srgb, var(--theme-light) 12%, #8a5a30), color-mix(in srgb, var(--theme-dark) 12%, #573517));
+    // Filet de couleur sous le titre : le seul rappel franc du thème
+    box-shadow: inset 0 -0.8cqw 0 color-mix(in srgb, var(--theme-light) 75%, #4a3019);
 
     h2 {
-      color: #fff;
+      color: #fff3d6;
       text-shadow:
         0.35cqw 0.35cqw 0 #1a0f07,
         -0.35cqw 0.35cqw 0 #1a0f07,

@@ -1,0 +1,130 @@
+// La fenêtre couvre tout le cadre de jeu (container-type en fait le bloc conteneur du fixed)
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: 4cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  display: grid;
+  gap: 3cqw;
+  width: 100%;
+  padding: 4cqw 4.5cqw 5cqw;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 5.6cqw;
+  }
+}
+
+.close {
+  width: 8cqw;
+  height: 8cqw;
+  border: 0.6cqw solid #2a1a0d;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
+  box-shadow: 0 0.6cqw 0 #5a170b;
+  color: #fff;
+  font: bold 5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.intro {
+  margin: 0;
+  font-size: 3.3cqw;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.lots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lot {
+  display: grid;
+  justify-items: center;
+  gap: 0.8cqw;
+  padding: 2cqw 1cqw 1.5cqw;
+  transition: transform 0.08s;
+
+  // La lumière qui tourne : la case passe devant et s'illumine
+  &.lit {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 0 0.8cqw #fff3b0,
+      0 0 5cqw 1cqw rgb(255 211 77 / 80%);
+  }
+
+  &.won {
+    z-index: 1;
+  }
+}
+
+.icon {
+  width: 14cqw;
+  height: 14cqw;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0.6cqw 0.5cqw rgb(0 0 0 / 50%));
+  }
+}
+
+.label {
+  color: #fff;
+  font-size: 3.2cqw;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 0.4cqw 0 #1a0f07;
+}
+
+.chance {
+  padding: 0.4cqw 1.8cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  color: #f3e6d0;
+  font: bold 2.8cqw / 1.2 Arial, sans-serif;
+}
+
+.result {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+  min-height: 9cqw;
+  margin: 0;
+  font-size: 4cqw;
+  text-align: center;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.hint {
+  font-size: 3cqw;
+  opacity: 0.8;
+}
+
+.draw {
+  justify-self: center;
+  min-width: 50cqw;
+  padding: 3cqw 6cqw;
+  font-size: 5cqw;
+}

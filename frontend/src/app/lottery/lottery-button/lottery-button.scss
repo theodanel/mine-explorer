@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+// Même style que les raccourcis du jeu en ligne, à gauche : sans fond, seule une ombre détache l'icône du décor
+.lottery-link {
+  position: relative;
+  width: 11cqw;
+  height: 11cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0.6cqw 0.6cqw rgb(0 0 0 / 60%)) grayscale(0.5) brightness(0.8);
+  }
+
+  &.ready img {
+    filter: drop-shadow(0 0.6cqw 0.6cqw rgb(0 0 0 / 60%));
+  }
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+    border-radius: 50%;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -1cqw;
+  right: -1cqw;
+  min-width: 4.6cqw;
+  padding: 0.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #e0402a;
+  color: #fff;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
+}

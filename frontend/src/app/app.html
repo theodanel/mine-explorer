@@ -53,6 +53,7 @@
   </header>
 
   <app-zone-banner class="zone" />
+  <app-lottery-button class="lottery" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
       <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !

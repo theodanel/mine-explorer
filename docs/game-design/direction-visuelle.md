@@ -13,7 +13,7 @@ Retour à [[Accueil]]. Écrite le 14/10/2026, quand Théo a donné carte blanche
 ## Règles du jeu
 
 1. **Le bois et la pierre restent le cadre** : panneaux bruns cerclés de sombre, comme une mine. La couleur vient par-dessus : bandeaux, cadres de qualité, chiffres.
-2. **Une couleur par écran**, dans le bandeau de titre (`data-theme`) : Compétences en saphir, Artefacts en améthyste, Compagnons en émeraude, Atelier et Campement en braise, Profil et Aventures en turquoise, Évolution et Stats en or.
+2. **Une couleur par écran**, en touche discrète : le bandeau de titre reste en bois, à peine teinté, souligné d'un filet de la couleur (`data-theme`). Le 14/10/2026, Théo trouvait les bandeaux pleins trop vifs à côté du bois. Couleurs : Compétences en saphir, Artefacts en améthyste, Compagnons en émeraude, Atelier et Campement en braise, Profil et Aventures en turquoise, Évolution et Stats en or.
 3. **Une couleur par stat**, partout où elle apparaît : Frappe en rouge, Vitesse en bleu ciel, Critique en jaune, Dégâts crit. en orange, or en doré, Dégâts/s en violet.
 4. **Une couleur par qualité d'objet** (`.item-frame`), de gris à irisé, avec un reflet qui passe en boucle à partir du violet.
 5. **Les chiffres qui comptent sont gros et brillent** : Puissance, niveau de pioche, étage du Puits. Texte blanc ou doré cerné de sombre, sans nouvelle police.
@@ -22,7 +22,7 @@ Retour à [[Accueil]]. Écrite le 14/10/2026, quand Théo a donné carte blanche
 ## Fait
 
 - Forge : enclume au centre, cadres de qualité, micro-animations (PR #32).
-- Bandeaux de couleur sur toutes les pages, fenêtre des stats avec la Puissance en vedette et des stats en couleurs, compteurs du haut abrégés (« 45 M ») (PR #33).
+- Bandeaux de couleur sur toutes les pages, fenêtre des stats avec la Puissance en vedette et des stats en couleurs, compteurs du haut abrégés (« 45 M ») (PR #33). Bandeaux adoucis ensuite : bois teinté et filet de couleur.
 - Artefacts et compagnons encadrés aux couleurs de leur rareté (commun gris, rare bleu, épique violet, légendaire orange), boutons verts qui brillent quand l'action est possible, critiques dorés qui jaillissent dans la mine (PR #34).
 - Récompenses : rayons de lumière qui tournent derrière le coffre du Puits (plus vifs sur un record), l'artefact trouvé, le compagnon éclos et la forme visée quand la promotion est prête. Les pièces et les éclats gagnés (missions, coffre du jour, paliers d'évolution, Défi, expéditions, rapport d'absence) s'envolent du bouton jusqu'au compteur du haut, qui sursaute à leur arrivée.
 

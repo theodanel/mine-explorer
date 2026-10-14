@@ -94,6 +94,18 @@ export class Inventory {
     return true;
   }
 
+  /** Un objet gagné ailleurs qu'à la forge (Forge express) : il attend comme un objet forgé. Refusé si un objet attend déjà. */
+  receive(item: Item): boolean {
+    if (this.pending() !== null) {
+      return false;
+    }
+    this.save({ ...this.state(), pending: item });
+    this.reviewClosed.set(false);
+    this.pendingIsPrevious.set(false);
+    this.lastForgedState.set({ key: ++this.forgedCount, item });
+    return true;
+  }
+
   private startForgingAnimation(): void {
     if (this.animationMs <= 0) {
       return;

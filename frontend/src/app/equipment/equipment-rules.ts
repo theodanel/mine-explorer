@@ -47,10 +47,11 @@ export interface StatComparison {
  * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon : n'importe quel
  * emplacement peut porter n'importe quelle stat. Un affixe de Frappe s'ajoute à la Frappe de base.
  */
-export function rollItem(random: Random, createId: () => string, pickaxeLevel: number): Item {
+export function rollItem(random: Random, createId: () => string, pickaxeLevel: number, forcedTier?: TierId): Item {
   const slot = pickOne(SLOT_IDS, random);
   const chances = tierChances(pickaxeLevel);
-  const tier = pickWeighted(TIER_IDS, (t) => chances[t], random);
+  // Qualité imposée : la Forge express récompense une bonne partie par une meilleure qualité
+  const tier = forcedTier ?? pickWeighted(TIER_IDS, (t) => chances[t], random);
   const level = pickaxeLevel;
 
   const stats: Partial<MiningStats> = { strikePower: rollStat('strikePower', tier, level, ITEM_BASE_STRIKE_SHARE, random) };

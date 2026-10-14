@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 
 import { ARTIFACT_FIND_CHANCE } from '../balance/artifacts';
-import { ORE_PER_ROCK, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
+import { ORE_FIND_CHANCE, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
 import { SpellId } from '../balance/skill-tree';
 import { Artifacts } from '../artifacts/artifacts';
 import { Companions } from '../companions/companions';
@@ -60,39 +60,40 @@ export class Mining {
     const profile = this.miner.current();
     const hit = resolveHit(profile.stats, this.random);
     const foundShard = this.random() < profile.shardChance * this.galleries.modifiers().shards;
+    const foundOre = this.random() < ORE_FIND_CHANCE * this.galleries.modifiers().ores;
     if (this.random() < ARTIFACT_FIND_CHANCE) {
       this.artifacts.discover();
     }
-    return this.dealDamage(hit, foundShard);
+    return this.dealDamage(hit, foundShard, foundOre);
   }
 
   /** Explosion d'un sort : un multiple de la Frappe permanente, sans critique ni trouvaille au hasard. */
   blast(spell: SpellId, strikeMultiplier: number): StrikeOutcome {
     const damage = Math.round(this.miner.permanent().stats.strikePower * strikeMultiplier * this.galleries.modifiers().blast);
-    const outcome = this.dealDamage({ damage, critical: false }, false);
+    const outcome = this.dealDamage({ damage, critical: false }, false, false);
     this.lastBlast.set({ id: ++this.blastCount, spell, outcome });
     return outcome;
   }
 
-  private dealDamage(hit: HitResult, foundShard: boolean): StrikeOutcome {
+  private dealDamage(hit: HitResult, foundShard: boolean, foundOre: boolean): StrikeOutcome {
     const { zone: frontier, stage } = this.progression.progress();
     const zone = this.progression.playingZone();
     const gallery = this.galleries.modifiers();
     // Une galerie plus dure encaisse moins de chaque coup ; l'or reste calculé sur les dégâts du coup
     const struck = this.progression.hit(scaleAmount(hit.damage, 1 / gallery.hardness, this.random));
     const { rockBroken, clearedZone, farming } = struck;
+    // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
+    if (rockBroken && !farming) {
+      this.missionCounters.record('rocksBroken');
+    }
+    // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
+    // parfois un au coup de pioche, plus le lot de fin de zone
     let ore: StrikeOutcome['ore'] = null;
-    if (rockBroken) {
-      // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
-      if (!farming) {
-        this.missionCounters.record('rocksBroken');
-      }
-      // Le minerai est celui de la zone où le filon a été épuisé, même si ce coup fait passer à la suivante
-      const tier = zoneMaterial(zone);
-      if (tier !== null) {
-        ore = { tier, amount: scaleAmount(ORE_PER_ROCK + (clearedZone !== null ? ZONE_CLEAR_ORES : 0), gallery.ores, this.random) };
-        this.ores.add(ore.tier, ore.amount);
-      }
+    const tier = zoneMaterial(zone);
+    const amount = (foundOre ? 1 : 0) + (clearedZone !== null ? scaleAmount(ZONE_CLEAR_ORES, gallery.ores, this.random) : 0);
+    if (tier !== null && amount > 0) {
+      ore = { tier, amount };
+      this.ores.add(tier, amount);
     }
     if (clearedZone !== null) {
       // Chaque zone terminée livre un artefact : la découverte récompense le cap franchi

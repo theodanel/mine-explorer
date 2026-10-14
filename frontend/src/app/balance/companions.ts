@@ -130,6 +130,7 @@ export const EXPEDITION_HOURS: readonly number[] = [1, 4, 8];
  * Deux compagnons au plus partent en même temps : sinon toute la collection rapportait plus que l'absence.
  */
 export const EXPEDITION_SLOTS = 2;
-export const EXPEDITION_SHARDS_PER_HOUR = 1;
-export const EXPEDITION_STONES_PER_HOUR = 0.25;
+/** Butin par heure d'expédition (3 éclats et 0,5 pierre depuis le 14/10/2026, 1 et 0,25 avant : trop maigre). */
+export const EXPEDITION_SHARDS_PER_HOUR = 3;
+export const EXPEDITION_STONES_PER_HOUR = 0.5;
 export const EXPEDITION_RARITY_BONUS: Readonly<Record<Rarity, number>> = { common: 1, rare: 1.25, epic: 1.5, legendary: 2 };

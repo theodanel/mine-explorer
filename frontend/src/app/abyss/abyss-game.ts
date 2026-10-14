@@ -17,6 +17,7 @@ import {
   TRAP_PENALTY_MS,
   WEAK_POINT_MOVE_MS,
   WEAK_POINT_MULTIPLIER,
+  FLOOR_SHARDS,
 } from '../balance/abyss';
 import type { SpellDef } from '../balance/skill-tree';
 import type { Random } from '../shared/random';
@@ -209,7 +210,7 @@ function damage(game: Game, amount: number, critical: boolean, weak: boolean, fi
 }
 
 function clearFloor(game: Game, fighter: Fighter, random: Random): Game {
-  const shards = game.elapsedMs < game.buffs.bonusShardUntilMs ? 2 : 1;
+  const shards = game.elapsedMs < game.buffs.bonusShardUntilMs ? FLOOR_SHARDS * 2 : FLOOR_SHARDS;
   return {
     ...game,
     floorsCleared: game.floorsCleared + 1,

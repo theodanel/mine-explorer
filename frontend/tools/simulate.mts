@@ -19,7 +19,7 @@ import {
   FORGE_SHARD_COST,
   MAX_PICKAXE_LEVEL,
   offlineGains,
-  ORE_PER_ROCK,
+  ORE_FIND_CHANCE,
   SEGMENTS_PER_LEVEL,
   segmentCost,
   shardsForStage,
@@ -664,7 +664,7 @@ function dealDamage(now: number, damage: number): void {
     shards += stageShards;
     shardSources.filons += stageShards;
     const tier = zoneMaterial(zone);
-    if (tier !== null) ores[tier] += scaleAmount(ORE_PER_ROCK + (result.clearedZone !== null ? ZONE_CLEAR_ORES : 0), mods.ores, galleryRandom);
+    if (tier !== null && result.clearedZone !== null) ores[tier] += scaleAmount(ZONE_CLEAR_ORES, mods.ores, galleryRandom);
     if (result.clearedZone !== null) {
       shards += ZONE_CLEAR_SHARDS;
       shardSources.zones += ZONE_CLEAR_SHARDS;
@@ -711,6 +711,9 @@ function strike(now: number, interval: number): void {
     shardSources.coups++;
   }
   if (withNewSystems && random() < ARTIFACT_FIND_CHANCE) findArtifact(now);
+  // Minerai déterré au coup de pioche, dans la zone frappée
+  const oreTier = zoneMaterial(progress.zone);
+  if (oreTier !== null && random() < ORE_FIND_CHANCE * GALLERIES[gallery].modifiers.ores) ores[oreTier]++;
   dealDamage(now, hit.damage);
 }
 

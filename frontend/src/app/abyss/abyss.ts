@@ -15,6 +15,7 @@ import { Skills } from '../skills/skills';
 import { GeodeShards } from '../wallet/geode-shards';
 import { cast, Fighter, Game, isOver, startGame, tap, tick } from './abyss-game';
 import { AbyssState, EMPTY_ABYSS, isValidAbyssState, runReward, RunReward, runsLeft } from './abyss-rules';
+import { MissionCounters } from '../missions/mission-counters';
 
 const STORAGE_KEY = 'mine-explorer.abyss';
 /** Pas de la boucle de jeu : assez fin pour la mèche et le combo, sans charger le téléphone. */
@@ -41,6 +42,7 @@ export interface AbyssSpell {
 export class Abyss {
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
   private readonly miner = inject(Miner);
   private readonly progression = inject(Progression);
@@ -90,6 +92,7 @@ export class Abyss {
     const current = this.state();
     // L'essai compte dès le départ : quitter en pleine descente ne le rend pas
     this.save({ ...current, day: today, runsUsed: current.day === today ? current.runsUsed + 1 : 1 });
+    this.missionCounters.record('adventureRuns');
     const { stats } = this.miner.permanent();
     this.fighter = {
       strike: stats.strikePower,

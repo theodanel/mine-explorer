@@ -16,7 +16,7 @@ La première version (un chrono qui défilait seul, étages calés sur les filon
 - **Cristal de temps** : il tombe toutes les 6 à 10 s et reste 2,5 s ; l'attraper donne +2 s.
 - **Sorts** équipés, une fois chacun par descente : Dynamite et Coup de grisou frappent fort, Frénésie double les dégâts, Œil du géologue rend tout critique, Filon doré et Écho de géode donnent un éclat de plus par étage pendant leur durée.
 - **PV des étages** : l'étage 1 vaut 2 s d'une Puissance de référence, puis +15 % par étage. La référence est la moyenne géométrique de la Puissance attendue dans la zone du joueur et de sa Puissance réelle : un joueur en retard sur sa zone descend quand même, un build en avance descend plus bas sans écraser les autres.
-- **Récompenses** : 1 éclat par étage cassé ; chaque palier de 5 étages battu pour la première fois donne 20 éclats et 2 pierres d'éveil.
+- **Récompenses** : 2 éclats par étage cassé (4 sous bonus) ; chaque palier de 5 étages battu pour la première fois donne 30 éclats et 2 pierres d'éveil. Relevé le 14/10/2026 (1 éclat et 20 avant), Théo trouvait le Puits trop pauvre.
 
 ## Réglage
 

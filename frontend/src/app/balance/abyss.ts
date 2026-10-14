@@ -73,8 +73,11 @@ export const CRYSTAL_BONUS_MS = 2000;
 
 /**
  * Record personnel : chaque palier de 5 étages atteint pour la première fois donne une fois pour toutes
- * 20 éclats et 2 pierres d'éveil. Chaque étage franchi rapporte 1 éclat (2 sous Filon doré ou Écho de géode).
+ * 30 éclats et 2 pierres d'éveil.
  */
 export const RECORD_STEP = 5;
-export const RECORD_SHARDS = 20;
+export const RECORD_SHARDS = 30;
+
+/** Éclats par étage franchi : 2, ou 4 sous Filon doré ou Écho de géode (1 et 2 avant le 14/10/2026). */
+export const FLOOR_SHARDS = 2;
 export const RECORD_STONES = 2;

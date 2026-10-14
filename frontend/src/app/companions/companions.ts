@@ -26,6 +26,7 @@ import {
   sendOnExpedition,
   setActive,
 } from './companion-rules';
+import { MissionCounters } from '../missions/mission-counters';
 
 const STORAGE_KEY = 'mine-explorer.companions';
 /** Dernière zone terminée dont l'œuf a été donné. Absente des sauvegardes d'avant les œufs de zone. */
@@ -44,6 +45,7 @@ export class Companions {
   private readonly shards = inject(GeodeShards);
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<CompanionState>(loadState());
   private readonly nowState = signal(this.clock());
   private readonly lastHatching = signal<Hatching | null>(null);
@@ -157,6 +159,7 @@ export class Companions {
 
   send(id: CompanionId, hours: number): void {
     this.save(sendOnExpedition(this.state(), id, hours, this.clock()));
+    this.missionCounters.record('expeditionsSent');
   }
 
   collect(id: CompanionId): ExpeditionLoot | null {

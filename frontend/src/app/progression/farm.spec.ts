@@ -49,7 +49,7 @@ describe('retour dans une zone passée (en jeu)', () => {
       equipped: { pickaxe: { id: 'p', slot: 'pickaxe', tier: 'divine', level: 30, stats: { strikePower: 1e9 } } },
       pending: null,
     }));
-    TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
+    TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.01 }] });
   }
 
   afterEach(() => TestBed.resetTestingModule());

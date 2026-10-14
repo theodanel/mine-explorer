@@ -13,6 +13,7 @@ import { RANDOM } from '../shared/random';
 import { Wallet } from '../wallet/wallet';
 import { chooseFork, ForkChoice, isOver, Ride, startRide, steer, tick } from './minecart-game';
 import { EMPTY_MINECART, isValidMinecartState, MinecartState, rideReward, RideReward, runsLeft } from './minecart-rules';
+import { MissionCounters } from '../missions/mission-counters';
 
 const STORAGE_KEY = 'mine-explorer.minecart';
 /** Pas de la boucle de jeu : une image sur deux à 60 i/s ne suffisait pas, le tunnel défile à chaque image. */
@@ -43,6 +44,7 @@ interface Rider {
 export class Minecart {
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
   private readonly miner = inject(Miner);
   private readonly progression = inject(Progression);
@@ -84,6 +86,7 @@ export class Minecart {
     const current = this.state();
     // La course compte dès le départ : quitter en route ne la rend pas
     this.save({ ...current, day: today, runsUsed: current.day === today ? current.runsUsed + 1 : 1 });
+    this.missionCounters.record('adventureRuns');
     const { zone, stage } = this.progression.progress();
     this.rider = { nuggetGold: nuggetGold(zone, stage, this.miner.permanent().stats.goldBonus), zone, stage };
     this.lastResult.set(null);

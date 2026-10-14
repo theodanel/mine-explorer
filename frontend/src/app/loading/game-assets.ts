@@ -180,15 +180,16 @@ export const EVENT_IMAGES = {
   ratStrip: 'assets/events/rat-thief.webp',
 } as const;
 
-/** Visuels du Wagonnet fou (Gemini, préparés par art-source/aventures/preparer-wagonnet.py). */
-export const MINECART_IMAGES = {
-  card: 'assets/ui/aventures/wagonnet-carte.webp',
-  background: 'assets/backgrounds/aventure-wagonnet.webp',
-  cart: 'assets/ui/aventures/wagonnet.webp',
-  bat: 'assets/ui/aventures/chauve-souris.webp',
-  rockfall: 'assets/ui/aventures/eboulement.webp',
-  brokenRail: 'assets/ui/aventures/rail-casse.webp',
+/**
+ * Visuels de la Chasse au filon. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
+ * des visuels du jeu servent de remplaçants : le coffre des événements, la pépite volante, la mine de fer.
+ */
+export const MINEHUNT_IMAGES = {
+  card: EVENT_IMAGES.chestClosed,
+  background: 'assets/backgrounds/zone4.webp',
+  chest: EVENT_IMAGES.chestOpen,
   nugget: 'assets/ui/refonte/coin-small.webp',
+  pickaxe: 'assets/ui/pickaxe.png',
 } as const;
 
 /** Vignette de chaque galerie des embranchements (planche 7). */

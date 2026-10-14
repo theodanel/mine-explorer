@@ -19,7 +19,8 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[zones-11-20]] : décors et rochers des zones 11 à 20 (prompts Gemini), rythme simulé au-delà de la zone 10 (14/10/2026).
 - [[loterie-du-jour]] : un tirage gratuit par jour, six lots (or, éclats, pierres d'éveil, œufs) qui changent à minuit (14/10/2026).
 - [[aventures-prompts]] : prompts Gemini des quatre nouvelles aventures (Chasse au filon, Marchand nain, Forge express, Expédition aux flambeaux), 14/10/2026.
-- [[wagonnet-fou]] : dès le Contremaître, 3 courses de wagonnet par jour sur 3 voies, aiguillages sûrs ou risqués, or et minerai pour l'Atelier (14/10/2026).
+- [[chasse-au-filon]] : démineur de mine dès le Contremaître, 3 parties par jour, or et minerai pour l'Atelier (14/10/2026).
+- [[wagonnet-fou]] (retiré) : dès le Contremaître, 3 courses de wagonnet par jour sur 3 voies, aiguillages sûrs ou risqués, or et minerai pour l'Atelier (14/10/2026).
 - [[campement]] : Taverne, Entrepôt et Puits, à faire grandir lentement dans l'onglet Aventures (14/10/2026).
 - [[direction-visuelle]] : ce qui plaît dans le genre, couleurs par écran, par stat et par qualité, prochaines étapes (14/10/2026).
 - [[builds-libres]] : toutes les stats sur toutes les pièces, affixes selon la qualité, réglage des builds (13/10/2026).

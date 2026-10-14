@@ -1,0 +1,109 @@
+<section class="page game-panel" data-theme="ember" [style.background-image]="scene" aria-labelledby="minehunt-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
+    <h2 id="minehunt-title">Chasse au filon</h2>
+    <span class="chip">{{ minehunt.runsLeft() }} / {{ minehunt.dailyRuns }}</span>
+  </header>
+
+  @if (hunt(); as hunt) {
+    <!-- En partie -->
+    <div class="hud">
+      <span class="durability" [attr.aria-label]="'Pioche : ' + hunt.durability + ' sur ' + hunt.maxDurability">
+        @for (left of durability(); track $index) {
+          <img [class.broken]="!left" [src]="images.pickaxe" alt="" width="128" height="128" />
+        }
+      </span>
+      <span class="loot">
+        @if (ore(); as ore) {
+          <img [src]="ore.icon" alt="" width="128" height="128" />{{ hunt.ores }}
+        }
+        <img [src]="images.nugget" alt="" width="96" height="96" />{{ hunt.nuggets }}
+        @if (hunt.chest) {
+          <img class="chest-found" [src]="images.chest" alt="Coffre trouvé" width="128" height="128" />
+        }
+      </span>
+    </div>
+
+    <div class="wall" [class.shake]="shake()" [style.--columns]="columns" role="grid" aria-label="Paroi à creuser">
+      @for (cell of cells(); track cell.index) {
+        <button
+          type="button"
+          class="cell"
+          [class.dug]="cell.dug"
+          [class]="cell.dug ? cell.content : ''"
+          [style.animation-delay.ms]="cell.delay"
+          [disabled]="cell.dug || over()"
+          [attr.aria-label]="cell.dug ? (cell.hint ? cell.hint + ' grisou autour' : cell.content) : 'Creuser'"
+          (click)="dig(cell.index)"
+        >
+          @if (cell.dug) {
+            @switch (cell.content) {
+              @case ('ore') {
+                @if (ore(); as ore) {
+                  <img class="loot-icon" [src]="ore.icon" alt="" width="128" height="128" />
+                }
+              }
+              @case ('nugget') {
+                <img class="loot-icon nugget" [src]="images.nugget" alt="" width="96" height="96" />
+              }
+              @case ('chest') {
+                <img class="loot-icon chest" [src]="images.chest" alt="" width="128" height="128" />
+              }
+              @case ('gas') {
+                <span class="gas-cloud" aria-hidden="true"></span>
+              }
+              @default {
+                @if (cell.hint; as hint) {
+                  <span class="hint" [style.color]="cell.hintColor">{{ hint }}</span>
+                }
+              }
+            }
+          }
+        </button>
+      }
+    </div>
+
+    @if (minehunt.lastResult(); as result) {
+      <div class="result" role="status">
+        <span class="rays" [class.record]="result.chest"><img class="result-icon" [src]="result.chest ? images.chest : images.card" alt="" width="128" height="128" /></span>
+        <h3>{{ result.status === 'broken' ? 'Pioche cassée !' : result.status === 'cleared' ? 'Paroi vidée !' : 'Bien remonté !' }}</h3>
+        <p class="loot-line">
+          +{{ compact(result.gold) }} or
+          @if (result.ores > 0 && ore(); as ore) {
+            · +{{ result.ores }} {{ ore.label }}
+          }
+        </p>
+        @if (result.status === 'broken') {
+          <p class="note">Le grisou a eu ta pioche : tu ne remontes qu'avec la moitié du butin.</p>
+        }
+        <div class="actions">
+          <button type="button" class="game-button" (click)="leave()">Terminer</button>
+          @if (minehunt.runsLeft() > 0) {
+            <button type="button" class="game-button green" (click)="replay()">Rejouer</button>
+          }
+        </div>
+      </div>
+    } @else {
+      <button type="button" class="game-button green stop" (click)="stop()">Remonter avec le butin</button>
+    }
+  } @else {
+    <!-- Accueil -->
+    <div class="lobby">
+      <img class="hero" [src]="images.card" alt="" width="128" height="128" />
+      <ul class="rules">
+        <li><strong>Touche une case</strong> pour la creuser : minerai, pépite, un coffre… ou du grisou.</li>
+        <li>Une case vide indique <strong>combien de grisous</strong> l'entourent : déduis où creuser.</li>
+        <li>Ta pioche encaisse <strong>{{ minehunt.durability() }} coups de grisou</strong> (ta Puissance) ; ta Chance ouvre {{ minehunt.reveals() }} case{{ minehunt.reveals() > 1 ? 's' : '' }} au départ.</li>
+        <li><strong>Remonte quand tu veux</strong> avec tout le butin. Pioche cassée : la moitié seulement.</li>
+      </ul>
+      @if (minehunt.unlocked()) {
+        <button type="button" class="game-button green go" [disabled]="minehunt.runsLeft() === 0" (click)="start()">
+          {{ minehunt.runsLeft() === 0 ? 'Reviens demain' : 'Descendre' }}
+        </button>
+        <p class="runs">Parties du jour : {{ minehunt.runsLeft() }} / {{ minehunt.dailyRuns }}</p>
+      } @else {
+        <p class="runs">La Chasse s'ouvre quand ton mineur devient <strong>{{ minehunt.unlockLabel }}</strong>.</p>
+      }
+    </div>
+  }
+</section>

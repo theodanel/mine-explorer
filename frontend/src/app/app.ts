@@ -6,7 +6,7 @@ import { WorkshopPage } from './workshop/workshop-page/workshop-page';
 import { AdventuresPage } from './adventures/adventures-page/adventures-page';
 import { CampPage } from './camp/camp-page/camp-page';
 import { AbyssPage } from './abyss/abyss-page/abyss-page';
-import { MinecartPage } from './minecart/minecart-page/minecart-page';
+import { MinehuntPage } from './minehunt/minehunt-page/minehunt-page';
 import { ZoneMap } from './progression/zone-map/zone-map';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
 import { ForgeButton } from './equipment/forge-button/forge-button';
@@ -67,7 +67,7 @@ function resourceLabel(amount: number): string {
     AdventuresPage,
     CampPage,
     AbyssPage,
-    MinecartPage,
+    MinehuntPage,
     ZoneMap,
     FooterMenu,
     ItemCompare,

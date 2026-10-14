@@ -3,6 +3,7 @@
 - rayons.png (fond vert) : le vert est retiré par « démélange » (le halo est semi-transparent, un simple seuil
   laisserait une auréole verte), puis l'image est exportée en WebP 512 px.
 - pieces.png (déjà détouré) : la pièce d'or à gauche, l'éclat à droite, recadrés sur leur contenu, en WebP 96 px.
+- loterie.png (déjà détouré) : l'icône de la loterie du jour, recadrée, en WebP 160 px.
 
 Usage, depuis la racine du dépôt : python art-source/ui/decouper-ui.py
 """
@@ -16,6 +17,7 @@ SOURCE = Path(__file__).parent
 OUTPUT = SOURCE.parent.parent / "frontend" / "public" / "assets" / "ui" / "refonte"
 RAYS_SIZE = 512
 ICON_SIZE = 96
+LOTTERY_SIZE = 160
 WEBP_QUALITY = 90
 # Mesure du vert : g - max(r, b). Au-delà de FULL c'est le fond, en dessous de OPAQUE c'est le rayon pur.
 GREEN_FULL = 150.0
@@ -60,6 +62,9 @@ def main() -> None:
     half = pieces.width // 2
     for name, box in (("coin-small", (0, 0, half, pieces.height)), ("shard-small", (half, 0, pieces.width, pieces.height))):
         square(crop_to_content(pieces.crop(box)), ICON_SIZE).save(OUTPUT / f"{name}.webp", quality=WEBP_QUALITY)
+
+    lottery = crop_to_content(Image.open(SOURCE / "loterie.png").convert("RGBA"))
+    square(lottery, LOTTERY_SIZE).save(OUTPUT / "lottery.webp", quality=WEBP_QUALITY)
 
 
 if __name__ == "__main__":

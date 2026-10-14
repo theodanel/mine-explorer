@@ -126,7 +126,6 @@ export function materialIconUrl(tier: TierId): string {
 }
 
 export const MENU_ICONS = {
-  mine: 'assets/ui/menu/mine.png',
   skills: 'assets/ui/menu/skills.png',
   artifacts: 'assets/ui/menu/artifacts.png',
   companions: 'assets/ui/menu/companions.png',
@@ -190,8 +189,8 @@ export const COMPANION_ANIMATIONS: Readonly<Partial<Record<CompanionId, { readon
   dragonling: { url: 'assets/companions/dragonling-idle.webp', frames: 33, frameWidth: 199, frameHeight: 200 },
 };
 
-/** Icône de la loterie du jour, près du bandeau de zone. Le coffre fermé en attendant son icône dédiée. */
-export const LOTTERY_ICON = EVENT_IMAGES.chestClosed;
+/** Icône de la loterie du jour (roue de la fortune), près du bandeau de zone. */
+export const LOTTERY_ICON = 'assets/ui/refonte/lottery.webp';
 
 /** Icônes de la refonte (planche 10) : pierre d'éveil, trophée du Défi, parchemin des stats, et la bannière du Défi. */
 export const REFONTE_IMAGES = {

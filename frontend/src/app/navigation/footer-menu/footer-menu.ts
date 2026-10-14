@@ -23,7 +23,13 @@ interface Tab {
   readonly tooltip: string | null;
 }
 
-/** Barre de menus tout en bas du jeu, avec une icône peinte par menu. */
+/** Pages ouvertes depuis une autre page du menu : leur onglet reste allumé (le Campement est dans les Aventures). */
+const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = { camp: 'adventures', abyss: 'adventures', challenge: 'companions' };
+
+/**
+ * Barre de menus tout en bas du jeu, avec une icône peinte par menu. Pas d'onglet « Mine » : on revient à la mine
+ * en touchant l'onglet allumé, ou avec la croix de la page.
+ */
 @Component({
   selector: 'app-footer-menu',
   imports: [Tooltip],
@@ -40,7 +46,6 @@ export class FooterMenu {
   private readonly camp = inject(Camp);
 
   protected readonly tabs = computed<readonly Tab[]>(() => [
-    { label: 'Mine', icon: MENU_ICONS.mine, page: 'mine', locked: null, badge: 0, tooltip: null },
     {
       label: 'Compétences',
       icon: MENU_ICONS.skills,
@@ -88,9 +93,17 @@ export class FooterMenu {
     },
   ]);
 
+  /** Onglet allumé : celui de la page ouverte, ou de la page dont elle dépend. */
+  protected readonly currentTab = computed(() => {
+    const page = this.navigation.page();
+    return PARENT_TAB[page] ?? page;
+  });
+
   protected open(tab: Tab): void {
-    if (tab.locked === null) {
-      this.navigation.open(tab.page);
+    if (tab.locked !== null) {
+      return;
     }
+    // Toucher l'onglet déjà allumé ramène à la mine
+    this.navigation.open(this.currentTab() === tab.page ? 'mine' : tab.page);
   }
 }

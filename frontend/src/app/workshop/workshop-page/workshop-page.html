@@ -5,7 +5,10 @@
   </header>
 
   @if (workshop.unlocked()) {
-    <p class="intro">Chaque niveau renforce l'emplacement, pas l'objet : le bonus reste quand tu changes d'équipement.</p>
+    <p class="intro">
+      Chaque qualité a ses propres niveaux, jusqu'à {{ maxLevel }} : renforcer ton casque d'acier renforce tous tes casques
+      d'acier, mais un casque de mithril repart de ses niveaux à lui.
+    </p>
   } @else {
     <p class="intro locked-note">L'Atelier s'ouvre quand ton mineur devient <strong>{{ workshop.unlockLabel }}</strong>.</p>
   }
@@ -15,30 +18,41 @@
       <img src="assets/ui/coin.png" alt="" width="128" height="128" />
       <span>{{ coins() }}</span>
     </li>
-    <li>
-      <img [src]="material().icon" alt="" width="128" height="128" />
-      <span>{{ workshop.spendableOres() }} {{ material().label }}</span>
-    </li>
   </ul>
 
   <ul class="slots" [class.closed]="!workshop.unlocked()">
     @for (row of rows(); track row.slot) {
       <li class="slot-row">
-        <span class="frame">
+        <span class="frame item-frame" [attr.data-tier]="row.tier">
           <img [src]="row.icon" alt="" width="128" height="128" />
           <span class="level">{{ row.level }}</span>
         </span>
         <div class="text">
           <h3>{{ row.label }}</h3>
-          <p class="effect">{{ row.effect }} <span class="next">→ {{ row.next }}</span></p>
-          <p class="cost">
-            <span class="price" [class.short]="row.check === 'gold'">
-              <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
-            </span>
-            <span class="price" [class.short]="row.check === 'ores'">
-              <img [src]="material().icon" alt="" width="128" height="128" />{{ row.ores }}
-            </span>
-          </p>
+          @if (row.tier === null) {
+            <p class="hint">Équipe une pièce pour la renforcer.</p>
+          } @else {
+            <p class="effect">
+              {{ row.effect }}
+              @if (row.next; as next) {
+                <span class="next">→ {{ next }}</span>
+              }
+            </p>
+            @if (row.gold !== null) {
+              <p class="cost">
+                <span class="price" [class.short]="row.check === 'gold'">
+                  <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
+                </span>
+                @if (row.ore; as ore) {
+                  <span class="price" [class.short]="row.check === 'ores'">
+                    <img [src]="ore.icon" alt="" width="128" height="128" />{{ ore.need }}<small>/{{ ore.stock }}</small>
+                  </span>
+                }
+              </p>
+            } @else {
+              <p class="hint">Niveau {{ maxLevel }} atteint.</p>
+            }
+          }
         </div>
         <button
           type="button"

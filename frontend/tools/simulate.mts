@@ -57,7 +57,7 @@ import {
 } from '../src/app/artifacts/artifact-rules.ts';
 import { minerProfile, NO_BUFFS, type MinerProfile, type SpellBuffs } from '../src/app/miner/miner-rules.ts';
 import { WORKSHOP_UNLOCK_FORM, type WorkshopLevels } from '../src/app/balance/workshop.ts';
-import { reinforce, slotLevel, upgradeCost } from '../src/app/workshop/workshop-rules.ts';
+import { pieceLevel, reinforce, upgradeCost, withLevel } from '../src/app/workshop/workshop-rules.ts';
 import { canEvolve, objectivesFor, unclaimedShards } from '../src/app/evolution/evolution-rules.ts';
 import { SLOT_IDS, type SlotId } from '../src/app/equipment/equipment.model.ts';
 import { CRYSTAL_RAIN_COUNT, EVENT_TOUCH_RATE } from '../src/app/balance/mine-events.ts';
@@ -68,7 +68,6 @@ import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId, zo
 import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
 import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
-import { workshopMaterial } from '../src/app/balance/workshop.ts';
 import { BUILDING_IDS, CAMP_UNLOCK_ZONE, type BuildingId } from '../src/app/balance/camp.ts';
 import { ABYSS_DAILY_RUNS, ABYSS_RUN_MS, ABYSS_UNLOCK_FORM } from '../src/app/balance/abyss.ts';
 import { runReward } from '../src/app/abyss/abyss-rules.ts';
@@ -335,7 +334,7 @@ let filonsInZone = 0;
 
 function gearStats(): MiningStats {
   const base = computeStats(equipped);
-  return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop);
+  return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
 function families() {
@@ -393,7 +392,7 @@ function forgeAll(now: number): void {
     forges++;
     record('itemsForged');
     const item: Item = rollItem(random, createId, pickaxe.level);
-    if (powerDelta(equipped, item) > 0) {
+    if (powerDelta(equipped, item, workshop) > 0) {
       const replaced = equipped[item.slot];
       if (replaced) {
         gold += sellPrice(replaced);
@@ -448,7 +447,7 @@ function payWorkshop(now: number): void {
   if (!withWorkshop || formIndex < unlockIndex) return;
   const pickaxeDone = pickaxe.level >= MAX_PICKAXE_LEVEL;
   const budget = pickaxeDone ? Infinity : (segmentCost(pickaxe.level) ?? 0) * WORKSHOP_SHARE_OF_SEGMENT;
-  for (let guard = 0; guard < 50; guard++) {
+  for (let guard = 0; guard < 200; guard++) {
     const value = (levels: WorkshopLevels): number => {
       const saved = workshop;
       workshop = levels;
@@ -457,20 +456,23 @@ function payWorkshop(now: number): void {
       return powerOf(candidate.stats) * (1 + candidate.stats.goldBonus * 0.2);
     };
     const current = value(workshop);
-    let best: { slot: SlotId; gain: number } | null = null;
+    let best: { slot: SlotId; tier: TierId; level: number; gain: number } | null = null;
     for (const slot of SLOT_IDS) {
-      const cost = upgradeCost(slotLevel(workshop, slot), progress.zone);
-      const [[tier, need]] = Object.entries(cost.ores) as [TierId, number][];
-      if (cost.gold > gold || cost.gold > budget || ores[tier] < need) continue;
-      const gain = (value({ ...workshop, [slot]: slotLevel(workshop, slot) + 1 }) - current) / cost.gold;
-      if (best === null || gain > best.gain) best = { slot, gain };
+      const tier = equipped[slot]?.tier;
+      if (tier === undefined) continue;
+      const level = pieceLevel(workshop, slot, tier);
+      const cost = upgradeCost(tier, level);
+      if (cost === null || cost.gold > gold || cost.gold > budget) continue;
+      if (Object.entries(cost.ores).some(([ore, need]) => ores[ore as TierId] < (need ?? 0))) continue;
+      const gain = (value(withLevel(workshop, slot, tier, level + 1)) - current) / cost.gold;
+      if (best === null || gain > best.gain) best = { slot, tier, level, gain };
     }
     if (best === null) break;
-    const cost = upgradeCost(slotLevel(workshop, best.slot), progress.zone);
+    const cost = upgradeCost(best.tier, best.level)!;
     for (const [tier, need] of Object.entries(cost.ores)) ores[tier as TierId] -= need ?? 0;
     gold -= cost.gold;
     goldWorkshop += cost.gold;
-    workshop = { ...workshop, [best.slot]: slotLevel(workshop, best.slot) + 1 };
+    workshop = withLevel(workshop, best.slot, best.tier, best.level + 1);
   }
   refresh(now);
 }
@@ -547,6 +549,14 @@ function collectWell(now: number): void {
   shards += stock;
   shardSources.puits += stock;
   camp = { ...camp, wellCollectedAt: collectedAt(camp, now * 1000, stock) };
+}
+
+/** Niveau d'Atelier de chaque pièce portée, avec sa qualité (« steel 24 »). */
+function workshopSummary(): string {
+  return SLOT_IDS.map((slot) => {
+    const tier = equipped[slot]?.tier;
+    return tier === undefined ? '-' : `${tier} ${pieceLevel(workshop, slot, tier)}`;
+  }).join('/');
 }
 
 /** Ce que l'Atelier ajoute à la Puissance permanente. */
@@ -791,7 +801,7 @@ for (let day = 0; day < days; day++) {
         `Puissance ${big(powerOf(permanentProfile().stats))}, ${forges - forgesBefore} forges (éclats : coups ${got('coups')}, filons ${got('filons')}, ` +
         `zones ${got('zones')}, missions ${got('missions')}, absence ${got('absence')}, événements ${got('evenements')}), or en stock ${big(gold)}, ` +
         `points ${pointsSpent(ranks)}/${pointsEarned(progress.zone)}, artefacts ${Object.keys(artifacts.owned).length}, ` +
-        `atelier ${SLOT_IDS.map((slot) => slotLevel(workshop, slot)).join('/')} (×${workshopPower().toFixed(2)}), ` +
+        `atelier ${workshopSummary()} (×${workshopPower().toFixed(2)}), ` +
         `campement ${BUILDING_IDS.map((id) => buildingLevel(camp.levels, id)).join('/')}, puits record ${abyssRecord}`,
     );
   }
@@ -821,7 +831,7 @@ if (withNewSystems) {
 }
 if (withWorkshop) {
   console.log(
-    `Atelier : niveaux ${SLOT_IDS.map((slot) => `${slot} ${slotLevel(workshop, slot)}`).join(', ')}, ` +
+    `Atelier : pièces portées ${workshopSummary()}, ` +
       `×${workshopPower().toFixed(2)} de Puissance, ${big(goldWorkshop)} d'or dépensé`,
   );
 }

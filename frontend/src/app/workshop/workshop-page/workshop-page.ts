@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
-import { WORKSHOP_STEP } from '../../balance/workshop';
+import { WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopMaterial } from '../../balance/workshop';
 import { SLOT_IDS, SLOTS, STATS, SlotId, TIER_LABELS } from '../../equipment/equipment.model';
-import { materialIconUrl } from '../../loading/game-assets';
+import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
+import { Ores } from '../../ores/ores';
 import { Wallet } from '../../wallet/wallet';
 import { UpgradeCheck, Workshop } from '../workshop';
 
@@ -13,11 +14,13 @@ const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFra
 
 const BLOCKED_TEXT: Readonly<Record<Exclude<UpgradeCheck, 'ok'>, string>> = {
   locked: 'Atelier fermé',
+  empty: 'Aucune pièce portée',
+  max: 'Niveau maximum',
   gold: 'Pas assez d\'or',
   ores: 'Pas assez de minerai',
 };
 
-/** Atelier : chaque emplacement se renforce niveau par niveau, et le bonus reste quand on change d'objet. */
+/** Atelier : la pièce portée de chaque emplacement se renforce dans sa qualité, niveau par niveau jusqu'à 50. */
 @Component({
   selector: 'app-workshop-page',
   templateUrl: './workshop-page.html',
@@ -26,30 +29,34 @@ const BLOCKED_TEXT: Readonly<Record<Exclude<UpgradeCheck, 'ok'>, string>> = {
 export class WorkshopPage {
   protected readonly workshop = inject(Workshop);
   private readonly wallet = inject(Wallet);
+  private readonly ores = inject(Ores);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
 
+  protected readonly maxLevel = WORKSHOP_MAX_LEVEL;
   protected readonly coins = computed(() => COMPACT.format(this.wallet.coins()));
-  protected readonly material = computed(() => {
-    const tier = this.workshop.material();
-    return { tier, label: TIER_LABELS[tier], icon: materialIconUrl(tier) };
-  });
 
   protected readonly rows = computed(() =>
     SLOT_IDS.map((slot) => {
+      const tier = this.workshop.tier(slot);
       const level = this.workshop.level(slot);
       const cost = this.workshop.cost(slot);
       const check = this.workshop.check(slot);
       const stat = STATS[SLOTS[slot].workshopStat].label;
+      const material = tier === null ? null : workshopMaterial(tier);
       return {
         slot,
-        label: SLOTS[slot].label,
-        icon: SLOTS[slot].iconUrl,
+        tier,
+        label: tier === null ? SLOTS[slot].label : `${SLOTS[slot].label} · ${TIER_LABELS[tier]}`,
+        icon: itemIconUrl(slot, tier, SLOTS[slot].iconUrl),
         level,
         effect: `+${PERCENT.format(level * WORKSHOP_STEP * 100)} % de ${stat}`,
-        next: `+${PERCENT.format((level + 1) * WORKSHOP_STEP * 100)} %`,
-        gold: COMPACT.format(cost.gold),
-        ores: cost.ores[this.workshop.material()] ?? 0,
+        next: level < WORKSHOP_MAX_LEVEL ? `+${PERCENT.format((level + 1) * WORKSHOP_STEP * 100)} %` : null,
+        gold: cost === null ? null : COMPACT.format(cost.gold),
+        ore:
+          cost === null || material === null
+            ? null
+            : { icon: materialIconUrl(material), need: cost.ores[material] ?? 0, stock: this.ores.stock()[material] },
         check,
         blocked: check === 'ok' ? null : BLOCKED_TEXT[check],
       };

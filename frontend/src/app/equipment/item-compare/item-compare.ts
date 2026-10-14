@@ -4,9 +4,11 @@ import { Overlays } from '../../shared/overlays';
 import { Sound } from '../../audio/sound';
 import { itemIconUrl } from '../../loading/game-assets';
 import { CLOCK } from '../../shared/clock';
-import { Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
+import { EquippedItems, Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
 import { formatStat, formatStatDelta } from '../equipment-format';
-import { compareItems, powerDelta, sellPrice } from '../equipment-rules';
+import { compareItems, computePower, sellPrice } from '../equipment-rules';
+import { reinforce } from '../../workshop/workshop-rules';
+import { Workshop } from '../../workshop/workshop';
 import { Inventory } from '../inventory';
 
 type Trend = 'better' | 'worse' | 'same';
@@ -29,6 +31,7 @@ export class ItemCompare {
   private readonly clock = inject(CLOCK);
   private readonly sound = inject(Sound);
   private readonly overlays = inject(Overlays);
+  private readonly workshop = inject(Workshop);
   /** Montrée seulement à son tour : sur la mine, sans autre fenêtre ouverte. */
   private readonly visible = this.overlays.isShown('itemCompare');
   private openedAt = 0;
@@ -63,6 +66,10 @@ export class ItemCompare {
     this.inventory.closeReview();
   }
 
+  private gearPower(equipped: EquippedItems): number {
+    return computePower(reinforce(this.inventory.statsOf(equipped), this.workshop.levels(), equipped));
+  }
+
   /** Tout ce que la fenêtre affiche, ou null quand aucun objet n'attend. */
   protected readonly view = computed(() => {
     const candidate = this.inventory.pending();
@@ -71,11 +78,14 @@ export class ItemCompare {
     }
     const equipped = this.inventory.equipped();
     const current = equipped[candidate.slot];
-    const delta = powerDelta(equipped, candidate);
+    // Puissance de l'équipement, Atelier compris : une pièce d'une autre qualité n'a pas les mêmes niveaux
+    const powerBefore = this.gearPower(equipped);
+    const power = this.gearPower({ ...equipped, [candidate.slot]: candidate });
+    const delta = power - powerBefore;
     return {
       isPrevious: this.inventory.pendingWasEquipped(),
-      powerBefore: this.inventory.power(),
-      power: this.inventory.power() + delta,
+      powerBefore,
+      power,
       powerDelta: delta,
       powerTrend: trendOf(delta),
       slot: SLOTS[candidate.slot],

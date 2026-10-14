@@ -1,5 +1,6 @@
 // Règles pures des filtres de la forge automatique.
 import { tierIndex } from '../balance/balance';
+import type { WorkshopLevels } from '../balance/workshop';
 import { hasAffix, powerDelta } from '../equipment/equipment-rules';
 import { EquippedItems, Item, SLOT_IDS, SlotId, STAT_IDS, StatId, TIER_IDS, TierId } from '../equipment/equipment.model';
 
@@ -24,7 +25,7 @@ export function hasFilters(filters: ForgeFilters): boolean {
 }
 
 /** Vrai si l'objet passe tous les filtres actifs : il sera proposé au joueur au lieu d'être vendu. */
-export function passesFilters(item: Item, filters: ForgeFilters, equipped: EquippedItems): boolean {
+export function passesFilters(item: Item, filters: ForgeFilters, equipped: EquippedItems, levels: WorkshopLevels = {}): boolean {
   if (filters.slots.length > 0 && !filters.slots.includes(item.slot)) {
     return false;
   }
@@ -34,7 +35,7 @@ export function passesFilters(item: Item, filters: ForgeFilters, equipped: Equip
   if (filters.stats.length > 0 && !filters.stats.some((stat) => hasAffix(item, stat))) {
     return false;
   }
-  return !filters.upgradesOnly || powerDelta(equipped, item) > 0;
+  return !filters.upgradesOnly || powerDelta(equipped, item, levels) > 0;
 }
 
 export function isValidFilters(value: unknown): value is ForgeFilters {

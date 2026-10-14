@@ -20,13 +20,14 @@ import {
   Item,
   MiningStats,
   SLOT_IDS,
-  SlotId,
   STAT_IDS,
   STATS,
   StatId,
   TIER_IDS,
   TierId,
 } from './equipment.model';
+import type { WorkshopLevels } from '../balance/workshop';
+import { reinforce } from '../workshop/workshop-rules';
 
 const PERCENT_PRECISION = 1000;
 
@@ -107,10 +108,17 @@ export function computePower(stats: MiningStats): number {
   return powerOf(stats);
 }
 
-/** Gain (ou perte) de Puissance si l'on équipe cet objet à la place de celui porté. */
-export function powerDelta(equipped: EquippedItems, candidate: Item): number {
-  const swapped: Partial<Record<SlotId, Item>> = { ...equipped, [candidate.slot]: candidate };
-  return computePower(computeStats(swapped)) - computePower(computeStats(equipped));
+/**
+ * Gain (ou perte) de Puissance si l'on équipe cet objet à la place de celui porté. Les niveaux d'Atelier comptent :
+ * ils dépendent de la qualité de la pièce, donc changer de qualité change aussi le bonus d'Atelier.
+ */
+export function powerDelta(equipped: EquippedItems, candidate: Item, levels: WorkshopLevels = {}): number {
+  const swapped: EquippedItems = { ...equipped, [candidate.slot]: candidate };
+  return gearPower(swapped, levels) - gearPower(equipped, levels);
+}
+
+function gearPower(equipped: EquippedItems, levels: WorkshopLevels): number {
+  return computePower(reinforce(computeStats(equipped), levels, equipped));
 }
 
 /** Multiplicateur appliqué à la vitesse d'animation du mineur. */

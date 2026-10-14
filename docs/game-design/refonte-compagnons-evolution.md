@@ -31,6 +31,11 @@ Demande de Théo du 13/10/2026, à partir de captures de Legend of Mushroom (éc
 - On marque des points en jouant : **5 par filon épuisé, 1 par objet forgé, 3 par événement de mine touché**.
 - Des **paliers** de points donnent des récompenses à récupérer : œufs, pierres d'éveil, éclats. Le dernier palier donne un œuf rare au minimum.
 - Les œufs ne viennent plus des fins de zone ni des coffres. Le premier œuf reste offert à l'ouverture de l'onglet (zone 3). Éclosion, chances affichées et garantie de légendaire ne changent pas.
+- **Révision du 14/10/2026** : Théo, en zone 7, ne savait pas comment gagner des compagnons (le Défi, caché dans l'onglet, était la seule source). Désormais :
+  - chaque zone terminée à partir de la zone 3 redonne un œuf commun, avec un rattrapage pour les zones déjà passées (clé `mine-explorer.zone-eggs`) ;
+  - la loterie du jour donne parfois un œuf (voir [[loterie-du-jour]]) ;
+  - l'onglet Compagnons liste les trois sources (« Gagner des œufs ») avec un bouton vers le Défi, et l'onglet porte une pastille quand un palier du Défi attend.
+  Simulé (joueur régulier, 5 graines) : pioche 30 au jour 48,1 en moyenne contre 47,6 avant, soit dans le bruit ; 83 œufs en 70 jours contre 69, et le premier légendaire arrive plus tôt.
 
 **Monter les étoiles : les pierres d'éveil.**
 - Nouvelle ressource, avec son compteur **en haut de la page Compagnons** et dans la fiche du compagnon.

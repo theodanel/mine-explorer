@@ -66,8 +66,17 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
 
 // ─── Œufs ──────────────────────────────────────────────────────────────────
 
-/** L'onglet s'ouvre à la zone 3, avec un premier œuf commun offert. Les suivants viennent du Défi de la mine. */
+/** L'onglet s'ouvre à la zone 3, avec un premier œuf commun offert. Les suivants : Défi, zones terminées, loterie. */
 export const COMPANIONS_UNLOCK_ZONE = 3;
+
+/**
+ * Chaque zone terminée une fois l'onglet ouvert (de la zone 3 à la suite) donne un œuf commun : avancer dans la
+ * mine fait grandir la collection, sans dépendre du seul Défi. Le 14/10/2026, Théo, en zone 7, ne savait pas
+ * comment gagner des compagnons : le Défi, caché dans l'onglet, était la seule source.
+ */
+export function zoneClearGivesEgg(clearedZone: number): boolean {
+  return clearedZone >= COMPANIONS_UNLOCK_ZONE;
+}
 
 /** Rareté d'un œuf trouvé, en %. Affichée au joueur telle quelle. */
 export const EGG_RARITY_WEIGHTS: Readonly<Record<Rarity, number>> = { common: 60, rare: 28, epic: 10, legendary: 2 };

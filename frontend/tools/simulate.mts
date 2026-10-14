@@ -64,7 +64,7 @@ import { CRYSTAL_RAIN_COUNT, EVENT_TOUCH_RATE } from '../src/app/balance/mine-ev
 import { eventGain, nextEventDelayMs, rollEventId } from '../src/app/mine-events/mine-event-rules.ts';
 import { GALLERIES, type GalleryId } from '../src/app/balance/galleries.ts';
 import { rollOffer, scaleAmount } from '../src/app/galleries/gallery-rules.ts';
-import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId } from '../src/app/balance/companions.ts';
+import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId, zoneClearGivesEgg } from '../src/app/balance/companions.ts';
 import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
 import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
@@ -659,6 +659,7 @@ function dealDamage(now: number, damage: number): void {
       shards += ZONE_CLEAR_SHARDS;
       shardSources.zones += ZONE_CLEAR_SHARDS;
       findArtifact(now);
+      if (zoneClearGivesEgg(result.clearedZone)) findEgg(now);
       spendPoints(now);
       chooseGallery();
     }

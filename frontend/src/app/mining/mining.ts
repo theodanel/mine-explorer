@@ -4,6 +4,7 @@ import { ARTIFACT_FIND_CHANCE } from '../balance/artifacts';
 import { ORE_PER_ROCK, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
 import { SpellId } from '../balance/skill-tree';
 import { Artifacts } from '../artifacts/artifacts';
+import { Companions } from '../companions/companions';
 import { HitResult, resolveHit } from '../equipment/equipment-rules';
 import { TierId } from '../equipment/equipment.model';
 import { Galleries } from '../galleries/galleries';
@@ -49,6 +50,7 @@ export class Mining {
   private readonly ores = inject(Ores);
   private readonly artifacts = inject(Artifacts);
   private readonly galleries = inject(Galleries);
+  private readonly companions = inject(Companions);
   private readonly lastBlast = signal<BlastEvent | null>(null);
   private blastCount = 0;
 
@@ -91,6 +93,7 @@ export class Mining {
       // Chaque zone terminée livre un artefact : la découverte récompense le cap franchi
       this.artifacts.discover();
       this.galleries.offerFor(clearedZone + 1);
+      this.companions.grantZoneEggs(clearedZone);
     }
     const baseReward = strikeReward(hit.damage, this.miner.current().stats.goldBonus, {
       zone,

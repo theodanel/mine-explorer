@@ -6,8 +6,8 @@ describe('décors des zones', () => {
     expect(rockUrl(20)).toBe('assets/rocks/zone20.webp');
   });
 
-  it('reprend le magma tant que la zone 14 n’a pas son décor', () => {
-    expect(zoneBackground(14)).toEqual(zoneBackground(9));
+  it('reprend le rocher du magma tant que la zone 14 n’a pas le sien', () => {
+    expect(zoneBackground(14).url).toBe('assets/backgrounds/zone14.webp');
     expect(rockUrl(14)).toBe('assets/rocks/zone9.webp');
   });
 

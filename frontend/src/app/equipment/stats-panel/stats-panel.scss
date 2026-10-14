@@ -34,14 +34,24 @@
   margin: 0;
 }
 
+// Chaque stat a sa couleur, reprise par sa tuile : on retrouve la Frappe en rouge, la Vitesse en bleu…
+[data-stat='strikePower'] { --stat-color: #ff6b5a; }
+[data-stat='miningSpeed'] { --stat-color: #4fd6ff; }
+[data-stat='critChance'] { --stat-color: #ffd34d; }
+[data-stat='critDamage'] { --stat-color: #ff9a3c; }
+[data-stat='goldBonus'] { --stat-color: #f2c230; }
+[data-stat='dps'] { --stat-color: #c48bff; }
+
 .stat {
   display: grid;
   grid-template: 'icon label' auto 'icon value' auto / auto 1fr;
   align-items: center;
   column-gap: 1.5cqw;
-  padding: 1cqw 1.5cqw;
+  padding: 1.2cqw 1.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-left: 1cqw solid var(--stat-color, #ffd34d);
   border-radius: 2cqw;
-  background: rgb(0 0 0 / 22%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--stat-color, #ffd34d) 30%, #2a1a0d), #2a1a0d 75%);
 
   dt {
     grid-area: label;
@@ -52,9 +62,10 @@
   dd {
     grid-area: value;
     margin: 0;
-    font-size: 3.6cqw;
+    color: color-mix(in srgb, var(--stat-color, #ffd34d) 70%, #fff);
+    font-size: 3.8cqw;
     font-weight: bold;
-    color: #ffd34d;
+    text-shadow: 0 0.3cqw 0 #1a0f07;
   }
 }
 
@@ -69,6 +80,9 @@
 
 .stat-icon {
   grid-area: icon;
-  width: 6.5cqw;
-  height: 6.5cqw;
+  width: 7cqw;
+  height: 7cqw;
+  padding: 0.6cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--stat-color, #ffd34d) 45%, transparent), transparent 70%);
 }

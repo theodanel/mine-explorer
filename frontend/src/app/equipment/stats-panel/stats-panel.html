@@ -2,7 +2,7 @@
   <h2 id="stats-title" class="title">Stats de minage</h2>
   <dl class="grid">
     @for (line of stats(); track line.stat) {
-      <div class="stat" tabindex="0" [class.boosted]="line.boosted" [appTooltip]="line.label + ' : ' + line.description">
+      <div class="stat" tabindex="0" [attr.data-stat]="line.stat" [class.boosted]="line.boosted" [appTooltip]="line.label + ' : ' + line.description">
         <img class="stat-icon" [src]="line.iconUrl" alt="" width="128" height="128" />
         <dt>{{ line.label }}</dt>
         <dd>{{ line.value }}</dd>
@@ -10,6 +10,7 @@
     }
     <div
       class="stat"
+      data-stat="dps"
       tabindex="0"
       [class.boosted]="dpsBoosted()"
     >

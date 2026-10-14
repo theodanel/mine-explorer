@@ -11,11 +11,11 @@
   gap: 0.8cqw;
   height: 100%;
   padding: 1.2cqw 1.5cqw 1.8cqw;
-  border-top: 0.8cqw solid #1a0f07;
+  border-top: 0.4cqw solid rgb(26 15 7 / 80%);
   background:
-    linear-gradient(rgb(255 255 255 / 8%), transparent 30%),
-    linear-gradient(#5b3d24, #3a2614);
-  box-shadow: inset 0 0.6cqw 0 #8a5f38;
+    linear-gradient(rgb(255 255 255 / 6%), transparent 30%),
+    linear-gradient(#4e3420, #33220f);
+  box-shadow: inset 0 0.35cqw 0 rgb(138 95 56 / 60%);
 }
 
 .tab-wrapper {
@@ -31,11 +31,11 @@
   width: 100%;
   height: 100%;
   padding: 0;
-  border: 0.6cqw solid #1a0f07;
-  border-radius: 2.5cqw;
-  background: linear-gradient(#6e4a2c, #4a3019);
-  box-shadow: 0 0.8cqw 0 #24170d;
-  color: #f3e6d0;
+  // Onglets légers : pas de caisse autour, seul l'onglet ouvert reçoit une pastille claire
+  border: none;
+  border-radius: 3cqw;
+  background: transparent;
+  color: #e8d6b8;
   font: bold 2.2cqw / 1.1 Arial, sans-serif;
   cursor: pointer;
 
@@ -45,12 +45,11 @@
   }
 }
 
-// Onglet ouvert : planche plus claire, enfoncée
+// Onglet ouvert : une pastille dorée douce derrière l'icône
 .current {
-  background: linear-gradient(#c48a4a, #8a5f38);
-  box-shadow: 0 0.3cqw 0 #24170d;
-  transform: translateY(0.5cqw);
-  color: #fff8e6;
+  background: radial-gradient(ellipse at 50% 40%, rgb(255 211 77 / 35%), rgb(255 211 77 / 8%) 70%);
+  box-shadow: inset 0 0 0 0.35cqw rgb(255 211 77 / 45%);
+  color: #ffe9a8;
 }
 
 .soon {

@@ -28,7 +28,7 @@ Repères (joueur automatique qui évite les obstacles, 20 courses) : 300 à 550 
 - Moteur pur dans `minecart/minecart-game.ts` : voies, rangées, chocs, aiguillages.
 - Courses du jour, récompense et sauvegarde dans `minecart/minecart-rules.ts`. Clé `mine-explorer.minecart` : record en mètres, jour et courses jouées.
 - Boucle de jeu et paiement dans `minecart/minecart.ts`.
-- Page `minecart/minecart-page/` : le tunnel défile en grand. Deux copies du décor grossissent vers le point de fuite et se relaient en fondu : les rails restent en place, les traverses et les poutres foncent vers le joueur. Les objets sont placés en % selon leur distance, en suivant la perspective des rails. Ils sont animés : pépites qui tournent, minerai qui flotte, chauves-souris qui battent des ailes. Le wagonnet cahote et penche quand il change de voie, et des traits de vitesse apparaissent en accélérant. On pilote au toucher ou au glissé, sans boutons ; la boucle tourne à 60 i/s.
+- Page `minecart/minecart-page/` : le tunnel reste fixe. Le zoom continu vers le point de fuite a été retiré le 14/10/2026, Théo le trouvait affreux. La vitesse se lit aux objets qui arrivent, placés en % en suivant la perspective des rails, et aux traits de vitesse. Les objets sont animés (pépites qui tournent, chauves-souris qui battent des ailes), le wagonnet cahote et penche, et on pilote au toucher ou au glissé ; la boucle tourne à 60 i/s.
 
 ## Visuels
 

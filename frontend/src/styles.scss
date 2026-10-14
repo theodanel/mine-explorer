@@ -29,17 +29,14 @@ body {
 [data-tier='magma'] { --tier-color: #ff5a2e; }
 [data-tier='divine'] { --tier-color: #fff1b8; }
 
-// Cadres de qualité des objets (forge, inventaire, emplacements équipés), sur l'échelle des jeux du genre :
-// gris, vert, bleu, violet, orange, rouge puis irisé. Deux paliers de matériau par couleur au début, un ensuite.
-[data-tier='wood'] { --frame-light: #b8bec7; --frame-dark: #5d636b; }
-[data-tier='stone'] { --frame-light: #d3d8de; --frame-dark: #6f767e; }
-[data-tier='copper'] { --frame-light: #7ee38b; --frame-dark: #1f7a32; }
-[data-tier='iron'] { --frame-light: #4fd16a; --frame-dark: #13612a; }
-[data-tier='steel'] { --frame-light: #6fb6ff; --frame-dark: #1d4f9c; }
-[data-tier='gold'] { --frame-light: #3d8bff; --frame-dark: #163a87; }
-[data-tier='mithril'] { --frame-light: #c48bff; --frame-dark: #5a259e; }
-[data-tier='crystal'] { --frame-light: #ffb347; --frame-dark: #a3500c; }
-[data-tier='magma'] { --frame-light: #ff6b5a; --frame-dark: #8e1a12; }
+// Cadres de qualité des objets (forge, inventaire, emplacements équipés) : la couleur du matériau, la même que
+// partout ailleurs (un objet en or est doré, en mithril turquoise…). Le 14/10/2026, Théo trouvait trompeuse
+// l'ancienne échelle gris-vert-bleu-violet, où l'or apparaissait en bleu.
+[data-tier] {
+  --frame-light: color-mix(in srgb, var(--tier-color) 80%, #fff);
+  --frame-dark: color-mix(in srgb, var(--tier-color) 55%, #1a0f07);
+}
+
 [data-tier='divine'] { --frame-light: #fff4b8; --frame-dark: #7a5bd6; }
 
 /**
@@ -49,10 +46,10 @@ body {
 .item-frame {
   position: relative;
   overflow: hidden;
-  border: 0.7cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 80%);
   border-radius: 3cqw;
   background:
-    linear-gradient(rgb(255 255 255 / 28%), transparent 45%),
+    linear-gradient(rgb(255 255 255 / 22%), transparent 45%),
     linear-gradient(var(--frame-light, #6b4a2c), var(--frame-dark, #3d2815));
   box-shadow:
     inset 0 0 0 0.5cqw color-mix(in srgb, var(--frame-light, #8a5f38) 85%, #fff),
@@ -270,33 +267,35 @@ body {
 // Contour sombre épais, reflet en haut, ombre portée pleine qui s'écrase à l'appui.
 // En attendant des textures peintes, tout est en CSS : changer --face suffit pour une nouvelle couleur.
 
+// Boutons adoucis le 14/10/2026 (Théo les trouvait trop bruts) : bord fin, relief léger, ombre floue
 .game-button {
   --face-top: #8a5f38;
   --face-bottom: #5b3b22;
   --depth: #2f1d0e;
 
   position: relative;
-  border: 0.7cqw solid #1a0f07;
-  border-radius: 3cqw;
+  border: 0.4cqw solid rgb(26 15 7 / 70%);
+  border-radius: 3.5cqw;
   background:
-    linear-gradient(rgb(255 255 255 / 28%), rgb(255 255 255 / 0%) 45%),
+    linear-gradient(rgb(255 255 255 / 16%), rgb(255 255 255 / 0%) 50%),
     linear-gradient(var(--face-top), var(--face-bottom));
   box-shadow:
-    inset 0 -0.8cqw 0 rgb(0 0 0 / 22%),
-    0 1cqw 0 var(--depth);
+    inset 0 0.35cqw 0 rgb(255 255 255 / 14%),
+    0 0.6cqw 0 var(--depth),
+    0 1.2cqw 2cqw rgb(0 0 0 / 25%);
   color: #fff8e6;
-  font: bold 4cqw / 1.1 Arial, sans-serif;
-  text-shadow: 0 0.35cqw 0 rgb(0 0 0 / 55%);
+  font: bold 3.8cqw / 1.15 Arial, sans-serif;
+  text-shadow: 0 0.25cqw 0.3cqw rgb(0 0 0 / 40%);
   cursor: pointer;
   transition:
     transform 0.08s,
     box-shadow 0.08s;
 
   &:active:not(:disabled) {
-    transform: translateY(0.8cqw);
+    transform: translateY(0.5cqw);
     box-shadow:
-      inset 0 -0.4cqw 0 rgb(0 0 0 / 22%),
-      0 0.2cqw 0 var(--depth);
+      inset 0 0.35cqw 0 rgb(255 255 255 / 14%),
+      0 0.1cqw 0 var(--depth);
   }
 
   &:disabled {
@@ -310,9 +309,9 @@ body {
   }
 
   &.green {
-    --face-top: #5fd16a;
-    --face-bottom: #23802f;
-    --depth: #11461a;
+    --face-top: #6ccf76;
+    --face-bottom: #2f8c3b;
+    --depth: #1b5a25;
 
     // Une action possible brille : un reflet passe sur le bouton vert de temps en temps
     &:not(:disabled) {
@@ -336,9 +335,9 @@ body {
   }
 
   &.red {
-    --face-top: #ee6a4f;
-    --face-bottom: #a3271a;
-    --depth: #561109;
+    --face-top: #e97a62;
+    --face-bottom: #b03a2a;
+    --depth: #6a1d12;
   }
 
   &.stone {
@@ -350,15 +349,14 @@ body {
 
 // Panneau de modale : planche sombre bordée de bois clair
 .game-panel {
-  border: 0.8cqw solid #1a0f07;
-  border-radius: 4cqw;
+  border: 0.5cqw solid rgb(26 15 7 / 85%);
+  border-radius: 4.5cqw;
   background:
     linear-gradient(rgb(255 255 255 / 6%), transparent 20%),
-    linear-gradient(#3b2716, #24170d);
+    linear-gradient(#3e2a18, #271a0f);
   box-shadow:
-    inset 0 0 0 0.7cqw #8a5f38,
-    inset 0 0 0 1.2cqw #1a0f07,
-    0 1.5cqw 0 rgb(0 0 0 / 45%);
+    inset 0 0 0 0.45cqw rgb(138 95 56 / 70%),
+    0 2cqw 4cqw rgb(0 0 0 / 45%);
   color: #f3e6d0;
   font-family: Arial, sans-serif;
 }

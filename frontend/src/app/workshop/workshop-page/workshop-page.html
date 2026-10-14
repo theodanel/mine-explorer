@@ -51,7 +51,7 @@
               </p>
               @if (row.check === 'ores' && row.ore; as ore) {
                 @if (ore.canFarm) {
-                  <button type="button" class="farm-link" (click)="farm(ore.zone)">Miner ce minerai en zone {{ ore.zone }} ›</button>
+                  <button type="button" class="farm-link" (click)="farm(ore.zone)">Miner en zone {{ ore.zone }} ›</button>
                 } @else {
                   <p class="hint">Ce minerai se trouve en zone {{ ore.zone }}.</p>
                 }

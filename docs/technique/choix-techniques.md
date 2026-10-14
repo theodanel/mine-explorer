@@ -39,4 +39,5 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 ## Pages chargées à la demande
 
 - **Décision** : pages du menu et fenêtres qui arrivent après le démarrage chargées avec `@defer`.
-- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget de 1 Mo fixé dans `angular.json`, important sur mobile.
+- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget fixé dans `angular.json`, important sur mobile.
+- **Budget** : 1 Mo bruts jusqu'au 14/10/2026, relevé à 1,2 Mo quand le jeu l'a atteint (Campement, Puits sans fond). Ce qui transite vraiment est compressé : environ 285 Ko. PixiJS en fait près de la moitié ; le reste des nouveautés est chargé à la demande.

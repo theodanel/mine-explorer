@@ -619,3 +619,23 @@ Vertical mobile game background, 9:16 portrait (1080x1920), hand-painted 2D cart
 ```
 Vertical mobile game background, 9:16 portrait (1080x1920), hand-painted 2D cartoon style, soft painterly shading, thick dark outlines, warm cozy lighting, same art direction as a cute chibi idle mining RPG. A wide underground cavern turned into a small miners' camp: a flat clearing with packed earth, a central campfire, warm lanterns on wooden poles, mine cart rails along the back wall, cave ceiling with hanging roots. Leave three empty flat building spots on the ground (left, center-back, right) where buildings will be placed. No buildings, no characters, no creatures, no text, no UI. The top 15% is darker and simple, the bottom 30% is plain dark ground.
 ```
+
+### Puits sans fond : rocher piégé et gardien (14/10/2026)
+
+Prompts complets, à coller seuls, avec un rocher de zone joint comme image de référence (par exemple `art-source/rocks/zone5.png`). Dépose les résultats dans `art-source/aventures/rocher-piege.png` et `art-source/aventures/gardien.png`.
+
+**Rocher piégé**
+
+```
+Mobile idle RPG game UI asset, hand-painted 2D style matching a chibi dwarf-dragon miner character: soft painterly shading, thick dark-brown outlines (about 4% of the image width), warm mine palette (wood, stone, copper, lantern light). Single isolated object, centered, front view, no perspective, no text, no letters, no numbers, no watermark. Solid pure green background #00FF00 filling the whole image, no shadow on the background, no green inside the object.
+A single mineable ore boulder for a side-view mining game, seen from the front at floor level, sitting flat on the ground (flat bottom edge, no ground, no shadow, no debris around it). Chunky and readable silhouette, about 1.3 times wider than tall, filling 85% of the image width, centered. Square image 1024x1024. Same style, size, framing and lighting as the reference boulder image, light coming from the top left.
+Rock: a grey boulder with three red dynamite sticks strapped to its front with brown rope, a short lit fuse sparkling with small orange sparks on top, a few cracks in the stone.
+```
+
+**Gardien**
+
+```
+Mobile idle RPG game UI asset, hand-painted 2D style matching a chibi dwarf-dragon miner character: soft painterly shading, thick dark-brown outlines (about 4% of the image width), warm mine palette (wood, stone, copper, lantern light). Single isolated object, centered, front view, no perspective, no text, no letters, no numbers, no watermark. Solid pure green background #00FF00 filling the whole image, no shadow on the background, no green inside the object.
+A single mineable ore boulder for a side-view mining game, seen from the front at floor level, sitting flat on the ground (flat bottom edge, no ground, no shadow, no debris around it). Chunky and readable silhouette, about 1.3 times wider than tall, filling 85% of the image width, centered. Square image 1024x1024. Same style, size, framing and lighting as the reference boulder image, light coming from the top left.
+Rock: a huge menacing dark boulder, bigger and taller than a normal one, covered in glowing purple crystal spikes and ancient carved runes, deep cracks with purple light inside, like the boss of the mine.
+```

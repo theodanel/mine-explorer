@@ -210,7 +210,10 @@ export const MINEHUNT_IMAGES = {
   background: 'assets/backgrounds/zone4.webp',
   chest: EVENT_IMAGES.chestOpen,
   nugget: 'assets/ui/refonte/coin-small.webp',
-  pickaxe: 'assets/ui/pickaxe.png',
+  /** L'éboulement qui tombe et emporte la cagnotte. */
+  caveIn: 'assets/ui/aventures/eboulement.webp',
+  /** Les étais, en bois de mine. */
+  prop: 'assets/ui/materials/wood.png',
 } as const;
 
 /** Vignette de chaque galerie des embranchements (planche 7). */

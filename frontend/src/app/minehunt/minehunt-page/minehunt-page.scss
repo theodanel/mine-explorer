@@ -5,13 +5,30 @@
 .page {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
   gap: 3cqw;
   height: 100%;
   padding: 4cqw;
   overflow: hidden;
   background-position: center;
   background-size: cover;
+
+  // Toute la page tremble sous l'éboulement
+  &.shake {
+    animation: shake 0.45s;
+  }
+}
+
+@keyframes shake {
+  15%,
+  55% {
+    transform: translate(-1.4cqw, 0.6cqw);
+  }
+
+  35%,
+  75% {
+    transform: translate(1.4cqw, -0.6cqw);
+  }
 }
 
 .page-header {
@@ -45,41 +62,331 @@
   font: bold 3cqw / 1 Arial, sans-serif;
 }
 
-// ─── En partie ───────────────────────────────────────────────────────────
+// ─── La file de rochers ──────────────────────────────────────────────────
 
-.hud {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 1cqw;
+  margin: 0;
+  padding: 1.6cqw;
+  border-radius: 3cqw;
+  background: rgb(20 12 6 / 55%);
+  list-style: none;
 }
 
-.durability {
-  display: flex;
-  gap: 1cqw;
+.slot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 1.6cqw;
+  background: rgb(0 0 0 / 30%);
+  transition: transform 0.25s;
 
   img {
-    width: 7cqw;
-    height: 7cqw;
-    filter: drop-shadow(0 0.4cqw 0.4cqw rgb(0 0 0 / 50%));
-    transition:
-      opacity 0.3s,
-      filter 0.3s;
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    animation: pop 0.35s ease-out;
+  }
 
-    &.broken {
-      opacity: 0.3;
-      filter: grayscale(1);
+  // Les rochers à venir restent dans l'ombre
+  .rock-thumb {
+    opacity: 0.45;
+    filter: grayscale(0.6) brightness(0.8);
+    animation: none;
+  }
+
+  &.current {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 0.45cqw #ffd34d;
+
+    .rock-thumb {
+      opacity: 1;
+      filter: none;
+    }
+  }
+
+  &.loot {
+    background: rgb(255 211 77 / 18%);
+  }
+
+  &.propped {
+    background: rgb(150 110 60 / 30%);
+  }
+
+  &.caveIn {
+    background: rgb(200 60 40 / 35%);
+  }
+}
+
+// ─── Le rocher du moment ─────────────────────────────────────────────────
+
+.arena {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.rock {
+  display: grid;
+  justify-items: center;
+  gap: 2cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:active:not(:disabled) .rock-image {
+    transform: scale(0.94);
+  }
+
+  &.striking .rock-image {
+    animation: hit 0.32s ease-in-out;
+  }
+}
+
+.rock-image {
+  width: 52cqw;
+  height: 52cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 2cqw 1.5cqw rgb(0 0 0 / 55%));
+  transition: transform 0.1s;
+  animation: arrive 0.4s ease-out;
+}
+
+@keyframes hit {
+  25% {
+    transform: rotate(-4deg) scale(0.96);
+  }
+
+  50% {
+    transform: rotate(4deg) scale(1.02);
+    filter: brightness(1.4) drop-shadow(0 2cqw 1.5cqw rgb(0 0 0 / 55%));
+  }
+
+  75% {
+    transform: rotate(-2deg) scale(0.98);
+  }
+}
+
+@keyframes arrive {
+  from {
+    transform: translateX(30cqw) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.tap {
+  padding: 1cqw 3cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  font: bold 3.2cqw / 1 Arial, sans-serif;
+  animation: breathe 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  to {
+    opacity: 0.6;
+  }
+}
+
+// Le butin jaillit du rocher
+.burst {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  animation: pop 0.4s ease-out;
+
+  strong {
+    color: #ffd34d;
+    font-size: 5cqw;
+    text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+  }
+}
+
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
+.burst-icon {
+  width: 30cqw;
+  height: 30cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0 3cqw rgb(255 211 77 / 70%));
+  animation: jump 0.6s ease-out;
+}
+
+.burst-loot {
+  font: bold 7cqw / 1 Arial, sans-serif;
+  color: #fff4c8;
+  text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(4cqw) scale(0.4);
+  }
+
+  50% {
+    transform: translateY(-3cqw) scale(1.15);
+  }
+}
+
+// L'éboulement tombe d'en haut ; l'étai le retient
+.fall {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1cqw;
+
+  strong {
+    color: #ffd34d;
+    font-size: 5cqw;
+    text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+  }
+}
+
+.fall-image {
+  width: 62cqw;
+  height: 62cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 2cqw 2cqw rgb(0 0 0 / 60%));
+  animation: fall 0.45s cubic-bezier(0.5, 0, 0.9, 0.5) both;
+}
+
+.propped .fall-image {
+  width: 44cqw;
+  height: 44cqw;
+}
+
+.beam {
+  width: 22cqw;
+  height: 22cqw;
+  margin-top: -14cqw;
+  object-fit: contain;
+  transform: rotate(90deg);
+  animation: pop 0.3s 0.3s ease-out both;
+}
+
+@keyframes fall {
+  from {
+    transform: translateY(-70cqw);
+    opacity: 0;
+  }
+
+  70% {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+// ─── Cagnotte, risque et étais ───────────────────────────────────────────
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2cqw;
+  padding: 2.5cqw 3cqw;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 82%);
+}
+
+.pot,
+.danger {
+  display: grid;
+  gap: 1cqw;
+}
+
+.pot-title,
+.danger-title {
+  font-size: 2.8cqw;
+  opacity: 0.75;
+}
+
+.pot-loot {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  font: bold 4.4cqw / 1 Arial, sans-serif;
+  color: #ffd34d;
+
+  img {
+    width: 6cqw;
+    height: 6cqw;
+    object-fit: contain;
+
+    &:not(:first-child) {
+      margin-left: 2cqw;
     }
   }
 }
 
-.loot {
-  display: flex;
+.danger {
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1.2cqw;
-  padding: 1cqw 3cqw;
+
+  .danger-title {
+    grid-column: 1 / -1;
+  }
+}
+
+.danger-bar {
+  height: 2.4cqw;
+  overflow: hidden;
   border-radius: 999px;
   background: rgb(0 0 0 / 45%);
+}
+
+.danger-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f0c24a, #f08a3a);
+  transition: width 0.4s;
+}
+
+.danger-value {
   font: bold 3.6cqw / 1 Arial, sans-serif;
+}
+
+.danger.high {
+  .danger-fill {
+    background: linear-gradient(90deg, #f08a3a, #e2483a);
+  }
+
+  .danger-value {
+    color: #ff8a7a;
+  }
+}
+
+.props {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 1.2cqw;
+
+  &::before {
+    content: 'Étais';
+    margin-right: 1cqw;
+    font-size: 2.8cqw;
+    opacity: 0.75;
+  }
 
   img {
     width: 6cqw;
@@ -88,155 +395,19 @@
   }
 }
 
-.chest-found {
-  animation: pop 0.5s ease-out;
+.no-prop {
+  font-size: 2.8cqw;
+  opacity: 0.6;
 }
 
-// La paroi : des cases rondes et douces, sur un fond sombre, bien espacées
-.wall {
-  display: grid;
-  grid-template-columns: repeat(var(--columns), 1fr);
-  align-content: center;
-  gap: 1.6cqw;
-  padding: 2.5cqw;
-  border-radius: 4cqw;
-  background: rgb(20 12 6 / 55%);
-  box-shadow: inset 0 0.6cqw 2cqw rgb(0 0 0 / 50%);
-
-  &.shake {
-    animation: shake 0.4s;
-  }
-}
-
-@keyframes shake {
-  20%,
-  60% {
-    transform: translateX(-1.5cqw);
-  }
-
-  40%,
-  80% {
-    transform: translateX(1.5cqw);
-  }
-}
-
-// Case de roche, en attendant son image : une pierre bombée qu'on a envie de toucher
-.cell {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  padding: 0;
-  border: none;
-  border-radius: 2.5cqw;
-  background:
-    radial-gradient(circle at 35% 30%, rgb(255 255 255 / 22%), transparent 55%),
-    linear-gradient(145deg, #8f8478, #5d544b);
-  box-shadow:
-    inset 0 -0.7cqw 0 rgb(0 0 0 / 25%),
-    0 0.5cqw 0.8cqw rgb(0 0 0 / 35%);
-  cursor: pointer;
-  transition: transform 0.1s;
-
-  &:active:not(:disabled) {
-    transform: scale(0.92);
-  }
-
-  &:disabled {
-    cursor: default;
-  }
-
-  // Case creusée : un creux de terre, qui s'ouvre avec un petit rebond (en vague dans une cascade)
-  &.dug {
-    background: radial-gradient(circle at 50% 45%, #3a2817, #23170c);
-    box-shadow: inset 0 0.6cqw 1cqw rgb(0 0 0 / 60%);
-    animation: open 0.35s ease-out both;
-  }
-
-  &.gas {
-    background: radial-gradient(circle, #2c4a22, #18240f);
-  }
-}
-
-@keyframes open {
-  from {
-    transform: scale(1.15);
-    opacity: 0.4;
-  }
-}
-
-.hint {
-  font: bold 5.5cqw / 1 Arial, sans-serif;
-  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 70%);
-}
-
-.loot-icon {
-  width: 70%;
-  height: 70%;
-  object-fit: contain;
-  filter: drop-shadow(0 0 1.5cqw rgb(255 211 77 / 60%));
-  animation: jump 0.6s ease-out both;
-  animation-delay: inherit;
-
-  &.nugget {
-    width: 55%;
-    height: 55%;
-  }
-
-  &.chest {
-    width: 85%;
-    height: 85%;
-  }
-}
-
-@keyframes jump {
-  0% {
-    transform: translateY(0) scale(0.4);
-  }
-
-  50% {
-    transform: translateY(-2.5cqw) scale(1.15);
-  }
-
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-
-// Poche de grisou, en attendant son image : un nuage vert qui gonfle
-.gas-cloud {
-  width: 75%;
-  height: 75%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(170 255 120 / 90%), rgb(90 200 60 / 50%) 50%, transparent 72%);
-  animation: puff 0.6s ease-out both;
-}
-
-@keyframes puff {
-  from {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-
-  60% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-}
-
-@keyframes pop {
-  from {
-    transform: scale(0.4);
-  }
-}
-
-.stop {
+.cash {
   justify-self: center;
-  padding: 2.5cqw 6cqw;
-  font-size: 4.2cqw;
+  min-width: 50cqw;
+  padding: 2.8cqw 6cqw;
+  font-size: 4.6cqw;
 }
 
-// Bilan, posé sur la paroi
+// Bilan, posé sur la scène
 .result {
   position: absolute;
   right: 6cqw;
@@ -265,10 +436,6 @@
   }
 }
 
-.rays:not(.record)::before {
-  opacity: 0.5;
-}
-
 .result-icon {
   width: 22cqw;
   height: 22cqw;
@@ -280,8 +447,8 @@
 }
 
 .note {
-  font-size: 3cqw;
-  opacity: 0.8;
+  font-size: 3.2cqw;
+  opacity: 0.85;
 }
 
 .actions {
@@ -351,13 +518,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cell.dug,
-  .loot-icon,
-  .gas-cloud,
-  .wall.shake,
+  .page.shake,
+  .slot img,
+  .rock-image,
+  .rock.striking .rock-image,
+  .tap,
+  .burst,
+  .burst-icon,
+  .fall-image,
+  .beam,
   .hero,
-  .result,
-  .chest-found {
+  .result {
     animation: none;
   }
 }

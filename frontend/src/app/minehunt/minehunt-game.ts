@@ -1,155 +1,90 @@
-// Moteur pur de la Chasse au filon : une paroi en cases, du grisou caché, des indices comme au démineur.
-import { HUNT_COLUMNS, HUNT_GAS_POCKETS, HUNT_ROWS, NUGGET_CELL_CHANCE, NUGGET_PER_GOLD_BONUS, ORE_CELL_CHANCE } from '../balance/minehunt';
+// Moteur pur de la Chasse au filon, en « Quitte ou double » : on casse les rochers un à un, la cagnotte grossit,
+// et à chaque rocher il faut choisir entre encaisser et risquer l'éboulement.
+import {
+  caveInChance,
+  CHEST_CHANCE,
+  CHEST_FROM_ROCK,
+  CHEST_ORES,
+  CHEST_STAGES,
+  COMPLETE_BONUS,
+  rockGoldStages,
+  rockOres,
+  ROCKS_PER_RUN,
+} from '../balance/minehunt';
 import type { Random } from '../shared/random';
 
-export type CellContent = 'empty' | 'ore' | 'nugget' | 'chest' | 'gas';
+export type RockOutcome =
+  | { readonly kind: 'loot'; readonly ores: number; readonly goldStages: number; readonly chest: boolean }
+  /** Éboulement arrêté par un étai : ce rocher est perdu, la cagnotte reste. */
+  | { readonly kind: 'propped' }
+  /** Éboulement : toute la cagnotte est perdue. */
+  | { readonly kind: 'caveIn' };
 
-export interface Cell {
-  readonly content: CellContent;
-  readonly dug: boolean;
-  /** Poches de grisou parmi les 8 cases voisines : l'indice affiché sur une case vide. */
-  readonly around: number;
-}
+export type GambleStatus = 'playing' | 'cashed' | 'buried' | 'complete';
 
-export type HuntStatus = 'digging' | 'stopped' | 'broken' | 'cleared';
-
-export type HuntEvent =
-  | { readonly kind: 'dug'; readonly index: number; readonly content: CellContent }
-  | { readonly kind: 'gas'; readonly index: number }
-  | { readonly kind: 'broken' }
-  | { readonly kind: 'cleared' };
-
-export interface Hunt {
-  readonly cells: readonly Cell[];
-  readonly durability: number;
-  readonly maxDurability: number;
+export interface Gamble {
+  /** Rochers déjà cassés, et ce que chacun a donné. */
+  readonly rocks: readonly RockOutcome[];
   readonly ores: number;
-  readonly nuggets: number;
-  readonly chest: boolean;
-  readonly status: HuntStatus;
-  /** Ce que le dernier coup a fait : sons et animations. */
-  readonly events: readonly HuntEvent[];
+  /** Or de la cagnotte, compté en filons de la zone. */
+  readonly goldStages: number;
+  readonly chests: number;
+  readonly props: number;
+  readonly goldBonus: number;
+  readonly status: GambleStatus;
 }
 
-export function neighbours(index: number): number[] {
-  const column = index % HUNT_COLUMNS;
-  const row = Math.floor(index / HUNT_COLUMNS);
-  const result: number[] = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const x = column + dx;
-      const y = row + dy;
-      if ((dx !== 0 || dy !== 0) && x >= 0 && x < HUNT_COLUMNS && y >= 0 && y < HUNT_ROWS) {
-        result.push(y * HUNT_COLUMNS + x);
-      }
-    }
+export function startGamble(props: number, goldBonus: number): Gamble {
+  return { rocks: [], ores: 0, goldStages: 0, chests: 0, props, goldBonus, status: 'playing' };
+}
+
+/** Risque d'éboulement du prochain rocher. */
+export function nextRisk(gamble: Gamble): number {
+  return caveInChance(gamble.rocks.length, gamble.goldBonus);
+}
+
+/** Casse le rocher suivant : du butin pour la cagnotte, ou un éboulement. */
+export function breakRock(gamble: Gamble, random: Random): Gamble {
+  if (gamble.status !== 'playing') {
+    return gamble;
   }
-  return result;
-}
-
-/** Tire la paroi : le grisou, un coffre, du minerai et des pépites ; puis calcule les indices. */
-export function generateWall(random: Random, goldBonus: number): Cell[] {
-  const count = HUNT_COLUMNS * HUNT_ROWS;
-  const order = shuffle(Array.from({ length: count }, (_, index) => index), random);
-  const gas = new Set(order.slice(0, HUNT_GAS_POCKETS));
-  const chest = order[HUNT_GAS_POCKETS];
-  const nuggetChance = NUGGET_CELL_CHANCE + NUGGET_PER_GOLD_BONUS * Math.max(goldBonus, 0);
-  const contents: CellContent[] = Array.from({ length: count }, (_, index) => {
-    if (gas.has(index)) {
-      return 'gas';
+  const index = gamble.rocks.length;
+  if (random() < nextRisk(gamble)) {
+    if (gamble.props > 0) {
+      return finishIfLast({ ...gamble, props: gamble.props - 1, rocks: [...gamble.rocks, { kind: 'propped' }] });
     }
-    if (index === chest) {
-      return 'chest';
-    }
-    const roll = random();
-    return roll < ORE_CELL_CHANCE ? 'ore' : roll < ORE_CELL_CHANCE + nuggetChance ? 'nugget' : 'empty';
+    return { ...gamble, rocks: [...gamble.rocks, { kind: 'caveIn' }], ores: 0, goldStages: 0, chests: 0, status: 'buried' };
+  }
+  const chest = index >= CHEST_FROM_ROCK && random() < CHEST_CHANCE;
+  const ores = rockOres(index) + (chest ? CHEST_ORES : 0);
+  const goldStages = rockGoldStages(index) + (chest ? CHEST_STAGES : 0);
+  return finishIfLast({
+    ...gamble,
+    rocks: [...gamble.rocks, { kind: 'loot', ores, goldStages, chest }],
+    ores: gamble.ores + ores,
+    goldStages: gamble.goldStages + goldStages,
+    chests: gamble.chests + (chest ? 1 : 0),
   });
-  return withHints(contents.map((content) => ({ content, dug: false, around: 0 })));
 }
 
-function withHints(cells: readonly Cell[]): Cell[] {
-  return cells.map((cell, index) => ({ ...cell, around: neighbours(index).filter((other) => cells[other].content === 'gas').length }));
+/** Encaisse la cagnotte. */
+export function cashOut(gamble: Gamble): Gamble {
+  return gamble.status === 'playing' ? { ...gamble, status: 'cashed' } : gamble;
 }
 
-/**
- * Nouvelle partie. Quelques cases sans grisou autour sont creusées d'office (la Chance en ajoute) : le joueur a
- * de quoi commencer à déduire au lieu de taper au hasard.
- */
-export function startHunt(durability: number, reveals: number, goldBonus: number, random: Random): Hunt {
-  let hunt: Hunt = {
-    cells: generateWall(random, goldBonus),
-    durability,
-    maxDurability: durability,
-    ores: 0,
-    nuggets: 0,
-    chest: false,
-    status: 'digging',
-    events: [],
+/** Toute la file cassée : la cagnotte est majorée. */
+function finishIfLast(gamble: Gamble): Gamble {
+  if (gamble.rocks.length < ROCKS_PER_RUN) {
+    return gamble;
+  }
+  return {
+    ...gamble,
+    ores: Math.round(gamble.ores * (1 + COMPLETE_BONUS)),
+    goldStages: gamble.goldStages * (1 + COMPLETE_BONUS),
+    status: 'complete',
   };
-  const calm = shuffle(
-    hunt.cells.map((cell, index) => ({ cell, index })).filter(({ cell }) => cell.content !== 'gas' && cell.around === 0),
-    random,
-  );
-  for (const { index } of calm.slice(0, reveals)) {
-    hunt = dig(hunt, index);
-  }
-  return { ...hunt, events: [] };
 }
 
-/** Creuse une case. Une case vide sans grisou autour ouvre aussi ses voisines, comme au démineur. */
-export function dig(hunt: Hunt, index: number): Hunt {
-  const target = hunt.cells[index];
-  if (hunt.status !== 'digging' || target === undefined || target.dug) {
-    return { ...hunt, events: [] };
-  }
-  if (target.content === 'gas') {
-    const durability = hunt.durability - 1;
-    const cells = hunt.cells.map((cell, other) => (other === index ? { ...cell, dug: true } : cell));
-    const events: HuntEvent[] = [{ kind: 'gas', index }];
-    if (durability <= 0) {
-      events.push({ kind: 'broken' });
-    }
-    return { ...hunt, cells, durability, status: durability <= 0 ? 'broken' : 'digging', events };
-  }
-  const cells = [...hunt.cells];
-  const events: HuntEvent[] = [];
-  let { ores, nuggets, chest } = hunt;
-  const queue = [index];
-  while (queue.length > 0) {
-    const current = queue.shift() as number;
-    const cell = cells[current];
-    if (cell.dug || cell.content === 'gas') {
-      continue;
-    }
-    cells[current] = { ...cell, dug: true };
-    events.push({ kind: 'dug', index: current, content: cell.content });
-    ores += cell.content === 'ore' ? 1 : 0;
-    nuggets += cell.content === 'nugget' ? 1 : 0;
-    chest = chest || cell.content === 'chest';
-    if (cell.around === 0) {
-      queue.push(...neighbours(current));
-    }
-  }
-  const cleared = cells.every((cell) => cell.dug || cell.content === 'gas');
-  if (cleared) {
-    events.push({ kind: 'cleared' });
-  }
-  return { ...hunt, cells, ores, nuggets, chest, status: cleared ? 'cleared' : 'digging', events };
-}
-
-/** Remonte avec tout le butin. */
-export function stop(hunt: Hunt): Hunt {
-  return hunt.status === 'digging' ? { ...hunt, status: 'stopped', events: [] } : hunt;
-}
-
-export function isOver(hunt: Hunt): boolean {
-  return hunt.status !== 'digging';
-}
-
-function shuffle<T>(items: T[], random: Random): T[] {
-  for (let index = items.length - 1; index > 0; index--) {
-    const other = Math.floor(random() * (index + 1));
-    [items[index], items[other]] = [items[other], items[index]];
-  }
-  return items;
+export function isOver(gamble: Gamble): boolean {
+  return gamble.status !== 'playing';
 }

@@ -21,7 +21,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[aventures-prompts]] : prompts Gemini des quatre nouvelles aventures (Chasse au filon, Marchand nain, Forge express, Expédition aux flambeaux), 14/10/2026.
 - [[forge-express]] : rythme à l'enclume dès le Maître des profondeurs, un objet bonus selon le score (14/10/2026).
 - [[marchand-nain]] : marchand qui passe 5 jours par mois, annoncé par des indices, à marchander ou bluffer (14/10/2026).
-- [[chasse-au-filon]] : démineur de mine dès le Contremaître, 3 parties par jour, or et minerai pour l'Atelier (14/10/2026).
+- [[chasse-au-filon]] : « Quitte ou double » dès le Contremaître, une file de rochers à casser avant l'éboulement, 3 parties par jour (15/10/2026, remplace le démineur du 14/10).
 - [[wagonnet-fou]] (retiré) : dès le Contremaître, 3 courses de wagonnet par jour sur 3 voies, aiguillages sûrs ou risqués, or et minerai pour l'Atelier (14/10/2026).
 - [[campement]] : Taverne, Entrepôt et Puits, à faire grandir lentement dans l'onglet Aventures (14/10/2026).
 - [[direction-visuelle]] : ce qui plaît dans le genre, couleurs par écran, par stat et par qualité, prochaines étapes (14/10/2026).

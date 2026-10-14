@@ -1,8 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { EVOLUTION_FORMS, powerOf, zoneMaterial } from '../balance/balance';
+import { MINEHUNT_DAILY_RUNS, MINEHUNT_UNLOCK_FORM, propsFor, stageGold } from '../balance/minehunt';
 import type { TierId } from '../equipment/equipment.model';
-import { chestGold, MINEHUNT_DAILY_RUNS, MINEHUNT_UNLOCK_FORM, nuggetGold, pickaxeDurability, startingReveals } from '../balance/minehunt';
 import { Evolution } from '../evolution/evolution';
 import { Miner } from '../miner/miner';
 import { dayKey } from '../missions/mission-rules';
@@ -13,22 +13,24 @@ import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import { Wallet } from '../wallet/wallet';
-import { dig, Hunt, HuntStatus, isOver, startHunt, stop } from './minehunt-game';
-import { EMPTY_MINEHUNT, HuntLoot, huntLoot, isValidMinehuntState, MinehuntState, runsLeft } from './minehunt-rules';
+import { breakRock, cashOut, Gamble, GambleStatus, isOver, startGamble } from './minehunt-game';
+import { EMPTY_MINEHUNT, isValidMinehuntState, MinehuntState, runsLeft } from './minehunt-rules';
 
 const STORAGE_KEY = 'mine-explorer.minehunt';
 
 export const MINEHUNT_UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === MINEHUNT_UNLOCK_FORM);
 
-export interface HuntResult extends HuntLoot {
-  readonly status: HuntStatus;
-  readonly chest: boolean;
+export interface HuntResult {
+  readonly status: GambleStatus;
+  readonly ores: number;
+  readonly gold: number;
+  readonly rocks: number;
   readonly oreTier: TierId | null;
 }
 
 /**
- * Chasse au filon : 3 parties par jour. Le joueur creuse une paroi case par case et déduit où se cache le grisou
- * grâce aux indices. Il remonte quand il veut avec son butin ; si sa pioche casse, il n'en garde que la moitié.
+ * Chasse au filon, en « Quitte ou double » : 3 parties par jour. Une file de rochers à casser l'un après l'autre ;
+ * la cagnotte grossit, le risque d'éboulement aussi, et le joueur choisit quand encaisser.
  */
 @Injectable({ providedIn: 'root' })
 export class Minehunt {
@@ -42,27 +44,28 @@ export class Minehunt {
   private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<MinehuntState>(loadMinehunt());
   private readonly today = signal(dayKey(this.clock()));
-  private readonly huntState = signal<Hunt | null>(null);
-  /** Valeur d'une pépite et du coffre, figée au départ de la partie. */
-  private values = { nuggetGold: 0, chestGold: 0 };
+  private readonly gambleState = signal<Gamble | null>(null);
+  /** Valeur d'un filon d'or, figée au départ de la partie. */
+  private stageValue = 0;
 
   readonly unlocked = computed(() => this.evolution.index() >= MINEHUNT_UNLOCK_INDEX);
   readonly unlockLabel = EVOLUTION_FORMS[MINEHUNT_UNLOCK_INDEX].label;
   readonly dailyRuns = MINEHUNT_DAILY_RUNS;
   readonly runsLeft = computed(() => runsLeft(this.state(), this.today()));
-  readonly hunt = this.huntState.asReadonly();
+  readonly gamble = this.gambleState.asReadonly();
   readonly lastResult = signal<HuntResult | null>(null);
-  /** Résistance de la pioche avec le build du moment, pour l'annoncer avant de descendre. */
-  readonly durability = computed(() => {
+  /** Étais apportés par la Puissance du moment, annoncés avant de descendre. */
+  readonly props = computed(() => {
     const { zone, stage } = this.progression.progress();
-    return pickaxeDurability(powerOf(this.miner.permanent().stats), zone, stage);
+    return propsFor(powerOf(this.miner.permanent().stats), zone, stage);
   });
-  readonly reveals = computed(() => startingReveals(this.miner.permanent().stats.goldBonus));
+  /** Or de la cagnotte en cours, en pièces. */
+  readonly potGold = computed(() => Math.round((this.gambleState()?.goldStages ?? 0) * this.stageValue));
 
   start(): boolean {
     const today = dayKey(this.clock());
     this.today.set(today);
-    if (!this.unlocked() || this.huntState() !== null || runsLeft(this.state(), today) === 0) {
+    if (!this.unlocked() || this.gambleState() !== null || runsLeft(this.state(), today) === 0) {
       return false;
     }
     const current = this.state();
@@ -71,51 +74,53 @@ export class Minehunt {
     this.missionCounters.record('adventureRuns');
     const { zone, stage } = this.progression.progress();
     const goldBonus = this.miner.permanent().stats.goldBonus;
-    this.values = { nuggetGold: nuggetGold(zone, stage, goldBonus), chestGold: chestGold(zone, stage, goldBonus) };
+    this.stageValue = stageGold(zone, stage, goldBonus);
     this.lastResult.set(null);
-    this.huntState.set(startHunt(this.durability(), this.reveals(), goldBonus, this.random));
+    this.gambleState.set(startGamble(this.props(), goldBonus));
     return true;
   }
 
-  dig(index: number): void {
-    const hunt = this.huntState();
-    if (hunt === null) {
+  /** Casse le rocher suivant. */
+  breakNext(): void {
+    const gamble = this.gambleState();
+    if (gamble === null) {
       return;
     }
-    const next = dig(hunt, index);
-    this.huntState.set(next);
+    const next = breakRock(gamble, this.random);
+    this.gambleState.set(next);
     if (isOver(next)) {
       this.finish(next);
     }
   }
 
-  /** Remonte avec tout le butin. */
-  stop(): void {
-    const hunt = this.huntState();
-    if (hunt !== null) {
-      this.finish(stop(hunt));
+  /** Encaisse la cagnotte. */
+  cashOut(): void {
+    const gamble = this.gambleState();
+    if (gamble !== null && !isOver(gamble)) {
+      const next = cashOut(gamble);
+      this.gambleState.set(next);
+      this.finish(next);
     }
   }
 
-  /** Ferme le bilan de la partie : la paroi disparaît, on revient à l'accueil. */
+  /** Ferme le bilan : on revient à l'accueil. */
   leave(): void {
-    if (this.huntState() !== null && isOver(this.huntState() as Hunt)) {
-      this.huntState.set(null);
+    const gamble = this.gambleState();
+    if (gamble !== null && isOver(gamble)) {
+      this.gambleState.set(null);
     }
   }
 
-  private finish(hunt: Hunt): void {
-    const loot = huntLoot(hunt, this.values);
+  private finish(gamble: Gamble): void {
+    const gold = Math.round(gamble.goldStages * this.stageValue);
     const oreTier = zoneMaterial(this.progression.zone());
-    if (loot.gold > 0) {
-      this.wallet.add(loot.gold);
+    if (gold > 0) {
+      this.wallet.add(gold);
     }
-    if (oreTier !== null && loot.ores > 0) {
-      this.ores.add(oreTier, loot.ores);
+    if (oreTier !== null && gamble.ores > 0) {
+      this.ores.add(oreTier, gamble.ores);
     }
-    // La paroi reste affichée sous le bilan
-    this.huntState.set(hunt);
-    this.lastResult.set({ ...loot, status: hunt.status, chest: hunt.chest, oreTier });
+    this.lastResult.set({ status: gamble.status, ores: gamble.ores, gold, rocks: gamble.rocks.length, oreTier });
   }
 
   private save(next: MinehuntState): void {

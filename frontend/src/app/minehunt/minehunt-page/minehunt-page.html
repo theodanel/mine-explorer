@@ -1,80 +1,121 @@
-<section class="page game-panel" data-theme="ember" [style.background-image]="scene" aria-labelledby="minehunt-title">
+<section class="page game-panel" data-theme="ember" [class.shake]="shake()" [style.background-image]="scene" aria-labelledby="minehunt-title">
   <header class="page-header">
     <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
     <h2 id="minehunt-title">Chasse au filon</h2>
     <span class="chip">{{ minehunt.runsLeft() }} / {{ minehunt.dailyRuns }}</span>
   </header>
 
-  @if (hunt(); as hunt) {
-    <!-- En partie -->
-    <div class="hud">
-      <span class="durability" [attr.aria-label]="'Pioche : ' + hunt.durability + ' sur ' + hunt.maxDurability">
-        @for (left of durability(); track $index) {
-          <img [class.broken]="!left" [src]="images.pickaxe" alt="" width="128" height="128" />
-        }
-      </span>
-      <span class="loot">
-        @if (ore(); as ore) {
-          <img [src]="ore.icon" alt="" width="128" height="128" />{{ hunt.ores }}
-        }
-        <img [src]="images.nugget" alt="" width="96" height="96" />{{ hunt.nuggets }}
-        @if (hunt.chest) {
-          <img class="chest-found" [src]="images.chest" alt="Coffre trouvé" width="128" height="128" />
-        }
-      </span>
-    </div>
-
-    <div class="wall" [class.shake]="shake()" [style.--columns]="columns" role="grid" aria-label="Paroi à creuser">
-      @for (cell of cells(); track cell.index) {
-        <button
-          type="button"
-          class="cell"
-          [class.dug]="cell.dug"
-          [class]="cell.dug ? cell.content : ''"
-          [style.animation-delay.ms]="cell.delay"
-          [disabled]="cell.dug || over()"
-          [attr.aria-label]="cell.dug ? (cell.hint ? cell.hint + ' grisou autour' : cell.content) : 'Creuser'"
-          (click)="dig(cell.index)"
-        >
-          @if (cell.dug) {
-            @switch (cell.content) {
-              @case ('ore') {
-                @if (ore(); as ore) {
-                  <img class="loot-icon" [src]="ore.icon" alt="" width="128" height="128" />
-                }
+  @if (gamble(); as gamble) {
+    <!-- En partie : la file de rochers, du plus tendre au plus dur -->
+    <ol class="row" aria-label="Rochers de la file">
+      @for (rock of row(); track $index) {
+        <li class="slot" [class.current]="rock.current && !over()" [class]="rock.kind">
+          @if (rock.outcome; as outcome) {
+            @switch (outcome.kind) {
+              @case ('loot') {
+                <img [src]="outcome.chest ? images.chest : (ore()?.icon ?? images.nugget)" alt="" width="128" height="128" />
               }
-              @case ('nugget') {
-                <img class="loot-icon nugget" [src]="images.nugget" alt="" width="96" height="96" />
-              }
-              @case ('chest') {
-                <img class="loot-icon chest" [src]="images.chest" alt="" width="128" height="128" />
-              }
-              @case ('gas') {
-                <span class="gas-cloud" aria-hidden="true"></span>
+              @case ('propped') {
+                <img [src]="images.prop" alt="" width="128" height="128" />
               }
               @default {
-                @if (cell.hint; as hint) {
-                  <span class="hint" [style.color]="cell.hintColor">{{ hint }}</span>
-                }
+                <img [src]="images.caveIn" alt="" width="256" height="256" />
               }
             }
+          } @else {
+            <img class="rock-thumb" [src]="rock.image" alt="" width="256" height="256" />
+          }
+        </li>
+      }
+    </ol>
+
+    <div class="arena">
+      @if (!over()) {
+        <button
+          type="button"
+          class="rock"
+          [class.striking]="striking()"
+          [disabled]="busy()"
+          [attr.aria-label]="'Casser le rocher ' + (gamble.rocks.length + 1)"
+          (click)="strike()"
+        >
+          @if (reveal() === null) {
+            <img class="rock-image" [src]="currentRock()" alt="" width="256" height="256" />
+            <span class="tap">Touche pour casser</span>
           }
         </button>
       }
+
+      @if (reveal(); as reveal) {
+        @switch (reveal.outcome.kind) {
+          @case ('loot') {
+            <div class="burst rays" [class.record]="reveal.outcome.chest" role="status">
+              @if (reveal.outcome.chest) {
+                <img class="burst-icon" [src]="images.chest" alt="" width="128" height="128" />
+                <strong>Un coffre !</strong>
+              } @else if (ore(); as ore) {
+                <img class="burst-icon" [src]="ore.icon" alt="" width="128" height="128" />
+              }
+              <span class="burst-loot">+{{ reveal.outcome.ores }}</span>
+            </div>
+          }
+          @case ('propped') {
+            <div class="fall propped" role="status">
+              <img class="fall-image" [src]="images.caveIn" alt="" width="256" height="256" />
+              <img class="beam" [src]="images.prop" alt="" width="128" height="128" />
+              <strong>L'étai a tenu !</strong>
+            </div>
+          }
+          @default {
+            <div class="fall" role="status">
+              <img class="fall-image" [src]="images.caveIn" alt="" width="256" height="256" />
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <div class="hud">
+      <div class="pot" aria-label="Cagnotte">
+        <span class="pot-title">Cagnotte</span>
+        <span class="pot-loot">
+          <img [src]="images.nugget" alt="" width="96" height="96" />{{ compact(minehunt.potGold()) }}
+          @if (ore(); as ore) {
+            <img [src]="ore.icon" alt="" width="128" height="128" />{{ gamble.ores }}
+          }
+        </span>
+      </div>
+      <div class="danger" [class.high]="riskHigh()">
+        <span class="danger-title">Éboulement</span>
+        <span class="danger-bar"><span class="danger-fill" [style.width.%]="risk() * 100"></span></span>
+        <span class="danger-value">{{ percent(risk()) }}</span>
+      </div>
+      <span class="props" [attr.aria-label]="'Étais : ' + gamble.props">
+        @for (prop of props(); track prop) {
+          <img [src]="images.prop" alt="" width="128" height="128" />
+        } @empty {
+          <span class="no-prop">Aucun étai</span>
+        }
+      </span>
     </div>
 
     @if (minehunt.lastResult(); as result) {
       <div class="result" role="status">
-        <span class="rays" [class.record]="result.chest"><img class="result-icon" [src]="result.chest ? images.chest : images.card" alt="" width="128" height="128" /></span>
-        <h3>{{ result.status === 'broken' ? 'Pioche cassée !' : result.status === 'cleared' ? 'Paroi vidée !' : 'Bien remonté !' }}</h3>
-        <p class="loot-line">
-          +{{ compact(result.gold) }} or
-          @if (result.ores > 0 && ore(); as ore) {
-            · +{{ result.ores }} {{ ore.label }}
-          }
-        </p>
-        @if (result.status === 'broken') {
-          <p class="note">Le grisou a eu ta pioche : tu ne remontes qu'avec la moitié du butin.</p>
+        @if (result.status === 'buried') {
+          <img class="result-icon" [src]="images.caveIn" alt="" width="256" height="256" />
+          <h3>Éboulement !</h3>
+          <p class="note">La galerie s'est effondrée au rocher {{ result.rocks }} : la cagnotte est perdue.</p>
+        } @else {
+          <span class="rays" [class.record]="result.status === 'complete'">
+            <img class="result-icon" [src]="images.chest" alt="" width="128" height="128" />
+          </span>
+          <h3>{{ result.status === 'complete' ? 'File entière : butin +50 % !' : 'Butin encaissé !' }}</h3>
+          <p class="loot-line">
+            +{{ compact(result.gold) }} or
+            @if (result.ores > 0 && ore(); as ore) {
+              · +{{ result.ores }} {{ ore.label }}
+            }
+          </p>
         }
         <div class="actions">
           <button type="button" class="game-button" (click)="leave()">Terminer</button>
@@ -84,17 +125,23 @@
         </div>
       </div>
     } @else {
-      <button type="button" class="game-button green stop" (click)="stop()">Remonter avec le butin</button>
+      <button type="button" class="game-button green cash" [disabled]="busy() || gamble.rocks.length === 0" (click)="cashOut()">
+        Encaisser
+      </button>
     }
   } @else {
     <!-- Accueil -->
     <div class="lobby">
       <img class="hero" [src]="images.card" alt="" width="128" height="128" />
       <ul class="rules">
-        <li><strong>Touche une case</strong> pour la creuser : minerai, pépite, un coffre… ou du grisou.</li>
-        <li>Une case vide indique <strong>combien de grisous</strong> l'entourent : déduis où creuser.</li>
-        <li>Ta pioche encaisse <strong>{{ minehunt.durability() }} coups de grisou</strong> (ta Puissance) ; ta Chance ouvre {{ minehunt.reveals() }} case{{ minehunt.reveals() > 1 ? 's' : '' }} au départ.</li>
-        <li><strong>Remonte quand tu veux</strong> avec tout le butin. Pioche cassée : la moitié seulement.</li>
+        <li><strong>Casse les rochers</strong> un à un : chacun ajoute son butin à ta cagnotte, de plus en plus gros.</li>
+        <li>Mais chaque rocher peut provoquer un <strong>éboulement</strong> qui emporte toute la cagnotte, et le risque monte.</li>
+        <li><strong>Encaisse quand tu veux.</strong> Les dix rochers cassés : butin +50 %.</li>
+        @if (minehunt.props() > 0) {
+          <li>Ta Puissance t'apporte <strong>{{ minehunt.props() }} étai{{ minehunt.props() > 1 ? 's' : '' }}</strong> : chacun retient un éboulement. Ta Chance réduit le risque.</li>
+        } @else {
+          <li>Gagne en Puissance pour avoir des <strong>étais</strong> : chacun retient un éboulement. Ta Chance réduit le risque.</li>
+        }
       </ul>
       @if (minehunt.unlocked()) {
         <button type="button" class="game-button green go" [disabled]="minehunt.runsLeft() === 0" (click)="start()">

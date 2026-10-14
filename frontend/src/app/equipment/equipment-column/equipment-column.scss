@@ -10,7 +10,7 @@
   list-style: none;
 }
 
-// Case d'équipement : bois sombre, bord épais, fond teinté par la rareté
+// Case d'équipement : le cadre de qualité (.item-frame, styles.scss) colore bord et fond selon le palier
 .slot {
   position: relative;
   display: grid;
@@ -18,14 +18,14 @@
   width: 17cqw;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 0.9cqw solid #2a1a0d;
   border-radius: 3cqw;
-  background:
-    linear-gradient(color-mix(in srgb, var(--tier-color, transparent) 55%, transparent), transparent),
-    linear-gradient(#5b3d24, #3d2815);
-  box-shadow:
-    inset 0 0 0 0.5cqw color-mix(in srgb, var(--tier-color, #7a5636) 80%, transparent),
-    0 0.8cqw 0 rgb(0 0 0 / 35%);
+
+  // Artefact, compagnon et case verrouillée gardent le bois ; les objets prennent leur cadre de qualité
+  &:not(.item-frame) {
+    border: 0.9cqw solid #2a1a0d;
+    background: linear-gradient(#5b3d24, #3d2815);
+    box-shadow: 0 0.8cqw 0 rgb(0 0 0 / 35%);
+  }
 
   &[data-tier='empty'] .slot-icon {
     filter: grayscale(1) brightness(0.55);
@@ -50,7 +50,7 @@
   position: absolute;
   inset: auto 0 0;
   padding: 0.4cqw 0;
-  background: rgb(0 0 0 / 55%);
+  background: rgb(0 0 0 / 35%);
   color: #fff3d6;
   font: bold 2.8cqw / 1 Arial, sans-serif;
   text-align: center;

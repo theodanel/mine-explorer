@@ -44,15 +44,16 @@
       }
       @case ('item') {
         <li
-          class="slot"
+          class="slot item-frame"
           tabindex="0"
+          [class.breathe]="cell.best"
           [appTooltip]="cell.tooltip"
           [attr.data-tier]="cell.tier"
           [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
         >
           <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
           @if (cell.level !== null) {
-            <span class="slot-level">Niv. {{ cell.level }}</span>
+            <span class="slot-level frame-label">Niv. {{ cell.level }}</span>
           }
         </li>
       }

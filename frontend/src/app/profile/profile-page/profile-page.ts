@@ -1,9 +1,12 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
 import { Evolution } from '../../evolution/evolution';
 import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
+import { AccountCard } from '../../online/account-card/account-card';
+import { LeaderboardPage } from '../../online/leaderboard-page/leaderboard-page';
+import { OnlineAccount } from '../../online/online-account';
 import { Progression } from '../../progression/progression';
 
 /** Volumes proposés, du plus fort au coupé. */
@@ -19,11 +22,14 @@ const VOLUME_OPTIONS = [
   selector: 'app-profile-page',
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
+  imports: [AccountCard, LeaderboardPage],
 })
 export class ProfilePage {
   protected readonly evolution = inject(Evolution);
   protected readonly progression = inject(Progression);
   protected readonly sound = inject(Sound);
+  protected readonly online = inject(OnlineAccount).enabled;
+  protected readonly leaderboardOpen = signal(false);
   private readonly navigation = inject(Navigation);
 
   protected readonly volumes = VOLUME_OPTIONS;

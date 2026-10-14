@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, Injector } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -13,6 +13,7 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
+import { ONLINE_CONFIG } from './online/online-config';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
 import { EVOLUTION_VISUALS, materialIconUrl } from './loading/game-assets';
@@ -95,5 +96,11 @@ export class App {
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page
     inject(SpellCaster);
+    // Synchronisation de la partie avec le cloud, chargée seulement si le jeu en ligne est allumé :
+    // éteint (production pour l'instant), son code ne pèse rien au démarrage
+    if (inject(ONLINE_CONFIG).enabled) {
+      const injector = inject(Injector);
+      void import('./online/cloud-sync').then(({ CloudSync }) => injector.get(CloudSync));
+    }
   }
 }

@@ -1,0 +1,44 @@
+<section class="page game-panel" aria-labelledby="leaderboard-title">
+  <header class="page-header">
+    <h2 id="leaderboard-title">Classement</h2>
+    <button type="button" class="close" aria-label="Revenir au profil" (click)="close()">×</button>
+  </header>
+
+  <div class="tabs" role="tablist">
+    @for (tab of tabs; track tab.type) {
+      <button
+        type="button"
+        role="tab"
+        [class.on]="type() === tab.type"
+        [attr.aria-selected]="type() === tab.type"
+        (click)="load(tab.type)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <div class="scroll">
+    @if (failed()) {
+      <p class="hint">Classement indisponible pour l'instant.</p>
+    } @else if (board(); as board) {
+      @if (board.me; as me) {
+        <p class="me">Ta place : <strong>{{ me.rank }}</strong> · {{ format(me.value) }}</p>
+      }
+      @if (board.top.length === 0) {
+        <p class="hint">Personne n'est encore classé.</p>
+      }
+      <ol class="rows">
+        @for (entry of board.top; track entry.rank) {
+          <li [class.mine]="board.me?.rank === entry.rank">
+            <span class="rank">{{ entry.rank }}</span>
+            <span class="pseudo">{{ entry.pseudo }}</span>
+            <span class="value">{{ format(entry.value) }}</span>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="hint">Chargement…</p>
+    }
+  </div>
+</section>

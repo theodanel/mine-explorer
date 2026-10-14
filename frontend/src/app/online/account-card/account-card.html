@@ -1,0 +1,83 @@
+<h3 class="section-title">Compte</h3>
+<article class="card account">
+  @switch (account.state().kind) {
+    @case ('loading') {
+      <p class="hint">Connexion au serveur…</p>
+    }
+    @case ('offline') {
+      <p class="hint">Serveur injoignable : la partie continue sur cet appareil.</p>
+      <button type="button" class="game-button stone" (click)="account.refresh()">Réessayer</button>
+    }
+    @case ('signed-out') {
+      <p class="hint">Connecte-toi pour retrouver ta partie sur tous tes appareils et entrer au classement.</p>
+      <div class="actions">
+        <button type="button" class="game-button green" (click)="account.signIn()">Se connecter avec Google</button>
+        <button type="button" class="game-button" (click)="leaderboard.emit()">Classement</button>
+      </div>
+    }
+    @case ('signed-in') {
+      @if (profile(); as me) {
+        @if (editing()) {
+          <form class="pseudo-form" (submit)="$event.preventDefault(); rename(pseudoInput.value)">
+            <label for="pseudo">Pseudo</label>
+            <input #pseudoInput id="pseudo" [value]="me.pseudo" maxlength="20" autocomplete="nickname" />
+            <button type="submit" class="game-button green">OK</button>
+          </form>
+          @if (pseudoError(); as error) {
+            <p class="error" role="alert">{{ error }}</p>
+          }
+        } @else {
+          <p class="pseudo">
+            <strong>{{ me.pseudo }}</strong>
+            <button type="button" class="link" (click)="editing.set(true)">Changer</button>
+          </p>
+        }
+      }
+
+      @switch (sync.state().kind) {
+        @case ('syncing') {
+          <p class="hint">Synchronisation…</p>
+        }
+        @case ('synced') {
+          <p class="hint">Partie sauvegardée dans le cloud.</p>
+        }
+        @case ('refused') {
+          <p class="error">Le serveur a refusé cette partie : progression trop rapide. Elle reste sur cet appareil.</p>
+        }
+        @case ('error') {
+          <p class="error">Sauvegarde dans le cloud impossible pour l'instant.</p>
+        }
+      }
+      @if (sync.state(); as state) {
+        @if (state.kind === 'conflict') {
+          <div class="conflict" role="alert">
+            <p>Ta partie du cloud ({{ state.cloudLabel }}) n'est pas celle de cet appareil ({{ state.localLabel }}). Laquelle garder ?</p>
+            <button type="button" class="game-button green" (click)="sync.keepCloud()">Celle du cloud</button>
+            <button type="button" class="game-button stone" (click)="sync.keepLocal()">Celle de cet appareil</button>
+          </div>
+        }
+      }
+
+      <div class="actions">
+        <button type="button" class="game-button" (click)="leaderboard.emit()">Classement</button>
+        <button type="button" class="game-button stone" (click)="sync.upload()">Sauvegarder</button>
+        <button type="button" class="game-button stone" (click)="signOut(false)">Se déconnecter</button>
+      </div>
+      <details class="manage">
+        <summary>Gérer mon compte</summary>
+        <button type="button" class="link" (click)="signOut(true)">Se déconnecter de tous les appareils</button>
+        <button type="button" class="link" (click)="exportData()">Voir mes données</button>
+        @if (exported(); as data) {
+          <pre class="export">{{ data }}</pre>
+        }
+        @if (confirmingDelete()) {
+          <p class="error">Le compte et la partie du cloud seront effacés. La partie de cet appareil reste.</p>
+          <button type="button" class="game-button red" (click)="deleteAccount()">Supprimer définitivement</button>
+          <button type="button" class="link" (click)="confirmingDelete.set(false)">Annuler</button>
+        } @else {
+          <button type="button" class="link danger" (click)="confirmingDelete.set(true)">Supprimer mon compte</button>
+        }
+      </details>
+    }
+  }
+</article>

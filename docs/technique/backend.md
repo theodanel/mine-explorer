@@ -146,7 +146,7 @@ Vérification : `https://api.bouncylab.ovh/actuator/health` répond `{"status":"
 
 ### 4. Front
 
-La CSP du front (`frontend/public/_headers`, `connect-src`) doit autoriser `https://api.bouncylab.ovh`, et les écrans de compte et de classement doivent être activés dans le build de production. Fait dans la PR du front, pas dans celle-ci.
+Allumer le jeu en ligne dans le build de production : `frontend/src/environments/environment.ts`, `online: { enabled: true, apiUrl: 'https://api.bouncylab.ovh' }`, et ajouter `https://api.bouncylab.ovh` à `connect-src` dans `frontend/public/_headers`. Puis vérifier le build servi avec `node tools/serve-dist.mjs` (aucune violation de CSP).
 
 | Variable (secret Fly.io) | Rôle |
 |---|---|
@@ -156,6 +156,20 @@ La CSP du front (`frontend/public/_headers`, `connect-src`) doit autoriser `http
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Client OAuth Google |
 
 `SPRING_PROFILES_ACTIVE=prod` est déjà dans `fly.toml` et l'image Docker. Le déploiement automatique par la CI viendra quand l'appli existera (jeton Fly.io dans l'environnement GitHub `production`).
+
+## Côté jeu (`frontend/src/app/online/`)
+
+| Fichier | Rôle |
+|---|---|
+| `environments/environment*.ts` | Interrupteur du jeu en ligne : **allumé avec `ng serve`** (serveur sur `http://localhost:8080`), **éteint dans le build de production** tant que le serveur n'est pas hébergé |
+| `online-api.ts` | Appels `fetch` avec le cookie de session (`credentials: 'include'`) et le jeton CSRF, redemandé une fois s'il a expiré ; hors connexion, le jeu continue |
+| `online-account.ts` | État du compte (connecté, déconnecté, serveur injoignable), pseudo, export, suppression |
+| `cloud-sync.ts` | Premier envoi de la partie locale, envoi toutes les 5 minutes et quand l'onglet passe en arrière-plan, choix du joueur si le cloud a une autre partie (rien n'est écrasé sans lui) |
+| `account-card/`, `leaderboard-page/` | Carte « Compte » et classement, dans la page Profil |
+
+Éteint, le code en ligne n'est jamais chargé : la synchronisation est importée à la demande, le reste vit dans le morceau de la page Profil. Les tests tournent jeu en ligne éteint (`src/test-providers.ts`) ; `online.spec.ts` l'allume contre un faux serveur.
+
+Tester en local : lancer le serveur (profil `dev`), puis `npm start` dans `frontend/` sur le port 4200, Profil, « Se connecter avec Google ».
 
 ## Ajouter Apple plus tard
 

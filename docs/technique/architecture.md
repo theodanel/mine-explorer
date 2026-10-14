@@ -31,7 +31,7 @@ Chaque dossier de `src/app/` couvre un domaine du jeu et suit le même schéma :
 | Service (`*.ts`, `@Injectable`) | État du domaine en signaux Angular, lecture et écriture de la sauvegarde, appel des règles. |
 | Composants (`*-page`, `*-dialog`…) | Affichage et interactions, sans logique de jeu. |
 
-Domaines : progression (zones et filons), minage, mineur (calcul des stats), équipement et forge, évolution, compétences et sorts, artefacts, Atelier, événements de mine, galeries, compagnons et Défi de la mine, Campement et Puits sans fond (onglet Aventures), missions, absence, son, navigation et superposition des fenêtres.
+Domaines : jeu en ligne (`online/` : compte, sauvegarde cloud, classement, voir [[backend]]), progression (zones et filons), minage, mineur (calcul des stats), équipement et forge, évolution, compétences et sorts, artefacts, Atelier, événements de mine, galeries, compagnons et Défi de la mine, Campement et Puits sans fond (onglet Aventures), missions, absence, son, navigation et superposition des fenêtres.
 
 ### Principes
 

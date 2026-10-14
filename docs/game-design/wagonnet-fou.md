@@ -4,7 +4,7 @@ Troisième aventure, validée par Théo le 14/10/2026 : une course de wagonnet s
 
 ## Règles
 
-- **Déblocage** : forme Maître des profondeurs (vers le jour 7). **3 courses par jour**, remises à minuit ; une course compte dès le départ.
+- **Déblocage** : forme Contremaître (vers le jour 3), comme le Puits ; Théo l'a avancé le 14/10/2026 (d'abord prévu au Maître des profondeurs). **3 courses par jour**, remises à minuit ; une course compte dès le départ.
 - **3 voies** : le wagonnet dévale tout seul. On glisse (ou on touche) à gauche ou à droite pour changer de voie ; flèches du clavier sur ordinateur.
 - **Obstacles** : éboulements, rails cassés, et à partir de 200 m des chauves-souris qui se jettent sur une voie voisine quand le wagonnet arrive à 12 m. Une rangée bloque une ou deux voies, jamais les trois.
 - **Trouvailles** : minerai et pépites sur les voies libres.
@@ -32,16 +32,9 @@ Repères (joueur automatique qui évite les obstacles, 20 courses) : 300 à 550 
 
 ## Visuels
 
-En attendant les images, la page utilise des remplaçants du jeu (`MINECART_IMAGES` dans `loading/game-assets.ts`) :
+Livrés par Théo le 14/10/2026 (Gemini) et rangés dans `art-source/aventures/` : `wagonnet.png`, `wagonnet-carte.png`, `chauve-souris.png`, `rail-casse.png`, `eboulement.png` (détourés) et `fond-wagonnet.jpg`. `python art-source/aventures/preparer-wagonnet.py` les recadre et les écrit dans `frontend/public/assets/`. Le fond sert deux fois : en entier, assombri, derrière la page ; et découpé autour des rails pour la voie de course, avec le point de fuite à 34 % de la découpe, comme la perspective de `minecart-page.ts`.
 
-- le décor de la mine de fer (zone 4) ;
-- le sac de pièces pour la carte ;
-- la chauve-souris des compagnons ;
-- le rocher de la zone pour l'éboulement ;
-- un trou bordé d'orange pour le rail cassé ;
-- le portrait du mineur dans une caisse pour le wagonnet.
-
-Chaque prompt ci-dessous est complet : colle-le seul, et joins une image du jeu comme référence de style (indiquée sous chaque titre). Dépose les résultats dans `art-source/aventures/`.
+Prompts utilisés, pour refaire une image si besoin (chaque prompt est complet, à coller seul avec l'image de référence indiquée) :
 
 ### Wagonnet (vu de dos) · `wagonnet.png`
 

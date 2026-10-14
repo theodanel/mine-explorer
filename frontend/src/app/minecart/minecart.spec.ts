@@ -32,8 +32,8 @@ describe('Minecart', () => {
     TestBed.resetTestingModule();
   });
 
-  it('reste fermé avant le Maître des profondeurs', () => {
-    const minecart = setup(2);
+  it('reste fermé avant le Contremaître', () => {
+    const minecart = setup(1);
     expect(minecart.unlocked()).toBe(false);
     expect(minecart.start()).toBe(false);
   });

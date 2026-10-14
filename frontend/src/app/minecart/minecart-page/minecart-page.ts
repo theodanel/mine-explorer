@@ -4,8 +4,7 @@ import { Sound } from '../../audio/sound';
 import { zoneMaterial } from '../../balance/balance';
 import { RECORD_STEP_METERS, VIEW_METERS } from '../../balance/minecart';
 import { TIER_LABELS } from '../../equipment/equipment.model';
-import { Evolution } from '../../evolution/evolution';
-import { EVOLUTION_VISUALS, materialIconUrl, MINECART_IMAGES, rockUrl } from '../../loading/game-assets';
+import { materialIconUrl, MINECART_IMAGES } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Progression } from '../../progression/progression';
 import { Minecart } from '../minecart';
@@ -14,15 +13,15 @@ import { ForkChoice, RideEvent, speedOf, ThingKind } from '../minecart-game';
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 /**
- * Perspective de la voie, en % de la zone de jeu : l'horizon en haut, le wagonnet en bas. Un objet lointain est
- * 4 fois plus petit qu'un objet tout proche, et les voies se resserrent vers l'horizon.
+ * Perspective de la voie, en % de la découpe du fond (MINECART_IMAGES.track) : le point de fuite des rails est à
+ * 34 % de sa hauteur, le wagonnet tout en bas. Un objet est d'autant plus petit et plus près du point de fuite qu'il
+ * est loin ; à la limite de la vue, il fait 15 % de sa taille de près.
  */
-const HORIZON_Y = 14;
-const NEAR_Y = 84;
-const FAR_SCALE = 0.25;
-const LANE_SPACING = 30;
-/** Traverses tous les 4 m : elles défilent et font sentir la vitesse. */
-const SLEEPER_METERS = 4;
+const VANISHING_Y = 34;
+const NEAR_Y = 92;
+const FAR_SCALE = 0.15;
+/** Écart entre deux voies au premier plan, mesuré sur les rails de l'image. */
+const LANE_SPACING = 31;
 /** Un glissement plus court que ça est un simple toucher. */
 const SWIPE_PX = 24;
 const SHAKE_MS = 350;
@@ -33,7 +32,7 @@ function depthScale(ahead: number): number {
 }
 
 function screenY(scale: number): number {
-  return HORIZON_Y + ((NEAR_Y - HORIZON_Y) * (scale - FAR_SCALE)) / (1 - FAR_SCALE);
+  return VANISHING_Y + (NEAR_Y - VANISHING_Y) * scale;
 }
 
 function laneX(lane: number, scale: number): number {
@@ -52,18 +51,18 @@ export class MinecartPage {
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   private readonly progression = inject(Progression);
-  private readonly evolution = inject(Evolution);
 
   protected readonly images = MINECART_IMAGES;
   protected readonly recordStep = RECORD_STEP_METERS;
   protected readonly scene = `url(${MINECART_IMAGES.background})`;
-  protected readonly portrait = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
   protected readonly ore = computed(() => {
     const tier = zoneMaterial(this.progression.zone());
     return tier === null ? null : { icon: materialIconUrl(tier), label: TIER_LABELS[tier] };
   });
-  private readonly icons = computed<Readonly<Record<Exclude<ThingKind, 'brokenRail'>, string>>>(() => ({
-    rockfall: rockUrl(this.progression.zone()),
+  protected readonly track = `url(${MINECART_IMAGES.track})`;
+  private readonly icons = computed<Readonly<Record<ThingKind, string>>>(() => ({
+    rockfall: MINECART_IMAGES.rockfall,
+    brokenRail: MINECART_IMAGES.brokenRail,
     bat: MINECART_IMAGES.bat,
     ore: this.ore()?.icon ?? MINECART_IMAGES.nugget,
     nugget: MINECART_IMAGES.nugget,
@@ -91,7 +90,7 @@ export class MinecartPage {
         return {
           id: thing.id,
           kind: thing.kind,
-          icon: thing.kind === 'brokenRail' ? null : this.icons()[thing.kind],
+          icon: this.icons()[thing.kind],
           left: laneX(thing.lane, scale),
           top: screenY(scale),
           scale,
@@ -99,21 +98,6 @@ export class MinecartPage {
       })
       .sort((a, b) => a.scale - b.scale);
   });
-  protected readonly sleepers = computed(() => {
-    const distance = this.ride()?.distance ?? 0;
-    const first = Math.ceil(distance / SLEEPER_METERS) * SLEEPER_METERS;
-    return Array.from({ length: Math.ceil(VIEW_METERS / SLEEPER_METERS) }, (_, index) => {
-      const scale = depthScale(first + index * SLEEPER_METERS - distance);
-      return { y: screenY(scale), half: LANE_SPACING * 1.5 * scale };
-    });
-  });
-  /** Bords des voies, de l'horizon jusqu'au wagonnet. */
-  protected readonly rails = [-0.5, 0.5, 1.5, 2.5].map((edge) => ({
-    x1: laneX(edge, 1),
-    y1: NEAR_Y,
-    x2: laneX(edge, FAR_SCALE),
-    y2: HORIZON_Y,
-  }));
   protected readonly cartLeft = computed(() => laneX(this.ride()?.lane ?? 1, 1));
   /** L'aiguillage qui arrive, quand il est en vue. */
   protected readonly fork = computed(() => {

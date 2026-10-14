@@ -2,7 +2,7 @@
   display: block;
 }
 
-// Plein écran sur le décor de la mine de fer et ses rails, en attendant le décor du Wagonnet
+// Plein écran sur le tunnel du Wagonnet, assombri ; la voie de course est sa découpe autour des rails
 .minecart {
   position: relative;
   display: grid;
@@ -138,9 +138,15 @@
   }
 }
 
-// La voie, vue de dos : les objets sont placés en % par la perspective calculée dans le composant
+// La voie, vue de dos : la découpe du tunnel, au format de l'image pour que les rails tombent juste ;
+// les objets sont placés en % par la perspective calculée dans le composant
 .track {
+  align-self: end;
+  width: 100%;
+  aspect-ratio: 572 / 500;
   overflow: hidden;
+  background-position: center;
+  background-size: 100% 100%;
   cursor: pointer;
 
   &.shake {
@@ -159,32 +165,13 @@
   }
 }
 
-.rails {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.rail {
-  stroke: #c9b08a;
-  stroke-width: 0.8;
-  vector-effect: non-scaling-stroke;
-}
-
-.sleeper {
-  stroke: rgb(120 80 45 / 75%);
-  stroke-width: 3;
-  vector-effect: non-scaling-stroke;
-}
-
 .thing {
   position: absolute;
-  width: calc(22cqw * var(--scale));
-  height: calc(22cqw * var(--scale));
+  width: calc(26cqw * var(--scale));
+  height: calc(26cqw * var(--scale));
   object-fit: contain;
   filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 60%));
-  transform: translate(-50%, -85%);
+  transform: translate(-50%, -90%);
   pointer-events: none;
 
   &.ore,
@@ -194,21 +181,15 @@
     filter: drop-shadow(0 0 2cqw rgb(255 211 77 / 70%));
   }
 
-  &.bat {
-    width: calc(16cqw * var(--scale));
-    height: calc(16cqw * var(--scale));
-    transform: translate(-50%, -150%);
+  &.brokenRail {
+    transform: translate(-50%, -70%);
   }
-}
 
-// Rail cassé : un trou sombre en travers de la voie, bordé d'orange pour se voir de loin
-.gap {
-  width: calc(26cqw * var(--scale));
-  height: calc(7cqw * var(--scale));
-  border: calc(0.8cqw * var(--scale)) solid #ff8a3c;
-  border-radius: 1cqw;
-  background: #0b0604;
-  transform: translate(-50%, -50%);
+  &.bat {
+    width: calc(20cqw * var(--scale));
+    height: calc(20cqw * var(--scale));
+    transform: translate(-50%, -160%);
+  }
 }
 
 .fork-sign {
@@ -224,36 +205,20 @@
   pointer-events: none;
 }
 
-// Le wagonnet du joueur, en bas de la voie : le portrait du mineur dans une caisse, en attendant son image
+// Le wagonnet du joueur, vu de dos, posé sur les rails au premier plan
 .cart {
   position: absolute;
-  bottom: 4%;
-  display: grid;
-  justify-items: center;
-  width: 26cqw;
+  bottom: -2%;
+  width: 30cqw;
+  height: auto;
+  filter: drop-shadow(0 1cqw 0.8cqw rgb(0 0 0 / 60%));
   transform: translateX(-50%);
   transition: left 0.12s ease-out;
   pointer-events: none;
 
-  img {
-    width: 16cqw;
-    height: 16cqw;
-    margin-bottom: -6cqw;
-    border-radius: 50%;
-  }
-
   &.hurt {
     animation: blink 0.35s steps(2) 1;
   }
-}
-
-.cart-box {
-  width: 100%;
-  height: 12cqw;
-  border: 0.8cqw solid #1a0f07;
-  border-radius: 1.5cqw 1.5cqw 3cqw 3cqw;
-  background: linear-gradient(#8a5a33, #4e2f17);
-  box-shadow: inset 0 1.2cqw 0 rgb(255 255 255 / 15%);
 }
 
 @keyframes blink {

@@ -15,6 +15,10 @@
 	<description>Serveur de Mine Explorer</description>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Correctifs de sécurité plus récents que ceux de Spring Boot 4.1.1 (audit OSV du 14/10/2026, voir
+		     docs/technique/audit-securite-backend.md). À retirer dès qu'une version de Spring Boot les inclut. -->
+		<tomcat.version>11.0.27</tomcat.version>
+		<jackson-bom.version>3.1.7</jackson-bom.version>
 	</properties>
 	<dependencies>
 		<dependency>

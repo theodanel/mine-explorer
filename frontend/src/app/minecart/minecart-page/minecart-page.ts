@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
 import { zoneMaterial } from '../../balance/balance';
-import { RECORD_STEP_METERS, VIEW_METERS } from '../../balance/minecart';
+import { MAX_SPEED, RECORD_STEP_METERS, START_SPEED, VIEW_METERS } from '../../balance/minecart';
 import { TIER_LABELS } from '../../equipment/equipment.model';
 import { materialIconUrl, MINECART_IMAGES } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
@@ -13,18 +13,27 @@ import { ForkChoice, RideEvent, speedOf, ThingKind } from '../minecart-game';
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 /**
- * Perspective de la voie, en % de la découpe du fond (MINECART_IMAGES.track) : le point de fuite des rails est à
- * 34 % de sa hauteur, le wagonnet tout en bas. Un objet est d'autant plus petit et plus près du point de fuite qu'il
- * est loin ; à la limite de la vue, il fait 15 % de sa taille de près.
+ * Perspective, en % de la scène : le haut du tunnel (y de 0 à 800 sur l'image 572×1024), mesuré sur ses rails.
+ * Le point de fuite est à 62,9 % de la hauteur, le premier plan à 95 %. Un objet est d'autant plus petit et plus
+ * proche du point de fuite qu'il est loin ; à la limite de la vue, il fait 20 % de sa taille de près.
  */
-const VANISHING_Y = 34;
-const NEAR_Y = 92;
-const FAR_SCALE = 0.15;
+const VANISHING_Y = 62.9;
+const NEAR_Y = 95;
+const FAR_SCALE = 0.2;
 /** Écart entre deux voies au premier plan, mesuré sur les rails de l'image. */
-const LANE_SPACING = 31;
+const LANE_SPACING = 29.4;
+/**
+ * Défilement du tunnel : deux copies du décor grossissent vers le point de fuite (ses rails restent en place,
+ * les traverses et les poutres foncent vers le joueur), l'une relayant l'autre en fondu. Un cycle = 3 m parcourus,
+ * pour un grossissement ×1,35, l'écart entre deux poutres de l'image.
+ */
+const LOOP_METERS = 3;
+const LOOP_ZOOM = 1.35;
 /** Un glissement plus court que ça est un simple toucher. */
 const SWIPE_PX = 24;
 const SHAKE_MS = 350;
+const TILT_MS = 220;
+const HINT_MS = 3500;
 
 function depthScale(ahead: number): number {
   const t = Math.min(Math.max(ahead / VIEW_METERS, 0), 1);
@@ -39,7 +48,12 @@ function laneX(lane: number, scale: number): number {
   return 50 + (lane - 1) * LANE_SPACING * scale;
 }
 
-/** Wagonnet fou : la course vue de dos, les voies en perspective, et le bilan. */
+/** Une copie du décor à la phase `phase` (0 à 1) de son cycle : elle grossit, apparaît puis s'efface. */
+function tunnelLayer(phase: number): { transform: string; opacity: number } {
+  return { transform: `scale(${LOOP_ZOOM ** phase})`, opacity: 1 - Math.abs(2 * phase - 1) };
+}
+
+/** Wagonnet fou : la course vue de dos, le tunnel qui défile, et le bilan. */
 @Component({
   selector: 'app-minecart-page',
   templateUrl: './minecart-page.html',
@@ -55,11 +69,11 @@ export class MinecartPage {
   protected readonly images = MINECART_IMAGES;
   protected readonly recordStep = RECORD_STEP_METERS;
   protected readonly scene = `url(${MINECART_IMAGES.background})`;
+  protected readonly vanishingY = VANISHING_Y;
   protected readonly ore = computed(() => {
     const tier = zoneMaterial(this.progression.zone());
     return tier === null ? null : { icon: materialIconUrl(tier), label: TIER_LABELS[tier] };
   });
-  protected readonly track = `url(${MINECART_IMAGES.track})`;
   private readonly icons = computed<Readonly<Record<ThingKind, string>>>(() => ({
     rockfall: MINECART_IMAGES.rockfall,
     brokenRail: MINECART_IMAGES.brokenRail,
@@ -77,6 +91,15 @@ export class MinecartPage {
   protected readonly speed = computed(() => {
     const ride = this.ride();
     return ride === null ? 0 : Math.round(speedOf(ride) * 3.6);
+  });
+  /** De 0 au départ à 1 à pleine vitesse : les traits de vitesse en dépendent. */
+  protected readonly rush = computed(() => {
+    const ride = this.ride();
+    return ride === null ? 0 : Math.min(Math.max((speedOf(ride) - START_SPEED) / (MAX_SPEED - START_SPEED), 0), 1);
+  });
+  protected readonly tunnel = computed(() => {
+    const phase = ((this.ride()?.distance ?? 0) / LOOP_METERS) % 1;
+    return [tunnelLayer(phase), tunnelLayer((phase + 0.5) % 1)];
   });
   /** Les objets sur la voie, projetés en perspective, du plus lointain au plus proche. */
   protected readonly things = computed(() => {
@@ -108,8 +131,12 @@ export class MinecartPage {
     return { choice: ride.fork.choice, top: screenY(depthScale(ride.fork.at - ride.distance)) };
   });
   protected readonly shake = signal(false);
+  /** Le wagonnet penche du côté où il change de voie. */
+  protected readonly tilt = signal<-1 | 0 | 1>(0);
+  protected readonly hint = signal(false);
   protected readonly flash = signal<string | null>(null);
   private pointerStartX: number | null = null;
+  private tiltTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     effect(() => {
@@ -122,11 +149,19 @@ export class MinecartPage {
   protected start(): void {
     if (this.minecart.start()) {
       this.sound.play('blast');
+      this.hint.set(true);
+      setTimeout(() => this.hint.set(false), HINT_MS);
     }
   }
 
   protected steer(direction: -1 | 1): void {
+    const before = this.ride()?.lane;
     this.minecart.steer(direction);
+    if (this.ride()?.lane !== before) {
+      this.tilt.set(direction);
+      clearTimeout(this.tiltTimer);
+      this.tiltTimer = setTimeout(() => this.tilt.set(0), TILT_MS);
+    }
   }
 
   protected choose(choice: ForkChoice): void {

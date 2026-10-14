@@ -184,8 +184,6 @@ export const EVENT_IMAGES = {
 export const MINECART_IMAGES = {
   card: 'assets/ui/aventures/wagonnet-carte.webp',
   background: 'assets/backgrounds/aventure-wagonnet.webp',
-  /** Découpe du fond autour des rails : la voie de course, en perspective. */
-  track: 'assets/backgrounds/aventure-wagonnet-voie.webp',
   cart: 'assets/ui/aventures/wagonnet.webp',
   bat: 'assets/ui/aventures/chauve-souris.webp',
   rockfall: 'assets/ui/aventures/eboulement.webp',

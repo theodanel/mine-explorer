@@ -29,52 +29,69 @@
       #track
       class="track"
       [class.shake]="shake()"
-      [style.background-image]="track"
       role="application"
       aria-label="Voie du wagonnet : glisse ou touche à gauche ou à droite pour changer de voie"
       (pointerdown)="pointerDown($event)"
       (pointerup)="pointerUp($event, track)"
     >
-      @if (fork(); as fork) {
-        <span class="fork-sign" [style.top.%]="fork.top" aria-hidden="true">Aiguillage</span>
-      }
+      <!-- La scène garde les proportions du tunnel : la perspective des objets tombe juste sur ses rails -->
+      <div class="stage" [style.--vanishing-y.%]="vanishingY" [style.--rush]="rush()">
+        @for (layer of tunnel(); track $index) {
+          <div class="tunnel" [style.background-image]="scene" [style.transform]="layer.transform" [style.opacity]="layer.opacity"></div>
+        }
+        <div class="speed-lines" aria-hidden="true"></div>
 
-      @for (thing of things(); track thing.id) {
+        @if (fork(); as fork) {
+          <span class="fork-sign" [style.top.%]="fork.top" aria-hidden="true">Aiguillage</span>
+        }
+
+        @for (thing of things(); track thing.id) {
+          <img
+            class="thing"
+            [class]="thing.kind"
+            [src]="thing.icon"
+            alt=""
+            width="256"
+            height="256"
+            [style.left.%]="thing.left"
+            [style.top.%]="thing.top"
+            [style.--scale]="thing.scale"
+          />
+        }
+
         <img
-          class="thing"
-          [class]="thing.kind"
-          [src]="thing.icon"
+          class="cart"
+          [class.hurt]="shake()"
+          [class.tilt-left]="tilt() === -1"
+          [class.tilt-right]="tilt() === 1"
+          [style.left.%]="cartLeft()"
+          [src]="images.cart"
           alt=""
           width="256"
           height="256"
-          [style.left.%]="thing.left"
-          [style.top.%]="thing.top"
-          [style.--scale]="thing.scale"
         />
+      </div>
+
+      @if (fork(); as fork) {
+        <div class="fork" role="group" aria-label="Aiguillage : choisis ta voie" (pointerdown)="$event.stopPropagation()" (pointerup)="$event.stopPropagation()">
+          <button type="button" class="game-button choice" [class.green]="fork.choice !== 'risky'" [attr.aria-pressed]="fork.choice !== 'risky'" (click)="choose('safe')">
+            Voie sûre
+          </button>
+          <button type="button" class="game-button choice" [class.red]="fork.choice === 'risky'" [attr.aria-pressed]="fork.choice === 'risky'" (click)="choose('risky')">
+            Voie risquée<small>plus vite, plus de minerai</small>
+          </button>
+        </div>
       }
-
-      <img class="cart" [class.hurt]="shake()" [style.left.%]="cartLeft()" [src]="images.cart" alt="" width="256" height="256" />
-
+      @if (hint()) {
+        <p class="hint" aria-hidden="true"><span>‹ touche</span><span>touche ›</span></p>
+      }
       @if (flash(); as text) {
         <p class="flash">{{ text }}</p>
       }
+      @if (shake()) {
+        <div class="hit-flash" aria-hidden="true"></div>
+      }
     </div>
-
-    @if (fork(); as fork) {
-      <div class="fork" role="group" aria-label="Aiguillage : choisis ta voie">
-        <button type="button" class="game-button choice" [class.green]="fork.choice !== 'risky'" [attr.aria-pressed]="fork.choice !== 'risky'" (click)="choose('safe')">
-          Voie sûre
-        </button>
-        <button type="button" class="game-button choice" [class.red]="fork.choice === 'risky'" [attr.aria-pressed]="fork.choice === 'risky'" (click)="choose('risky')">
-          Voie risquée<small>plus vite, plus de minerai</small>
-        </button>
-      </div>
-    } @else {
-      <div class="steer">
-        <button type="button" class="game-button wood" aria-label="Voie de gauche" (click)="steer(-1)">◀</button>
-        <button type="button" class="game-button wood" aria-label="Voie de droite" (click)="steer(1)">▶</button>
-      </div>
-    }
   } @else {
     <!-- Avant le départ, ou le bilan -->
     <div class="lobby">

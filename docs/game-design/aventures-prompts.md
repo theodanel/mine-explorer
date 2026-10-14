@@ -6,41 +6,7 @@ Chaque prompt est complet : colle-le seul et joins l'image de référence indiqu
 
 ## Chasse au filon
 
-### Case de roche (pas encore creusée) · `case-roche.png`
-
-Référence : `art-source/rocks/zone4.png`.
-
-```
-Mobile idle RPG game asset, hand-painted 2D cartoon style matching a chibi dwarf-dragon miner character, NOT a photo, NOT a 3D render: soft painterly shading, warm mine palette. Simple and clean, few details. A single square game-board tile seen straight from above, filling the whole square image edge to edge, with slightly rounded corners and a thin dark-brown outline, like a tile of a cozy mobile puzzle game. No text, no letters, no numbers, no watermark. Square image 1024x1024. Same art style and colors as the attached reference image.
-The tile is a block of solid grey-brown rock with a few small cracks and pebbles, slightly raised like a button, inviting to be dug.
-```
-
-### Case creusée (vide) · `case-creusee.png`
-
-Référence : `art-source/rocks/zone4.png`.
-
-```
-Mobile idle RPG game asset, hand-painted 2D cartoon style matching a chibi dwarf-dragon miner character, NOT a photo, NOT a 3D render: soft painterly shading, warm mine palette. Simple and clean, few details. A single square game-board tile seen straight from above, filling the whole square image edge to edge, with slightly rounded corners and a thin dark-brown outline, like a tile of a cozy mobile puzzle game. No text, no letters, no numbers, no watermark. Square image 1024x1024. Same art style and colors as the attached reference image.
-The tile is a shallow dug hole in brown earth, darker in the middle, with a few small stones on the rim, clearly empty and flat.
-```
-
-### Poche de grisou · `grisou.png`
-
-Référence : `art-source/rocks/zone4.png`.
-
-```
-Mobile idle RPG game asset, hand-painted 2D cartoon style matching a chibi dwarf-dragon miner character, NOT a photo, NOT a 3D render: soft painterly shading, thick dark-brown outlines (about 4% of the image width), warm mine palette (wood, stone, copper, lantern light). Simple, clean and readable at small size, few details, no clutter. Single isolated object, centered, front view, no text, no letters, no numbers, no watermark. Solid pure green background #00FF00 filling the whole image, no shadow on the background, no green inside the object. Square image 1024x1024, the object fills about 80% of the width. Same art style and colors as the attached reference image.
-A small cloud of glowing toxic green firedamp gas bursting out of a cracked rock, with a few green sparks, looks dangerous but cute.
-```
-
-### Carte de l'aventure · `chasse-carte.png`
-
-Référence : `art-source/aventures/planche-11.png`.
-
-```
-Mobile idle RPG game asset, hand-painted 2D cartoon style matching a chibi dwarf-dragon miner character, NOT a photo, NOT a 3D render: soft painterly shading, thick dark-brown outlines (about 4% of the image width), warm mine palette (wood, stone, copper, lantern light). Simple, clean and readable at small size, few details, no clutter. Single isolated object, centered, front view, no text, no letters, no numbers, no watermark. Solid pure green background #00FF00 filling the whole image, no shadow on the background, no green inside the object. Square image 1024x1024, the object fills about 80% of the width. Same art style and colors as the attached reference image.
-A rock wall divided into a small grid of square stone tiles, a few tiles dug open revealing shiny gold nuggets and one glowing green gas pocket, a small pickaxe stuck in it.
-```
+Plus d'image à demander. Depuis le passage en « Quitte ou double » (15/10/2026), la Chasse réutilise les visuels du jeu : les rochers des zones 1 à 10 pour la file, `eboulement.png` pour l'éboulement, le coffre, la pépite, les minerais et le bois pour les étais. Les quatre prompts du démineur (case de roche, case creusée, grisou, carte) ne servent plus.
 
 ## Marchand nain
 

@@ -61,7 +61,7 @@ export class AdventuresPage {
       icon: MINEHUNT_IMAGES.card,
       scene: `url(${MINEHUNT_IMAGES.background})`,
       title: 'Chasse au filon',
-      text: 'Creuse la paroi, devine où dort le grisou, remonte avec le butin.',
+      text: "Casse les rochers un à un et encaisse avant l'éboulement.",
       locked: this.minehunt.unlocked() ? null : `Débloqué : ${this.minehunt.unlockLabel}`,
       status: this.minehunt.unlocked() ? `${this.minehunt.runsLeft()} / ${this.minehunt.dailyRuns} parties` : null,
     },

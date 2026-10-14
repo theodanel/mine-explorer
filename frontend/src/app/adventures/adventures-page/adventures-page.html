@@ -11,6 +11,7 @@
           type="button"
           class="card"
           [class.locked]="adventure.locked !== null"
+          [class.mystery]="adventure.mystery"
           [disabled]="adventure.locked !== null"
           [style.background-image]="adventure.scene"
           (click)="open(adventure)"
@@ -21,7 +22,7 @@
             <strong>{{ adventure.title }}</strong>
             <span class="pitch">{{ adventure.text }}</span>
             @if (adventure.locked; as locked) {
-              <span class="chip lock">Débloqué : {{ locked }}</span>
+              <span class="chip lock">{{ locked }}</span>
             } @else if (adventure.status; as status) {
               <span class="chip ready">{{ status }}</span>
             }

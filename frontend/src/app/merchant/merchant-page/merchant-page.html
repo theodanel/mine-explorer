@@ -1,0 +1,51 @@
+<section class="page game-panel" data-theme="gold" [style.background-image]="scene" aria-labelledby="merchant-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
+    <h2 id="merchant-title">Marchand nain</h2>
+  </header>
+
+  @if (merchant.here()) {
+    <div class="stall">
+      <div class="trader">
+        <img class="portrait" [class.pleased]="bubble()?.mood === 'success'" [class.annoyed]="bubble()?.mood === 'failure'" [src]="images.merchant" alt="" width="256" height="256" />
+        <p class="speech" [class.angry]="bubble()?.mood === 'failure'" role="status">{{ bubble()?.text ?? greeting() }}</p>
+      </div>
+
+      <div class="mood" [attr.aria-label]="'Humeur du marchand : ' + moodLabel()">
+        <span class="mood-label">Humeur : <strong>{{ moodLabel() }}</strong></span>
+        <span class="mood-bar"><span class="mood-fill" [style.width.%]="merchant.mood()"></span></span>
+      </div>
+
+      <ul class="offers">
+        @for (offer of offers(); track offer.id) {
+          <li class="offer" [class.done]="offer.status !== 'open'">
+            <img class="offer-icon" [src]="offer.icon" alt="" width="128" height="128" />
+            <div class="offer-text">
+              <strong>{{ offer.label }}</strong>
+              @if (offer.status === 'bought') {
+                <span class="tag sold">Acheté</span>
+              } @else if (offer.status === 'withdrawn') {
+                <span class="tag gone">Retiré pour aujourd'hui</span>
+              } @else {
+                <span class="price"><img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ offer.priceLabel }}</span>
+              }
+            </div>
+            @if (offer.status === 'open') {
+              <div class="offer-actions">
+                <button type="button" class="game-button green" (click)="buy(offer.id)">Acheter</button>
+                <button type="button" class="game-button small" [disabled]="!offer.canHaggle" (click)="haggle(offer.id)">Marchander</button>
+                <button type="button" class="game-button small" [disabled]="!offer.canHaggle" (click)="bluff(offer.id)">Bluffer</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+      <p class="hint">Marchander baisse le prix si ça passe, le monte sinon. Bluffer rapporte gros, mais un nain vexé retire son offre. Plus il est de bonne humeur, plus ça marche.</p>
+    </div>
+  } @else {
+    <div class="away">
+      <img class="silhouette" [src]="images.merchant" alt="" width="256" height="256" />
+      <p>Le marchand est sur les routes. Il revient dans <strong>{{ merchant.daysUntil() }} jour{{ merchant.daysUntil() > 1 ? 's' : '' }}</strong> : guette les indices dans la mine.</p>
+    </div>
+  }
+</section>

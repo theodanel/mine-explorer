@@ -7,6 +7,8 @@ import { AdventuresPage } from './adventures/adventures-page/adventures-page';
 import { CampPage } from './camp/camp-page/camp-page';
 import { AbyssPage } from './abyss/abyss-page/abyss-page';
 import { MinehuntPage } from './minehunt/minehunt-page/minehunt-page';
+import { MerchantPage } from './merchant/merchant-page/merchant-page';
+import { MerchantHint } from './merchant/merchant-hint/merchant-hint';
 import { ZoneMap } from './progression/zone-map/zone-map';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
 import { ForgeButton } from './equipment/forge-button/forge-button';
@@ -68,6 +70,8 @@ function resourceLabel(amount: number): string {
     CampPage,
     AbyssPage,
     MinehuntPage,
+    MerchantPage,
+    MerchantHint,
     ZoneMap,
     FooterMenu,
     ItemCompare,

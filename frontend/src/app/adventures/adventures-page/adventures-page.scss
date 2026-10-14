@@ -151,3 +151,8 @@
   color: #3a2405;
   font: bold 3.4cqw / 1 Arial, sans-serif;
 }
+
+// Le marchand qui approche : sa silhouette, toute noire
+.card.mystery .card-icon {
+  filter: brightness(0) drop-shadow(0 0 2cqw rgb(255 190 90 / 60%));
+}

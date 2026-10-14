@@ -142,6 +142,8 @@ export const ADVENTURE_IMAGES = {
   well: 'assets/ui/aventures/puits.webp',
   record: 'assets/ui/aventures/record.webp',
   hourglass: 'assets/ui/aventures/sablier.webp',
+  trapRock: 'assets/ui/aventures/rocher-piege.webp',
+  guardianRock: 'assets/ui/aventures/gardien.webp',
   abyssBackground: 'assets/backgrounds/aventure-puits.webp',
   campBackground: 'assets/backgrounds/aventure-campement.webp',
 } as const;

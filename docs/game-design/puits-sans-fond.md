@@ -27,7 +27,7 @@ Le simulateur joue le mini-jeu avec un joueur moyen (5 touchers par seconde, poi
 
 ## Visuels
 
-Planche 11 et fond du Puits livrés le 14/10/2026 (sources dans `art-source/aventures/`). Le mini-jeu réutilise les rochers des zones, le cristal qui tombe et le coffre des événements, et l'animation de frappe de la forme du mineur. En attente : le **rocher piégé** et le **gardien** (prompts dans [[prompts-gemini]]) ; d'ici là, le piège porte une dynamite et le gardien est un rocher de zone agrandi et teinté de violet.
+Planche 11 et fond du Puits livrés le 14/10/2026 (sources dans `art-source/aventures/`). Le mini-jeu réutilise les rochers des zones, le cristal qui tombe et le coffre des événements, et l'animation de frappe de la forme du mineur. Le **rocher piégé** et le **gardien** ont leurs images depuis le 14/10/2026 (`art-source/aventures/`).
 
 ## Pistes
 

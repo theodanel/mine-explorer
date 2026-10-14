@@ -24,7 +24,12 @@ interface Tab {
 }
 
 /** Pages ouvertes depuis une autre page du menu : leur onglet reste allumé (le Campement est dans les Aventures). */
-const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = { camp: 'adventures', abyss: 'adventures', challenge: 'companions' };
+const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = {
+  camp: 'adventures',
+  abyss: 'adventures',
+  minecart: 'adventures',
+  challenge: 'companions',
+};
 
 /**
  * Barre de menus tout en bas du jeu, avec une icône peinte par menu. Pas d'onglet « Mine » : on revient à la mine

@@ -1,0 +1,132 @@
+<section class="minecart" [style.background-image]="scene" aria-labelledby="minecart-title">
+  <div class="veil" aria-hidden="true"></div>
+
+  <header class="top">
+    <button type="button" class="back" aria-label="Revenir aux aventures" [disabled]="minecart.running()" (click)="back()">‹</button>
+    <h2 id="minecart-title">Wagonnet fou</h2>
+    <span class="chip">Record {{ minecart.record() }} m</span>
+  </header>
+
+  @if (ride(); as ride) {
+    <!-- En course -->
+    <div class="hud">
+      <span class="hearts" [attr.aria-label]="ride.hearts + ' cœurs sur ' + ride.maxHearts">
+        @for (full of hearts(); track $index) {
+          <span class="heart" [class.lost]="!full">♥</span>
+        }
+      </span>
+      <span class="meters"><strong>{{ meters() }}</strong> m</span>
+      <span class="loot">
+        @if (ore(); as ore) {
+          <img [src]="ore.icon" alt="" width="128" height="128" />{{ ride.ores }}
+        }
+        <img [src]="images.nugget" alt="" width="96" height="96" />{{ ride.nuggets }}
+      </span>
+    </div>
+    <p class="speed" [class.risky]="ride.risky">{{ speed() }} km/h @if (ride.risky) { · voie risquée }</p>
+
+    <div
+      #track
+      class="track"
+      [class.shake]="shake()"
+      role="application"
+      aria-label="Voie du wagonnet : glisse ou touche à gauche ou à droite pour changer de voie"
+      (pointerdown)="pointerDown($event)"
+      (pointerup)="pointerUp($event, track)"
+    >
+      <svg class="rails" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        @for (sleeper of sleepers(); track $index) {
+          <line class="sleeper" [attr.x1]="50 - sleeper.half" [attr.x2]="50 + sleeper.half" [attr.y1]="sleeper.y" [attr.y2]="sleeper.y" />
+        }
+        @for (rail of rails; track $index) {
+          <line class="rail" [attr.x1]="rail.x1" [attr.y1]="rail.y1" [attr.x2]="rail.x2" [attr.y2]="rail.y2" />
+        }
+      </svg>
+
+      @if (fork(); as fork) {
+        <span class="fork-sign" [style.top.%]="fork.top" aria-hidden="true">Aiguillage</span>
+      }
+
+      @for (thing of things(); track thing.id) {
+        @if (thing.icon; as icon) {
+          <img
+            class="thing"
+            [class]="thing.kind"
+            [src]="icon"
+            alt=""
+            width="128"
+            height="128"
+            [style.left.%]="thing.left"
+            [style.top.%]="thing.top"
+            [style.--scale]="thing.scale"
+          />
+        } @else {
+          <!-- Rail cassé : un trou dans la voie, en attendant son image -->
+          <span class="thing gap" [style.left.%]="thing.left" [style.top.%]="thing.top" [style.--scale]="thing.scale"></span>
+        }
+      }
+
+      <div class="cart" [class.hurt]="shake()" [style.left.%]="cartLeft()" aria-hidden="true">
+        <img [src]="portrait()" alt="" width="160" height="160" />
+        <span class="cart-box"></span>
+      </div>
+
+      @if (flash(); as text) {
+        <p class="flash">{{ text }}</p>
+      }
+    </div>
+
+    @if (fork(); as fork) {
+      <div class="fork" role="group" aria-label="Aiguillage : choisis ta voie">
+        <button type="button" class="game-button choice" [class.green]="fork.choice !== 'risky'" [attr.aria-pressed]="fork.choice !== 'risky'" (click)="choose('safe')">
+          Voie sûre
+        </button>
+        <button type="button" class="game-button choice" [class.red]="fork.choice === 'risky'" [attr.aria-pressed]="fork.choice === 'risky'" (click)="choose('risky')">
+          Voie risquée<small>plus vite, plus de minerai</small>
+        </button>
+      </div>
+    } @else {
+      <div class="steer">
+        <button type="button" class="game-button wood" aria-label="Voie de gauche" (click)="steer(-1)">◀</button>
+        <button type="button" class="game-button wood" aria-label="Voie de droite" (click)="steer(1)">▶</button>
+      </div>
+    }
+  } @else {
+    <!-- Avant le départ, ou le bilan -->
+    <div class="lobby">
+      @if (minecart.lastResult(); as result) {
+        <div class="result">
+          <span class="rays" [class.record]="result.newRecord"><img class="hero" [src]="images.card" alt="" width="256" height="256" /></span>
+          <p class="result-meters">{{ result.meters }} m</p>
+          @if (result.newRecord) {
+            <p class="record-banner">Nouveau record !</p>
+          }
+          <p class="loot-line">
+            +{{ compact(result.gold) }} or
+            @if (result.ores > 0 && ore(); as ore) {
+              · +{{ result.ores }} {{ ore.label }}
+            }
+          </p>
+        </div>
+      } @else {
+        <img class="hero" [src]="images.card" alt="" width="256" height="256" />
+        <ul class="rules">
+          <li><strong>Glisse</strong> à gauche ou à droite pour changer de voie.</li>
+          <li><strong>Évite</strong> les éboulements, les rails cassés et les chauves-souris.</li>
+          <li><strong>Ramasse</strong> le minerai et les pépites : de quoi nourrir l'Atelier.</li>
+          <li><strong>Aiguillage</strong> : voie sûre, ou voie risquée plus rapide et plus riche.</li>
+          <li>Ta Puissance donne <strong>{{ minecart.hearts() }} cœurs</strong> au wagonnet. Tous les {{ recordStep }} m de record : un bonus d'or.</li>
+        </ul>
+      }
+
+      @if (minecart.unlocked()) {
+        <button type="button" class="game-button green go" [disabled]="minecart.runsLeft() === 0" (click)="start()">
+          {{ minecart.runsLeft() === 0 ? 'Reviens demain' : minecart.lastResult() ? 'Repartir' : 'Partir' }}
+        </button>
+        <p class="runs">Courses du jour : {{ minecart.runsLeft() }} / {{ minecart.dailyRuns }}</p>
+      } @else {
+        <p class="locked-note">Le Wagonnet s'ouvre quand ton mineur devient <strong>{{ minecart.unlockLabel }}</strong>.</p>
+      }
+    </div>
+  }
+</section>

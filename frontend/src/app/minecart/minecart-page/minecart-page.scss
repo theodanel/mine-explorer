@@ -1,0 +1,398 @@
+:host {
+  display: block;
+}
+
+// Plein écran sur le décor de la mine de fer et ses rails, en attendant le décor du Wagonnet
+.minecart {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  height: 100%;
+  overflow: hidden;
+  border: 0.8cqw solid #1a0f07;
+  border-radius: 4cqw;
+  background-color: #120b06;
+  background-position: center;
+  background-size: cover;
+  color: #f3e6d0;
+  font-family: Arial, sans-serif;
+  touch-action: none;
+  user-select: none;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgb(10 6 3 / 80%), rgb(10 6 3 / 35%) 30%, rgb(10 6 3 / 45%) 70%, rgb(10 6 3 / 90%));
+  pointer-events: none;
+}
+
+.top,
+.hud,
+.speed,
+.track,
+.fork,
+.steer,
+.lobby {
+  position: relative;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  padding: 4cqw 4cqw 2cqw;
+
+  h2 {
+    margin: 0;
+    color: #ffd34d;
+    font-size: 6cqw;
+    text-shadow: 0 0.5cqw 0 #1a0f07;
+  }
+}
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 7cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.chip {
+  margin-left: auto;
+  padding: 1.2cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 55%);
+  font: bold 3cqw / 1 Arial, sans-serif;
+}
+
+// ─── En course ───────────────────────────────────────────────────────────
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+  padding: 0 4cqw;
+}
+
+.hearts {
+  display: flex;
+  gap: 0.6cqw;
+  font-size: 5.5cqw;
+}
+
+.heart {
+  color: #ff5a4a;
+  text-shadow: 0 0.4cqw 0 #1a0f07;
+
+  &.lost {
+    color: rgb(255 255 255 / 20%);
+  }
+}
+
+.meters {
+  font-size: 4cqw;
+
+  strong {
+    color: #ffd34d;
+    font-size: 6.5cqw;
+  }
+}
+
+.loot {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 1cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 55%);
+  font: bold 3.4cqw / 1 Arial, sans-serif;
+
+  img {
+    width: 5.5cqw;
+    height: 5.5cqw;
+    object-fit: contain;
+  }
+}
+
+.speed {
+  margin: 1cqw 0 0;
+  font-size: 3cqw;
+  text-align: center;
+  opacity: 0.85;
+
+  &.risky {
+    color: #ff9a6a;
+    font-weight: bold;
+    opacity: 1;
+  }
+}
+
+// La voie, vue de dos : les objets sont placés en % par la perspective calculée dans le composant
+.track {
+  overflow: hidden;
+  cursor: pointer;
+
+  &.shake {
+    animation: shake 0.35s;
+  }
+}
+
+@keyframes shake {
+  25%,
+  75% {
+    transform: translateX(-2cqw);
+  }
+
+  50% {
+    transform: translateX(2cqw);
+  }
+}
+
+.rails {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rail {
+  stroke: #c9b08a;
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.sleeper {
+  stroke: rgb(120 80 45 / 75%);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.thing {
+  position: absolute;
+  width: calc(22cqw * var(--scale));
+  height: calc(22cqw * var(--scale));
+  object-fit: contain;
+  filter: drop-shadow(0 0.8cqw 0.6cqw rgb(0 0 0 / 60%));
+  transform: translate(-50%, -85%);
+  pointer-events: none;
+
+  &.ore,
+  &.nugget {
+    width: calc(12cqw * var(--scale));
+    height: calc(12cqw * var(--scale));
+    filter: drop-shadow(0 0 2cqw rgb(255 211 77 / 70%));
+  }
+
+  &.bat {
+    width: calc(16cqw * var(--scale));
+    height: calc(16cqw * var(--scale));
+    transform: translate(-50%, -150%);
+  }
+}
+
+// Rail cassé : un trou sombre en travers de la voie, bordé d'orange pour se voir de loin
+.gap {
+  width: calc(26cqw * var(--scale));
+  height: calc(7cqw * var(--scale));
+  border: calc(0.8cqw * var(--scale)) solid #ff8a3c;
+  border-radius: 1cqw;
+  background: #0b0604;
+  transform: translate(-50%, -50%);
+}
+
+.fork-sign {
+  position: absolute;
+  left: 50%;
+  padding: 0.8cqw 2.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 1.5cqw;
+  background: linear-gradient(#ffd34d, #e09a12);
+  color: #3a2405;
+  font: bold 3cqw / 1 Arial, sans-serif;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+// Le wagonnet du joueur, en bas de la voie : le portrait du mineur dans une caisse, en attendant son image
+.cart {
+  position: absolute;
+  bottom: 4%;
+  display: grid;
+  justify-items: center;
+  width: 26cqw;
+  transform: translateX(-50%);
+  transition: left 0.12s ease-out;
+  pointer-events: none;
+
+  img {
+    width: 16cqw;
+    height: 16cqw;
+    margin-bottom: -6cqw;
+    border-radius: 50%;
+  }
+
+  &.hurt {
+    animation: blink 0.35s steps(2) 1;
+  }
+}
+
+.cart-box {
+  width: 100%;
+  height: 12cqw;
+  border: 0.8cqw solid #1a0f07;
+  border-radius: 1.5cqw 1.5cqw 3cqw 3cqw;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  box-shadow: inset 0 1.2cqw 0 rgb(255 255 255 / 15%);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.flash {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  margin: 0;
+  color: #ffd34d;
+  font-size: 7cqw;
+  font-weight: bold;
+  text-shadow: 0 0.6cqw 0 #1a0f07;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: rise 1.2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rise {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -8cqw);
+  }
+}
+
+.fork,
+.steer {
+  display: flex;
+  gap: 3cqw;
+  padding: 2cqw 4cqw 5cqw;
+
+  button {
+    flex: 1;
+    padding: 3cqw;
+    font-size: 4.5cqw;
+  }
+}
+
+.choice {
+  display: grid;
+  gap: 0.6cqw;
+
+  small {
+    font-size: 2.6cqw;
+    font-weight: normal;
+  }
+}
+
+// ─── Avant le départ et bilan ────────────────────────────────────────────
+
+.lobby {
+  display: grid;
+  grid-row: 2 / -1;
+  align-content: center;
+  justify-items: center;
+  gap: 3cqw;
+  padding: 4cqw;
+  text-align: center;
+}
+
+.hero {
+  width: 32cqw;
+  height: auto;
+  filter: drop-shadow(0 1.5cqw 1cqw rgb(0 0 0 / 70%));
+}
+
+.rules {
+  display: grid;
+  gap: 1.6cqw;
+  margin: 0;
+  padding: 3cqw 4cqw;
+  border: 0.6cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 88%);
+  font-size: 3.2cqw;
+  line-height: 1.3;
+  text-align: left;
+  list-style: none;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.result {
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+
+  p {
+    margin: 0;
+  }
+}
+
+// Les rayons accompagnent chaque bilan, plus vifs quand un record tombe
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
+.result-meters {
+  font-size: 8cqw;
+  font-weight: bold;
+}
+
+.record-banner {
+  color: #ffd34d;
+  font-size: 5cqw;
+  font-weight: bold;
+}
+
+.loot-line {
+  font-size: 4cqw;
+}
+
+.go {
+  min-width: 50cqw;
+  padding: 3cqw 6cqw;
+  font-size: 5cqw;
+}
+
+.runs,
+.locked-note {
+  margin: 0;
+  font-size: 3.2cqw;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track.shake,
+  .cart.hurt,
+  .flash {
+    animation: none;
+  }
+}

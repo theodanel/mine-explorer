@@ -2,7 +2,8 @@ import { Component, computed, inject } from '@angular/core';
 
 import { Abyss } from '../../abyss/abyss';
 import { Camp } from '../../camp/camp';
-import { ADVENTURE_IMAGES } from '../../loading/game-assets';
+import { Minecart } from '../../minecart/minecart';
+import { ADVENTURE_IMAGES, MINECART_IMAGES } from '../../loading/game-assets';
 import { Navigation, PageId } from '../../navigation/navigation';
 
 interface Adventure {
@@ -28,6 +29,7 @@ export class AdventuresPage {
   private readonly navigation = inject(Navigation);
   private readonly camp = inject(Camp);
   private readonly abyss = inject(Abyss);
+  private readonly minecart = inject(Minecart);
 
   protected readonly adventures = computed<readonly Adventure[]>(() => [
     {
@@ -47,6 +49,15 @@ export class AdventuresPage {
       text: 'Descends le plus bas possible en 30 secondes.',
       locked: this.abyss.unlocked() ? null : this.abyss.unlockLabel,
       status: this.abyss.unlocked() ? `${this.abyss.runsLeft()} / ${this.abyss.dailyRuns} essais` : null,
+    },
+    {
+      page: 'minecart',
+      icon: MINECART_IMAGES.card,
+      scene: `url(${MINECART_IMAGES.background})`,
+      title: 'Wagonnet fou',
+      text: 'Dévale les rails, évite les obstacles, ramasse le minerai.',
+      locked: this.minecart.unlocked() ? null : this.minecart.unlockLabel,
+      status: this.minecart.unlocked() ? `${this.minecart.runsLeft()} / ${this.minecart.dailyRuns} courses` : null,
     },
   ]);
 

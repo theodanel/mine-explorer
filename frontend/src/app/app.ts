@@ -38,6 +38,14 @@ import { ZoneBanner } from './progression/zone-banner/zone-banner';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
 
+/** En dessous de 100 000, le nombre exact ; au-delà, la forme courte. */
+const COMPACT_FROM = 100_000;
+const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+
+function resourceLabel(amount: number): string {
+  return amount < COMPACT_FROM ? String(amount) : COMPACT.format(amount);
+}
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -88,6 +96,9 @@ export class App {
     return tier === null ? null : { tier, label: TIER_LABELS[tier], amount: this.ores.stock()[tier] };
   });
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
+  /** Grands nombres abrégés (« 45,2 M ») : le compteur reste lisible en haut d'un écran de téléphone. */
+  protected readonly coinsLabel = computed(() => resourceLabel(this.wallet.coins()));
+  protected readonly shardsLabel = computed(() => resourceLabel(this.shards.amount()));
 
   // Panneau du bas : les 5 emplacements, puis l'artefact et le compagnon
   protected readonly equipmentSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag', 'gloves', 'boots', 'artifact', 'companion'];

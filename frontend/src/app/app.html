@@ -27,7 +27,7 @@
         tabindex="0"
       >
         <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />
-        <span class="coin-count">{{ wallet.coins() }}</span>
+        <span class="coin-count" [attr.title]="wallet.coins()">{{ coinsLabel() }}</span>
       </li>
       <li
         class="resource shards"
@@ -35,7 +35,7 @@
         tabindex="0"
       >
         <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
-        <span class="shard-count">{{ shards.amount() }}</span>
+        <span class="shard-count">{{ shardsLabel() }}</span>
       </li>
       @if (zoneOre(); as ore) {
         <li

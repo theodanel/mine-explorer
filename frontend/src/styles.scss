@@ -168,6 +168,42 @@ body {
   }
 }
 
+// Thème de couleur de chaque page : un bandeau de titre vif et un fond légèrement teinté, pour qu'on reconnaisse
+// d'un coup d'œil où l'on est (Compétences en bleu, Artefacts en violet…), comme les jeux du genre.
+[data-theme='sapphire'] { --theme-light: #5aa2ff; --theme-dark: #1d4a9e; }
+[data-theme='amethyst'] { --theme-light: #b77cff; --theme-dark: #5326a0; }
+[data-theme='emerald'] { --theme-light: #4fd47a; --theme-dark: #17703a; }
+[data-theme='ember'] { --theme-light: #ffa04a; --theme-dark: #a3420f; }
+[data-theme='teal'] { --theme-light: #3fd0c9; --theme-dark: #14706c; }
+[data-theme='gold'] { --theme-light: #ffd34d; --theme-dark: #a86a08; }
+
+.game-panel[data-theme] {
+  background:
+    linear-gradient(color-mix(in srgb, var(--theme-dark) 35%, transparent), transparent 35%),
+    linear-gradient(#3b2716, #24170d);
+
+  > .page-header {
+    margin: -4cqw -4cqw 0;
+    padding: 3cqw 4cqw;
+    border-bottom: 0.7cqw solid #1a0f07;
+    border-radius: 3.4cqw 3.4cqw 0 0;
+    background:
+      linear-gradient(rgb(255 255 255 / 30%), transparent 55%),
+      linear-gradient(var(--theme-light), var(--theme-dark));
+    box-shadow: inset 0 -0.6cqw 0 rgb(0 0 0 / 25%);
+
+    h2 {
+      color: #fff;
+      text-shadow:
+        0.35cqw 0.35cqw 0 #1a0f07,
+        -0.35cqw 0.35cqw 0 #1a0f07,
+        0.35cqw -0.35cqw 0 #1a0f07,
+        -0.35cqw -0.35cqw 0 #1a0f07,
+        0 0.8cqw 0 rgb(0 0 0 / 35%);
+    }
+  }
+}
+
 // Couleurs de rareté des sorts et des artefacts
 [data-rarity='common'] { --rarity-color: #9aa3ad; }
 [data-rarity='rare'] { --rarity-color: #3d8bff; }

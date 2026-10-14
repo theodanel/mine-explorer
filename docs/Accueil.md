@@ -15,6 +15,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[refonte-compagnons-evolution]] : équipements en bas, évolution par objectifs, Défi de la mine et pierres d'éveil, éclats plus faciles (13/10/2026).
 - [[puits-sans-fond]] : 3 descentes chronométrées par jour, étages de plus en plus durs, record personnel (14/10/2026).
 - [[campement]] : Taverne, Entrepôt et Puits, à faire grandir lentement dans l'onglet Aventures (14/10/2026).
+- [[direction-visuelle]] : ce qui plaît dans le genre, couleurs par écran, par stat et par qualité, prochaines étapes (14/10/2026).
 - [[builds-libres]] : toutes les stats sur toutes les pièces, affixes selon la qualité, réglage des builds (13/10/2026).
 - [[equilibrage]] : les chiffres en vigueur dans le jeu (formules, coûts, zones, courbe simulée). Source de vérité : `frontend/src/app/balance/balance.ts`.
 - [[prompt-refonte-majeure]] : analyse et plan de la refonte en phases (talents, compagnons, prestige, événements…).

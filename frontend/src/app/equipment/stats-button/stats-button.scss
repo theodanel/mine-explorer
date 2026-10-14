@@ -54,7 +54,7 @@
 
 .dialog {
   display: grid;
-  gap: 2cqw;
+  gap: 2.4cqw;
   width: 100%;
   max-height: 75cqh;
   padding: 4cqw;
@@ -67,7 +67,6 @@
 
   h2 {
     font-size: 5.5cqw;
-    text-align: center;
   }
 
   h3 {
@@ -110,4 +109,42 @@
   color: #fff;
   font: bold 6cqw / 1 Arial, sans-serif;
   cursor: pointer;
+}
+
+// Puissance en vedette : grand chiffre doré qui brille doucement
+.power {
+  display: grid;
+  justify-items: center;
+  gap: 0.5cqw;
+  margin: 0;
+  padding: 2cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 3cqw;
+  background: radial-gradient(ellipse at 50% 60%, rgb(255 211 77 / 30%), transparent 70%), rgb(0 0 0 / 30%);
+}
+
+.power-label {
+  font-size: 3cqw;
+  letter-spacing: 0.4cqw;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.power-value {
+  color: #ffd34d;
+  font-size: 9cqw;
+  text-shadow:
+    0 0 3cqw rgb(255 180 40 / 70%),
+    0 0.5cqw 0 #1a0f07;
+  animation: power-glow 2s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes power-glow {
+  to {
+    opacity: 0.85;
+  }
 }

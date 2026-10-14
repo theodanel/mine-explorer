@@ -10,7 +10,10 @@ const TEXT_SIZE = 52;
 const HIGHLIGHT_TEXT_SIZE = 68;
 const REWARD_TEXT_SIZE = 38;
 const DAMAGE_COLOR = 0xffffff;
-const CRITICAL_COLOR = 0xff7a2e;
+/** Critique : doré et plus gros, avec un petit coup de zoom, pour qu'on le sente passer. */
+const CRITICAL_COLOR = 0xffd34d;
+const POP_SCALE = 1.6;
+const POP_SHARE = 0.18;
 const GOLD_COLOR = 0xffd34d;
 const SHARD_COLOR = 0xc98bff;
 /** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
@@ -42,7 +45,14 @@ class FloatingText implements Effect {
   private ageMs = 0;
   private readonly startY: number;
 
-  constructor(x: number, y: number, label: string, color: number, fontSize: number) {
+  constructor(
+    x: number,
+    y: number,
+    label: string,
+    color: number,
+    fontSize: number,
+    private readonly pop = false,
+  ) {
     this.view = new Text({
       text: label,
       style: {
@@ -63,6 +73,10 @@ class FloatingText implements Effect {
     const progress = Math.min(this.ageMs / FLOATING_TEXT_DURATION_MS, 1);
     this.view.y = this.startY - FLOATING_TEXT_RISE_PX * progress;
     this.view.alpha = 1 - progress;
+    if (this.pop) {
+      const settle = Math.min(progress / POP_SHARE, 1);
+      this.view.scale.set(POP_SCALE - (POP_SCALE - 1) * settle);
+    }
     return progress < 1;
   }
 }
@@ -106,7 +120,7 @@ export class HitEffects {
     const damageLabel = outcome.critical ? `${outcome.damage} !` : String(outcome.damage);
     const damageColor = outcome.critical ? CRITICAL_COLOR : DAMAGE_COLOR;
     const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
-    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize));
+    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
 
     // L'or tombe à chaque coup : texte discret pour ne pas noyer les dégâts
     this.add(new FloatingText(x, y + REWARD_TEXT_OFFSET_Y, `+${outcome.reward.gold}`, GOLD_COLOR, REWARD_TEXT_SIZE));

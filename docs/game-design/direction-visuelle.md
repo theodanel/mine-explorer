@@ -22,14 +22,13 @@ Retour à [[Accueil]]. Écrite le 14/10/2026, quand Théo a donné carte blanche
 ## Fait
 
 - Forge : enclume au centre, cadres de qualité, micro-animations (PR #32).
-- Bandeaux de couleur sur toutes les pages, fenêtre des stats avec la Puissance en vedette et des stats en couleurs, compteurs du haut abrégés (« 45 M »).
+- Bandeaux de couleur sur toutes les pages, fenêtre des stats avec la Puissance en vedette et des stats en couleurs, compteurs du haut abrégés (« 45 M ») (PR #33).
+- Artefacts et compagnons encadrés aux couleurs de leur rareté (commun gris, rare bleu, épique violet, légendaire orange), boutons verts qui brillent quand l'action est possible, critiques dorés qui jaillissent dans la mine.
 
 ## Prochaines étapes
 
 - **Récompenses** : un éventail de rayons derrière chaque gain important (mission, palier d'évolution, record du Puits, objet de haute qualité), et une pluie de pièces ou d'éclats qui file vers le compteur.
-- **Mine** : chiffres de dégâts plus nets (critiques plus gros et dorés), barre de vie du filon plus vivante.
-- **Artefacts et Compagnons** : cartes encadrées aux couleurs de leur rareté, comme les objets.
-- **Boutons d'action** : reflet qui passe sur le bouton vert quand une action est possible.
+- **Mine** : barre de vie du filon plus vivante.
 
 ## Visuels à demander
 

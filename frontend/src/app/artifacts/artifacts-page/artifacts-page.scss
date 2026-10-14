@@ -62,10 +62,13 @@
   width: 100%;
   min-height: 24cqw;
   padding: 1.5cqw 1cqw;
-  border: 0.6cqw solid #1a0f07;
   border-radius: 3cqw;
-  background: linear-gradient(#4a3019, #2a1a0d);
-  box-shadow: inset 0 0 0 0.5cqw var(--rarity-color, rgb(255 243 214 / 12%));
+
+  // Une fois trouvé, la case prend le cadre de sa rareté (.item-frame, styles.scss)
+  &:not(.item-frame) {
+    border: 0.6cqw solid #1a0f07;
+    background: linear-gradient(#4a3019, #2a1a0d);
+  }
   color: #f3e6d0;
   font: inherit;
   cursor: pointer;
@@ -79,10 +82,6 @@
     outline: 0.6cqw solid #ffd34d;
     outline-offset: 0.4cqw;
   }
-}
-
-.found {
-  background: linear-gradient(color-mix(in srgb, var(--rarity-color) 35%, #4a3019), #2a1a0d);
 }
 
 .selected {

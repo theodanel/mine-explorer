@@ -46,7 +46,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
 		String category = category(request);
-		long retryAfter = limiter.acquire(category + ':' + clientIp(request), limitOf(category));
+		long retryAfter = limiter.acquire(category + ':' + ClientAddress.rateLimitKey(clientIp(request)),
+				limitOf(category));
 		if (retryAfter == 0) {
 			chain.doFilter(request, response);
 			return;

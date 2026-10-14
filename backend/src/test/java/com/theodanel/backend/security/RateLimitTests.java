@@ -68,4 +68,38 @@ class RateLimitTests extends ApiTestSupport {
 			return request;
 		};
 	}
+
+	@Test
+	void uneConnexionIpv6NeChangePasDeCompteurEnChangeantDAdresse() throws Exception {
+		// Même bloc /64, adresses différentes : un seul compteur
+		for (int i = 1; i <= 3; i++) {
+			mockMvc.perform(get("/api/csrf").with(remoteAddr("2001:db8:1:2::" + i))).andExpect(status().isOk());
+		}
+		mockMvc.perform(get("/api/csrf").with(remoteAddr("2001:db8:1:2:ffff::9")))
+			.andExpect(status().isTooManyRequests());
+		// Bloc /64 voisin : un autre abonné
+		mockMvc.perform(get("/api/csrf").with(remoteAddr("2001:db8:1:3::1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	void enTeteDAdresseInventeIgnoreSansProxyConfigure() throws Exception {
+		// Sans « client-ip-header » configuré (hors production), un client ne peut pas changer d'adresse par en-tête
+		for (int i = 0; i < 3; i++) {
+			mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("Fly-Client-IP", "203.0.113." + i)
+				.header("X-Forwarded-For", "198.51.100." + i)).andExpect(status().isOk());
+		}
+		mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("Fly-Client-IP", "203.0.113.99"))
+			.andExpect(status().isTooManyRequests());
+	}
+
+	@Test
+	void cleDeLimiteParAdresse() {
+		assertThat(ClientAddress.rateLimitKey("203.0.113.7")).isEqualTo("203.0.113.7");
+		assertThat(ClientAddress.rateLimitKey("2001:db8:1:2::1")).isEqualTo(ClientAddress.rateLimitKey("2001:0db8:0001:0002:aaaa::"));
+		assertThat(ClientAddress.rateLimitKey("2001:db8:1:2::1")).isNotEqualTo(ClientAddress.rateLimitKey("2001:db8:1:3::1"));
+		assertThat(ClientAddress.rateLimitKey("::ffff:203.0.113.7")).isEqualTo("203.0.113.7");
+		// Jamais de résolution DNS d'une valeur reçue : un nom ou une valeur absurde est comptée telle quelle
+		assertThat(ClientAddress.rateLimitKey("exemple.invalid")).isEqualTo("exemple.invalid");
+		assertThat(ClientAddress.rateLimitKey("::::zz")).isEqualTo("::::zz");
+	}
 }

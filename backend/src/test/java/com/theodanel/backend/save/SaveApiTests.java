@@ -128,4 +128,54 @@ class SaveApiTests extends ApiTestSupport {
 		mockMvc.perform(put("/api/save").with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{}"))
 			.andExpect(status().isUnauthorized());
 	}
+
+	@Test
+	void sansVersionAttendueUnePartieExistanteNestPasEcrasee() throws Exception {
+		UUID theo = newPlayer("theo");
+		putSave(theo, saveBody(null, 2, 1, 0)).andExpect(status().isOk());
+		// Un appareil qui croit envoyer la première sauvegarde ne doit pas écraser celle du cloud
+		putSave(theo, saveBody(null, 1, 1, 0))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.currentVersion").value(0));
+	}
+
+	@Test
+	void versionNegativeRefusee() throws Exception {
+		putSave(newPlayer("theo"), saveBody(-1L, 1, 1, 0)).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void valeursHorsBornesRefusees() throws Exception {
+		UUID theo = newPlayer("theo");
+		putSave(theo, saveBody(null, 0, 1, 0)).andExpect(jsonPath("$.code").value("save-invalid"));
+		putSave(theo, saveBody(null, 1, 16, 0)).andExpect(jsonPath("$.code").value("save-invalid"));
+		putSave(theo, saveBody(null, 1, 1, -1)).andExpect(jsonPath("$.code").value("save-invalid"));
+		putSave(theo, saveBody(null, 1, 1, 501)).andExpect(jsonPath("$.code").value("save-invalid"));
+		// Entier qui dépasse un int Java : refusé, pas tronqué
+		String overflow = json.writeValueAsString(Map.of("data",
+				Map.of("mine-explorer.progress", "{\"zone\":4294967297,\"stage\":1}")));
+		putSave(theo, overflow).andExpect(jsonPath("$.code").value("save-invalid"));
+	}
+
+	@Test
+	void sauvegardeTropVolumineuseRefusee() throws Exception {
+		Map<String, String> data = new HashMap<>();
+		String value = "x".repeat(SaveController.MAX_VALUE_CHARS);
+		for (int i = 0; i < 5; i++) {
+			data.put("mine-explorer.gros-" + i, value);
+		}
+		putSave(newPlayer("theo"), json.writeValueAsString(Map.of("data", data)))
+			.andExpect(status().isContentTooLarge())
+			.andExpect(jsonPath("$.code").value("save-too-large"));
+	}
+
+	@Test
+	void compteSupprimeDepuisUnAutreAppareil() throws Exception {
+		UUID theo = newPlayer("theo");
+		accounts.delete(theo);
+		// La session encore ouverte ne peut pas recréer de partie orpheline : 401 pour se reconnecter, pas 500
+		putSave(theo, saveBody(null, 1, 1, 0))
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value("account-gone"));
+	}
 }

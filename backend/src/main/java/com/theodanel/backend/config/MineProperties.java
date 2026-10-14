@@ -43,10 +43,12 @@ public record MineProperties(
 	}
 
 	/**
-	 * {@code maxLifetime} : durée de vie maximale d'une session, même utilisée chaque jour. {@code secureCookie} :
-	 * cookie envoyé seulement en HTTPS ; désactivé uniquement en local, faute de HTTPS sur localhost.
+	 * {@code idleTimeout} : inactivité au bout de laquelle un joueur connecté est déconnecté (les sessions anonymes
+	 * suivent {@code spring.session.timeout}, bien plus court). {@code maxLifetime} : durée de vie maximale d'une
+	 * session, même utilisée chaque jour. {@code secureCookie} : cookie envoyé seulement en HTTPS ; désactivé
+	 * uniquement en local, faute de HTTPS sur localhost.
 	 */
-	public record Session(@NotNull Duration maxLifetime, @NotNull Boolean secureCookie) {
+	public record Session(@NotNull Duration idleTimeout, @NotNull Duration maxLifetime, @NotNull Boolean secureCookie) {
 	}
 
 	public record AntiCheat(@NotNull Instant releaseDate, @DecimalMin("1.0") double speedFactor,

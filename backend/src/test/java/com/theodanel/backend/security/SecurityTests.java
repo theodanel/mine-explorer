@@ -1,9 +1,14 @@
 package com.theodanel.backend.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -11,10 +16,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+import jakarta.servlet.http.Cookie;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.theodanel.backend.support.ApiTestSupport;
@@ -25,6 +37,9 @@ import tools.jackson.databind.JsonNode;
 class SecurityTests extends ApiTestSupport {
 
 	private static final String FRONT = "https://mine.example.test";
+
+	@Autowired
+	private JdbcTemplate jdbc;
 
 	@Test
 	void apiSansConnexionRepond401EnJson() throws Exception {
@@ -136,5 +151,67 @@ class SecurityTests extends ApiTestSupport {
 	@Test
 	void classementPublic() throws Exception {
 		mockMvc.perform(get("/api/leaderboard/depth")).andExpect(status().isOk());
+	}
+
+	@Test
+	void deconnexionDemandeLeJetonCsrfPuisFermeLaSession() throws Exception {
+		mockMvc.perform(post("/api/logout").with(as(newPlayer("theo"))))
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.code").value("csrf-invalid"));
+
+		MockHttpServletResponse csrfResponse = mockMvc.perform(get("/api/csrf")).andReturn().getResponse();
+		JsonNode csrf = json.readTree(csrfResponse.getContentAsString());
+		Cookie session = csrfResponse.getCookie(SecurityConfig.SESSION_COOKIE);
+		// Le cookie de Spring Session porte l'identifiant de session encodé en Base64
+		String sessionId = new String(Base64.getDecoder().decode(session.getValue()), StandardCharsets.UTF_8);
+		assertThat(sessionsWithId(sessionId)).isOne();
+		mockMvc.perform(post("/api/logout").cookie(session)
+			.header(csrf.get("headerName").asString(), csrf.get("token").asString()))
+			.andExpect(status().isNoContent())
+			.andExpect(cookie().maxAge(SecurityConfig.SESSION_COOKIE, 0));
+		assertThat(sessionsWithId(sessionId)).isZero();
+	}
+
+	private int sessionsWithId(String sessionId) {
+		return jdbc.queryForObject("select count(*) from spring_session where session_id = ?", Integer.class, sessionId);
+	}
+
+	@Test
+	void jetonCsrfDUneAutreSessionRefuse() throws Exception {
+		JsonNode otherVisitor = json.readTree(mockMvc.perform(get("/api/csrf")).andReturn().getResponse().getContentAsString());
+		Cookie mySession = mockMvc.perform(get("/api/csrf")).andReturn().getResponse().getCookie(SecurityConfig.SESSION_COOKIE);
+		mockMvc.perform(put("/api/save").cookie(mySession).with(as(newPlayer("theo")))
+			.header(SecurityConfig.CSRF_HEADER, otherVisitor.get("token").asString())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(saveBody(null, 1, 1, 0)))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void corsRefuseLOrigineNull() throws Exception {
+		// Origine « null » : iframe sandboxée ou fichier local, jamais le jeu
+		mockMvc.perform(get("/api/csrf").header(HttpHeaders.ORIGIN, "null")).andExpect(status().isForbidden());
+	}
+
+	@Test
+	void hstsEnHttps() throws Exception {
+		mockMvc.perform(get("/api/csrf").secure(true))
+			.andExpect(header().string("Strict-Transport-Security", containsString("max-age=")));
+	}
+
+	@Test
+	void methodeNonPrevueRefusee() throws Exception {
+		mockMvc.perform(patch("/api/save").with(as(newPlayer("theo"))).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{}"))
+			.andExpect(status().isMethodNotAllowed())
+			.andExpect(content().string(not(containsString("Exception"))));
+	}
+
+	@Test
+	void corpsSansTailleRefuse() throws Exception {
+		mockMvc.perform(put("/api/save").header("Transfer-Encoding", "chunked")
+			.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().is(HttpStatus.LENGTH_REQUIRED.value()));
 	}
 }

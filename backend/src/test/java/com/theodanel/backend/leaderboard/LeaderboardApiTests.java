@@ -1,5 +1,6 @@
 package com.theodanel.backend.leaderboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -7,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.theodanel.backend.support.ApiTestSupport;
+
+import tools.jackson.databind.JsonNode;
 
 class LeaderboardApiTests extends ApiTestSupport {
 
@@ -78,5 +82,27 @@ class LeaderboardApiTests extends ApiTestSupport {
 					Map.of("mine-explorer.progress", "{\"zone\":9000,\"stage\":1,\"damage\":0}")))))
 			.andExpect(status().isUnprocessableContent());
 		mockMvc.perform(get("/api/leaderboard/depth")).andExpect(jsonPath("$.top").isEmpty());
+	}
+
+	@Test
+	void egaliteParfaiteMemeRangDansLeHautEtPourLeJoueur() throws Exception {
+		// Même valeur atteinte au même instant : le rang personnel doit être celui de la ligne du haut du classement
+		UUID first = playerWith("a", "Alice", 5, 2, 0);
+		UUID second = playerWith("b", "Bob", 5, 2, 0);
+		for (UUID player : List.of(first, second)) {
+			String pseudo = accounts.get(player).getPseudo();
+			String body = mockMvc.perform(get("/api/leaderboard/depth").with(as(player)))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+			JsonNode response = json.readTree(body);
+			int rankInTop = 0;
+			for (JsonNode entry : response.get("top")) {
+				if (entry.get("pseudo").asString().equals(pseudo)) {
+					rankInTop = entry.get("rank").asInt();
+				}
+			}
+			assertThat(response.get("me").get("rank").asInt()).isEqualTo(rankInTop);
+		}
 	}
 }

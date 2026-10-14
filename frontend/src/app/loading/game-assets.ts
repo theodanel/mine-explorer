@@ -180,6 +180,17 @@ export const EVENT_IMAGES = {
   ratStrip: 'assets/events/rat-thief.webp',
 } as const;
 
+/**
+ * Visuels du Wagonnet fou. En attendant les images Gemini (prompts dans docs/game-design/wagonnet-fou.md),
+ * des visuels du jeu servent de remplaçants : la mine de fer et ses rails, le sac de pièces, la chauve-souris.
+ */
+export const MINECART_IMAGES = {
+  card: EVENT_IMAGES.coinSack,
+  background: 'assets/backgrounds/zone4.webp',
+  bat: 'assets/companions/bat.png',
+  nugget: 'assets/ui/refonte/coin-small.webp',
+} as const;
+
 /** Vignette de chaque galerie des embranchements (planche 7). */
 export function galleryIconUrl(id: GalleryId): string {
   return `assets/galleries/${id}.png`;

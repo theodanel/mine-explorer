@@ -17,6 +17,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[puits-sans-fond]] : 3 descentes chronométrées par jour, étages de plus en plus durs, record personnel (14/10/2026).
 - [[zones-11-20]] : décors et rochers des zones 11 à 20 (prompts Gemini), rythme simulé au-delà de la zone 10 (14/10/2026).
 - [[loterie-du-jour]] : un tirage gratuit par jour, six lots (or, éclats, pierres d'éveil, œufs) qui changent à minuit (14/10/2026).
+- [[wagonnet-fou]] : 3 courses de wagonnet par jour sur 3 voies, aiguillages sûrs ou risqués, or et minerai pour l'Atelier (14/10/2026).
 - [[campement]] : Taverne, Entrepôt et Puits, à faire grandir lentement dans l'onglet Aventures (14/10/2026).
 - [[direction-visuelle]] : ce qui plaît dans le genre, couleurs par écran, par stat et par qualité, prochaines étapes (14/10/2026).
 - [[builds-libres]] : toutes les stats sur toutes les pièces, affixes selon la qualité, réglage des builds (13/10/2026).

@@ -31,7 +31,7 @@ Chaque dossier de `src/app/` couvre un domaine du jeu et suit le même schéma :
 | Service (`*.ts`, `@Injectable`) | État du domaine en signaux Angular, lecture et écriture de la sauvegarde, appel des règles. |
 | Composants (`*-page`, `*-dialog`…) | Affichage et interactions, sans logique de jeu. |
 
-Domaines : progression (zones et filons), minage, mineur (calcul des stats), équipement et forge, évolution, compétences et sorts, artefacts, Atelier, événements de mine, galeries, compagnons et Défi de la mine, Campement et Puits sans fond (onglet Aventures), loterie du jour, missions, absence, son, navigation et superposition des fenêtres.
+Domaines : progression (zones et filons), minage, mineur (calcul des stats), équipement et forge, évolution, compétences et sorts, artefacts, Atelier, événements de mine, galeries, compagnons et Défi de la mine, Campement, Puits sans fond et Wagonnet fou (onglet Aventures), loterie du jour, missions, absence, son, navigation et superposition des fenêtres.
 
 ### Principes
 
@@ -42,7 +42,7 @@ Domaines : progression (zones et filons), minage, mineur (calcul des stats), éq
 - **Tutoriel du premier lancement** (`tutorial/`) : 4 étapes (filon, forge, pioche, missions) sur une partie neuve seulement (zone 1, filon 1). L'écran est flouté sauf un cercle autour de l'élément marqué `data-tuto="…"` ; la forge doit être touchée pour de vrai, les autres étapes avancent d'un toucher. Il ne s'affiche que sur la mine sans fenêtre ouverte, attend les premiers éclats pour la forge, et ne revient plus une fois fini ou passé (`mine-explorer.tutorial`).
 - **Habillage partagé** (`styles.scss`) : thèmes de page (`data-theme` sur `.game-panel`, bandeau de titre en bois teinté souligné d'un filet de couleur), cadres de qualité des objets (`.item-frame` avec `data-tier`, couleurs en variables `--frame-light` et `--frame-dark`, de gris à irisé, reflet en boucle à partir du violet), libellé cerné (`.frame-label`), rayons tournants derrière une récompense (`.rays`, sur un conteneur de l'image) et micro-animations (`.breathe`, `.halo`, `.bounce`, `.counter-bump`). Les animations ne touchent que `transform` et `opacity`, et toutes les boucles s'arrêtent avec `prefers-reduced-motion`.
 - **Gains qui s'envolent** (`reward-flight/`) : la directive `appRewardFlight` sur un bouton de récompense mesure les pièces et éclats gagnés (soldes avant l'appui, après le clic) ou prend les gains donnés en `rewardGains` ; la couche `app-reward-flight-layer`, au-dessus des fenêtres, fait voler de 3 à 8 icônes jusqu'à l'élément `data-flight-target` du compteur, qui sursaute. Avec `prefers-reduced-motion`, seul le compteur réagit.
-- **Barre de menus** (`navigation/footer-menu/`) : pas d'onglet « Mine ». Toucher l'onglet allumé ramène à la mine ; une sous-page (Campement et Puits dans les Aventures, Défi dans les Compagnons) garde l'onglet de sa page allumé.
+- **Barre de menus** (`navigation/footer-menu/`) : pas d'onglet « Mine ». Toucher l'onglet allumé ramène à la mine ; une sous-page (Campement, Puits et Wagonnet dans les Aventures, Défi dans les Compagnons) garde l'onglet de sa page allumé.
 - **Superposition des fenêtres** centralisée dans `shared/overlays.ts` : une seule fenêtre automatique à la fois, jamais par-dessus une page ou une fenêtre ouverte par le joueur. Profondeurs (`z-index`) définies une fois dans `styles.scss`.
 
 ### État et sauvegarde

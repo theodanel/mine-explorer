@@ -27,7 +27,7 @@ interface Tab {
 const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = {
   camp: 'adventures',
   abyss: 'adventures',
-  minecart: 'adventures',
+  minehunt: 'adventures',
   challenge: 'companions',
 };
 

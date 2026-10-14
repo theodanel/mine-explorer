@@ -104,7 +104,7 @@ export const DAILY_MISSIONS: readonly MissionDef[] = [
   // Plus de missions, chacune liée à un pan du jeu (demande de Théo, 14/10/2026) : la forge manquait d'éclats
   { id: 'daily-events', ...counterMission('eventsTouched', 3, (n) => `Touche ${n} événements de mine`, 6) },
   { id: 'daily-workshop', ...counterMission('workshopUpgrades', 3, (n) => `Renforce ${n} fois à l'Atelier`, 8), unlock: { form: WORKSHOP_UNLOCK_FORM } },
-  { id: 'daily-adventure', ...counterMission('adventureRuns', 1, () => 'Joue une aventure (Puits ou Wagonnet)', 8), unlock: { form: ABYSS_UNLOCK_FORM } },
+  { id: 'daily-adventure', ...counterMission('adventureRuns', 1, () => 'Joue une aventure (Puits ou Chasse au filon)', 8), unlock: { form: ABYSS_UNLOCK_FORM } },
   { id: 'daily-expedition', ...counterMission('expeditionsSent', 1, () => 'Envoie un compagnon en expédition', 6), unlock: { zone: COMPANIONS_UNLOCK_ZONE } },
 ];
 

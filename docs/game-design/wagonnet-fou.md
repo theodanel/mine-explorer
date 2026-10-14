@@ -1,3 +1,5 @@
+> **Retiré le 14/10/2026** : remplacé par la [[chasse-au-filon]]. Le code et les images du jeu ont été supprimés ; les images sources restent dans `art-source/aventures/`.
+
 # Wagonnet fou
 
 Troisième aventure, validée par Théo le 14/10/2026 : une course de wagonnet sur rails, vue de dos, qui se joue au réflexe. Le Campement se gère, le Puits se joue en tapant, le Wagonnet se joue en glissant.

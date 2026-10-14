@@ -37,6 +37,9 @@ export class ForgeFiltersDialog {
   protected readonly tiers = computed(() =>
     TIER_IDS.map((tier) => ({ id: tier, label: TIER_LABELS[tier], icon: materialIconUrl(tier), on: this.draft().minTier === tier })),
   );
+  protected readonly keepTiers = computed(() =>
+    TIER_IDS.map((tier) => ({ id: tier, label: TIER_LABELS[tier], icon: materialIconUrl(tier), on: this.draft().keepFromTier === tier })),
+  );
 
   constructor() {
     // Ouverte par le joueur : les fenêtres automatiques attendent sa fermeture
@@ -54,6 +57,11 @@ export class ForgeFiltersDialog {
   /** Toucher le palier choisi le retire : plus de palier minimum. */
   protected chooseTier(tier: TierId): void {
     this.draft.update((filters) => ({ ...filters, minTier: filters.minTier === tier ? null : tier }));
+  }
+
+  /** Toucher la qualité choisie la retire : plus d'objet épargné d'office. */
+  protected chooseKeepTier(tier: TierId): void {
+    this.draft.update((filters) => ({ ...filters, keepFromTier: filters.keepFromTier === tier ? null : tier }));
   }
 
   protected toggleUpgrades(): void {

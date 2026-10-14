@@ -91,7 +91,7 @@
     <div class="lobby">
       @if (abyss.lastResult(); as result) {
         <div class="result">
-          <img class="chest" [src]="images.chest" alt="" width="256" height="256" />
+          <span class="rays" [class.record]="result.newRecord"><img class="chest" [src]="images.chest" alt="" width="256" height="256" /></span>
           <p class="result-floor">Étage {{ result.floors }}</p>
           @if (result.newRecord) {
             <p class="record-banner">Nouveau record !</p>

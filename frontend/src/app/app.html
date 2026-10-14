@@ -26,7 +26,7 @@
         aria-label="Pièces"
         tabindex="0"
       >
-        <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />
+        <img class="resource-icon" data-flight-target="coins" src="assets/ui/coin.png" alt="" width="128" height="128" />
         <span class="coin-count" [attr.title]="wallet.coins()">{{ coinsLabel() }}</span>
       </li>
       <li
@@ -34,7 +34,7 @@
         aria-label="Éclats de géode"
         tabindex="0"
       >
-        <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
+        <img class="resource-icon" data-flight-target="shards" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
         <span class="shard-count">{{ shardsLabel() }}</span>
       </li>
       @if (zoneOre(); as ore) {
@@ -135,5 +135,7 @@
   @defer (on idle) {
     <app-tutorial-overlay />
   }
+  <!-- Pièces et éclats gagnés qui volent jusqu'aux compteurs, par-dessus les fenêtres -->
+  <app-reward-flight-layer />
   <app-splash-screen />
 </main>

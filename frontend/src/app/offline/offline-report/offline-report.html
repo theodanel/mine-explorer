@@ -20,7 +20,7 @@
           </li>
         }
       </ul>
-      <button type="button" class="game-button green collect" (click)="earnings.dismiss()">Récupérer</button>
+      <button type="button" class="game-button green collect" appRewardFlight [rewardGains]="view.gains" (click)="earnings.dismiss()">Récupérer</button>
     </section>
   </div>
 }

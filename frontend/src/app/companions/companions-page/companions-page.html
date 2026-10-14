@@ -125,7 +125,7 @@
           <h4>Expédition</h4>
           @if (pet.expedition; as trip) {
             @if (trip.back) {
-              <button type="button" class="game-button green" (click)="collect(pet.id)">Récupérer le butin</button>
+              <button type="button" class="game-button green" appRewardFlight (click)="collect(pet.id)">Récupérer le butin</button>
             } @else {
               <p class="note">En expédition, retour dans <strong>{{ trip.timeLeft }}</strong>.</p>
             }

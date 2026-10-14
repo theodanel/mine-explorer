@@ -18,10 +18,12 @@ import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
 import { companionEffects, expeditionLoot } from '../companion-rules';
 import { Companions } from '../companions';
+import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
 /** Collection de compagnons : couveuse, vitrine, et pour chacun son bonus, sa nourriture et ses expéditions. */
 @Component({
   selector: 'app-companions-page',
+  imports: [RewardFlightDirective],
   templateUrl: './companions-page.html',
   styleUrl: './companions-page.scss',
 })

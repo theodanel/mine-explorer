@@ -6,6 +6,7 @@ import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Evolution } from '../evolution';
 import { isClaimable } from '../evolution-rules';
+import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
 const NUMBER = new Intl.NumberFormat('fr-FR');
 const PERCENT = 100;
@@ -16,6 +17,7 @@ const PERCENT = 100;
  */
 @Component({
   selector: 'app-evolution-page',
+  imports: [RewardFlightDirective],
   templateUrl: './evolution-page.html',
   styleUrl: './evolution-page.scss',
 })

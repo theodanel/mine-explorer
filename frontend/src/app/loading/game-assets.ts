@@ -76,19 +76,18 @@ const OTHER_ZONES_FLOOR_Y = 735;
  * au même endroit d'une image à l'autre.
  */
 const DEEP_ZONES_FLOOR_Y: Readonly<Record<number, number>> = {
-  11: 744, 12: 752, 13: 728, 15: 707, 16: 742, 17: 748, 18: 758, 19: 748, 20: 686,
+  11: 744, 12: 752, 13: 728, 14: 680, 15: 707, 16: 742, 17: 748, 18: 758, 19: 748, 20: 686,
 };
 
-/** Zones dont le décor n'est pas encore livré : elles reprennent celui d'une zone proche (obsidienne → magma). */
-const STAND_IN_ZONE: Readonly<Record<number, number>> = { 14: 9 };
+/** Zones dont le rocher n'est pas encore livré : elles reprennent celui d'une zone proche (obsidienne → magma). */
+const STAND_IN_ROCK_ZONE: Readonly<Record<number, number>> = { 14: 9 };
 
 /** Dernière zone qui a son propre décor ; au-delà, on reste dans le Cœur du monde. */
 export const LAST_DECORATED_ZONE = 20;
 
-/** Zone dont on affiche le décor et le rocher. */
+/** Zone dont on affiche le décor : au-delà de la dernière, on reste dans le Cœur du monde. */
 function visualZone(zone: number): number {
-  const clamped = Math.min(Math.max(zone, 1), LAST_DECORATED_ZONE);
-  return STAND_IN_ZONE[clamped] ?? clamped;
+  return Math.min(Math.max(zone, 1), LAST_DECORATED_ZONE);
 }
 
 /** Un fond par zone : les paliers de matériaux jusqu'à Divin en zone 10, puis la mine de plus en plus étrange. */
@@ -104,7 +103,8 @@ export function zoneBackground(zone: number): ZoneBackground {
  * n'affiche que la barre de vie.
  */
 export function rockUrl(zone: number): string {
-  return `assets/rocks/zone${visualZone(zone)}.webp`;
+  const shown = visualZone(zone);
+  return `assets/rocks/zone${STAND_IN_ROCK_ZONE[shown] ?? shown}.webp`;
 }
 
 /** Images de l'interface, préchargées pour éviter qu'elles n'apparaissent une à une au lancement. */

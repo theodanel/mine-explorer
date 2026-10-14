@@ -188,6 +188,6 @@ Simulation du 14/10/2026 (`tools/simulate.mts`, 200 jours) :
 
 ## Ce qui manque côté code (pas encore fait)
 
-1. ~~Brancher les décors~~ : fait le 14/10/2026 pour les zones 11 à 13 et 15 à 20 (`zoneBackground` et `rockUrl` dans `loading/game-assets.ts`, sol mesuré image par image). La **zone 14 (obsidienne) n'est pas encore livrée** : elle reprend le décor et le rocher du magma (zone 9). Une fois `art-source/backgrounds/zone14.png` et `art-source/rocks/zone14.png` déposés, lancer `python art-source/rocks/preparer-zones.py 14`, mesurer son sol et retirer la zone 14 de `STAND_IN_ZONE`.
+1. ~~Brancher les décors~~ : fait le 14/10/2026 pour les zones 11 à 13 et 15 à 20 (`zoneBackground` et `rockUrl` dans `loading/game-assets.ts`, sol mesuré image par image). Le décor de la **zone 14 (obsidienne)** est arrivé le 14/10/2026 ; son **rocher manque encore** et reprend celui du magma (zone 9). Une fois `art-source/rocks/zone14.png` déposé, lancer `python art-source/rocks/preparer-zones.py 14` et retirer la zone 14 de `STAND_IN_ROCK_ZONE`.
 2. **Minerai** : à partir de la zone 10, toutes les zones donnent du Divin (`zoneMaterial`). De nouveaux minerais voudraient dire de nouveaux paliers d'équipement (cadres, chances de forge, Atelier) : gros chantier, à décider.
 3. **Fin de partie** : pour que les zones 17 à 20 se jouent, il faut une progression après la pioche 30 (niveaux de pioche en plus, prestige, ou PV des zones 17 et plus adoucis). À équilibrer au simulateur.

@@ -1,9 +1,8 @@
 """Prépare les visuels du Wagonnet fou pour le jeu.
 
 - Objets (déjà détourés par Photoroom) : recadrés sur leur contenu, centrés dans un carré de 256 px, en WebP.
-- Fond (`fond-wagonnet.jpg`) : converti en WebP pour le fond de la page, et une découpe autour des rails pour la
-  voie de course. La découpe met le point de fuite à 34 % de sa hauteur et le bas des rails tout en bas, comme
-  la perspective calculée dans minecart-page.ts.
+- Fond (`fond-wagonnet.jpg`) : converti en WebP. La page le fait défiler pendant la course ; la perspective de
+  minecart-page.ts est mesurée sur ses rails (point de fuite en x 286, y 503 sur l'image 572×1024).
 
 Usage, depuis la racine du dépôt : python art-source/aventures/preparer-wagonnet.py
 """
@@ -19,9 +18,6 @@ WEBP_QUALITY = 88
 # Le détourage Photoroom laisse un voile quasi invisible sur tout le fond : on recadre au-dessus de ce seuil.
 CONTENT_ALPHA = 40
 OBJECTS = ("wagonnet", "wagonnet-carte", "chauve-souris", "rail-casse", "eboulement")
-# Bande du fond (en px de l'image 572×1024) qui contient le tunnel et ses rails.
-TRACK_TOP = 300
-TRACK_BOTTOM = 800
 
 
 def prepare_object(name: str) -> None:
@@ -39,8 +35,6 @@ def prepare_object(name: str) -> None:
 def prepare_background() -> None:
     background = Image.open(SOURCE / "fond-wagonnet.jpg").convert("RGB")
     background.save(PUBLIC / "backgrounds" / "aventure-wagonnet.webp", quality=WEBP_QUALITY)
-    track = background.crop((0, TRACK_TOP, background.width, TRACK_BOTTOM))
-    track.save(PUBLIC / "backgrounds" / "aventure-wagonnet-voie.webp", quality=WEBP_QUALITY)
 
 
 if __name__ == "__main__":

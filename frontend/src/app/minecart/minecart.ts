@@ -15,8 +15,8 @@ import { chooseFork, ForkChoice, isOver, Ride, startRide, steer, tick } from './
 import { EMPTY_MINECART, isValidMinecartState, MinecartState, rideReward, RideReward, runsLeft } from './minecart-rules';
 
 const STORAGE_KEY = 'mine-explorer.minecart';
-/** Pas de la boucle de jeu : assez fin pour des déplacements fluides, sans charger le téléphone. */
-const TICK_MS = 33;
+/** Pas de la boucle de jeu : une image sur deux à 60 i/s ne suffisait pas, le tunnel défile à chaque image. */
+const TICK_MS = 16;
 
 export const MINECART_UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === MINECART_UNLOCK_FORM);
 

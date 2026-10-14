@@ -71,7 +71,8 @@ import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
 import { workshopMaterial } from '../src/app/balance/workshop.ts';
 import { BUILDING_IDS, CAMP_UNLOCK_ZONE, type BuildingId } from '../src/app/balance/camp.ts';
 import { ABYSS_DAILY_RUNS, ABYSS_RUN_MS, ABYSS_UNLOCK_FORM } from '../src/app/balance/abyss.ts';
-import { descend, runReward } from '../src/app/abyss/abyss-rules.ts';
+import { runReward } from '../src/app/abyss/abyss-rules.ts';
+import { isOver, startGame, tap as abyssTap, tick as abyssTick, type Fighter } from '../src/app/abyss/abyss-game.ts';
 import {
   buildingCost,
   buildingLevel,
@@ -309,6 +310,9 @@ let profileNow: MinerProfile = profileAt(0);
 const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
 let camp: CampState = EMPTY_CAMP;
 let abyssRecord = 0;
+let abyssBest = 0;
+let abyssFloorsTotal = 0;
+const abyssRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 7);
 let abyssRuns = 0;
 let abyssStones = 0;
 let abyssShards = 0;
@@ -494,15 +498,40 @@ function payCamp(now: number): void {
   }
 }
 
-/** Descentes du Puits sans fond : le joueur joue ses essais dès la première session du jour. */
+/**
+ * Descentes du Puits sans fond, jouées par un joueur moyen : 5 touchers par seconde (combo entretenu), le point
+ * faible visé une fois sur deux, un cristal de temps sur deux attrapé, pas de sort. Joué dès la première session du jour.
+ */
+const ABYSS_TAPS_PER_SECOND = Number(process.env.ABYSS_TAPS ?? 5);
 function playAbyss(): void {
   const unlockIndex = EVOLUTION_FORMS.findIndex((form) => form.id === ABYSS_UNLOCK_FORM);
   if (!withAbyss || formIndex < unlockIndex) return;
-  const dps = damagePerSecond(permanentProfile().stats);
+  const stats = permanentProfile().stats;
+  const fighter: Fighter = {
+    strike: stats.strikePower,
+    critChance: stats.critChance,
+    critDamage: stats.critDamage,
+    hitsPerSecond: hitsPerSecond(stats),
+    zone: progress.zone,
+  };
+  const step = 50;
   for (let run = 0; run < ABYSS_DAILY_RUNS; run++) {
-    const { floors } = descend(dps * (ABYSS_RUN_MS / 1000));
-    const reward = runReward(floors, abyssRecord);
-    abyssRecord = Math.max(abyssRecord, floors);
+    let game = startGame(fighter, abyssRandom);
+    let tapDebt = 0;
+    while (!isOver(game)) {
+      game = abyssTick(game, step, fighter, abyssRandom);
+      if (game.crystal !== null && game.crystal.ageMs < step && abyssRandom() < 0.5) game = abyssTap(game, 'crystal', fighter, abyssRandom);
+      tapDebt += (ABYSS_TAPS_PER_SECOND * step) / 1000;
+      while (tapDebt >= 1) {
+        tapDebt -= 1;
+        const weak = game.floor.weakPoint !== null && abyssRandom() < 0.5;
+        game = abyssTap(game, weak ? 'weak' : 'rock', fighter, abyssRandom);
+      }
+    }
+    const reward = runReward(game.floorsCleared, game.shards, abyssRecord);
+    abyssRecord = Math.max(abyssRecord, game.floorsCleared);
+    abyssBest = Math.max(abyssBest, game.floorsCleared);
+    abyssFloorsTotal += game.floorsCleared;
     shards += reward.shards;
     abyssShards += reward.shards;
     abyssStones += reward.stones;
@@ -796,7 +825,10 @@ if (withWorkshop) {
   );
 }
 if (withAbyss) {
-  console.log(`Puits sans fond : record ${abyssRecord} étages, ${abyssRuns} descentes, ${abyssShards} éclats, ${abyssStones} pierres d'éveil`);
+  console.log(
+    `Puits sans fond : record ${abyssRecord} étages, ${(abyssFloorsTotal / Math.max(abyssRuns, 1)).toFixed(1)} étages par descente en moyenne, ` +
+      `${abyssRuns} descentes, ${abyssShards} éclats, ${abyssStones} pierres d'éveil`,
+  );
 }
 if (withCamp) {
   console.log(
@@ -814,3 +846,15 @@ if (withCompanions) {
   );
 }
 console.log(`Minerais en stock : ${TIER_IDS.filter((t) => ores[t] > 0).map((t) => `${t} ${ores[t]}`).join(', ')}`);
+
+/** Tirages du Puits séparés de ceux de la mine : ajouter le mini-jeu ne change pas le reste de la partie simulée. */
+function mulberryForAbyss(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}

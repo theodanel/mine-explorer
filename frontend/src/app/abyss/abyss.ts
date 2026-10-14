@@ -1,19 +1,24 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
-import { ABYSS_DAILY_RUNS, ABYSS_RUN_MS, ABYSS_UNLOCK_FORM } from '../balance/abyss';
-import { damagePerSecond, EVOLUTION_FORMS } from '../balance/balance';
+import { ABYSS_DAILY_RUNS, ABYSS_UNLOCK_FORM } from '../balance/abyss';
+import { EVOLUTION_FORMS, hitsPerSecond } from '../balance/balance';
+import { SPELLS, SpellId } from '../balance/skill-tree';
 import { Companions } from '../companions/companions';
 import { Evolution } from '../evolution/evolution';
 import { Miner } from '../miner/miner';
 import { dayKey } from '../missions/mission-rules';
+import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
+import { RANDOM } from '../shared/random';
+import { Skills } from '../skills/skills';
 import { GeodeShards } from '../wallet/geode-shards';
-import { AbyssState, descend, Descent, EMPTY_ABYSS, isValidAbyssState, runReward, RunReward, runsLeft } from './abyss-rules';
+import { cast, Fighter, Game, isOver, startGame, tap, tick } from './abyss-game';
+import { AbyssState, EMPTY_ABYSS, isValidAbyssState, runReward, RunReward, runsLeft } from './abyss-rules';
 
 const STORAGE_KEY = 'mine-explorer.abyss';
-/** Rafraîchissement de la descente à l'écran : assez fluide pour voir les étages défiler. */
-const TICK_MS = 100;
+/** Pas de la boucle de jeu : assez fin pour la mèche et le combo, sans charger le téléphone. */
+const TICK_MS = 50;
 
 export const ABYSS_UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === ABYSS_UNLOCK_FORM);
 
@@ -22,102 +27,132 @@ export interface RunResult extends RunReward {
   readonly newRecord: boolean;
 }
 
+export interface AbyssSpell {
+  readonly id: SpellId;
+  readonly label: string;
+  readonly used: boolean;
+}
+
 /**
- * Puits sans fond : 3 descentes chronométrées par jour. Le mineur casse des étages de plus en plus durs avec
- * sa Puissance du moment ; chaque étage franchi rapporte des éclats, chaque palier de record des pierres d'éveil.
+ * Puits sans fond : 3 descentes de 30 s par jour, en mini-jeu. Le mineur frappe seul, le joueur touche le rocher
+ * pour frapper plus (avec combo), vise les points faibles, désamorce les pièges et attrape le temps qui tombe.
  */
 @Injectable({ providedIn: 'root' })
 export class Abyss {
   private readonly clock = inject(CLOCK);
+  private readonly random = inject(RANDOM);
   private readonly evolution = inject(Evolution);
   private readonly miner = inject(Miner);
+  private readonly progression = inject(Progression);
+  private readonly skills = inject(Skills);
   private readonly shards = inject(GeodeShards);
   private readonly companions = inject(Companions);
   private readonly state = signal<AbyssState>(loadAbyss());
-  private readonly now = signal(this.clock());
+  private readonly today = signal(dayKey(this.clock()));
+  private readonly gameState = signal<Game | null>(null);
+  private fighter: Fighter | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private lastTickAt = 0;
 
   readonly unlocked = computed(() => this.evolution.index() >= ABYSS_UNLOCK_INDEX);
   readonly unlockLabel = EVOLUTION_FORMS[ABYSS_UNLOCK_INDEX].label;
   readonly record = computed(() => this.state().record);
   readonly dailyRuns = ABYSS_DAILY_RUNS;
-  readonly runsLeft = computed(() => runsLeft(this.state(), dayKey(this.now())));
-  readonly running = computed(() => this.state().active !== null);
-  /** Descente en cours, recalculée à chaque battement, ou null. */
-  readonly descent = computed<Descent | null>(() => {
-    const active = this.state().active;
-    if (active === null) {
-      return null;
-    }
-    const elapsed = Math.min(Math.max(this.now() - active.startedAt, 0), ABYSS_RUN_MS);
-    return descend((active.dps * elapsed) / 1000);
-  });
-  readonly timeLeftMs = computed(() => {
-    const active = this.state().active;
-    return active === null ? 0 : Math.max(ABYSS_RUN_MS - (this.now() - active.startedAt), 0);
-  });
+  readonly runsLeft = computed(() => runsLeft(this.state(), this.today()));
+  /** Partie en cours, ou null. */
+  readonly game = this.gameState.asReadonly();
+  readonly running = computed(() => this.gameState() !== null);
   /** Bilan de la dernière descente, montré jusqu'à la suivante. */
   readonly lastResult = signal<RunResult | null>(null);
+  /** Sorts équipés, utilisables une fois chacun par descente. */
+  readonly spells = computed<readonly AbyssSpell[]>(() => {
+    const used = this.gameState()?.spellsUsed ?? [];
+    return this.skills
+      .equipped()
+      .filter((id): id is SpellId => id !== null)
+      .map((id) => ({ id, label: SPELLS[id].label, used: used.includes(id) }));
+  });
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.stopTicking());
-    // Descente commencée avant un rechargement : elle reprend, ou se termine si son temps est écoulé
+    inject(DestroyRef).onDestroy(() => this.stopLoop());
+    // Une descente de l'ancienne version (sans jeu) restée dans la sauvegarde : elle est simplement close
     if (this.state().active !== null) {
-      this.startTicking();
+      this.save({ ...this.state(), active: null });
     }
   }
 
-  /** Lance une descente avec la Puissance permanente du mineur (les sorts ne descendent pas). */
   start(): boolean {
     const today = dayKey(this.clock());
+    this.today.set(today);
     if (!this.unlocked() || this.running() || runsLeft(this.state(), today) === 0) {
       return false;
     }
     const current = this.state();
-    const runsUsed = current.day === today ? current.runsUsed + 1 : 1;
-    const dps = damagePerSecond(this.miner.permanent().stats);
     // L'essai compte dès le départ : quitter en pleine descente ne le rend pas
-    this.save({ ...current, day: today, runsUsed, active: { startedAt: this.clock(), dps } });
+    this.save({ ...current, day: today, runsUsed: current.day === today ? current.runsUsed + 1 : 1 });
+    const { stats } = this.miner.permanent();
+    this.fighter = {
+      strike: stats.strikePower,
+      critChance: stats.critChance,
+      critDamage: stats.critDamage,
+      hitsPerSecond: hitsPerSecond(stats),
+      zone: this.progression.zone(),
+    };
     this.lastResult.set(null);
-    this.startTicking();
+    this.gameState.set(startGame(this.fighter, this.random));
+    this.lastTickAt = this.clock();
+    this.timer = setInterval(() => this.step(), TICK_MS);
     return true;
   }
 
-  private tick(): void {
-    this.now.set(this.clock());
-    const active = this.state().active;
-    if (active !== null && this.now() - active.startedAt >= ABYSS_RUN_MS) {
-      this.finish();
+  tap(target: 'rock' | 'weak' | 'crystal'): void {
+    const game = this.gameState();
+    if (game !== null && this.fighter !== null) {
+      this.gameState.set(tap(game, target, this.fighter, this.random));
     }
   }
 
-  private finish(): void {
-    const current = this.state();
-    if (current.active === null) {
+  cast(spell: SpellId): void {
+    const game = this.gameState();
+    if (game !== null && this.fighter !== null) {
+      this.gameState.set(cast(game, SPELLS[spell], this.skills.spellRank(spell), this.fighter, this.random));
+    }
+  }
+
+  private step(): void {
+    const game = this.gameState();
+    if (game === null || this.fighter === null) {
+      this.stopLoop();
       return;
     }
-    const { floors } = descend((current.active.dps * ABYSS_RUN_MS) / 1000);
-    const reward = runReward(floors, current.record);
+    const now = this.clock();
+    const next = tick(game, now - this.lastTickAt, this.fighter, this.random);
+    this.lastTickAt = now;
+    if (isOver(next)) {
+      this.finish(next);
+    } else {
+      this.gameState.set(next);
+    }
+  }
+
+  private finish(game: Game): void {
+    this.stopLoop();
+    const current = this.state();
+    const floors = game.floorsCleared;
+    const reward = runReward(floors, game.shards, current.record);
     if (reward.shards > 0) {
       this.shards.add(reward.shards);
     }
     if (reward.stones > 0) {
       this.companions.addStones(reward.stones);
     }
-    this.save({ ...current, record: Math.max(current.record, floors), active: null });
+    this.save({ ...current, record: Math.max(current.record, floors) });
+    this.gameState.set(null);
+    this.fighter = null;
     this.lastResult.set({ ...reward, floors, newRecord: floors > current.record });
-    this.stopTicking();
   }
 
-  private startTicking(): void {
-    this.stopTicking();
-    this.tick();
-    if (this.state().active !== null) {
-      this.timer = setInterval(() => this.tick(), TICK_MS);
-    }
-  }
-
-  private stopTicking(): void {
+  private stopLoop(): void {
     if (this.timer !== null) {
       clearInterval(this.timer);
       this.timer = null;

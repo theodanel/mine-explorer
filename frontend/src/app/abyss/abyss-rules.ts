@@ -1,30 +1,8 @@
-// Règles pures du Puits sans fond : avancée d'une descente, récompenses, essais du jour et sauvegarde.
-import { ABYSS_DAILY_RUNS, floorHp, RECORD_SHARDS, RECORD_STEP, RECORD_STONES, SHARDS_PER_FLOOR } from '../balance/abyss';
+// Règles pures du Puits sans fond : récompenses, essais du jour et sauvegarde. Le jeu lui-même est dans abyss-game.ts.
+import { ABYSS_DAILY_RUNS, RECORD_SHARDS, RECORD_STEP, RECORD_STONES } from '../balance/abyss';
 
-/** Garde-fou : aucune descente ne dépasse cet étage (le calcul s'arrête là même avec une Puissance absurde). */
+/** Garde-fou : un record au-delà de cet étage est une sauvegarde trafiquée. */
 export const MAX_FLOOR = 500;
-
-export interface Descent {
-  /** Étages entièrement franchis. */
-  readonly floors: number;
-  /** Part du filon en cours déjà cassée, de 0 à 1. */
-  readonly progress: number;
-}
-
-/** Où en est une descente après `damage` dégâts cumulés. */
-export function descend(damage: number): Descent {
-  let remaining = Math.max(damage, 0);
-  let floors = 0;
-  while (floors < MAX_FLOOR) {
-    const hp = floorHp(floors + 1);
-    if (remaining < hp) {
-      return { floors, progress: remaining / hp };
-    }
-    remaining -= hp;
-    floors++;
-  }
-  return { floors, progress: 0 };
-}
 
 export interface RunReward {
   readonly shards: number;
@@ -33,17 +11,20 @@ export interface RunReward {
   readonly newRecordSteps: number;
 }
 
-/** Récompense d'une descente qui atteint `floors`, avec le record d'avant. */
-export function runReward(floors: number, previousRecord: number): RunReward {
+/** Récompense d'une descente : les éclats gagnés étage par étage, plus les paliers de record battus. */
+export function runReward(floors: number, runShards: number, previousRecord: number): RunReward {
   const newRecordSteps = Math.max(Math.floor(floors / RECORD_STEP) - Math.floor(previousRecord / RECORD_STEP), 0);
   return {
-    shards: floors * SHARDS_PER_FLOOR + newRecordSteps * RECORD_SHARDS,
+    shards: runShards + newRecordSteps * RECORD_SHARDS,
     stones: newRecordSteps * RECORD_STONES,
     newRecordSteps,
   };
 }
 
-/** Descente en cours : gardée dans la sauvegarde, pour qu'un rechargement de la page ne fasse rien perdre. */
+/**
+ * Descente de l'ancienne version (chrono sans jeu), gardée seulement pour relire les sauvegardes d'alors :
+ * le mini-jeu ne survit pas à un rechargement, la descente est simplement perdue.
+ */
 export interface ActiveRun {
   readonly startedAt: number;
   /** Dégâts par seconde du mineur au départ : la descente se joue avec le build du moment. */

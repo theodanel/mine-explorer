@@ -88,4 +88,35 @@ class PlausibilityRulesTests {
 		assertThat(rules.maxAbyssRecord(61)).isEqualTo(1 + PlausibilityRules.ABYSS_FLOOR_MARGIN);
 		assertThat(rules.maxAbyssRecord(100_000)).isEqualTo(PlausibilityRules.ABYSS_MAX_FLOOR);
 	}
+
+	@Test
+	void classementDUnePartieTrafiqueeAvantConnexionPlafonne() {
+		// Compte créé 20 jours après la sortie : la partie envoyée passe l'anti-triche (bornée depuis la sortie),
+		// mais le classement n'affiche que ce qui est atteignable depuis la connexion
+		Instant createdAt = RELEASE.plus(Duration.ofDays(20));
+		SaveMetrics ranked = rules.ranked(new SaveMetrics(400, 200), createdAt, createdAt);
+		assertThat(ranked.stagesReached()).isEqualTo(rules.maxStages(createdAt, createdAt)).isLessThan(46);
+		assertThat(ranked.abyssRecord()).isZero();
+	}
+
+	@Test
+	void partieHorsLigneHonneteRetrouveSaPlaceEnDeuxFoisMoinsDeTemps() {
+		// Zone 9 (étape 121) : 7,2 h au joueur simulé, donc 3,6 h au plus rapide toléré
+		Instant createdAt = RELEASE.plus(Duration.ofDays(20));
+		SaveMetrics played = new SaveMetrics(121, 0);
+		assertThat(rules.ranked(played, createdAt, createdAt.plus(Duration.ofHours(1))).stagesReached()).isLessThan(121);
+		assertThat(rules.ranked(played, createdAt, createdAt.plus(Duration.ofMinutes(216))).stagesReached())
+			.isEqualTo(121);
+	}
+
+	@Test
+	void joueurConnecteDesLeDebutJamaisPlafonne() {
+		Instant createdAt = RELEASE.plus(Duration.ofDays(20));
+		for (int hours = 0; hours <= 400; hours += 5) {
+			Instant now = createdAt.plus(Duration.ofHours(hours));
+			// Progression la plus rapide que l'anti-triche accepte depuis la connexion
+			SaveMetrics fastest = new SaveMetrics(rules.maxStages(createdAt, now), 0);
+			assertThat(rules.ranked(fastest, createdAt, now)).isEqualTo(fastest);
+		}
+	}
 }

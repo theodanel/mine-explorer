@@ -46,7 +46,7 @@ Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protection
 
 ## Limites assumées
 
-- **Triche locale** : la partie vit dans le navigateur du joueur. Il peut modifier sa sauvegarde ou le code JavaScript et se donner de l'or. Pour le classement, le backend refuse une progression impossible dans le temps écoulé (anti-triche de plausibilité, voir [[backend]]) ; l'or et l'équipement ne sont pas vérifiés. La seule parade complète reste un **serveur autoritaire** qui calcule les gains, à envisager s'il y a un jour des échanges ou des achats.
+- **Triche locale** : la partie vit dans le navigateur du joueur. Il peut modifier sa sauvegarde ou le code JavaScript et se donner de l'or. Pour le classement, le backend refuse une progression impossible dans le temps écoulé et n'affiche que ce qui a pu être atteint depuis la première connexion (anti-triche de plausibilité, voir [[backend]]) ; l'or et l'équipement ne sont pas vérifiés. La seule parade complète reste un **serveur autoritaire** qui calcule les gains, à envisager s'il y a un jour des échanges ou des achats.
 - **`style-src 'unsafe-inline'`** : Angular injecte les styles de ses composants dans des balises `<style>`. Sur un site statique, on ne peut pas générer de *nonce* par requête. Le risque résiduel (injection de CSS) est faible, car aucun contenu n'est construit à partir de données externes.
 - **Adresse publique** : sans Cloudflare Access, toute personne qui a l'adresse peut jouer (voir [[deploiement]]).
 

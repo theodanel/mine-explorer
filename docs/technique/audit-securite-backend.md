@@ -24,7 +24,7 @@ Audit du serveur Spring Boot de la PR « Backend : connexion Google, sauvegarde 
 | 2 | Moyenne | Aucune alerte de faille sur les dépendances Maven | **Action de Théo** |
 | 3 | Moyenne | Sessions anonymes gardées 14 jours en base | Corrigé, testé |
 | 4 | Moyenne | Limite de requêtes contournable en IPv6 | Corrigé, testé |
-| 5 | Moyenne | Anti-triche : un compte neuf peut envoyer une progression très avancée | **Décision de Théo** |
+| 5 | Moyenne | Anti-triche : un compte neuf peut envoyer une progression très avancée | Corrigé, testé (choix de Théo) |
 | 6 | Faible | Erreur 500 si deux appareils envoient la première sauvegarde en même temps | Corrigé, testé |
 | 7 | Faible | Erreur 500 si un appareil sauvegarde après suppression du compte | Corrigé, testé |
 | 8 | Faible | Adresse de retour Google construite à partir d'en-têtes du client | Corrigé |
@@ -64,15 +64,13 @@ Le compteur était tenu par adresse. Un abonné IPv6 reçoit en général un blo
 
 Correction : `ClientAddress` regroupe les adresses IPv6 par /64 ; les IPv4 restent comptées une à une. La valeur de l'en-tête n'est jamais résolue par DNS (seule une adresse littérale est lue). Testé dans `RateLimitTests`.
 
-### 5. Anti-triche : progression très avancée sur un compte neuf (moyenne, décision de Théo)
+### 5. Anti-triche : progression très avancée sur un compte neuf (moyenne, corrigé)
 
 La première sauvegarde d'un compte est bornée par le temps écoulé depuis la mise en ligne (`mine.anti-cheat.release-date`), pour accepter une partie jouée hors ligne avant de se connecter. Conséquence : avec le facteur 2, la courbe de référence est entièrement atteignable environ **8,5 jours après la mise en ligne** (405,6 h ÷ 2), et la limite continue ensuite de monter. Passé ce délai, un tricheur crée un compte et envoie d'un coup une progression au-delà de la dernière zone : elle est acceptée et entre au classement.
 
-Pas corrigé, car toute correction refuse aussi des joueurs honnêtes. Options :
+Options étudiées : rendre la connexion obligatoire au lancement (écartée : elle bloque les joueurs sans compte Google et va contre l'usage des jeux idle), refuser une première sauvegarde au-delà d'un temps hors ligne maximal (écartée : refuse des joueurs honnêtes), ou n'afficher la partie au classement qu'après un délai (écartée : le tricheur n'a qu'à attendre).
 
-- **A (recommandée)** : garder la partie, mais n'afficher au classement une première sauvegarde au-delà d'un seuil (par exemple la zone 5) qu'après quelques jours de progression vue par le serveur. Le tricheur perd l'intérêt immédiat, le joueur honnête ne perd rien.
-- B : borner la première sauvegarde par un temps de jeu hors ligne maximal avant connexion (par exemple 7 jours). Simple, mais refuse un joueur qui a beaucoup joué avant de créer son compte.
-- C : statu quo, assumé tant que le classement ne rapporte rien.
+Retenu par Théo le 14/10/2026 : la partie est gardée entière, mais **le classement n'affiche jamais plus que ce qu'un joueur aurait pu atteindre depuis la création de son compte** (`PlausibilityRules.ranked`, valeurs recalculées à chaque envoi). Le tricheur est affiché au niveau d'un débutant puis ne monte qu'au rythme du jeu ; le joueur honnête qui avait joué hors ligne retrouve sa place en deux fois moins de temps qu'il n'en a joué ; le joueur connecté dès le début n'est jamais plafonné. Testé dans `PlausibilityRulesTests` et `LeaderboardApiTests.partieTrafiqueeAvantConnexionSansPlaceGagnee`. Cette correction est dans une PR séparée, empilée sur celle de l'audit.
 
 ### 6. Deux premières sauvegardes simultanées (faible, corrigé)
 

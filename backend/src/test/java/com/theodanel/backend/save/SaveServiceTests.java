@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 
 import com.theodanel.backend.account.AccountService;
+import com.theodanel.backend.account.Player;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
 import com.theodanel.backend.support.MutableClock;
@@ -27,13 +28,15 @@ import tools.jackson.databind.json.JsonMapper;
 class SaveServiceTests {
 
 	private final CloudSaveRepository repository = mock(CloudSaveRepository.class);
-	private final SaveService service = new SaveService(repository, mock(AccountService.class), properties(),
+	private final AccountService accounts = mock(AccountService.class);
+	private final SaveService service = new SaveService(repository, accounts, properties(),
 			JsonMapper.builder().build(), new MutableClock());
 
 	@Test
 	void deuxPremieresSauvegardesSimultaneesDonnentUnConflit() {
 		UUID player = UUID.randomUUID();
 		// Les deux appareils ont lu « aucune partie » ; le second bute sur la clé primaire à l'écriture
+		when(accounts.get(player)).thenReturn(new Player(player, "Theo", MutableClock.START));
 		when(repository.findById(player)).thenReturn(Optional.empty());
 		when(repository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("clé primaire"));
 

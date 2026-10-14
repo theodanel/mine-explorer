@@ -63,6 +63,18 @@ public final class PlausibilityRules {
 		return latest.isAfter(origin) ? latest : origin;
 	}
 
+	/**
+	 * Valeurs affichées au classement : jamais plus que ce qu'un joueur aurait pu atteindre depuis la création de son
+	 * compte (sa première connexion). Une partie trafiquée en local avant la connexion, puis envoyée, ne fait donc
+	 * gagner aucune place ; une vraie partie jouée hors ligne remonte à sa place à la vitesse {@code speedFactor}, sans
+	 * jamais être perdue (la sauvegarde, elle, est gardée entière).
+	 */
+	public SaveMetrics ranked(SaveMetrics metrics, Instant accountCreatedAt, Instant now) {
+		int stages = Math.min(metrics.stagesReached(), maxStages(accountCreatedAt, now));
+		int record = Math.min(metrics.abyssRecord(), maxAbyssRecord(stages));
+		return new SaveMetrics(stages, record);
+	}
+
 	/** Record du Puits atteignable avec cette progression dans la mine : 0 avant le 5-1. */
 	public int maxAbyssRecord(int stagesReached) {
 		if (stagesReached < ABYSS_FIRST_FLOOR_STAGE) {

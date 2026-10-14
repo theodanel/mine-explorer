@@ -65,9 +65,9 @@ public class SaveService {
 		requireReasonableSize(data);
 		Instant now = clock.instant();
 		Optional<CloudSave> existing = saves.findById(playerId);
-		existing.ifPresentOrElse(save -> requireVersion(save, expectedVersion),
-				// Compte supprimé depuis un autre appareil : 401 « reconnecte-toi » plutôt qu'une erreur de clé étrangère
-				() -> accounts.get(playerId));
+		existing.ifPresent(save -> requireVersion(save, expectedVersion));
+		// Compte supprimé depuis un autre appareil : 401 « reconnecte-toi » plutôt qu'une erreur de clé étrangère
+		Instant accountCreatedAt = accounts.get(playerId).getCreatedAt();
 
 		SaveMetrics metrics = SaveMetrics.read(data, json);
 		Instant origin = existing.map(CloudSave::getPlayOrigin).orElseGet(plausibility::firstOrigin);
@@ -75,7 +75,8 @@ public class SaveService {
 
 		CloudSave save = existing.orElseGet(() -> new CloudSave(playerId));
 		TreeMap<String, String> sorted = new TreeMap<>(data);
-		save.replace(json.writeValueAsString(sorted), metrics,
+		// L'anti-triche suit la vraie progression ; le classement, celle qui a pu se faire depuis la première connexion
+		save.replace(json.writeValueAsString(sorted), plausibility.ranked(metrics, accountCreatedAt, now),
 				plausibility.nextOrigin(origin, metrics.stagesReached(), now), now);
 		CloudSave saved = saveFirstWins(save);
 		return new StoredSave(saved.getVersion(), saved.getUpdatedAt(), sorted);

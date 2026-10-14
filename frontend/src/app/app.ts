@@ -35,6 +35,7 @@ import { SkillsPage } from './skills/skills-page/skills-page';
 import { SpellBar } from './spells/spell-bar/spell-bar';
 import { SpellCaster } from './spells/spell-caster';
 import { ZoneBanner } from './progression/zone-banner/zone-banner';
+import { LotteryButton } from './lottery/lottery-button/lottery-button';
 import { RewardFlightLayer } from './reward-flight/reward-flight-layer';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
@@ -52,6 +53,7 @@ function resourceLabel(amount: number): string {
   imports: [
     MineScene,
     RewardFlightLayer,
+    LotteryButton,
     ZoneBanner,
     EquipmentColumn,
     SpellBar,

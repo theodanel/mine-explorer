@@ -166,6 +166,14 @@
   inset: 15.5% 0 auto;
 }
 
+// Loterie du jour, à droite du bandeau de zone : en miroir des raccourcis du jeu en ligne, à gauche
+.lottery {
+  position: absolute;
+  inset: 14.5% 3cqw auto auto;
+  // Au-dessus du bandeau de zone et de la couche des événements
+  z-index: calc(var(--z-events) + 1);
+}
+
 // Rappel du Défi de la mine quand un palier attend, sous le bandeau de zone, à gauche
 .challenge-call {
   position: absolute;

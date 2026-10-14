@@ -74,6 +74,7 @@ export class ItemCompare {
     const delta = powerDelta(equipped, candidate);
     return {
       isPrevious: this.inventory.pendingWasEquipped(),
+      powerBefore: this.inventory.power(),
       power: this.inventory.power() + delta,
       powerDelta: delta,
       powerTrend: trendOf(delta),

@@ -26,7 +26,14 @@ Depuis `frontend/` :
 1. **Miner.** Chaque zone compte 15 filons, de 1-1 à 1-15, puis 2-1, etc. Chaque filon a un peu plus de PV que le précédent. Chaque coup rapporte 0,34 pièce par PV miné (plus le bonus d'or).
 2. **Éclats de géode.** Chaque coup a 4 % de chances d'en déterrer un (environ 75 par heure sans bonus de Vitesse). En plus, les 5 premiers filons en donnent 4 (les 5 emplacements remplis en une minute), puis chaque filon 3 jusqu'à la fin de la zone 4, et 2 ensuite. Une zone terminée en donne 5, et l'absence 1 toutes les 6 minutes (40 au maximum). Les missions, les objectifs d'évolution, le Défi de la mine, les événements et les expéditions complètent :
    - une mission principale à la fois, qui s'enchaîne sans fin (épuise des filons, forge, atteins un filon, paie des segments, vends, monte la pioche) ; les objectifs grandissent à chaque tour, mais les filons et les segments sont plafonnés à 3, et la mission de segments se valide d'elle-même quand la pioche est au maximum ;
-   - trois missions du jour (épuise un filon, forge 10 objets, vends 5 objets) et un coffre de 10 éclats quand les trois sont récupérées, soit 27 éclats par jour. Elles changent à minuit, heure du joueur.
+   - des missions du jour qui changent à minuit, heure du joueur, et un coffre de 15 éclats quand toutes sont récupérées. Depuis le 14/10/2026, il y en a sept, chacune liée à un pan du jeu et visible une fois ce menu ouvert :
+     - épuise un filon, forge 10 objets, vends 5 objets ;
+     - touche 3 événements ;
+     - renforce 3 fois à l'Atelier (dès le Mineur) ;
+     - joue une aventure (dès le Contremaître) ;
+     - envoie un compagnon en expédition (dès la zone 3).
+
+     Soit jusqu'à 60 éclats par jour.
 3. **Forger.** 2 éclats = 1 tirage. Le palier de l'objet dépend uniquement du niveau de la pioche.
 4. **Équiper ou vendre.** La comparaison montre le gain ou la perte de Puissance. L'objet remplacé est vendu automatiquement.
 5. **Améliorer la pioche.** L'or remplit 10 segments, puis un minuteur fait passer au niveau suivant. Le minuteur continue quand le jeu est fermé.
@@ -224,3 +231,19 @@ Résultats de `tools/simulate.mts`, avec les vraies règles du jeu. Le joueur fo
 ## Sauvegarde
 
 Tout est sauvegardé dans le navigateur (`localStorage`). Une ancienne sauvegarde « vie de zone » garde sa zone et repart du premier rocher de cette zone. Une ancienne pioche sans minuteur est complétée automatiquement. Les nouveaux réglages s'appliquent aux sauvegardes existantes sans migration : seuls les prix, les PV et les minuteurs changent.
+
+
+## Économie relevée (14/10/2026)
+
+Demande de Théo : le minerai doit tomber au coup de pioche dans toutes les zones, et les éclats manquaient pour forger.
+
+- **Minerai** : 3 % par coup de pioche, au lieu d'un par filon épuisé ; le lot de fin de zone reste. Plus abondant en profondeur, où un filon demande des centaines de coups. L'Atelier demande donc plus de minerai : 6, puis un de plus tous les 4 niveaux.
+- **Éclats** : 6 % par coup (4 % avant).
+- **Missions du jour** : 3 de plus, coffre à 15 (voir plus haut).
+- **Puits sans fond** : 2 éclats par étage et 30 par palier de record.
+- **Expéditions** : 3 éclats et 0,5 pierre d'éveil par heure (1 et 0,25 avant).
+
+Simulé (joueur régulier, 5 graines) :
+- la pioche 30 arrive vers le jour 42 au lieu de 47,6 : le jeu est plus riche, comme demandé ;
+- le Contremaître arrive au jour 2,5 au lieu de 2,8 ;
+- le Mineur (12 h), le Maître (jour 7,3) et la Légende (jour 16) ne bougent pas.

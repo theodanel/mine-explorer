@@ -33,8 +33,8 @@ describe('workshop-rules', () => {
     expect(workshopGoldCost('copper', 0)).toBeLessThan(1000);
     expect(workshopGoldCost('steel', 0)).toBeGreaterThan(workshopGoldCost('iron', 0));
     expect(workshopGoldCost('steel', 1) / workshopGoldCost('steel', 0)).toBeCloseTo(1.1, 2);
-    expect(workshopOreCost(0)).toBe(1);
-    expect(workshopOreCost(49)).toBe(5);
+    expect(workshopOreCost(0)).toBe(6);
+    expect(workshopOreCost(49)).toBe(18);
   });
 
   it('demande le minerai de la qualité, sauf pour le bois', () => {

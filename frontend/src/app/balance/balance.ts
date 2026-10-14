@@ -228,14 +228,14 @@ const GOLD_PER_DAMAGE = 0.34;
 /**
  * Les éclats viennent de deux sources en jouant. Théo les trouvait trop rares : le 13/10/2026, coups, filons
  * et absence en donnent 50 % de plus, soit environ 200 forges par jour pour le joueur régulier, à tout moment.
- * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 4 % par coup depuis le
- *    13/10/2026 au soir (3 % avant), soit environ 75 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
+ * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 6 % par coup depuis le
+ *    14/10/2026 au soir (4 % avant, 3 % encore avant ; Théo trouvait la forge trop pauvre), soit environ 75 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
  *    où les filons durent longtemps.
  * 2. Chaque filon épuisé en donne. Comme dans Legends of Mushroom, le début arrose : les 5 premiers filons
  *    donnent de quoi forger deux fois chacun (les 5 emplacements remplis en une minute), puis un tirage par filon.
  * Les missions, les fins de zone, l'absence, les événements, les objectifs d'évolution et le Défi de la mine complètent.
  */
-export const SHARD_FIND_CHANCE = 0.04;
+export const SHARD_FIND_CHANCE = 0.06;
 const WELCOME_STAGES = 5;
 const WELCOME_SHARDS = 4;
 /** Les filons des zones adoucies donnent un éclat de plus : le début de partie forge davantage. */
@@ -295,8 +295,11 @@ export function zoneMaterial(zone: number): TierId | null {
   return TIER_ORDER[Math.min(zone, TIER_ORDER.length) - 1];
 }
 
-/** Minerai gagné à chaque filon épuisé, et lot offert quand la zone est terminée. */
-export const ORE_PER_ROCK = 1;
+/**
+ * Minerai : chaque coup de pioche a une chance d'en déterrer un, dans toutes les zones (choix de Théo, 14/10/2026 ;
+ * c'était 1 par filon épuisé). Une zone terminée en offre en plus un lot.
+ */
+export const ORE_FIND_CHANCE = 0.03;
 export const ZONE_CLEAR_ORES = 20;
 
 export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';

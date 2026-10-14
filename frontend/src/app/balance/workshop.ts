@@ -45,9 +45,12 @@ export function workshopGoldCost(tier: TierId, level: number): number {
   return Math.max(1, Math.round(stageGold * WORKSHOP_BASE_STAGES * WORKSHOP_GOLD_GROWTH ** level));
 }
 
-/** Minerai demandé : 1, puis un de plus tous les 10 niveaux. Un filon en donne 1, une zone terminée 20 de plus. */
-const WORKSHOP_BASE_ORES = 1;
-const WORKSHOP_ORE_STEP_LEVELS = 10;
+/**
+ * Minerai demandé : 6, puis un de plus tous les 4 niveaux (18 au niveau 49). Relevé le 14/10/2026 quand le minerai
+ * est passé à 3 % par coup de pioche : bien plus abondant qu'un par filon, il aurait rendu l'Atelier trop rapide.
+ */
+const WORKSHOP_BASE_ORES = 6;
+const WORKSHOP_ORE_STEP_LEVELS = 4;
 
 export function workshopOreCost(level: number): number {
   return WORKSHOP_BASE_ORES + Math.floor(level / WORKSHOP_ORE_STEP_LEVELS);

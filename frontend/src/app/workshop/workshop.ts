@@ -9,6 +9,7 @@ import { Ores } from '../ores/ores';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { Wallet } from '../wallet/wallet';
 import { isValidLevels, migrateSlotLevels, pieceLevel, upgradeCost, withLevel, WorkshopCost } from './workshop-rules';
+import { MissionCounters } from '../missions/mission-counters';
 
 const STORAGE_KEY = 'mine-explorer.workshop';
 
@@ -28,6 +29,7 @@ export class Workshop {
   private readonly wallet = inject(Wallet);
   private readonly ores = inject(Ores);
   private readonly inventory = inject(Inventory);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<WorkshopLevels>(loadLevels(this.inventory.equipped()));
 
   readonly levels = this.state.asReadonly();
@@ -80,6 +82,7 @@ export class Workshop {
     this.ores.spend(cost.ores);
     this.wallet.spend(cost.gold);
     this.save(withLevel(this.levels(), slot, tier, this.level(slot) + 1));
+    this.missionCounters.record('workshopUpgrades');
     return true;
   }
 

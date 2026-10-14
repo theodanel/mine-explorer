@@ -16,7 +16,7 @@ Demande de Théo (14/10/2026) : toucher « Zone 8 » ouvre une carte des zones f
 
 - **Filons sans fin** : on casse les filons de la zone autant qu'on veut, sans jamais avancer. Chacun a la résistance du dernier filon de la zone, donc il est facile pour un joueur qui l'a dépassée.
 - **Récompenses** :
-  - 1 minerai de la zone par filon : c'est le but ;
+  - le minerai de la zone, à 3 % par coup de pioche comme partout : c'est le but ;
   - l'or ne vient que des PV vraiment minés (les dégâts en trop ne rapportent rien), donc il est bien plus maigre ;
   - pas d'éclats de filon, mais les éclats déterrés au hasard restent.
 - **Pas de missions ni de Défi** : ces filons ne comptent pas, ils seraient trop faciles à enchaîner. Pas de galerie non plus.

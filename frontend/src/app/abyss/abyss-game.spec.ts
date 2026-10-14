@@ -1,5 +1,6 @@
 import {
   ABYSS_RUN_MS,
+  FLOOR_SHARDS,
   COMBO_WINDOW_MS,
   CRYSTAL_BONUS_MS,
   firstFloorHp,
@@ -88,7 +89,7 @@ describe('abyss-game : jouer', () => {
   it('donne un éclat par étage cassé', () => {
     const game = tap(withFloor(startGame(FIGHTER, steady), 'normal', 5), 'rock', FIGHTER, steady);
     expect(game.floorsCleared).toBe(1);
-    expect(game.shards).toBe(1);
+    expect(game.shards).toBe(FLOOR_SHARDS);
     expect(game.floor.number).toBe(2);
   });
 

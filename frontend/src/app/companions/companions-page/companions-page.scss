@@ -367,16 +367,61 @@
   object-fit: contain;
 }
 
-.challenge {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.2cqw;
-  padding: 1.2cqw 3cqw 1.2cqw 1.5cqw;
-  font-size: 3.4cqw;
+.sources {
+  padding: 2.5cqw 3cqw;
+  border-radius: 2.5cqw;
+  background: rgb(0 0 0 / 30%);
+
+  h3 {
+    margin: 0 0 1.5cqw;
+    font-size: 3.6cqw;
+  }
+
+  ul {
+    display: grid;
+    gap: 1.5cqw;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 2cqw;
+    font-size: 3cqw;
+    line-height: 1.3;
+  }
+
+  img {
+    width: 8cqw;
+    height: 8cqw;
+    flex: none;
+    object-fit: contain;
+  }
+
+  strong {
+    color: #ffd34d;
+  }
 }
 
-.trophy-icon {
-  width: 7cqw;
-  height: 7cqw;
-  object-fit: contain;
+.challenge {
+  position: relative;
+  flex: none;
+  margin-left: auto;
+  padding: 1.2cqw 3cqw;
+  font-size: 3.2cqw;
+}
+
+.ready-badge {
+  position: absolute;
+  top: -1.5cqw;
+  right: -1.5cqw;
+  min-width: 4.6cqw;
+  padding: 0.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: #e0402a;
+  color: #fff;
+  font: bold 2.8cqw / 1 Arial, sans-serif;
 }

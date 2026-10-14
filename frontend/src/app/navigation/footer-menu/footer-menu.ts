@@ -9,6 +9,7 @@ import { Tooltip } from '../../shared/tooltip/tooltip';
 import { Skills } from '../../skills/skills';
 import { Workshop } from '../../workshop/workshop';
 import { Navigation, PageId } from '../navigation';
+import { Challenge } from '../../challenge/challenge';
 
 interface Tab {
   readonly label: string;
@@ -35,6 +36,7 @@ export class FooterMenu {
   private readonly artifacts = inject(Artifacts);
   private readonly workshop = inject(Workshop);
   private readonly companions = inject(Companions);
+  private readonly challenge = inject(Challenge);
   private readonly camp = inject(Camp);
 
   protected readonly tabs = computed<readonly Tab[]>(() => [
@@ -60,7 +62,8 @@ export class FooterMenu {
       icon: MENU_ICONS.companions,
       page: 'companions',
       locked: this.companions.unlocked() ? null : `Zone ${COMPANIONS_UNLOCK_ZONE}`,
-      badge: this.companions.unlocked() ? this.companions.ready() : 0,
+      // Un palier du Défi à récupérer compte aussi : c'est de là que viennent la plupart des œufs
+      badge: this.companions.unlocked() ? this.companions.ready() + this.challenge.claimable().length : 0,
       tooltip: this.companions.unlocked()
         ? null
         : `Compagnons : s'ouvre à la zone ${COMPANIONS_UNLOCK_ZONE}, avec un premier œuf offert.`,

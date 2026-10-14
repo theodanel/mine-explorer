@@ -38,6 +38,19 @@ describe('Companions', () => {
     expect(companions.bonuses().goldPct).toBeGreaterThan(0);
   });
 
+  it('rattrape les œufs des zones déjà terminées, une seule fois', () => {
+    const companions = setup(7);
+    const total = () => companions.eggs().length + (companions.incubating() === null ? 0 : 1);
+    // Œuf offert + zones 3, 4, 5 et 6
+    expect(total()).toBe(5);
+    expect(localStorage.getItem('mine-explorer.zone-eggs')).toBe('6');
+
+    companions.grantZoneEggs(6);
+    expect(total()).toBe(5);
+    companions.grantZoneEggs(7);
+    expect(total()).toBe(6);
+  });
+
   it('montre et dépense les pierres d\'éveil pour monter une étoile', () => {
     const companions = setup(3);
     now = HATCH_MS.common;

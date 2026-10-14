@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { Artifacts } from '../artifacts/artifacts';
+import { Companions } from '../companions/companions';
 import { rockHp, shardsForStage } from '../balance/balance';
 import { MissionCounters } from '../missions/mission-counters';
 import { Ores } from '../ores/ores';
@@ -51,6 +52,23 @@ describe('Mining', () => {
     TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
     expect(TestBed.inject(Mining).strike().clearedZone).toBe(1);
     expect(Object.keys(TestBed.inject(Artifacts).owned())).toHaveLength(1);
+  });
+
+  it('donne un œuf de compagnon pour chaque zone terminée à partir de la zone 3', () => {
+    const eggsForClearing = (zone: number) => {
+      localStorage.clear();
+      localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 15, damage: rockHp(zone, 15) - 1 }));
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
+      const addEgg = vi.spyOn(TestBed.inject(Companions), 'addEgg');
+      TestBed.inject(Mining).strike();
+      return addEgg.mock.calls.length;
+    };
+    // Zone 2 terminée : l'onglet s'ouvre, avec son œuf offert à part
+    expect(eggsForClearing(2)).toBe(0);
+    expect(eggsForClearing(3)).toBe(1);
+    // En zone 6, le rattrapage a déjà donné les œufs des zones 3 à 5 : la zone 6 en ajoute un
+    expect(eggsForClearing(6)).toBe(1);
   });
 
   it('déterre parfois un éclat en frappant', () => {

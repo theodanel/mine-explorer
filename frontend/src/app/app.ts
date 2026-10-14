@@ -14,6 +14,8 @@ import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
+import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
+import { ONLINE_CONFIG } from './online/online-config';
 import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
@@ -62,6 +64,7 @@ import { Wallet } from './wallet/wallet';
     EvolutionPage,
     ProfilePage,
     OnlineLayer,
+    LeaderboardPage,
     SplashScreen,
     TutorialOverlay,
     MineEventLayer,
@@ -81,6 +84,7 @@ export class App {
   protected readonly evolution = inject(Evolution);
   protected readonly navigation = inject(Navigation);
   protected readonly playerName = inject(PlayerName);
+  protected readonly online = inject(ONLINE_CONFIG).enabled;
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);

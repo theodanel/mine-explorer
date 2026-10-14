@@ -161,6 +161,30 @@
   margin: -0.2em 0;
 }
 
+// Raccourci vers le classement, sous le portrait du joueur
+.side-link {
+  position: absolute;
+  inset: calc(2.5% + 15cqw) auto auto 3.5cqw;
+  display: grid;
+  place-items: center;
+  width: 11cqw;
+  height: 11cqw;
+  padding: 1.6cqw;
+  border: 0.3cqw solid rgb(255 255 255 / 15%);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 45%);
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+  }
+}
+
 .zone {
   position: absolute;
   inset: 15.5% 0 auto;

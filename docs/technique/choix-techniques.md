@@ -45,4 +45,4 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 ## Pages chargées à la demande
 
 - **Décision** : pages du menu et fenêtres qui arrivent après le démarrage chargées avec `@defer`.
-- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget de 1 Mo fixé dans `angular.json`, important sur mobile.
+- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget de 1,1 Mo fixé dans `angular.json`, important sur mobile.

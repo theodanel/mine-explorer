@@ -32,10 +32,10 @@ export const APPRENTICE_STRIKE: StrikeAnimation = {
 // Les formes évoluées sont affichées à environ 300 px de haut, comme leurs images fixes
 const MINER_STRIKE: StrikeAnimation = {
   atlasUrl: 'assets/characters/evolutions/mineur-frappe.json',
-  // Images de 511 × 366 découpées par art-source/animations/decouper-frappe.py ; mesures sur ses grilles
+  // Images de 480 × 365 découpées par art-source/animations/decouper-frappe.py ; mesures sur ses grilles
   scale: 0.83,
   bodyOffsetX: 75,
-  impactOffset: { x: 75, y: -36 },
+  impactOffset: { x: 78, y: -35 },
 };
 
 const FOREMAN_STRIKE: StrikeAnimation = {

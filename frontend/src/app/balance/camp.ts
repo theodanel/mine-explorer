@@ -25,10 +25,12 @@ export const TAVERN_EFFICIENCY_STEP = 0.015;
 export const WAREHOUSE_CAP_STEP_MS = 15 * 60 * 1000;
 
 /**
- * Puits : 0,3 éclat par heure et par niveau (3 par heure au niveau 10, environ 70 par jour), même jeu fermé,
- * qui s'accumulent jusqu'à 12 h de production : de quoi revenir deux fois par jour.
+ * Puits : 1 éclat par heure et par niveau (10 par heure au niveau 10, environ 240 par jour), même jeu fermé,
+ * qui s'accumulent jusqu'à 12 h de production : de quoi revenir deux fois par jour. À 0,3 (avant le 15/10/2026),
+ * il ne faisait que 7 % des éclats d'une partie pour un prix en or égal aux autres bâtiments : pas rentable. À 1, il
+ * en fait 18 % et la pioche 30 n'arrive qu'un jour plus tôt (simulé sur 5 graines).
  */
-export const WELL_SHARDS_PER_HOUR = 0.3;
+export const WELL_SHARDS_PER_HOUR = 1;
 export const WELL_STORAGE_HOURS = 12;
 
 /**

@@ -45,6 +45,19 @@ export const SLOTS: Readonly<Record<SlotId, SlotDefinition>> = {
   bag: { label: 'Sac', iconUrl: 'assets/ui/backpack.png', workshopStat: 'goldBonus' },
 };
 
+/**
+ * Affinités : les deux stats que chaque emplacement porte le plus souvent en affixe (demande de Théo, 15/10/2026 :
+ * « il n'y a pas de réel composition de stats »). On sait où chercher le Critique ou la Vitesse. La première est
+ * aussi celle que l'Atelier renforce.
+ */
+export const SLOT_AFFINITIES: Readonly<Record<SlotId, readonly [StatId, StatId]>> = {
+  pickaxe: ['strikePower', 'critDamage'],
+  gloves: ['critChance', 'strikePower'],
+  helmet: ['critDamage', 'critChance'],
+  boots: ['miningSpeed', 'goldBonus'],
+  bag: ['goldBonus', 'miningSpeed'],
+};
+
 export const TIER_LABELS: Readonly<Record<TierId, string>> = {
   wood: 'Bois',
   stone: 'Pierre',

@@ -61,5 +61,16 @@ export function workshopMaterial(tier: TierId): TierId | null {
   return tier === TIER_ORDER[0] ? null : tier;
 }
 
+/**
+ * Reforge d'un affixe (15/10/2026) : 12 minerais de la qualité de la pièce, et l'or d'un niveau 5 d'Atelier dans
+ * cette qualité. Assez pour réfléchir avant de relancer, pas assez pour qu'un build soit hors de portée.
+ */
+export const REFORGE_ORES = 12;
+const REFORGE_GOLD_LEVEL = 5;
+
+export function reforgeGoldCost(tier: TierId): number {
+  return workshopGoldCost(tier, REFORGE_GOLD_LEVEL);
+}
+
 /** Niveau de chaque pièce, par emplacement puis par qualité. Une entrée absente est au niveau 0. */
 export type WorkshopLevels = Readonly<Partial<Record<SlotId, Readonly<Partial<Record<TierId, number>>>>>>;

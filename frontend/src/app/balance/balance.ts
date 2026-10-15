@@ -89,6 +89,8 @@ export const AFFIX_SHARE: Readonly<MiningStats> = {
   goldBonus: 1.2,
 };
 export const NEXT_AFFIX_RATIO = 0.6;
+/** Une stat d'affinité de l'emplacement sort 3 fois plus souvent qu'une autre en affixe. */
+export const AFFINITY_WEIGHT = 3;
 
 /** Croissance par niveau d'objet (le niveau de l'objet est celui de la pioche qui l'a forgé). */
 const STRIKE_LEVEL_GROWTH = 1.1;

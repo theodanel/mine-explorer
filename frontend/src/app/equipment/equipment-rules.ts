@@ -1,6 +1,7 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
 import {
+  AFFINITY_WEIGHT,
   AFFIX_SHARE,
   affixCount,
   BASE_STATS,
@@ -19,7 +20,9 @@ import {
   EquippedItems,
   Item,
   MiningStats,
+  SLOT_AFFINITIES,
   SLOT_IDS,
+  SlotId,
   STAT_IDS,
   STATS,
   StatId,
@@ -44,8 +47,9 @@ export interface StatComparison {
 
 /**
  * Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche.
- * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon : n'importe quel
- * emplacement peut porter n'importe quelle stat. Un affixe de Frappe s'ajoute à la Frappe de base.
+ * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon. N'importe quel
+ * emplacement peut porter n'importe quelle stat, mais ses deux affinités sortent 3 fois plus souvent. Un affixe de
+ * Frappe s'ajoute à la Frappe de base.
  */
 export function rollItem(random: Random, createId: () => string, pickaxeLevel: number, forcedTier?: TierId): Item {
   const slot = pickOne(SLOT_IDS, random);
@@ -57,11 +61,17 @@ export function rollItem(random: Random, createId: () => string, pickaxeLevel: n
   const stats: Partial<MiningStats> = { strikePower: rollStat('strikePower', tier, level, ITEM_BASE_STRIKE_SHARE, random) };
   const candidates = [...STAT_IDS];
   for (let i = 0; i < affixCount(tier); i++) {
-    const [stat] = candidates.splice(Math.floor(random() * candidates.length), 1);
+    const stat = pickWeighted(candidates, (candidate) => affinityWeight(slot, candidate), random);
+    candidates.splice(candidates.indexOf(stat), 1);
     const ratio = AFFIX_SHARE[stat] * (i === 0 ? 1 : NEXT_AFFIX_RATIO);
     stats[stat] = (stats[stat] ?? 0) + rollStat(stat, tier, level, ratio, random);
   }
   return { id: createId(), slot, tier, level, stats };
+}
+
+/** Poids d'une stat dans les tirages d'affixes de cet emplacement. */
+export function affinityWeight(slot: SlotId, stat: StatId): number {
+  return SLOT_AFFINITIES[slot].includes(stat) ? AFFINITY_WEIGHT : 1;
 }
 
 /**

@@ -29,6 +29,7 @@
         </span>
         <div class="text">
           <h3>{{ row.label }}</h3>
+          <p class="affinities">Affinités : {{ row.affinities }}</p>
           @if (row.tier === null) {
             <p class="hint">Équipe une pièce pour la renforcer.</p>
           } @else {
@@ -58,6 +59,37 @@
               }
             } @else {
               <p class="hint">Niveau {{ maxLevel }} atteint.</p>
+            }
+            @if (row.reforge; as offer) {
+              <!-- Reforge : toucher un affixe le relance vers une autre stat -->
+              <div class="reforge">
+                <span class="reforge-title">
+                  Reforge
+                  <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ offer.gold }}
+                  @if (offer.ore; as ore) {
+                    <img [src]="ore.icon" alt="" width="128" height="128" />{{ ore.need }}
+                  }
+                </span>
+                <span class="affixes">
+                  @for (affix of offer.affixes; track affix.stat) {
+                    <button
+                      type="button"
+                      class="affix"
+                      [class.fresh]="reforged()?.slot === row.slot && reforged()?.stat === affix.stat"
+                      [disabled]="offer.check !== 'ok'"
+                      [attr.aria-label]="'Reforger ' + affix.text"
+                      (click)="reforge(row.slot, affix.stat)"
+                    >
+                      {{ affix.text }} <span aria-hidden="true">↻</span>
+                    </button>
+                  } @empty {
+                    <span class="hint">Aucun affixe en pourcentage à relancer.</span>
+                  }
+                </span>
+                @if (offer.full) {
+                  <span class="hint">La pièce porte déjà toutes les stats.</span>
+                }
+              </div>
             }
           }
         </div>

@@ -135,6 +135,15 @@ export class Inventory {
     this.reviewClosed.set(false);
   }
 
+  /** Remplace la pièce portée par sa version modifiée (reforge de l'Atelier). Même emplacement, même identifiant. */
+  replaceEquipped(item: Item): boolean {
+    if (this.equipped()[item.slot]?.id !== item.id) {
+      return false;
+    }
+    this.save({ ...this.state(), equipped: { ...this.equipped(), [item.slot]: item } });
+    return true;
+  }
+
   sellPending(): void {
     const item = this.requirePending();
     this.wallet.add(sellPrice(item));

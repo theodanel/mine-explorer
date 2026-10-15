@@ -46,7 +46,17 @@ import {
 import { computeStats, powerDelta, resolveHit, rollItem, sellPrice } from '../src/app/equipment/equipment-rules.ts';
 import type { EquippedItems, Item, MiningStats, TierId } from '../src/app/equipment/equipment.model.ts';
 import { TIER_IDS } from '../src/app/equipment/equipment.model.ts';
-import { applyDamage, START_PROGRESS, stagesReached, type Progress } from '../src/app/progression/progression-rules.ts';
+import {
+  applyDamage,
+  BEFORE_GUARDIAN_STAGE,
+  challengeGuardian,
+  failGuardian,
+  isGuardian,
+  START_PROGRESS,
+  stagesReached,
+  type Progress,
+} from '../src/app/progression/progression-rules.ts';
+import { GUARDIAN_SECONDS } from '../src/app/balance/balance.ts';
 import { learn, learnCheck, passiveBonuses, pointsEarned, pointsSpent, spellRank, type SkillRanks } from '../src/app/skills/skill-rules.ts';
 import {
   addArtifact,
@@ -284,6 +294,17 @@ const createId = (): string => `sim-${++nextId}`;
 
 // ─── État du joueur ─────────────────────────────────────────────────────────
 let progress: Progress = START_PROGRESS;
+/** Gardien de fin de zone : début du combat (s), blocage après un échec, et Puissance au moment de l'échec. */
+let guardianStart: number | null = null;
+let guardianBlocked = false;
+let guardianFailedAt = 0;
+let guardianFailPower = 0;
+let guardianFails = 0;
+const guardianFailsByZone: Record<number, number> = {};
+const guardianKills: string[] = [];
+/** Le joueur retente le gardien quand sa Puissance a gagné 5 %, ou au bout de 30 minutes de jeu. */
+const GUARDIAN_RETRY_POWER = 1.05;
+const GUARDIAN_RETRY_SECONDS = 30 * 60;
 let equipped: EquippedItems = {};
 let gold = 0;
 let shards = 0;
@@ -649,10 +670,18 @@ function claimMissions(): void {
 
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */
 function dealDamage(now: number, damage: number): void {
+  updateGuardian(now);
   const { zone, stage } = progress;
   const mods = GALLERIES[gallery].modifiers;
-  const result = applyDamage(progress, scaleAmount(damage, 1 / mods.hardness, galleryRandom));
+  const result = applyDamage(progress, scaleAmount(damage, 1 / mods.hardness, galleryRandom), guardianBlocked);
   progress = result.progress;
+  if (isGuardian(progress) && stage === BEFORE_GUARDIAN_STAGE) {
+    guardianStart = now;
+  }
+  if (result.clearedZone !== null && guardianStart !== null) {
+    guardianKills.push(`z${zone} ${(now - guardianStart).toFixed(0)} s`);
+    guardianStart = null;
+  }
   totalDamage += damage;
   const earned = Math.round(goldForDamage(damage, profileNow.stats.goldBonus) * mods.gold);
   gold += earned;
@@ -682,6 +711,26 @@ function dealDamage(now: number, damage: number): void {
     lastZone = progress.zone;
     filonSecondsInZone = 0;
     filonsInZone = 0;
+  }
+}
+
+/** Gardien raté au bout de 30 s ; une fois bloqué, le joueur le retente quand il s'est renforcé. */
+function updateGuardian(now: number): void {
+  if (isGuardian(progress) && guardianStart !== null && now - guardianStart > GUARDIAN_SECONDS) {
+    progress = failGuardian(progress);
+    guardianStart = null;
+    guardianBlocked = true;
+    guardianFailedAt = now;
+    guardianFailPower = powerOf(permanentProfile().stats);
+    guardianFails++;
+    guardianFailsByZone[progress.zone] = (guardianFailsByZone[progress.zone] ?? 0) + 1;
+    return;
+  }
+  const stronger = powerOf(permanentProfile().stats) >= guardianFailPower * GUARDIAN_RETRY_POWER;
+  if (guardianBlocked && (stronger || now - guardianFailedAt > GUARDIAN_RETRY_SECONDS)) {
+    progress = challengeGuardian(progress);
+    guardianBlocked = false;
+    guardianStart = now;
   }
 }
 
@@ -859,6 +908,10 @@ if (withCompanions) {
       `premier légendaire ${legendaryAt || 'jamais'}, ${challengesPlayed} défis, ${(challengeMilestonesReached / Math.max(challengesPlayed, 1)).toFixed(1)} paliers par défi, ${companions.stones} pierres en stock`,
   );
 }
+console.log(
+  `Gardiens : ${guardianFails} échecs (${Object.entries(guardianFailsByZone).map(([zone, fails]) => `z${zone}×${fails}`).join(', ') || 'aucun'}), ` +
+    `réussis en ${guardianKills.join(', ')}`,
+);
 console.log(`Minerais en stock : ${TIER_IDS.filter((t) => ores[t] > 0).map((t) => `${t} ${ores[t]}`).join(', ')}`);
 
 /** Tirages du Puits séparés de ceux de la mine : ajouter le mini-jeu ne change pas le reste de la partie simulée. */

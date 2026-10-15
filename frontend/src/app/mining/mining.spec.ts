@@ -11,6 +11,9 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { Mining } from './mining';
 
+/** Multiple de Frappe qui casse n'importe quel gardien d'un coup. */
+const ONE_SHOT = 1e9;
+
 describe('Mining', () => {
   // 0.5 par défaut : jamais de critique (5 %) ni d'éclat déterré (2 %)
   function setup(roll = 0.5): { mining: Mining; wallet: Wallet; progression: Progression; counters: MissionCounters } {
@@ -48,20 +51,21 @@ describe('Mining', () => {
 
   it('livre un artefact quand une zone est terminée', () => {
     localStorage.clear();
-    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone: 1, stage: 15, damage: rockHp(1, 15) - 1 }));
+    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone: 1, stage: 15, damage: 0 }));
     TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
-    expect(TestBed.inject(Mining).strike().clearedZone).toBe(1);
+    // Le gardien de la zone tombe d'un seul coup énorme
+    expect(TestBed.inject(Mining).blast('dynamite', ONE_SHOT).clearedZone).toBe(1);
     expect(Object.keys(TestBed.inject(Artifacts).owned())).toHaveLength(1);
   });
 
   it('donne un œuf de compagnon pour chaque zone terminée à partir de la zone 3', () => {
     const eggsForClearing = (zone: number) => {
       localStorage.clear();
-      localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 15, damage: rockHp(zone, 15) - 1 }));
+      localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 15, damage: 0 }));
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
       const addEgg = vi.spyOn(TestBed.inject(Companions), 'addEgg');
-      TestBed.inject(Mining).strike();
+      TestBed.inject(Mining).blast('dynamite', ONE_SHOT);
       return addEgg.mock.calls.length;
     };
     // Zone 2 terminée : l'onglet s'ouvre, avec son œuf offert à part

@@ -1,6 +1,6 @@
 import { Assets, Sprite, Texture } from 'pixi.js';
 
-import { rockUrl } from '../loading/game-assets';
+import { ADVENTURE_IMAGES, rockUrl } from '../loading/game-assets';
 
 /** Hauteur du rocher dans la scène 720×1280 : un peu moins de la moitié du mineur. */
 const ROCK_HEIGHT = 130;
@@ -31,7 +31,8 @@ export class MineRock {
   private floorY = 0;
   private hitMs = 0;
   private respawnMs = 0;
-  private zone = 0;
+  /** Rocher demandé en dernier (zone, ou gardien de la zone) : une image arrivée trop tard est ignorée. */
+  private shown = '';
   private readonly missingZones = new Set<number>();
 
   constructor(private readonly onMove: (top: RockTop) => void) {
@@ -46,12 +47,14 @@ export class MineRock {
     this.layout();
   }
 
-  async show(zone: number): Promise<void> {
-    this.zone = zone;
-    const url = rockUrl(zone);
+  /** Affiche le rocher de la zone, ou son gardien (le rocher gardien du Puits sans fond). */
+  async show(zone: number, guardian = false): Promise<void> {
+    const key = `${zone}${guardian ? '-gardien' : ''}`;
+    this.shown = key;
+    const url = guardian ? ADVENTURE_IMAGES.guardianRock : rockUrl(zone);
     try {
       const texture = await Assets.load<Texture>(url);
-      if (this.zone !== zone || this.sprite.destroyed) {
+      if (this.shown !== key || this.sprite.destroyed) {
         return;
       }
       this.sprite.texture = texture;

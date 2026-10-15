@@ -12,6 +12,7 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[ressources-game-design]] : synthèse des articles partagés (Deconstructor of Fun sur LoM, Math of Idle Games III sur le prestige, exemple de GDD) et chiffres des jeux de référence.
 - [[competences-et-artefacts]] : arbre de compétences, sorts actifs et artefacts (budget de puissance, tables, découvertes).
 - [[carte-des-zones]] : carte des zones façon jeu mobile, retour dans une zone passée pour miner son minerai sans fin (14/10/2026).
+- [[gardien-de-zone]] : le dernier filon de chaque zone est un gardien à casser en 30 secondes, pour qu'on ne passe plus les zones en laissant tourner le jeu (15/10/2026).
 - [[atelier]] : renforcement de l'équipement par qualité, niveaux 1 à 50, prix et ouverture au Mineur (14/10/2026).
 - [[idees-fun]] : ce qui rendrait le jeu plus fun et plus addictif (Atelier, événements de mine, embranchements, compagnons, son), avec l'équilibrage de chaque idée.
 - [[refonte-compagnons-evolution]] : équipements en bas, évolution par objectifs, Défi de la mine et pierres d'éveil, éclats plus faciles (13/10/2026).

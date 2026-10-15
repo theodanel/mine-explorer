@@ -6,7 +6,7 @@ Demande de Théo, 15/10/2026 : en laissant tourner le jeu, n'importe quelle Frap
 
 - **Le dernier filon de chaque zone (15/15) est un gardien**, à casser en **30 secondes**. Le chrono démarre quand on arrive devant lui.
 - **Raté** : le gardien se reforme, le mineur retombe sur le filon 14. Ce filon se reforme alors sans fin : on continue de gagner or, éclats et minerai, mais on ne passe plus.
-- **Défier le gardien** : un bouton sur la mine relance le combat quand on veut, avec la Puissance conseillée pour le passer.
+- **Défier le gardien** : un petit bouton discret sous le bandeau de zone relance le combat quand on veut, avec la Puissance conseillée pour le passer (demande de Théo, 15/10/2026).
 - Une partie rechargée devant le gardien repart d'un combat neuf, sans garder les dégâts : recharger ne sert pas à tricher sur le chrono.
 - Les joueurs déjà plus loin gardent leur zone : rien n'est repris.
 - En zone passée (retour pour récolter), pas de gardien : les filons y sont sans fin.
@@ -28,5 +28,5 @@ Un joueur qui laisse tourner le jeu sans améliorer son équipement bloque au pr
 - **Chiffres** : `GUARDIAN_SECONDS`, `GUARDIAN_POWER_SHARE`, `guardianHp`, `guardianPower` dans `balance/balance.ts`.
 - **Règles pures** : `progression/progression-rules.ts` (`stageHp`, `applyDamage(…, blocked)`, `failGuardian`, `challengeGuardian`, `guardianTimeLeft`).
 - **Service** : `progression.ts` tient le chrono (rafraîchi toutes les 100 ms) et le blocage (clé `mine-explorer.guardian-blocked`).
-- **Affichage** : `mine-scene/` montre le rocher gardien du Puits sans fond, sa vie violette et le chrono, ou le bouton « Défier le gardien » ; le bandeau de zone affiche « Gardien ».
+- **Affichage** : `mine-scene/` montre le rocher gardien du Puits sans fond, sa vie violette et le chrono, ; le bandeau de zone affiche « Gardien », et sous lui le bouton « Défier le gardien » après un échec (`zone-banner/`).
 - **Simulateur** : le joueur retente le gardien quand sa Puissance a gagné 5 %, ou au bout de 30 minutes ; le bilan liste les échecs et les temps de victoire par zone.

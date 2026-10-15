@@ -202,9 +202,24 @@ export const FORGE_EXPRESS_IMAGES = {
 } as const;
 
 /**
- * Visuels de la Chasse au filon. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
- * des visuels du jeu servent de remplaçants : le coffre des événements, la pépite volante, la mine de fer.
+ * Visuels de l'Expédition aux flambeaux. En attendant les images Gemini (sol, torche, monstre et carte, prompts dans
+ * docs/game-design/aventures-prompts.md), des visuels du jeu servent : la lanterne, la chauve-souris des compagnons,
+ * la fiole du mineur pour l'huile, les coffres et les pierres d'éveil. Le sol est dessiné en CSS.
  */
+export const TORCHLIGHT_IMAGES = {
+  card: 'assets/ui/artifacts/crackedLantern.png',
+  background: 'assets/backgrounds/zone6.webp',
+  miner: 'assets/evolutions/legende-portrait.webp',
+  monster: 'assets/companions/bat.png',
+  wall: 'assets/rocks/zone4.webp',
+  stones: 'assets/ui/refonte/awakening-stone.png',
+  chest: EVENT_IMAGES.coinSack,
+  oil: 'assets/ui/artifacts/minersFlask.png',
+  treasure: EVENT_IMAGES.chestClosed,
+  treasureOpen: EVENT_IMAGES.chestOpen,
+} as const;
+
+/** Visuels de la Chasse au filon : tous déjà dans le jeu (rochers des zones, éboulement, coffre, pépite, bois). */
 export const MINEHUNT_IMAGES = {
   card: EVENT_IMAGES.chestClosed,
   background: 'assets/backgrounds/zone4.webp',

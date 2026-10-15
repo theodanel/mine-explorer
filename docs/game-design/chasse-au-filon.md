@@ -12,7 +12,7 @@ Aventure du Contremaître. Première version le 14/10/2026 en démineur, que Th�
   - à partir du 5e rocher, un sur quatre cache un coffre : +2 filons d'or et +8 minerais.
 - **L'éboulement** : chaque rocher peut s'effondrer et emporter toute la cagnotte.
   - Risque : 8 % au premier rocher, +4 % par rocher déjà cassé (44 % au dixième).
-  - La Chance (bonus d'or) le réduit de 30 % par +100 % d'or, au plus de 40 %.
+  - La Chance (bonus d'or) le réduit de 30 % pour +20 % d'or, au plus de 40 %. Corrigé le 15/10/2026 : à 30 % pour +100 %, la Chance ne servait presque à rien, le bonus d'or plafonnant vers +20 % en fin de partie.
 - **Les étais** viennent de la Puissance : un à la Puissance conseillée de la zone, un de plus à chaque doublement au-dessus (jusqu'à 3), aucun en dessous. Chaque étai retient un éboulement : ce rocher ne rapporte rien, mais la cagnotte reste.
 - **Encaisser** se fait quand on veut, dès le premier rocher cassé. Casser les dix rochers encaisse d'office avec un bonus de +50 %.
 - L'or est compté en filons de la zone où joue le mineur, figés au départ de la partie. Le Puits garde les éclats.

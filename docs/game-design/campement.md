@@ -11,7 +11,7 @@ Retour à [[Accueil]]. Décidé le 13/10/2026 par Théo : « un petit village de
 |---|---|---|
 | Taverne | +1,5 point de rendement hors ligne (50 % de base) | niveau 10 : 65 % |
 | Entrepôt | +15 min d'absence prise en compte (4 h de base) | niveau 8 : 6 h |
-| Puits | +0,3 éclat par heure, même jeu fermé, stocké jusqu'à 12 h | niveau 10 : 3 par heure, 36 en réserve |
+| Puits | +1 éclat par heure, même jeu fermé, stocké jusqu'à 12 h | niveau 10 : 10 par heure, 120 en réserve |
 
 - **Prix** : le premier niveau vaut 30 segments de la pioche 11, puis ×3 par niveau ; minerai 3, puis +2 par niveau.
 - Le puits se récolte à la main, dans la page du Campement : la réserve de 12 h donne une raison de revenir matin et soir. Les fractions d'éclat déjà produites sont gardées d'une récolte à l'autre.
@@ -28,3 +28,5 @@ Simulé (joueur 1 h par jour, 5 tirages) :
 ## Visuels
 
 Planche 11 et fond du Campement livrés le 14/10/2026 (sources dans `art-source/aventures/`) : icônes des trois bâtiments, carte des Aventures et décor de la page.
+
+**15/10/2026** : le Puits passe de 0,3 à 1 éclat par heure et par niveau (demande de Théo : « pas rentable du tout »). Il faisait 7 % des éclats d'une partie pour le prix d'un autre bâtiment ; il en fait 18 %, et la pioche 30 n'arrive qu'un jour plus tôt (jour 41 au lieu de 42, simulé sur 5 graines).

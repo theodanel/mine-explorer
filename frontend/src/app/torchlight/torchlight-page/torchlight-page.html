@@ -9,7 +9,7 @@
     <!-- En expédition -->
     <div class="hud">
       <span class="steps" [class.low]="lowSteps()">
-        <img [src]="images.card" alt="" width="128" height="128" />
+        <img [src]="images.torch" alt="" width="256" height="256" />
         <span><strong>{{ expedition.stepsLeft }}</strong> pas</span>
       </span>
       <span class="loot">
@@ -17,7 +17,7 @@
       </span>
     </div>
 
-    <div class="cave" [class.hurt]="hurt()" [style.--columns]="columns" [style.--rows]="rows" role="grid" aria-label="Grotte">
+    <div class="cave" [class.hurt]="hurt()" [style.--columns]="columns" [style.--rows]="rows" [style.--floor]="floor" role="grid" aria-label="Grotte">
       @for (cell of cells(); track cell.index) {
         <button
           type="button"

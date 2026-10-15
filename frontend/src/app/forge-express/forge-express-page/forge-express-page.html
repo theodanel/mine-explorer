@@ -21,7 +21,7 @@
     </div>
 
     <button type="button" class="anvil-area" [class.swing]="swing()" aria-label="Frapper" (pointerdown)="strike()">
-      <span class="ingot" [style.--glow]="glow()"></span>
+      <img class="ingot" [src]="images.ingot" [style.--glow]="glow()" alt="" width="256" height="256" />
       <img class="anvil" [src]="images.anvil" alt="" width="512" height="512" />
       <img class="hammer" [src]="images.hammer" alt="" width="128" height="128" />
       @if (pop(); as pop) {

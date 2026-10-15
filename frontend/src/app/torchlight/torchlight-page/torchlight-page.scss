@@ -1,0 +1,469 @@
+:host {
+  display: block;
+}
+
+.page {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3cqw;
+  height: 100%;
+  padding: 4cqw;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 4.8cqw;
+    line-height: 1.1;
+  }
+}
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  border: 0.4cqw solid rgb(26 15 7 / 70%);
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 6.5cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.chip {
+  margin-left: auto;
+  padding: 1cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 40%);
+  font: bold 3cqw / 1 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+// ─── En expédition ───────────────────────────────────────────────────────
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.steps,
+.loot {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1cqw 3cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 55%);
+  font: bold 3.6cqw / 1 Arial, sans-serif;
+
+  img {
+    width: 6.5cqw;
+    height: 6.5cqw;
+    object-fit: contain;
+  }
+}
+
+.steps strong {
+  font-size: 4.6cqw;
+  color: #ffd34d;
+}
+
+.steps.low strong {
+  color: #ff8a7a;
+  animation: blink 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes blink {
+  to {
+    opacity: 0.45;
+  }
+}
+
+// La grotte : un plateau noir où seule la lumière de la torche dessine les cases
+.cave {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  justify-self: center;
+  gap: 0.8cqw;
+  // Toute la grotte tient dans la hauteur libre, quelle que soit la taille de l'écran
+  height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  aspect-ratio: var(--columns) / var(--rows);
+  padding: 2cqw;
+  border-radius: 4cqw;
+  background: #07040a;
+  box-shadow:
+    inset 0 0 6cqw rgb(0 0 0 / 90%),
+    0 1cqw 3cqw rgb(0 0 0 / 60%);
+
+  &.hurt {
+    animation: hurt 0.45s;
+  }
+}
+
+@keyframes hurt {
+  20%,
+  60% {
+    transform: translateX(-1.2cqw);
+    box-shadow: inset 0 0 6cqw rgb(180 40 40 / 70%);
+  }
+
+  40%,
+  80% {
+    transform: translateX(1.2cqw);
+  }
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 1.8cqw;
+  // Le noir garde la forme du plateau : on devine les cases sans rien y voir
+  background: #110c0f;
+  cursor: default;
+  transition:
+    background 0.35s,
+    opacity 0.35s,
+    box-shadow 0.35s;
+
+  // Sol éclairé : des dalles chaudes, d'autant plus claires que la torche est proche
+  &.lit {
+    background:
+      radial-gradient(circle at 40% 35%, rgb(255 200 120 / calc(var(--glow) * 30%)), transparent 70%),
+      linear-gradient(145deg, #6b5038, #3e2c1d);
+    box-shadow: inset 0 -0.5cqw 0 rgb(0 0 0 / 30%);
+    filter: brightness(calc(0.55 + var(--glow) * 0.6));
+  }
+
+  // Sol déjà vu, retombé dans l'ombre : la carte s'en souvient à peine
+  &.remembered {
+    background: #33261a;
+    opacity: 0.75;
+  }
+
+  &.wall.remembered {
+    background: #3a332d;
+  }
+
+  &.lit.wall {
+    background: linear-gradient(145deg, #4a4038, #2a231d);
+  }
+
+  // Cases où l'on peut avancer : un liseré doré qui respire
+  &.reachable {
+    cursor: pointer;
+    box-shadow: inset 0 0 0 0.5cqw rgb(255 211 77 / 70%);
+    animation: breathe 1.2s ease-in-out infinite alternate;
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  &.here {
+    background: radial-gradient(circle, #ffcf7a, #b5702e 70%);
+    box-shadow: 0 0 5cqw 2cqw rgb(255 170 70 / 55%);
+    z-index: 1;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+@keyframes breathe {
+  to {
+    box-shadow: inset 0 0 0 0.5cqw rgb(255 211 77 / 25%);
+  }
+}
+
+.thing {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.4cqw 0.4cqw rgb(0 0 0 / 60%));
+  animation: appear 0.3s ease-out;
+}
+
+.monster {
+  animation:
+    appear 0.3s ease-out,
+    hover 1.4s ease-in-out infinite alternate;
+}
+
+.treasure {
+  filter: drop-shadow(0 0 2cqw rgb(255 211 77 / 90%));
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes hover {
+  to {
+    transform: translateY(-0.8cqw);
+  }
+}
+
+.miner {
+  width: 92%;
+  height: 92%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// La flamme de la torche, posée sur l'épaule du mineur
+.flame {
+  position: absolute;
+  top: -1cqw;
+  right: -0.5cqw;
+  width: 3.4cqw;
+  height: 4.6cqw;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff6c0, #ffb347 45%, #ff6a2a 80%);
+  box-shadow: 0 0 2.5cqw 1cqw rgb(255 160 60 / 70%);
+  animation: flicker 0.25s ease-in-out infinite alternate;
+}
+
+@keyframes flicker {
+  to {
+    transform: scale(0.88, 1.08) rotate(4deg);
+  }
+}
+
+// Ce qui perce le noir : deux yeux jaunes, ou une lueur dorée
+.eyes {
+  width: 50%;
+  height: 20%;
+  background:
+    radial-gradient(circle at 25% 50%, #ffe34d 0 22%, transparent 26%),
+    radial-gradient(circle at 75% 50%, #ffe34d 0 22%, transparent 26%);
+  filter: drop-shadow(0 0 1cqw rgb(255 220 70 / 90%));
+  animation: blinkEyes 3s infinite;
+}
+
+@keyframes blinkEyes {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+.gleam {
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 220 110 / 85%), rgb(255 190 60 / 30%) 50%, transparent 72%);
+  animation: gleam 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes gleam {
+  to {
+    transform: scale(1.25);
+    opacity: 0.6;
+  }
+}
+
+.toast {
+  position: absolute;
+  top: 2cqw;
+  left: 50%;
+  z-index: 2;
+  padding: 1.4cqw 4cqw;
+  border-radius: 999px;
+  background: rgb(36 23 13 / 92%);
+  box-shadow: inset 0 0 0 0.35cqw rgb(255 211 77 / 50%);
+  color: #ffd34d;
+  font: bold 3.6cqw / 1 Arial, sans-serif;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: toast 1.1s ease-out both;
+}
+
+@keyframes toast {
+  from {
+    transform: translate(-50%, 2cqw);
+    opacity: 0;
+  }
+
+  20% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.go-back {
+  justify-self: center;
+  padding: 2.5cqw 6cqw;
+  font-size: 4.2cqw;
+}
+
+// Bilan, posé sur la grotte
+.result {
+  position: absolute;
+  right: 6cqw;
+  bottom: 6cqw;
+  left: 6cqw;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  padding: 4cqw;
+  border-radius: 4cqw;
+  background: linear-gradient(rgb(62 42 24 / 96%), rgb(39 26 15 / 96%));
+  box-shadow:
+    inset 0 0 0 0.45cqw rgb(138 95 56 / 70%),
+    0 2cqw 4cqw rgb(0 0 0 / 50%);
+  text-align: center;
+  animation: appear 0.35s ease-out;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: #ffd34d;
+    font-size: 5.5cqw;
+  }
+}
+
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
+.result-icon {
+  width: 22cqw;
+  height: 22cqw;
+  object-fit: contain;
+}
+
+.loot-line {
+  font-size: 4.2cqw;
+}
+
+.egg {
+  color: #ffd34d;
+  font-weight: bold;
+}
+
+.note {
+  font-size: 3cqw;
+  opacity: 0.8;
+}
+
+.actions {
+  display: flex;
+  gap: 3cqw;
+  margin-top: 1cqw;
+
+  .game-button {
+    padding: 2.2cqw 5cqw;
+  }
+}
+
+// ─── Accueil ─────────────────────────────────────────────────────────────
+
+.lobby {
+  display: grid;
+  grid-row: 2 / -1;
+  align-content: center;
+  justify-items: center;
+  gap: 3.5cqw;
+  text-align: center;
+}
+
+.hero {
+  width: 28cqw;
+  height: auto;
+  filter: drop-shadow(0 0 4cqw rgb(255 170 70 / 70%));
+  animation: float 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  to {
+    transform: translateY(-1.5cqw);
+  }
+}
+
+.rules {
+  display: grid;
+  gap: 1.8cqw;
+  margin: 0;
+  padding: 3.5cqw 4cqw;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 85%);
+  font-size: 3.2cqw;
+  line-height: 1.35;
+  text-align: left;
+  list-style: none;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.go {
+  min-width: 50cqw;
+  padding: 3cqw 6cqw;
+  font-size: 4.8cqw;
+}
+
+.runs {
+  margin: 0;
+  font-size: 3.2cqw;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps.low strong,
+  .cave.hurt,
+  .cell.reachable,
+  .thing,
+  .monster,
+  .flame,
+  .eyes,
+  .gleam,
+  .toast,
+  .hero,
+  .result {
+    animation: none;
+  }
+}

@@ -3,9 +3,10 @@ import { Component, computed, inject } from '@angular/core';
 import { Abyss } from '../../abyss/abyss';
 import { Camp } from '../../camp/camp';
 import { ForgeExpress } from '../../forge-express/forge-express';
+import { Torchlight } from '../../torchlight/torchlight';
 import { Merchant } from '../../merchant/merchant';
 import { Minehunt } from '../../minehunt/minehunt';
-import { ADVENTURE_IMAGES, FORGE_EXPRESS_IMAGES, MERCHANT_IMAGES, MINEHUNT_IMAGES } from '../../loading/game-assets';
+import { ADVENTURE_IMAGES, FORGE_EXPRESS_IMAGES, MERCHANT_IMAGES, MINEHUNT_IMAGES, TORCHLIGHT_IMAGES } from '../../loading/game-assets';
 import { Navigation, PageId } from '../../navigation/navigation';
 
 interface Adventure {
@@ -36,6 +37,7 @@ export class AdventuresPage {
   private readonly minehunt = inject(Minehunt);
   private readonly merchant = inject(Merchant);
   private readonly forgeExpress = inject(ForgeExpress);
+  private readonly torchlight = inject(Torchlight);
 
   protected readonly adventures = computed<readonly Adventure[]>(() => [
     {
@@ -73,6 +75,15 @@ export class AdventuresPage {
       text: 'Frappe en rythme à l’enclume pour forger un objet d’exception.',
       locked: this.forgeExpress.unlocked() ? null : `Débloqué : ${this.forgeExpress.unlockLabel}`,
       status: this.forgeExpress.unlocked() ? `${this.forgeExpress.runsLeft()} / ${this.forgeExpress.dailyRuns} parties` : null,
+    },
+    {
+      page: 'torchlight',
+      icon: TORCHLIGHT_IMAGES.card,
+      scene: `url(${TORCHLIGHT_IMAGES.background})`,
+      title: 'Expédition aux flambeaux',
+      text: 'Explore la grotte noire à la torche et trouve le trésor en 30 pas.',
+      locked: this.torchlight.unlocked() ? null : `Débloqué : ${this.torchlight.unlockLabel}`,
+      status: this.torchlight.unlocked() ? `${this.torchlight.runsLeft()} / ${this.torchlight.dailyRuns} expéditions` : null,
     },
     this.merchantCard(),
   ]);

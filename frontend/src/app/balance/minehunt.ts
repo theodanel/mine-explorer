@@ -11,11 +11,11 @@ export const ROCKS_PER_RUN = 10;
 
 /**
  * Risque d'éboulement : 8 % au premier rocher, 4 % de plus à chaque rocher cassé (44 % au dixième). La Chance
- * (bonus d'or) le réduit : −30 % du risque pour +100 % d'or, au plus −40 %.
+ * (bonus d'or) le réduit : −30 % du risque pour +20 % d'or (le bonus d'un joueur avancé), au plus −40 %.
  */
 const BASE_CAVE_IN = 0.08;
 const CAVE_IN_STEP = 0.04;
-const LUCK_REDUCTION = 0.3;
+const LUCK_REDUCTION = 1.5;
 const MAX_LUCK_REDUCTION = 0.4;
 
 export function caveInChance(rock: number, goldBonus: number): number {

@@ -122,6 +122,11 @@
         <app-forge-express-page class="page-layer" />
       }
     }
+    @case ('torchlight') {
+      @defer (on immediate) {
+        <app-torchlight-page class="page-layer" />
+      }
+    }
     @case ('merchant') {
       @defer (on immediate) {
         <app-merchant-page class="page-layer" />

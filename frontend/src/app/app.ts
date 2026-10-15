@@ -9,6 +9,7 @@ import { AbyssPage } from './abyss/abyss-page/abyss-page';
 import { MinehuntPage } from './minehunt/minehunt-page/minehunt-page';
 import { MerchantPage } from './merchant/merchant-page/merchant-page';
 import { ForgeExpressPage } from './forge-express/forge-express-page/forge-express-page';
+import { TorchlightPage } from './torchlight/torchlight-page/torchlight-page';
 import { MerchantHint } from './merchant/merchant-hint/merchant-hint';
 import { ZoneMap } from './progression/zone-map/zone-map';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
@@ -73,6 +74,7 @@ function resourceLabel(amount: number): string {
     MinehuntPage,
     MerchantPage,
     ForgeExpressPage,
+    TorchlightPage,
     MerchantHint,
     ZoneMap,
     FooterMenu,

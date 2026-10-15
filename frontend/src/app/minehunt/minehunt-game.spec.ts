@@ -74,7 +74,7 @@ describe('équilibrage de la Chasse', () => {
   it('réduit le risque avec la Chance, sans jamais l’effacer', () => {
     expect(caveInChance(0, 0)).toBeCloseTo(0.08);
     expect(caveInChance(9, 0)).toBeCloseTo(0.44);
-    expect(caveInChance(9, 1)).toBeCloseTo(0.44 * 0.7);
+    expect(caveInChance(9, 0.2)).toBeCloseTo(0.44 * 0.7);
     expect(caveInChance(9, 10)).toBeCloseTo(0.44 * 0.6);
   });
 

@@ -25,11 +25,11 @@ import {
   shardsForStage,
   upgradeDurationMs,
   ZONE_CLEAR_ORES,
-  ZONE_CLEAR_SHARDS,
+  zoneClearShards,
   zoneMaterial,
   hitsPerSecond,
   powerOf,
-  goldForDamage,
+  minedGold,
 } from '../src/app/balance/balance.ts';
 import { ARTIFACT_FIND_CHANCE, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
 import {
@@ -683,7 +683,7 @@ function dealDamage(now: number, damage: number): void {
     guardianStart = null;
   }
   totalDamage += damage;
-  const earned = Math.round(goldForDamage(damage, profileNow.stats.goldBonus) * mods.gold);
+  const earned = Math.round(minedGold(damage, profileNow.stats.goldBonus) * mods.gold);
   gold += earned;
   goldMined += earned;
   if (result.rockBroken) {
@@ -695,8 +695,8 @@ function dealDamage(now: number, damage: number): void {
     const tier = zoneMaterial(zone);
     if (tier !== null && result.clearedZone !== null) ores[tier] += scaleAmount(ZONE_CLEAR_ORES, mods.ores, galleryRandom);
     if (result.clearedZone !== null) {
-      shards += ZONE_CLEAR_SHARDS;
-      shardSources.zones += ZONE_CLEAR_SHARDS;
+      shards += zoneClearShards(zone);
+      shardSources.zones += zoneClearShards(zone);
       findArtifact(now);
       if (zoneClearGivesEgg(result.clearedZone)) findEgg(now);
       spendPoints(now);

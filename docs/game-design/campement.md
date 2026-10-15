@@ -9,7 +9,7 @@ Retour à [[Accueil]]. Décidé le 13/10/2026 par Théo : « un petit village de
 
 | Bâtiment | Effet par niveau | Maximum |
 |---|---|---|
-| Taverne | +1,5 point de rendement hors ligne (50 % de base) | niveau 10 : 65 % |
+| Taverne | +1,5 point de rendement hors ligne (35 % de base depuis le 15/10/2026) | niveau 10 : 50 % |
 | Entrepôt | +15 min d'absence prise en compte (4 h de base) | niveau 8 : 6 h |
 | Puits | +1 éclat par heure, même jeu fermé, stocké jusqu'à 12 h | niveau 10 : 10 par heure, 120 en réserve |
 

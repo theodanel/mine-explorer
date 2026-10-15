@@ -39,7 +39,7 @@ Pour garder ce rythme, le coût de la pioche passe de ×2 à ×2,03 par niveau. 
 | Prospection | 1 | Flair de l'or | passif | +5 % d'or par rang | 5 |
 | Prospection | 2 | Filon doré | sort rare | voir les sorts | 3 |
 | Prospection | 2 | Chercheur de géodes | passif | +0,2 point de chance d'éclat par coup, par rang (2 % → 3 %) | 5 |
-| Prospection | 3 | Sac sans fond | passif | +5 points d'or d'absence par rang (50 % → 75 %) | 5 |
+| Prospection | 3 | Sac sans fond | passif | +5 points d'or d'absence par rang (35 % → 60 %) | 5 |
 | Prospection | 4 | Écho de géode | sort épique | voir les sorts | 3 |
 | Maîtrise | 1 | Frénésie | sort commun | voir les sorts | 3 |
 | Maîtrise | 1 | Mèche courte | passif | −4 % de recharge des sorts par rang | 5 |

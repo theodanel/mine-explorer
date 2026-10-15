@@ -121,25 +121,6 @@
   }
 }
 
-// Gardien raté : on le défie à nouveau quand on veut. Centré sur l'écran : au-dessus du rocher, il dépasserait à droite
-.challenge {
-  position: absolute;
-  left: 50%;
-  display: grid;
-  justify-items: center;
-  gap: 0.4cqw;
-  padding: 1.6cqw 4cqw;
-  font-size: 3.4cqw;
-  white-space: nowrap;
-  transform: translate(-50%, calc(-100% - 5cqw));
-
-  small {
-    font-size: 2.4cqw;
-    font-weight: normal;
-    opacity: 0.9;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .guardian-timer.urgent {
     animation: none;

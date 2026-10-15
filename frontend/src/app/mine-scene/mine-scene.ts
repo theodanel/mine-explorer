@@ -46,7 +46,6 @@ const DYNAMITE_SHAKE_SHARE = 0.4;
 const HEALTH_BAR_GAP = 14;
 const PERCENT = 100;
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
-const COMPACT_FORMAT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const MS_PER_SECOND = 1000;
 
 @Component({
@@ -86,9 +85,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
   protected readonly guardian = computed(() => this.progression.farmZone() === null && this.progression.progress().stage === GUARDIAN_STAGE);
   protected readonly guardianSeconds = computed(() => Math.ceil(this.progression.guardianTimeLeft() / MS_PER_SECOND));
   protected readonly guardianTimePercent = computed(() => (this.progression.guardianTimeLeft() / (GUARDIAN_SECONDS * MS_PER_SECOND)) * PERCENT);
-  /** Gardien raté : le joueur peut le défier à nouveau quand il veut. */
-  protected readonly canChallenge = computed(() => this.progression.farmZone() === null && this.progression.blocked());
-  protected readonly guardianPower = computed(() => COMPACT_FORMAT.format(this.progression.guardianPower()));
   private destroyed = false;
 
   constructor() {
@@ -157,12 +153,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
       await this.startMining(frames);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);
-    }
-  }
-
-  protected challengeGuardian(): void {
-    if (this.progression.challengeGuardian()) {
-      this.sound.play('upgrade');
     }
   }
 

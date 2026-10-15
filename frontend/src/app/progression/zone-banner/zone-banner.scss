@@ -43,6 +43,23 @@
   cursor: pointer;
 }
 
+// Gardien raté : un petit rappel sous la zone, sans attirer l'œil plus qu'il ne faut
+.challenge {
+  padding: 0.8cqw 2.6cqw;
+  border: none;
+  border-radius: 999px;
+  background: rgb(20 12 6 / 65%);
+  box-shadow: inset 0 0 0 0.3cqw rgb(196 92 255 / 45%);
+  color: #f0dcff;
+  font: bold 2.7cqw / 1 Arial, sans-serif;
+  cursor: pointer;
+
+  .power {
+    font-weight: normal;
+    opacity: 0.75;
+  }
+}
+
 .stage {
   color: #e8c48a;
   font-size: 3.4cqw;

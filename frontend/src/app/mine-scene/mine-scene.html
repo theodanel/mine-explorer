@@ -16,12 +16,6 @@
       <span class="timer-value">{{ guardianSeconds() }} s</span>
     </div>
   }
-  @if (canChallenge()) {
-    <button type="button" class="challenge game-button red" [style.top.%]="healthBarTop()" (click)="challengeGuardian()">
-      Défier le gardien
-      <small>Puissance conseillée {{ guardianPower() }}</small>
-    </button>
-  }
   <div
     class="health"
     [class.guardian]="guardian()"

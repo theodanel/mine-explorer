@@ -7,7 +7,11 @@
         <span class="stage">Filons sans fin</span>
       } @else {
         Zone {{ progression.zone() }}
-        <span class="stage">Filon {{ progression.progress().stage }} / {{ stagesPerZone }}</span>
+        @if (progression.progress().stage === stagesPerZone) {
+          <span class="stage">Gardien</span>
+        } @else {
+          <span class="stage">Filon {{ progression.progress().stage }} / {{ stagesPerZone }}</span>
+        }
       }
       <span class="map-hint" aria-hidden="true">▾</span>
     </button>

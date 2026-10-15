@@ -1,12 +1,20 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+
+import { guardianPower } from '../balance/balance';
+import { CLOCK } from '../shared/clock';
 
 import { readStorage, writeStorage } from '../shared/local-storage';
 import {
   applyDamage,
   applyFarmDamage,
+  BEFORE_GUARDIAN_STAGE,
   canFarm,
+  challengeGuardian,
+  failGuardian,
   Farm,
   farmRockHp,
+  guardianTimeLeft,
+  isGuardian,
   isValidFarm,
   isValidProgress,
   migrateProgress,
@@ -20,6 +28,9 @@ import {
 
 const STORAGE_KEY = 'mine-explorer.progress';
 const FARM_KEY = 'mine-explorer.farm';
+const BLOCKED_KEY = 'mine-explorer.guardian-blocked';
+/** Rafraîchissement du chrono du gardien : assez fin pour un compte à rebours fluide. */
+const GUARDIAN_TICK_MS = 100;
 
 /** Ce qu'a fait un coup : le filon cassé, la zone terminée, et les PV réellement minés. */
 export interface HitResult {
@@ -37,8 +48,15 @@ export interface HitResult {
  */
 @Injectable({ providedIn: 'root' })
 export class Progression {
+  private readonly clock = inject(CLOCK);
   private readonly state = signal<Progress>(loadProgress());
   private readonly farmState = signal<Farm | null>(loadFarm(this.state()));
+  /** Gardien raté : le filon d'avant se reforme sans fin jusqu'à ce que le joueur le défie à nouveau. */
+  private readonly blockedState = signal(loadBlocked(this.state()));
+  /** Début du combat contre le gardien, ou null hors combat. */
+  private readonly guardianStartedAt = signal<number | null>(null);
+  private readonly now = signal(this.clock());
+  private guardianTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly progress = this.state.asReadonly();
   /** Zone la plus profonde atteinte : c'est elle qui ouvre les menus et fixe les récompenses. */
@@ -57,6 +75,25 @@ export class Progression {
     return farm === null ? remainingHp(this.state()) : farmRockHp(farm.zone) - farm.damage;
   });
   readonly stagesReached = computed(() => stagesReached(this.state()));
+  /** Combat en cours contre le gardien de la zone (pas en zone passée). */
+  readonly guardianFight = computed(() => this.farmState() === null && this.guardianStartedAt() !== null);
+  /** Millisecondes restantes contre le gardien. */
+  readonly guardianTimeLeft = computed(() => {
+    const startedAt = this.guardianStartedAt();
+    return startedAt === null ? 0 : guardianTimeLeft(startedAt, this.now());
+  });
+  readonly blocked = this.blockedState.asReadonly();
+  /** Puissance qui casse le gardien de la zone juste à temps. */
+  readonly guardianPower = computed(() => guardianPower(this.state().zone));
+
+  constructor() {
+    // Une partie rechargée devant le gardien repart d'un combat neuf : le chrono ne survit pas à la fermeture
+    if (isGuardian(this.state())) {
+      this.saveProgress({ ...this.state(), damage: 0 });
+      this.startGuardianFight();
+    }
+    inject(DestroyRef).onDestroy(() => this.stopGuardianTimer());
+  }
 
   hit(damage: number): HitResult {
     const farm = this.farmState();
@@ -65,10 +102,70 @@ export class Progression {
       this.saveFarm(result.farm);
       return { rockBroken: result.rockBroken, clearedZone: null, mined: result.mined, farming: true };
     }
-    const result = applyDamage(this.state(), damage);
-    this.state.set(result.progress);
-    writeStorage(STORAGE_KEY, JSON.stringify(result.progress));
+    this.checkGuardianTimeout();
+    const before = this.state();
+    const result = applyDamage(before, damage, this.blockedState());
+    this.saveProgress(result.progress);
+    if (isGuardian(result.progress) && !isGuardian(before)) {
+      this.startGuardianFight();
+    } else if (result.clearedZone !== null) {
+      this.endGuardianFight();
+    }
     return { rockBroken: result.rockBroken, clearedZone: result.clearedZone, mined: damage, farming: false };
+  }
+
+  /** Défie à nouveau le gardien raté, avec tous ses PV et un chrono neuf. */
+  challengeGuardian(): boolean {
+    if (!this.blockedState() || this.state().stage !== BEFORE_GUARDIAN_STAGE) {
+      return false;
+    }
+    this.saveBlocked(false);
+    this.saveProgress(challengeGuardian(this.state()));
+    this.startGuardianFight();
+    return true;
+  }
+
+  private startGuardianFight(): void {
+    this.guardianStartedAt.set(this.clock());
+    this.now.set(this.clock());
+    this.stopGuardianTimer();
+    this.guardianTimer = setInterval(() => {
+      this.now.set(this.clock());
+      this.checkGuardianTimeout();
+    }, GUARDIAN_TICK_MS);
+  }
+
+  /** Temps écoulé : le gardien se reforme et le joueur retombe sur le filon d'avant. */
+  private checkGuardianTimeout(): void {
+    const startedAt = this.guardianStartedAt();
+    if (startedAt === null || guardianTimeLeft(startedAt, this.clock()) > 0) {
+      return;
+    }
+    this.endGuardianFight();
+    this.saveProgress(failGuardian(this.state()));
+    this.saveBlocked(true);
+  }
+
+  private endGuardianFight(): void {
+    this.guardianStartedAt.set(null);
+    this.stopGuardianTimer();
+  }
+
+  private stopGuardianTimer(): void {
+    if (this.guardianTimer !== null) {
+      clearInterval(this.guardianTimer);
+      this.guardianTimer = null;
+    }
+  }
+
+  private saveProgress(progress: Progress): void {
+    this.state.set(progress);
+    writeStorage(STORAGE_KEY, JSON.stringify(progress));
+  }
+
+  private saveBlocked(blocked: boolean): void {
+    this.blockedState.set(blocked);
+    writeStorage(BLOCKED_KEY, JSON.stringify(blocked));
   }
 
   /** Revient miner dans une zone déjà terminée. Refusé pour la zone en cours ou une zone pas encore atteinte. */
@@ -106,6 +203,19 @@ function loadProgress(): Progress {
   }
   console.warn('Sauvegarde de progression invalide ignorée');
   return START_PROGRESS;
+}
+
+/** Le blocage n'a de sens que sur le filon d'avant le gardien : ailleurs, il est ignoré. */
+function loadBlocked(progress: Progress): boolean {
+  const raw = readStorage(BLOCKED_KEY);
+  if (raw === null) {
+    return false;
+  }
+  if (raw !== 'true' && raw !== 'false') {
+    console.warn('Sauvegarde du gardien invalide ignorée');
+    return false;
+  }
+  return raw === 'true' && progress.stage === BEFORE_GUARDIAN_STAGE;
 }
 
 function loadFarm(progress: Progress): Farm | null {

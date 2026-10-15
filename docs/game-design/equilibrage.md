@@ -247,3 +247,7 @@ Simulé (joueur régulier, 5 graines) :
 - la pioche 30 arrive vers le jour 42 au lieu de 47,6 : le jeu est plus riche, comme demandé ;
 - le Contremaître arrive au jour 2,5 au lieu de 2,8 ;
 - le Mineur (12 h), le Maître (jour 7,3) et la Légende (jour 16) ne bougent pas.
+
+## Gardien de zone (15/10/2026)
+
+Le dernier filon de chaque zone est un gardien à casser en 30 secondes, ses PV calculés sur 50 % de la Puissance conseillée du filon 15 (voir [[gardien-de-zone]]). Simulé : pioche 30 toujours vers le jour 41, gardiens cassés en 15 à 28 s, mais blocage en fin de partie au gardien de la zone 16.

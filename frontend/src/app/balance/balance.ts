@@ -464,6 +464,24 @@ export function recommendedPower(zone: number, stage: number): number {
   return Math.ceil((rockHp(zone, stage) / stageTargetSeconds(zone)) * POWER_PER_DPS);
 }
 
+/**
+ * Gardien de fin de zone : le dernier filon de chaque zone est un gardien à casser en 30 secondes, sinon il se
+ * reforme et le joueur reste dans la zone (demande de Théo, 15/10/2026 : en laissant tourner le jeu, n'importe quelle
+ * Frappe finissait par passer toutes les zones). Ses PV ne suivent pas les filons : ils valent ce qu'inflige en
+ * 30 secondes un joueur à GUARDIAN_POWER_SHARE de la Puissance conseillée pour le dernier filon de la zone.
+ */
+export const GUARDIAN_SECONDS = 30;
+export const GUARDIAN_POWER_SHARE = 0.5;
+
+export function guardianHp(zone: number): number {
+  return Math.round(GUARDIAN_SECONDS * (recommendedPower(zone, STAGES_PER_ZONE) / POWER_PER_DPS) * GUARDIAN_POWER_SHARE);
+}
+
+/** Puissance qui casse le gardien de la zone juste à temps. */
+export function guardianPower(zone: number): number {
+  return Math.ceil((guardianHp(zone) / GUARDIAN_SECONDS) * POWER_PER_DPS);
+}
+
 /** Secondes pour miner les PV restants à cette Puissance. */
 export function secondsToMine(remainingHp: number, power: number): number {
   return (remainingHp / power) * POWER_PER_DPS;

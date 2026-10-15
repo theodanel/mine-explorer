@@ -38,3 +38,23 @@ Simulation du joueur régulier sur 5 graines (`tools/simulate.mts regulier 70`) 
 ## Sauvegarde
 
 Clé `mine-explorer.workshop` : `{ emplacement: { qualité: niveau } }`. L'ancien format (`{ emplacement: niveau }`) est converti une fois : le niveau passe à la qualité de la pièce portée, plafonné à 50 ; un emplacement vide le perd.
+
+## Affinités et reforge (15/10/2026)
+
+Retour de Théo : « il n'y a pas de réel composition de stats ». Les affixes étaient tirés au hasard parmi les 5 stats, sur n'importe quelle pièce : on gardait juste la plus grosse Puissance.
+
+**Affinités** : chaque emplacement a deux stats qui sortent 3 fois plus souvent en affixe (`SLOT_AFFINITIES`, `AFFINITY_WEIGHT`). On sait où chercher quoi. Elles sont affichées sur chaque ligne de l'Atelier.
+
+| Emplacement | Affinités |
+|---|---|
+| Pioche | Frappe, Dégâts crit. |
+| Gants | Critique, Frappe |
+| Casque | Dégâts crit., Critique |
+| Bottes | Vitesse, Bonus d'or |
+| Sac | Bonus d'or, Vitesse |
+
+**Reforge** : sous chaque pièce portée, toucher un affixe en pourcentage le relance vers une stat que la pièce ne porte pas encore, tirée avec les affinités. La qualité du tirage est conservée : un affixe à 90 % de sa valeur attendue le reste dans sa nouvelle stat.
+- **Prix** : 12 minerais de la qualité de la pièce, et l'or d'un niveau 5 d'Atelier dans cette qualité.
+- **La Frappe ne se reforge pas** : la sauvegarde fond son affixe dans la Frappe de base, on ne saurait pas quelle part relancer.
+- **Pièce pleine** : quand elle porte déjà toutes les stats en pourcentage, il n'y a plus rien à reforger.
+- **Code** : `equipment/reforge-rules.ts` (pur), `Workshop.reforge`, `Inventory.replaceEquipped`.

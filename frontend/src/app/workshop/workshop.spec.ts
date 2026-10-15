@@ -1,11 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
+import { reforgeGoldCost, REFORGE_ORES } from '../balance/workshop';
+import { Inventory } from '../equipment/inventory';
 import { Ores } from '../ores/ores';
 import { Wallet } from '../wallet/wallet';
 import { Workshop } from './workshop';
 import { upgradeCost } from './workshop-rules';
 
-const STEEL_PICKAXE = { id: 'p1', slot: 'pickaxe', tier: 'steel', level: 12, stats: { strikePower: 100 } };
+const STEEL_PICKAXE = { id: 'p1', slot: 'pickaxe', tier: 'steel', level: 12, stats: { strikePower: 100, goldBonus: 0.02 } };
 
 describe('Workshop', () => {
   function setup(formIndex: number, coins: number, ores: Record<string, number>, workshop?: unknown): Workshop {
@@ -63,5 +65,18 @@ describe('Workshop', () => {
     const workshop = setup(1, 0, {}, { pickaxe: 6, helmet: 3 });
     expect(workshop.levels()).toEqual({ pickaxe: { steel: 6 } });
     expect(JSON.parse(localStorage.getItem('mine-explorer.workshop')!)).toEqual({ pickaxe: { steel: 6 } });
+  });
+
+  it('reforge un affixe de la pièce portée contre or et minerai', () => {
+    const workshop = setup(1, reforgeGoldCost('steel'), { steel: REFORGE_ORES });
+    expect(workshop.reforgeCheck('pickaxe')).toBe('ok');
+    const stat = workshop.reforge('pickaxe', 'goldBonus');
+    expect(stat).not.toBeNull();
+    const pickaxe = TestBed.inject(Inventory).equipped().pickaxe;
+    expect(pickaxe?.stats.goldBonus).toBeUndefined();
+    expect(stat === null ? undefined : pickaxe?.stats[stat]).toBeGreaterThan(0);
+    expect(TestBed.inject(Wallet).coins()).toBe(0);
+    expect(TestBed.inject(Ores).stock().steel).toBe(0);
+    expect(workshop.reforgeCheck('pickaxe')).toBe('gold');
   });
 });

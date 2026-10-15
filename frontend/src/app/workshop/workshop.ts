@@ -1,8 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { EVOLUTION_FORMS } from '../balance/balance';
-import { WORKSHOP_UNLOCK_FORM, WorkshopLevels } from '../balance/workshop';
-import { EquippedItems, SLOT_IDS, SlotId, TierId } from '../equipment/equipment.model';
+import { REFORGE_ORES, reforgeGoldCost, WORKSHOP_UNLOCK_FORM, WorkshopLevels, workshopMaterial } from '../balance/workshop';
+import { reforgeAffix, reforgeTargets } from '../equipment/reforge-rules';
+import { RANDOM } from '../shared/random';
+import { EquippedItems, SLOT_IDS, SlotId, StatId, TierId } from '../equipment/equipment.model';
 import { Inventory } from '../equipment/inventory';
 import { Evolution } from '../evolution/evolution';
 import { Ores } from '../ores/ores';
@@ -30,6 +32,7 @@ export class Workshop {
   private readonly ores = inject(Ores);
   private readonly inventory = inject(Inventory);
   private readonly missionCounters = inject(MissionCounters);
+  private readonly random = inject(RANDOM);
   private readonly state = signal<WorkshopLevels>(loadLevels(this.inventory.equipped()));
 
   readonly levels = this.state.asReadonly();
@@ -84,6 +87,57 @@ export class Workshop {
     this.save(withLevel(this.levels(), slot, tier, this.level(slot) + 1));
     this.missionCounters.record('workshopUpgrades');
     return true;
+  }
+
+  /** Prix d'une reforge sur la pièce portée, ou null s'il n'y a pas de pièce. */
+  reforgeCost(slot: SlotId): WorkshopCost | null {
+    const tier = this.tier(slot);
+    if (tier === null) {
+      return null;
+    }
+    const material = workshopMaterial(tier);
+    return { gold: reforgeGoldCost(tier), ores: material === null ? {} : { [material]: REFORGE_ORES } };
+  }
+
+  /** Ce qui empêche de reforger la pièce portée, ou 'ok'. */
+  reforgeCheck(slot: SlotId): UpgradeCheck {
+    if (!this.unlocked()) {
+      return 'locked';
+    }
+    const item = this.inventory.equipped()[slot];
+    const cost = this.reforgeCost(slot);
+    if (item === undefined || cost === null) {
+      return 'empty';
+    }
+    if (reforgeTargets(item).length === 0) {
+      return 'max';
+    }
+    return this.canPay(cost);
+  }
+
+  /** Paie, puis relance l'affixe choisi de la pièce portée vers une autre stat. Renvoie la nouvelle stat. */
+  reforge(slot: SlotId, stat: StatId): StatId | null {
+    const item = this.inventory.equipped()[slot];
+    const cost = this.reforgeCost(slot);
+    if (this.reforgeCheck(slot) !== 'ok' || item === undefined || cost === null) {
+      return null;
+    }
+    const reforged = reforgeAffix(item, stat, this.random);
+    if (reforged === null) {
+      return null;
+    }
+    this.ores.spend(cost.ores);
+    this.wallet.spend(cost.gold);
+    this.inventory.replaceEquipped(reforged);
+    return reforgeTargets(item).find((target) => reforged.stats[target] !== undefined) ?? null;
+  }
+
+  private canPay(cost: WorkshopCost): UpgradeCheck {
+    if (this.wallet.coins() < cost.gold) {
+      return 'gold';
+    }
+    const stock = this.ores.stock();
+    return Object.entries(cost.ores).every(([tier, need]) => stock[tier as TierId] >= (need ?? 0)) ? 'ok' : 'ores';
   }
 
   private save(next: WorkshopLevels): void {

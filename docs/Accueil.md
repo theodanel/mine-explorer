@@ -62,3 +62,4 @@ Notes d'étude du début du projet, conservées pour mémoire ; elles ne décriv
 - `technique/` : documentation technique à jour ; `technique/historique/` : études du début du projet.
 - À la racine : cet accueil et [[Decisions]].
 - Les PDF de référence (guides Gamearly) et les images restent hors du coffre.
+- [[recherches]] : proposition de compétences façon Forge Master (parchemins, temps d'étude, 40 nœuds), à valider (16/10/2026).

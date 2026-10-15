@@ -32,12 +32,12 @@ describe('Mining', () => {
     expect(mining.strike()).toEqual({
       damage: 5,
       critical: false,
-      reward: { gold: 2, shards: 0 },
+      reward: { gold: 3, shards: 0 },
       rockBroken: false,
       clearedZone: null,
       ore: null,
     });
-    expect(wallet.coins()).toBe(2);
+    expect(wallet.coins()).toBe(3);
     expect(progression.progress().damage).toBe(5);
   });
 

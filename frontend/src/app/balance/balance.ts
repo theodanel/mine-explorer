@@ -143,12 +143,27 @@ const SEGMENT_BASE_COST = 15;
 // plus rapides et l'Atelier moins cher à l'ouverture : pioche 30 au jour 47,8 sur 5 tirages
 const SEGMENT_COST_GROWTH = 2.09;
 
+/**
+ * Entre les niveaux 15 et 25, le prix monte moins vite (×1,95) : c'est là que Théo butait, le 15/10/2026, entre le
+ * Contremaître et le Maître des profondeurs, avec un stuff en retard sur sa zone. Les niveaux 25 à 29 rattrapent
+ * l'écart (×2,4) : le niveau 29 coûte comme avant, pour que la fin de partie ne raccourcisse pas.
+ */
+const SOFT_SEGMENT_FROM = 15;
+const SOFT_SEGMENT_TO = 25;
+const SOFT_SEGMENT_GROWTH = 1.95;
+const SOFT_SPAN = SOFT_SEGMENT_TO - SOFT_SEGMENT_FROM;
+const CATCH_UP_SPAN = MAX_PICKAXE_LEVEL - 1 - SOFT_SEGMENT_TO;
+const CATCH_UP_GROWTH = SEGMENT_COST_GROWTH * (SEGMENT_COST_GROWTH / SOFT_SEGMENT_GROWTH) ** (SOFT_SPAN / CATCH_UP_SPAN);
+
 /** Prix en or d'un segment au niveau donné, ou null au niveau maximum. */
 export function segmentCost(pickaxeLevel: number): number | null {
   if (pickaxeLevel >= MAX_PICKAXE_LEVEL) {
     return null;
   }
-  return Math.round(SEGMENT_BASE_COST * SEGMENT_COST_GROWTH ** (pickaxeLevel - 1));
+  const softSteps = Math.min(Math.max(pickaxeLevel - SOFT_SEGMENT_FROM, 0), SOFT_SPAN);
+  const catchUpSteps = Math.max(pickaxeLevel - SOFT_SEGMENT_TO, 0);
+  const steps = pickaxeLevel - 1 - softSteps - catchUpSteps;
+  return Math.round(SEGMENT_BASE_COST * SEGMENT_COST_GROWTH ** steps * SOFT_SEGMENT_GROWTH ** softSteps * CATCH_UP_GROWTH ** catchUpSteps);
 }
 
 /**
@@ -240,15 +255,30 @@ const WELCOME_STAGES = 5;
 const WELCOME_SHARDS = 4;
 /** Les filons des zones adoucies donnent un éclat de plus : le début de partie forge davantage. */
 const EARLY_STAGE_SHARDS = 3;
-const STAGE_SHARDS = 2;
-export const ZONE_CLEAR_SHARDS = 5;
+/**
+ * Plus loin, un filon donne un éclat par tranche de 40 s de son temps visé : il dure plus longtemps, il rapporte
+ * plus (demande de Théo, 15/10/2026 : 2 éclats par filon en zone 9, pour 5 minutes de minage, c'était trop peu).
+ * 3 en zone 5, 8 en zone 9, 18 en zone 12.
+ */
+const STAGE_SHARD_SECONDS = 40;
+const MIN_STAGE_SHARDS = 2;
+/** Le gardien de chaque zone garde un coffre d'éclats : 5 par numéro de zone (45 en zone 9). */
+const ZONE_CLEAR_SHARDS_PER_ZONE = 5;
 
 /** Éclats gagnés en épuisant le filon `stage` de la zone `zone`. */
 export function shardsForStage(zone: number, stage: number): number {
   if (zone === 1 && stage <= WELCOME_STAGES) {
     return WELCOME_SHARDS;
   }
-  return zone <= SOFT_START_ZONES ? EARLY_STAGE_SHARDS : STAGE_SHARDS;
+  if (zone <= SOFT_START_ZONES) {
+    return EARLY_STAGE_SHARDS;
+  }
+  return Math.max(Math.round(stageTargetSeconds(zone) / STAGE_SHARD_SECONDS), MIN_STAGE_SHARDS);
+}
+
+/** Éclats du coffre du gardien, en terminant la zone. */
+export function zoneClearShards(zone: number): number {
+  return ZONE_CLEAR_SHARDS_PER_ZONE * zone;
 }
 
 export function stageIndex(zone: number, stage: number): number {
@@ -280,6 +310,17 @@ export function rockHp(zone: number, stage: number): number {
 
 export function goldForDamage(damage: number, goldBonus: number): number {
   return Math.round(damage * GOLD_PER_DAMAGE * (1 + goldBonus));
+}
+
+/**
+ * En jeu, chaque PV miné rapporte deux fois plus (15/10/2026). Avant, 78 % de l'or venait de l'absence : le joueur
+ * qui jouait voyait son or stagner, celui qui fermait le jeu avançait. L'absence passe en même temps de 50 % à 35 %.
+ */
+export const ACTIVE_GOLD_MULTIPLIER = 2;
+
+/** Or d'un coup porté en jeu (pioche ou sort). */
+export function minedGold(damage: number, goldBonus: number): number {
+  return goldForDamage(damage * ACTIVE_GOLD_MULTIPLIER, goldBonus);
 }
 
 // ─── Minerais et évolutions ────────────────────────────────────────────────
@@ -367,9 +408,9 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     id: 'master',
     label: 'Maître des profondeurs',
     objectives: tiered(8, [
-      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 1300]],
-      [['pickaxeLevel', 19], ['itemsForged', 1600], ['rocksBroken', 125]],
-      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['rocksBroken', 140]],
+      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 900]],
+      [['pickaxeLevel', 19], ['itemsForged', 1050], ['rocksBroken', 125]],
+      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1200], ['rocksBroken', 140]],
     ]),
     strikeBonus: 0.5,
   },
@@ -394,8 +435,8 @@ export function evolutionStrikeMultiplier(formIndex: number): number {
 
 /** Les gains hors ligne s'arrêtent après 4 h, comme dans Forge Master : il faut revenir pour en profiter. */
 export const OFFLINE_CAP_MS = 4 * 60 * 60 * 1000;
-/** Hors ligne, le mineur rapporte moitié moins qu'en jeu. */
-export const OFFLINE_EFFICIENCY = 0.5;
+/** Hors ligne, le mineur rapporte 35 % de ses dégâts (50 % avant le 15/10/2026), sans le bonus du jeu actif. */
+export const OFFLINE_EFFICIENCY = 0.35;
 /** En dessous, l'absence est trop courte pour mériter un message. */
 export const OFFLINE_MIN_MS = 60 * 1000;
 

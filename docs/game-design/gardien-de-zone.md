@@ -28,5 +28,5 @@ Un joueur qui laisse tourner le jeu sans améliorer son équipement bloque au pr
 - **Chiffres** : `GUARDIAN_SECONDS`, `GUARDIAN_POWER_SHARE`, `guardianHp`, `guardianPower` dans `balance/balance.ts`.
 - **Règles pures** : `progression/progression-rules.ts` (`stageHp`, `applyDamage(…, blocked)`, `failGuardian`, `challengeGuardian`, `guardianTimeLeft`).
 - **Service** : `progression.ts` tient le chrono (rafraîchi toutes les 100 ms) et le blocage (clé `mine-explorer.guardian-blocked`).
-- **Affichage** : `mine-scene/` montre le rocher gardien du Puits sans fond, sa vie violette et le chrono, ; le bandeau de zone affiche « Gardien », et sous lui le bouton « Défier le gardien » après un échec (`zone-banner/`).
+- **Affichage** : `mine-scene/` montre le rocher gardien du Puits sans fond, sa vie violette et le chrono ; le bandeau de zone affiche « Gardien », et sous lui le bouton « Défier le gardien » après un échec (`zone-banner/`).
 - **Simulateur** : le joueur retente le gardien quand sa Puissance a gagné 5 %, ou au bout de 30 minutes ; le bilan liste les échecs et les temps de victoire par zone.

@@ -43,6 +43,7 @@ export class TorchlightPage implements OnDestroy {
   protected readonly images = TORCHLIGHT_IMAGES;
   protected readonly columns = CAVE_COLUMNS;
   protected readonly rows = CAVE_ROWS;
+  protected readonly floor = `url(${TORCHLIGHT_IMAGES.floor})`;
   protected readonly scene = pageBackground(TORCHLIGHT_IMAGES.background);
   protected readonly expedition = this.torchlight.expedition;
   protected readonly lowSteps = computed(() => (this.expedition()?.stepsLeft ?? 0) <= LOW_STEPS);

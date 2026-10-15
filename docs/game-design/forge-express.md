@@ -28,4 +28,4 @@ Aventure du Maître des profondeurs, validée par Théo le 14/10/2026 : un mini-
 - **`Inventory.receive`** pose l'objet gagné en attente.
 - **`rollItem`** accepte une qualité imposée.
 - **Animations** : le marteau s'abat, des étincelles jaillissent, la note s'envole, et la lueur du lingot suit la chaleur.
-- **Visuels provisoires** : la pioche tient lieu de marteau, et le lingot est en CSS, en attendant les images Gemini ([[aventures-prompts]]).
+- **Visuels** : l'enclume de la Forge, et les images Gemini du lingot (qui rougeoit selon la chaleur), du marteau et de la carte, préparées par `art-source/aventures/preparer-aventures.py`.

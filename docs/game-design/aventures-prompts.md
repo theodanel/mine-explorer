@@ -4,6 +4,8 @@ Demande de Théo (14/10/2026) : des visuels simples, beaux, aérés et bien int�
 
 Chaque prompt est complet : colle-le seul et joins l'image de référence indiquée. Dépose les résultats dans `art-source/aventures/<nom>.png`.
 
+**État au 15/10/2026** : toutes les images sont livrées et intégrées, sauf les traces de pas du marchand (`traces-de-pas.png`).
+
 ## Chasse au filon
 
 Plus d'image à demander. Depuis le passage en « Quitte ou double » (15/10/2026), la Chasse réutilise les visuels du jeu : les rochers des zones 1 à 10 pour la file, `eboulement.png` pour l'éboulement, le coffre, la pépite, les minerais et le bois pour les étais. Les quatre prompts du démineur (case de roche, case creusée, grisou, carte) ne servent plus.

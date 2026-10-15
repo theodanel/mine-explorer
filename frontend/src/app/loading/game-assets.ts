@@ -181,36 +181,37 @@ export const EVENT_IMAGES = {
 } as const;
 
 /**
- * Visuels du Marchand nain. En attendant les images Gemini (prompts dans docs/game-design/aventures-prompts.md),
- * le sac de pièces tient lieu de marchand et le Campement d'étal ; les traces de pas attendent leur image.
+ * Visuels du Marchand nain (images Gemini, préparées par art-source/aventures/preparer-aventures.py) : le nain et
+ * sa mule, et son étal en fond. Les traces de pas attendent encore leur image.
  */
 export const MERCHANT_IMAGES = {
-  merchant: EVENT_IMAGES.coinSack,
-  stall: 'assets/backgrounds/aventure-campement.webp',
+  merchant: 'assets/ui/aventures/marchand.webp',
+  stall: 'assets/backgrounds/aventure-marchand.webp',
   footprints: null as string | null,
 } as const;
 
 /**
- * Visuels de la Forge express : l'enclume de la Forge, et en attendant les images Gemini, la pioche en guise de
- * marteau (le lingot est dessiné en CSS).
+ * Visuels de la Forge express : l'enclume de la Forge, et les images Gemini du lingot, du marteau et de la carte.
  */
 export const FORGE_EXPRESS_IMAGES = {
   anvil: 'assets/ui/forge-anvil.webp',
-  hammer: 'assets/ui/pickaxe.png',
-  card: 'assets/ui/forge-anvil.webp',
+  hammer: 'assets/ui/aventures/marteau.webp',
+  ingot: 'assets/ui/aventures/lingot.webp',
+  card: 'assets/ui/aventures/forge-carte.webp',
   background: 'assets/backgrounds/zone5.webp',
 } as const;
 
 /**
- * Visuels de l'Expédition aux flambeaux. En attendant les images Gemini (sol, torche, monstre et carte, prompts dans
- * docs/game-design/aventures-prompts.md), des visuels du jeu servent : la lanterne, la chauve-souris des compagnons,
- * la fiole du mineur pour l'huile, les coffres et les pierres d'éveil. Le sol est dessiné en CSS.
+ * Visuels de l'Expédition aux flambeaux : les images Gemini (carte, torche, monstre, dalle du sol), et ceux du jeu
+ * pour le reste (fiole du mineur pour l'huile, coffres, pierres d'éveil, rocher de la zone 4).
  */
 export const TORCHLIGHT_IMAGES = {
-  card: 'assets/ui/artifacts/crackedLantern.png',
+  card: 'assets/ui/aventures/flambeaux-carte.webp',
+  torch: 'assets/ui/aventures/torche.webp',
+  floor: 'assets/ui/aventures/case-sol.webp',
   background: 'assets/backgrounds/zone6.webp',
   miner: 'assets/evolutions/legende-portrait.webp',
-  monster: 'assets/companions/bat.png',
+  monster: 'assets/ui/aventures/monstre.webp',
   wall: 'assets/rocks/zone4.webp',
   stones: 'assets/ui/refonte/awakening-stone.png',
   chest: EVENT_IMAGES.coinSack,

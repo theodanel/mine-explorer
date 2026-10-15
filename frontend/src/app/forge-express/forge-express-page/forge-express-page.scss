@@ -144,37 +144,33 @@
   filter: drop-shadow(0 2cqw 2cqw rgb(0 0 0 / 60%));
 }
 
-// Lingot posé sur l'enclume, en attendant son image : sa lueur suit la chaleur
+// Lingot posé sur l'enclume : il rougeoit plus ou moins selon la chaleur
 .ingot {
   position: absolute;
-  top: 34%;
+  top: 22%;
   left: 50%;
   z-index: 1;
-  width: 26cqw;
-  height: 7cqw;
-  border-radius: 1.5cqw;
-  background: linear-gradient(
-    color-mix(in srgb, #ffe27a calc(var(--glow) * 100%), #a3271a),
-    color-mix(in srgb, #ff9a3c calc(var(--glow) * 100%), #5a1208)
-  );
-  box-shadow: 0 0 calc(2cqw + var(--glow) * 5cqw) rgb(255 150 60 / calc(30% + var(--glow) * 60%));
+  width: 30cqw;
+  height: auto;
+  filter: brightness(calc(0.6 + var(--glow) * 0.7)) drop-shadow(0 0 calc(1cqw + var(--glow) * 4cqw) rgb(255 150 60 / calc(30% + var(--glow) * 60%)));
   transform: translateX(-50%);
 }
 
 .hammer {
   position: absolute;
-  top: 2%;
-  right: 12%;
+  top: 4%;
+  right: 6%;
   z-index: 2;
-  width: 28cqw;
+  width: 30cqw;
   height: auto;
-  transform-origin: 85% 85%;
-  transform: rotate(25deg);
+  // Le marteau est dessiné tête en haut à gauche : on le tient par le bout du manche, en bas à droite
+  transform-origin: 80% 85%;
+  transform: rotate(10deg);
   transition: transform 0.08s ease-in;
   filter: drop-shadow(0 1cqw 1cqw rgb(0 0 0 / 50%));
 
   .swing & {
-    transform: rotate(-35deg) translate(-4cqw, 4cqw);
+    transform: rotate(-40deg) translate(-14cqw, 2cqw);
   }
 }
 

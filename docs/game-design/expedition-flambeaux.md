@@ -33,9 +33,8 @@ Aventure de la Légende, la dernière forme du mineur, validée par Théo le 14/
   - moteur pur dans `torchlight/torchlight-game.ts` (`generateCave`, `startExpedition`, `step`, `isLit`, `isGlimpsed`) ;
   - service `torchlight.ts` (parties du jour, clé `mine-explorer.torchlight`, et butin) ;
   - page `torchlight-page/`.
-- **Visuels provisoires** en attendant les images Gemini (prompts dans [[aventures-prompts]]) :
-  - la lanterne fêlée des artefacts pour la carte, la chauve-souris des compagnons pour le monstre ;
-  - la fiole du mineur pour l'huile, le sac d'or pour les coffres, le coffre des événements pour le trésor ;
-  - la pierre d'éveil, le rocher de la zone 4, le portrait de la Légende pour le mineur ;
-  - sol et flamme de la torche dessinés en CSS.
+- **Visuels** :
+  - images Gemini : la carte, la torche (compteur de pas), le monstre et la dalle du sol, préparées par `art-source/aventures/preparer-aventures.py` ;
+  - visuels du jeu : la fiole du mineur pour l'huile, le sac d'or pour les coffres, le coffre des événements pour le trésor, la pierre d'éveil, le rocher de la zone 4, le portrait de la Légende pour le mineur ;
+  - la flamme sur l'épaule du mineur est dessinée en CSS.
 - **Animations** : la lumière faiblit avec la distance, les cases où avancer respirent, la flamme vacille, les yeux clignent, la grotte tremble sous un monstre, et une annonce dit ce qu'on vient de trouver.

@@ -5,13 +5,13 @@ Idée validée par Théo le 14/10/2026 : un marchand qui ne passe que 5 jours pa
 ## Calendrier
 
 - **5 jours d'affilée par mois.** Le premier jour se tire du calendrier (entre le 3 et le 22), il est donc le même pour tous les joueurs : on peut se prévenir entre amis.
-- **Les indices montent** sur l'écran de la mine, dans une bulle sous le bandeau de zone qu'on peut fermer :
+- **Les indices montent** sur l'écran de la mine, dans une petite bulle sous le bandeau de zone. Elle ne reste que 6 secondes puis s'estompe (demande de Théo, 15/10/2026) : la carte des Aventures garde l'information.
   - J-5 et J-4 : « Un vieux mineur parle d'un marchand qui sillonne les galeries… » ;
   - J-3 : des traces de pas de nain dans la poussière (avec leur image une fois livrée) ;
   - J-2 : des clochettes de mule, avec un tintement ;
   - J-1 : une lanterne qui vacille ; dans Aventures, une silhouette noire « ??? » et « Arrive demain ».
-- **Jour J** : « Le marchand nain est arrivé avec sa mule ! », une bulle dorée qui ouvre son étal.
-- **Dernier jour** : « Le marchand remballe ses affaires… dernière chance ! ».
+- **Jour J** : « Un marchand est de passage », avec son portrait et un liseré doré ; la toucher ouvre son étal.
+- **Dernier jour** : « Le marchand remballe, dernier jour ».
 - **Hors visite**, sa carte dans Aventures indique dans combien de jours il revient.
 - **Limite connue** : sans serveur, avancer l'horloge du téléphone le fait venir plus tôt, comme pour le reste du jeu.
 
@@ -32,4 +32,4 @@ Idée validée par Théo le 14/10/2026 : un marchand qui ne passe que 5 jours pa
   - calendrier, offres et marchandage (fonctions pures) dans `merchant/merchant-rules.ts` ;
   - service `merchant/merchant.ts` (clé `mine-explorer.merchant`, remise à neuf chaque jour) ;
   - page `merchant-page/` et bulle d'indices `merchant-hint/`.
-- **Visuels provisoires** : le sac de pièces tient lieu de marchand et le Campement d'étal, en attendant les images Gemini ([[aventures-prompts]]).
+- **Visuels** : le nain et sa mule, et son étal en fond (images Gemini, préparées par `art-source/aventures/preparer-aventures.py`). Les traces de pas attendent encore leur image ([[aventures-prompts]]).

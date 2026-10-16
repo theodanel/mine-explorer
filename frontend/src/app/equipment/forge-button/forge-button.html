@@ -112,7 +112,7 @@
 
       <ul class="dialog-resources">
         <li aria-label="Pièces">
-          <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ wallet.coins() }}
+          <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ compact(wallet.coins()) }}
         </li>
         <li aria-label="Éclats de géode">
           <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
@@ -175,7 +175,7 @@
         >
           Niveau supérieur
           <span class="upgrade-cost"
-            ><img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ cost }}</span
+            ><img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ compact(cost) }}</span
           >
         </button>
       } @else {

@@ -50,7 +50,6 @@ export class WorkshopPage {
       const level = this.workshop.level(slot);
       const cost = this.workshop.cost(slot);
       const check = this.workshop.check(slot);
-      const stat = STATS[SLOTS[slot].workshopStat].label;
       const material = tier === null ? null : workshopMaterial(tier);
       return {
         slot,
@@ -58,7 +57,7 @@ export class WorkshopPage {
         label: tier === null ? SLOTS[slot].label : `${SLOTS[slot].label} · ${TIER_LABELS[tier]}`,
         icon: itemIconUrl(slot, tier, SLOTS[slot].iconUrl),
         level,
-        effect: `+${PERCENT.format(level * WORKSHOP_STEP * 100)} % de ${stat}`,
+        effect: `+${PERCENT.format(level * WORKSHOP_STEP * 100)} % à toutes les stats`,
         next: level < WORKSHOP_MAX_LEVEL ? `+${PERCENT.format((level + 1) * WORKSHOP_STEP * 100)} %` : null,
         gold: cost === null ? null : COMPACT.format(cost.gold),
         ore:

@@ -15,7 +15,7 @@ const STAT_ICONS: Readonly<Record<StatId, string>> = {
   critDamage: SLOTS.helmet.iconUrl,
   goldBonus: SLOTS.bag.iconUrl,
 };
-const DPS_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+const DPS_FORMAT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 @Component({
   selector: 'app-stats-panel',

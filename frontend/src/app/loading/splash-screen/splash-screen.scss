@@ -18,6 +18,18 @@
   }
 }
 
+// Illustration aux proportions d'origine (572×1024), centrée et collée en bas : sur un écran plus haut que 9:16, elle
+// déborde sur les côtés au lieu d'être recadrée, si bien que la barre reste dans le cadre dessiné
+.art {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 100%;
+  min-width: 100%;
+  aspect-ratio: 572 / 1024;
+  translate: -50% 0;
+}
+
 .background {
   position: absolute;
   inset: 0;

@@ -2,18 +2,14 @@
   display: block;
 }
 
-// Planche de bois cloutée plutôt que le cadre crème de la référence, pour coller à la mine
+// Fiche crème semée de points, comme les panneaux du style cartoon
 .panel {
-  padding: 2cqw 2.5cqw;
-  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  padding: 2cqw 2.2cqw;
+  border: 0.55cqw solid var(--ink);
   border-radius: 3.5cqw;
-  background:
-    repeating-linear-gradient(0deg, rgb(0 0 0 / 6%) 0 0.4cqw, transparent 0.4cqw 5cqw),
-    linear-gradient(#7a5434, #5b3b22);
-  box-shadow:
-    inset 0 0 0 0.6cqw #9a6c43,
-    0 1cqw 0 rgb(0 0 0 / 40%);
-  color: #fff3d6;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
   font-family: var(--font-body);
 }
 
@@ -29,7 +25,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5cqw;
   margin: 0;
 }
@@ -47,34 +43,41 @@
   grid-template: 'icon label' auto 'icon value' auto / auto 1fr;
   align-items: center;
   column-gap: 1.5cqw;
+  min-width: 0;
   padding: 1.2cqw 1.5cqw;
-  border: 0.4cqw solid #1a0f07;
-  border-left: 1cqw solid var(--stat-color, #ffd34d);
-  border-radius: 2cqw;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--stat-color, #ffd34d) 30%, #2a1a0d), #2a1a0d 75%);
+  // Tuile pastel teintée de la couleur de la stat, cerclée de brun
+  border: 0.45cqw solid var(--ink);
+  border-radius: 2.5cqw;
+  background: color-mix(in srgb, var(--stat-color, #ffd34d) 28%, var(--parchment));
+  box-shadow: inset 0 -0.8cqw 0 color-mix(in srgb, var(--stat-color, #ffd34d) 40%, var(--parchment-shade));
 
   dt {
     grid-area: label;
-    font-size: 2.7cqw;
-    opacity: 0.85;
+    color: var(--parchment-text);
+    font-size: 2.6cqw;
+    font-weight: 700;
+    line-height: 1.1;
   }
 
   dd {
     grid-area: value;
     margin: 0;
-    color: color-mix(in srgb, var(--stat-color, #ffd34d) 70%, #fff);
-    font-size: 3.8cqw;
-    font-weight: bold;
-    text-shadow: 0 0.3cqw 0 #1a0f07;
+    overflow: hidden;
+    color: #fff;
+    font: 3.9cqw / 1.1 var(--font-display);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-text-stroke: 0.35cqw var(--ink);
+    paint-order: stroke fill;
   }
 }
 
 // Une stat gonflée par un sort en cours passe au vert le temps de l'effet
 .boosted {
-  background: rgb(60 170 70 / 35%);
+  background: color-mix(in srgb, #7cbf6c 45%, var(--parchment));
 
   dd {
-    color: #9dffa4;
+    color: #b8f5a8;
   }
 }
 

@@ -1,24 +1,27 @@
 @if (visible()) {
   <section class="splash" [class.leaving]="leaving()" aria-label="Chargement du jeu">
-    <img class="background" src="assets/ui/splash-bg.webp" alt="" width="572" height="1024" />
-    <img class="logo" src="assets/ui/logo.webp" alt="Miner Explorer" width="504" height="228" />
+    <!-- L'illustration garde ses proportions : la barre se pose dans le cadre dessiné, quelle que soit la taille de l'écran -->
+    <div class="art">
+      <img class="background" src="assets/ui/splash-bg.webp" alt="" width="572" height="1024" />
 
-    <div
-      class="bar"
-      role="progressbar"
-      aria-label="Chargement"
-      aria-valuemin="0"
-      aria-valuemax="100"
-      [attr.aria-valuenow]="percent()"
-    >
-      <div class="bar-fill" [style.width.%]="percent()"></div>
-      <span class="bar-label">
-        @if (loader.state() === 'failed') {
-          Chargement impossible, recharge la page
-        } @else {
-          Chargement… {{ percent() }} %
-        }
-      </span>
+      <div
+        class="bar"
+        role="progressbar"
+        aria-label="Chargement"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="percent()"
+      >
+        <div class="bar-fill" [style.width.%]="percent()"></div>
+        <span class="bar-label">
+          @if (loader.state() === 'failed') {
+            Chargement impossible, recharge la page
+          } @else {
+            Chargement… {{ percent() }} %
+          }
+        </span>
+      </div>
     </div>
+    <img class="logo" src="assets/ui/logo.webp" alt="Miner Explorer" width="504" height="228" />
   </section>
 }

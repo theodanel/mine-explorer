@@ -3,25 +3,41 @@ import { WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopGoldCost, workshopMaterial, 
 import { EquippedItems, Item, SlotId, TierId } from '../equipment/equipment.model';
 import { isValidLevels, migrateSlotLevels, pieceLevel, reinforce, upgradeCost, withLevel } from './workshop-rules';
 
-function item(slot: SlotId, tier: TierId): Item {
-  return { id: `${slot}-${tier}`, slot, tier, level: 1, stats: {} };
+function item(slot: SlotId, tier: TierId, stats: Item['stats'] = {}): Item {
+  return { id: `${slot}-${tier}`, slot, tier, level: 1, stats };
 }
 
 describe('workshop-rules', () => {
-  const steelPickaxe: EquippedItems = { pickaxe: item('pickaxe', 'steel'), gloves: item('gloves', 'iron') };
+  const pickaxe = item('pickaxe', 'steel', { strikePower: 100, critDamage: 0.2 });
+  const gloves = item('gloves', 'iron', { strikePower: 10, critChance: 0.05 });
+  const steelPickaxe: EquippedItems = { pickaxe, gloves };
+  // Stats d'équipement sans Atelier : la base du mineur plus ce que portent les deux pièces
+  const gear = {
+    ...BASE_STATS,
+    strikePower: BASE_STATS.strikePower + 110,
+    critChance: BASE_STATS.critChance + 0.05,
+    critDamage: BASE_STATS.critDamage + 0.2,
+  };
 
-  it('renforce la stat de la pièce portée, selon le niveau de SA qualité', () => {
+  it('renforce toutes les stats de la pièce portée, selon le niveau de SA qualité', () => {
     const levels = { pickaxe: { steel: 24, mithril: 3 }, gloves: { iron: 1 } };
-    const stats = reinforce(BASE_STATS, levels, steelPickaxe);
-    expect(stats.strikePower).toBeCloseTo(BASE_STATS.strikePower * (1 + 24 * WORKSHOP_STEP));
-    expect(stats.critChance).toBeCloseTo(BASE_STATS.critChance * (1 + WORKSHOP_STEP));
-    expect(stats.miningSpeed).toBe(BASE_STATS.miningSpeed);
+    const stats = reinforce(gear, levels, steelPickaxe);
+    expect(stats.strikePower).toBeCloseTo(gear.strikePower + 100 * 24 * WORKSHOP_STEP + 10 * WORKSHOP_STEP);
+    expect(stats.critDamage).toBeCloseTo(gear.critDamage + 0.2 * 24 * WORKSHOP_STEP);
+    expect(stats.critChance).toBeCloseTo(gear.critChance + 0.05 * WORKSHOP_STEP);
+    expect(stats.miningSpeed).toBe(gear.miningSpeed);
+  });
+
+  it("applique le bonus d'évolution à la Frappe ajoutée", () => {
+    const evolved = { ...gear, strikePower: gear.strikePower * 2 };
+    const stats = reinforce(evolved, { pickaxe: { steel: 10 } }, steelPickaxe);
+    expect(stats.strikePower).toBeCloseTo(evolved.strikePower + 2 * 100 * 10 * WORKSHOP_STEP);
   });
 
   it('une qualité au-dessus repart de ses propres niveaux', () => {
     const levels = { pickaxe: { steel: 24 } };
-    const mithril = reinforce(BASE_STATS, levels, { pickaxe: item('pickaxe', 'mithril') });
-    expect(mithril.strikePower).toBe(BASE_STATS.strikePower);
+    const mithril = reinforce(gear, levels, { pickaxe: item('pickaxe', 'mithril', { strikePower: 100 }) });
+    expect(mithril.strikePower).toBe(gear.strikePower);
   });
 
   it('ne change rien sans niveau ni pièce', () => {

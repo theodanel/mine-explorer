@@ -107,10 +107,16 @@
   align-items: center;
   gap: 3cqw;
   padding: 2cqw 2.5cqw;
-  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  // Fiche de parchemin : texte brun sur fond crème, comme les listes de Legends of Mushroom
+  border: 0.5cqw solid var(--ink);
   border-radius: 3cqw;
-  background: linear-gradient(#4a3019, #2a1a0d);
-  box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 8%);
+  background:
+    radial-gradient(130% 90% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
+    linear-gradient(var(--parchment), var(--parchment-shade));
+  box-shadow:
+    inset 0 0 0 0.4cqw rgb(255 255 255 / 40%),
+    0 0.6cqw 0 rgb(0 0 0 / 30%);
+  color: var(--parchment-text);
 }
 
 // Cadre de la pièce, aux couleurs de sa qualité (cadre partagé .item-frame), avec son niveau en médaille
@@ -156,7 +162,8 @@
   }
 
   h3 {
-    font-size: 4cqw;
+    color: #4a2a10;
+    font-size: 4.2cqw;
   }
 }
 
@@ -166,12 +173,13 @@
 }
 
 .effect {
-  color: #9dffa4;
+  color: #2e8b3a;
+  font-weight: 800;
   font-size: 3.1cqw;
 }
 
 .next {
-  color: #f3e6d0;
+  color: var(--parchment-text);
   white-space: nowrap;
   opacity: 0.7;
 }
@@ -188,8 +196,8 @@
   gap: 0.6cqw;
   padding: 0.4cqw 1.6cqw 0.4cqw 0.6cqw;
   border-radius: 999px;
-  background: rgb(0 0 0 / 30%);
-  color: #ffd34d;
+  background: rgb(91 58 28 / 14%);
+  color: #8a5300;
   font: bold 3cqw / 1 var(--font-body);
 
   img {
@@ -203,7 +211,7 @@
   }
 
   &.short {
-    color: #ff6b5e;
+    color: #c0392b;
   }
 }
 
@@ -237,7 +245,7 @@
   gap: 1cqw;
   margin-top: 1.2cqw;
   padding-top: 1.2cqw;
-  border-top: 0.3cqw dashed rgb(255 255 255 / 15%);
+  border-top: 0.3cqw dashed rgb(91 58 28 / 35%);
 }
 
 .reforge-title {
@@ -264,9 +272,11 @@
   padding: 0.8cqw 2cqw;
   border: none;
   border-radius: 999px;
-  background: rgb(0 0 0 / 35%);
-  box-shadow: inset 0 0 0 0.3cqw rgb(255 211 77 / 35%);
-  color: #f3e6d0;
+  background: #fff7e2;
+  box-shadow:
+    inset 0 0 0 0.35cqw var(--gold-dark),
+    0 0.35cqw 0 rgb(91 58 28 / 30%);
+  color: #4a2a10;
   font: bold 2.7cqw / 1 var(--font-body);
   cursor: pointer;
 

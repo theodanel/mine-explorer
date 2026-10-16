@@ -219,23 +219,17 @@ body {
     margin: -4cqw -4cqw 0;
     padding: 3cqw 4cqw 3.6cqw;
     border-bottom: 0.6cqw solid var(--ink);
-    border-radius: 3.9cqw 3.9cqw 0 0;
-    // Planche de bois claire : veinée d'un léger dégradé, avec le thème de la page en filet sous le titre
-    background:
-      linear-gradient(rgb(255 255 255 / 22%), transparent 45%),
-      repeating-linear-gradient(90deg, rgb(0 0 0 / 0%) 0 9cqw, rgb(0 0 0 / 5%) 9cqw 9.4cqw),
-      linear-gradient(var(--wood-light), var(--wood));
-    box-shadow:
-      inset 0 -1cqw 0 color-mix(in srgb, var(--theme-light) 80%, var(--wood-dark)),
-      inset 0 -1.4cqw 0 rgb(0 0 0 / 20%);
+    border-radius: 4.3cqw 4.3cqw 0 0;
+    background: var(--dots), var(--parchment);
+    box-shadow: inset 0 -1cqw 0 color-mix(in srgb, var(--theme-light) 75%, var(--parchment));
 
     h2 {
       color: #fff;
       font-size: 6.6cqw;
       line-height: 1.05;
-      -webkit-text-stroke: 0.5cqw var(--ink);
+      -webkit-text-stroke: 0.55cqw var(--ink);
       paint-order: stroke fill;
-      text-shadow: 0 0.7cqw 0 var(--ink);
+      text-shadow: 0 0.6cqw 0 rgb(74 44 22 / 35%);
     }
   }
 }
@@ -262,26 +256,28 @@ body {
 }
 
 // ─── Charte de l'interface (16/10/2026) ────────────────────────────────────
-// Refonte demandée par Théo : plus propre, plus douce, dans l'esprit de Forge Master et Legends of Mushroom.
-// Un contour d'encre unique, des aplats francs avec une lèvre pleine en dessous, des titres épais cerclés d'encre,
-// et du parchemin crème pour les zones de lecture.
+// Refonte demandée par Théo : plus propre, plus douce, dans l'esprit de Forge Master et Legends of Mushroom, puis
+// (16/10/2026) d'un jeu cartoon aux tons pastel qu'il aime beaucoup : aplats sans reflet brillant, contour brun chaud,
+// coins très arrondis, panneaux crème semés de petits points, titres blancs cerclés de brun.
 :root {
   // Titres, chiffres et boutons : une police ronde et épaisse. Texte courant : une police ronde et lisible.
   --font-display: 'Lilita One', ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', 'Roboto', system-ui, sans-serif;
   --font-body: 'Nunito', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
 
   // Encre : le contour de tout ce qui se touche, et le cerclage des titres
-  --ink: #2b1a0e;
+  --ink: #4a2c16;
   // Bois du cadre et parchemin des zones de lecture
   --wood-light: #b7814a;
   --wood: #8a5a30;
   --wood-dark: #5a3518;
-  --parchment: #f6e7c6;
-  --parchment-shade: #e7cf9f;
-  --parchment-text: #5b3a1c;
+  --parchment: #fdebcb;
+  --parchment-shade: #f7dfb2;
+  --parchment-text: #6b4423;
+  // Semis de points des panneaux crème, comme les pattes discrètes de la référence
+  --dots: radial-gradient(circle, rgb(107 68 35 / 7%) 0 1.1cqw, transparent 1.2cqw) 0 0 / 7cqw 7cqw;
   // Accents
-  --gold: #ffcf3f;
-  --gold-dark: #c98a0d;
+  --gold: #f7c84a;
+  --gold-dark: #c08a1c;
 }
 
 // Texte cerclé d'encre, comme les titres et les chiffres des jeux du genre : lisible sur n'importe quel décor
@@ -303,19 +299,16 @@ body {
 // Un aplat franc, un reflet doux en haut, un contour d'encre et une lèvre pleine qui s'écrase à l'appui.
 // Changer --face et --lip suffit pour une nouvelle couleur.
 .game-button {
-  --face: #a26a3a;
-  --lip: #5a3518;
+  --face: #c08b55;
+  --lip: #a06d3c;
 
   position: relative;
-  border: 0.5cqw solid var(--ink);
-  border-radius: 3cqw;
-  background:
-    linear-gradient(rgb(255 255 255 / 28%), rgb(255 255 255 / 0%) 55%),
-    var(--face);
+  border: 0.55cqw solid var(--ink);
+  border-radius: 3.2cqw;
+  background: var(--face);
   box-shadow:
-    inset 0 -0.6cqw 0 rgb(0 0 0 / 14%),
-    0 0.9cqw 0 var(--lip),
-    0 0.9cqw 0 0.5cqw var(--ink);
+    inset 0 -1.1cqw 0 var(--lip),
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
   color: #fff;
   font: 800 4cqw / 1.1 var(--font-display);
   letter-spacing: 0.01em;
@@ -327,17 +320,16 @@ body {
     box-shadow 0.08s;
 
   &:active:not(:disabled) {
-    transform: translateY(0.7cqw);
+    transform: translateY(0.5cqw);
     box-shadow:
-      inset 0 -0.6cqw 0 rgb(0 0 0 / 14%),
-      0 0.2cqw 0 var(--lip),
-      0 0.2cqw 0 0.5cqw var(--ink);
+      inset 0 -0.5cqw 0 var(--lip),
+      0 0.1cqw 0 rgb(74 44 22 / 35%);
   }
 
   // Désactivé : gris pierre, quelle que soit la couleur du bouton (le double sélecteur passe devant .green, .gold…)
   &.game-button:disabled {
-    --face: #a8a097;
-    --lip: #615a52;
+    --face: #b9ae9f;
+    --lip: #998c7c;
 
     cursor: not-allowed;
     opacity: 0.8;
@@ -349,8 +341,8 @@ body {
   }
 
   &.green {
-    --face: #5cc85a;
-    --lip: #2b7f32;
+    --face: #7cbf6c;
+    --lip: #5f9d52;
 
     // Une action possible brille : un reflet passe sur le bouton vert de temps en temps
     &:not(:disabled) {
@@ -374,56 +366,54 @@ body {
   }
 
   &.gold {
-    --face: #ffc73a;
-    --lip: #b4730c;
+    --face: #f7c84a;
+    --lip: #d9a531;
   }
 
   &.blue {
-    --face: #4fa6f0;
-    --lip: #22609f;
+    --face: #6cb6e8;
+    --lip: #4b93c6;
   }
 
   &.red {
-    --face: #ee6650;
-    --lip: #9c2b1d;
+    --face: #ee8b84;
+    --lip: #d06a63;
+  }
+
+  &.purple {
+    --face: #b67bd8;
+    --lip: #965cb8;
   }
 
   &.stone {
-    --face: #a39a8f;
-    --lip: #5f5850;
+    --face: #b9ae9f;
+    --lip: #998c7c;
   }
 }
 
-// Panneau de page et de fenêtre : un cadre de bois franc autour d'un fond chaud, comme Legends of Mushroom
+// Panneau de page et de fenêtre : un brun chaud et uni, semé de points clairs, cerclé de brun et très arrondi
 .game-panel {
-  border: 0.6cqw solid var(--ink);
-  border-radius: 4.5cqw;
+  border: 0.7cqw solid var(--ink);
+  border-radius: 5cqw;
   background:
-    radial-gradient(120% 60% at 50% 0%, rgb(255 230 180 / 8%), transparent 70%),
-    linear-gradient(#3f2a17, #2a1b0e);
-  box-shadow:
-    inset 0 0 0 0.7cqw var(--wood),
-    inset 0 0 0 1.1cqw var(--wood-dark),
-    0 2cqw 4cqw rgb(0 0 0 / 45%);
-  color: #f6ead2;
+    radial-gradient(circle, rgb(255 236 200 / 6%) 0 1.1cqw, transparent 1.2cqw) 0 0 / 7cqw 7cqw,
+    #7c573a;
+  box-shadow: 0 1.2cqw 0 rgb(74 44 22 / 45%);
+  color: #fff4df;
   font-family: var(--font-body);
 }
 
-// Parchemin : zone de lecture claire, posée dans un panneau (listes, descriptions, réglages)
+// Parchemin : zone de lecture crème, semée de points, posée dans un panneau (listes, descriptions, réglages)
 .parchment {
-  border: 0.5cqw solid var(--ink);
-  border-radius: 3cqw;
-  background:
-    radial-gradient(130% 90% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
-    linear-gradient(var(--parchment), var(--parchment-shade));
-  box-shadow:
-    inset 0 0 0 0.5cqw rgb(255 255 255 / 40%),
-    0 0.6cqw 0 rgb(0 0 0 / 25%);
+  border: 0.55cqw solid var(--ink);
+  border-radius: 3.5cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
   color: var(--parchment-text);
 }
 
-// Bouton rond de fermeture des pages : rouge franc, croix blanche cerclée d'encre. Les en-têtes de page le prennent
-// d'office pour leur bouton « close », et le bouton retour « back » prend la même forme en bois.
+// Bouton rond de fermeture : rose saumon, croix blanche cerclée de brun. Les en-têtes de page et les fenêtres le
+// prennent d'office pour leur bouton « close », et le bouton retour « back » prend la même forme en bois clair.
 .close-button,
 .game-panel[data-theme] > .page-header .close,
 .game-panel .dialog-header .close,
@@ -432,13 +422,13 @@ body {
   place-items: center;
   width: 10cqw;
   height: 10cqw;
-  padding: 0 0 0.6cqw;
-  border: 0.5cqw solid var(--ink);
+  padding: 0 0 0.8cqw;
+  border: 0.55cqw solid var(--ink);
   border-radius: 50%;
-  background:
-    linear-gradient(rgb(255 255 255 / 30%), transparent 55%),
-    #ee6650;
-  box-shadow: 0 0.8cqw 0 #9c2b1d, 0 0.8cqw 0 0.5cqw var(--ink);
+  background: #ee8b84;
+  box-shadow:
+    inset 0 -1cqw 0 #d06a63,
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
   color: #fff;
   font: 800 6.5cqw / 1 var(--font-display);
   -webkit-text-stroke: 0.35cqw var(--ink);
@@ -446,17 +436,21 @@ body {
   cursor: pointer;
 
   &:active {
-    transform: translateY(0.6cqw);
-    box-shadow: 0 0.2cqw 0 #9c2b1d, 0 0.2cqw 0 0.5cqw var(--ink);
+    transform: translateY(0.5cqw);
+    box-shadow: inset 0 -0.5cqw 0 #d06a63;
   }
 }
 
 .game-panel[data-theme] > .page-header .back {
   flex: none;
-  background:
-    linear-gradient(rgb(255 255 255 / 30%), transparent 55%),
-    var(--wood-light);
-  box-shadow: 0 0.8cqw 0 var(--wood-dark), 0 0.8cqw 0 0.5cqw var(--ink);
+  background: #c08b55;
+  box-shadow:
+    inset 0 -1cqw 0 #a06d3c,
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
+
+  &:active {
+    box-shadow: inset 0 -0.5cqw 0 #a06d3c;
+  }
 }
 
 // ─── Empilement des interfaces ──────────────────────────────────────────────

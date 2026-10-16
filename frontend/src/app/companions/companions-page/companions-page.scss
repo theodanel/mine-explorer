@@ -233,11 +233,9 @@
   border-radius: 3cqw;
   border: 0.5cqw solid var(--ink);
   background:
-    radial-gradient(130% 90% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
-    linear-gradient(var(--parchment), var(--parchment-shade));
-  box-shadow:
-    inset 0 0 0 0.4cqw rgb(255 255 255 / 40%),
-    0 0.6cqw 0 rgb(0 0 0 / 30%);
+    var(--dots),
+    var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
   color: var(--parchment-text);
   border-color: color-mix(in srgb, var(--rarity-color) 70%, var(--ink));
   border-width: 0.6cqw;
@@ -386,11 +384,9 @@
   border-radius: 2.5cqw;
   border: 0.5cqw solid var(--ink);
   background:
-    radial-gradient(130% 90% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
-    linear-gradient(var(--parchment), var(--parchment-shade));
-  box-shadow:
-    inset 0 0 0 0.4cqw rgb(255 255 255 / 40%),
-    0 0.6cqw 0 rgb(0 0 0 / 30%);
+    var(--dots),
+    var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
   color: var(--parchment-text);
 
   h3 {

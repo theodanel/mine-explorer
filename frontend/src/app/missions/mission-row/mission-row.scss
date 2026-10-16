@@ -11,8 +11,8 @@
   border: 0.5cqw solid var(--ink);
   border-radius: 2.5cqw;
   background:
-    radial-gradient(130% 90% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
-    linear-gradient(var(--parchment), var(--parchment-shade));
+    var(--dots),
+    var(--parchment);
   box-shadow: 0 0.5cqw 0 rgb(0 0 0 / 30%);
   color: var(--parchment-text);
 

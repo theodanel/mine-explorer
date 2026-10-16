@@ -1,10 +1,12 @@
-// Exporte les sons fabriqués par synth.ts en fichiers WAV, pour les écouter hors du jeu.
+// Exporte les sons fabriqués par synth.ts et les musiques de zone (zone-music.ts) en fichiers WAV, pour les écouter
+// hors du jeu.
 // Usage : node --import ./tools/register-ts.mjs tools/export-sounds.mts <dossier>
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { SOUND_IDS } from '../src/app/audio/sound-catalog.ts';
-import { renderMusic, renderSound } from '../src/app/audio/synth.ts';
+import { renderSound } from '../src/app/audio/synth.ts';
+import { renderZoneMusic, ZONE_THEMES } from '../src/app/audio/zone-music.ts';
 
 const RATE = 44100;
 const outDir = process.argv[2] ?? 'sons-exportes';
@@ -35,5 +37,10 @@ const parts = SOUND_IDS.flatMap((id) => [renderSound(id, RATE), gap]);
 const all = new Float32Array(parts.reduce((sum, part) => sum + part.length, 0));
 parts.reduce((offset, part) => (all.set(part, offset), offset + part.length), 0);
 writeFileSync(join(outDir, 'bruitages.wav'), wav(all, RATE));
-writeFileSync(join(outDir, 'musique.wav'), wav(renderMusic(22050), 22050));
-console.log(`Bruitages (dans l'ordre : ${SOUND_IDS.join(', ')}) et musique exportés dans ${outDir}`);
+// Une musique par zone, chacune dans son fichier
+ZONE_THEMES.forEach((theme, index) => {
+  const zone = String(index + 1).padStart(2, '0');
+  writeFileSync(join(outDir, `musique-zone-${zone}.wav`), wav(renderZoneMusic(index + 1, 22050), 22050));
+  console.log(`Zone ${zone} : ${theme.mood}`);
+});
+console.log(`Bruitages (dans l'ordre : ${SOUND_IDS.join(', ')}) et musiques des ${ZONE_THEMES.length} zones exportés dans ${outDir}`);

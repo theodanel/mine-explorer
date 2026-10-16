@@ -426,6 +426,7 @@ body {
 // d'office pour leur bouton « close », et le bouton retour « back » prend la même forme en bois.
 .close-button,
 .game-panel[data-theme] > .page-header .close,
+.game-panel .dialog-header .close,
 .game-panel[data-theme] > .page-header .back {
   display: grid;
   place-items: center;

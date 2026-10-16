@@ -26,3 +26,7 @@ docker compose up --build
 ## Pas de base de données pour l'instant
 
 Le serveur n'expose encore aucune route et tourne sur H2 en mémoire : le jeu vit dans le navigateur. Ajouter PostgreSQL demandera le pilote dans le `pom.xml` (une nouvelle dépendance), une migration Flyway, et des identifiants dans `.env` : à faire quand le serveur gardera les parties.
+
+## Vérifié par la CI
+
+Le job « Docker (images et démarrage) » construit les deux images à chaque PR, démarre le compose, vérifie que le jeu répond et que le serveur démarre, puis arrête tout. La fusion automatique l'attend.

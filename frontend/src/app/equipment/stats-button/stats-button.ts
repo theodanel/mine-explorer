@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
-import { SLOT_IDS, SLOTS, STATS } from '../equipment.model';
+import { SLOT_IDS, SLOTS } from '../equipment.model';
 import { Artifacts } from '../../artifacts/artifacts';
 import { WORKSHOP_STEP } from '../../balance/workshop';
 import { Companions } from '../../companions/companions';
@@ -41,7 +41,7 @@ export class StatsDetails {
   /** Une section par source de bonus ; une source sans effet n'apparaît pas. */
   protected readonly sources = computed(() => {
     const workshopLines = SLOT_IDS.filter((slot) => this.workshop.level(slot) > 0).map(
-      (slot) => `+${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % de ${STATS[SLOTS[slot].workshopStat].label}`,
+      (slot) => `${SLOTS[slot].label} : +${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % à toutes ses stats`,
     );
     const gallery = this.galleries.gallery();
     return [

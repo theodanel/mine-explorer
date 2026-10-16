@@ -7,7 +7,8 @@ import {
   workshopMaterial,
   workshopOreCost,
 } from '../balance/workshop';
-import { type EquippedItems, type MiningStats, SLOT_IDS, type SlotId, SLOTS, TIER_IDS, type TierId } from '../equipment/equipment.model';
+import { BASE_STATS, STAT_CAPS } from '../balance/balance';
+import { type EquippedItems, type MiningStats, SLOT_IDS, type SlotId, STAT_IDS, TIER_IDS, type TierId } from '../equipment/equipment.model';
 import type { OreCost } from '../ores/ores';
 
 export interface WorkshopCost {
@@ -30,16 +31,34 @@ export function slotMultiplier(level: number): number {
 }
 
 /**
- * Stats renforcées : chaque pièce portée multiplie la stat d'Atelier de son emplacement, selon le niveau atteint
- * dans SA qualité. Changer de qualité change donc de niveau ; un emplacement vide n'a pas de bonus.
+ * Stats renforcées : chaque pièce portée renforce TOUTES ses stats (Frappe de base et affixes), selon le niveau
+ * atteint dans SA qualité (demande de Théo, 16/10/2026 ; avant, seule la stat d'Atelier de l'emplacement montait).
+ * Changer de qualité change donc de niveau ; un emplacement vide n'a pas de bonus. La Frappe ajoutée suit le même
+ * multiplicateur que celle des pièces (évolution du mineur), et les plafonds de stats restent appliqués.
  */
 export function reinforce(stats: MiningStats, levels: WorkshopLevels, equipped: EquippedItems): MiningStats {
   const next = { ...stats };
+  let rawStrike = BASE_STATS.strikePower;
+  for (const slot of SLOT_IDS) {
+    rawStrike += equipped[slot]?.stats.strikePower ?? 0;
+  }
+  // Part de la Frappe brute que garde la Frappe totale : le bonus d'évolution, appliqué avant l'Atelier
+  const strikeScale = rawStrike > 0 ? stats.strikePower / rawStrike : 1;
   for (const slot of SLOT_IDS) {
     const item = equipped[slot];
-    if (item !== undefined) {
-      const stat = SLOTS[slot].workshopStat;
-      next[stat] *= slotMultiplier(pieceLevel(levels, slot, item.tier));
+    if (item === undefined) {
+      continue;
+    }
+    const extra = slotMultiplier(pieceLevel(levels, slot, item.tier)) - 1;
+    for (const stat of STAT_IDS) {
+      const value = item.stats[stat] ?? 0;
+      next[stat] += value * extra * (stat === 'strikePower' ? strikeScale : 1);
+    }
+  }
+  for (const stat of STAT_IDS) {
+    const cap = STAT_CAPS[stat];
+    if (cap !== undefined) {
+      next[stat] = Math.min(next[stat], cap);
     }
   }
   return next;

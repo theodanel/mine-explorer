@@ -226,7 +226,7 @@
 // Sorts équipés : à droite, juste au-dessus du panneau d'équipement
 .spells {
   position: absolute;
-  inset: calc(var(--extra) + var(--core) * 0.585) 3cqw auto auto;
+  inset: calc(var(--extra) + var(--core) * 0.565) 3cqw auto auto;
 }
 
 // Panneau crème du bas : un aplat crème semé de points, cerclé de brun, d'un bord à l'autre
@@ -254,6 +254,11 @@
   position: absolute;
   inset: auto 2cqw calc(var(--core) * 0.115) auto;
   z-index: var(--z-scene-ui);
+
+  // Fenêtre ouverte : le composant forme un contexte d'empilement, il doit monter avec elle au-dessus de la loterie
+  &:has(.backdrop) {
+    z-index: var(--z-dialog);
+  }
 }
 
 // Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)

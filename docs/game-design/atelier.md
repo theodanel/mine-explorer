@@ -58,3 +58,8 @@ Retour de Théo : « il n'y a pas de réel composition de stats ». Les affixes 
 - **La Frappe ne se reforge pas** : la sauvegarde fond son affixe dans la Frappe de base, on ne saurait pas quelle part relancer.
 - **Pièce pleine** : quand elle porte déjà toutes les stats en pourcentage, il n'y a plus rien à reforger.
 - **Code** : `equipment/reforge-rules.ts` (pur), `Workshop.reforge`, `Inventory.replaceEquipped`.
+
+## Toutes les stats de la pièce (16/10/2026)
+
+Demande de Théo : l'Atelier renforce toutes les stats de la pièce, pas une seule. Chaque niveau donne +0,4 % à la Frappe de base et à tous les affixes de la pièce portée (avant : +0,4 % à la seule stat d'Atelier de l'emplacement, appliqués au total de cette stat). La Frappe ajoutée suit le bonus d'évolution, et les plafonds (Vitesse, Critique) restent appliqués. Simulé sur 2 graines : pioche 30 au jour 35,8, comme avant (35,8).
+

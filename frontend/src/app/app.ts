@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -37,6 +37,7 @@ import { Ores } from './ores/ores';
 import { FooterMenu } from './navigation/footer-menu/footer-menu';
 import { Navigation } from './navigation/navigation';
 import { Progression } from './progression/progression';
+import { Sound } from './audio/sound';
 import { SkillsPage } from './skills/skills-page/skills-page';
 import { SpellBar } from './spells/spell-bar/spell-bar';
 import { SpellCaster } from './spells/spell-caster';
@@ -122,5 +123,8 @@ export class App {
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page
     inject(SpellCaster);
+    // Chaque zone a sa musique : elle suit la zone affichée, y compris un retour dans une zone passée
+    const sound = inject(Sound);
+    effect(() => sound.setMusicZone(this.progression.playingZone()));
   }
 }

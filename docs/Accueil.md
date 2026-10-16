@@ -65,3 +65,4 @@ Notes d'étude du début du projet, conservées pour mémoire ; elles ne décriv
 - Les PDF de référence (guides Gamearly) et les images restent hors du coffre.
 - [[recherches]] : proposition de compétences façon Forge Master (parchemins, temps d'étude, 40 nœuds), à valider (16/10/2026).
 - [[competences-des-familiers]] : une compétence unique par familier, lancée comme un sort depuis la barre (16/10/2026).
+- [[musiques-des-zones]] : une musique d'ambiance par zone, calculée par le code, en fondu d'une zone à l'autre (16/10/2026).

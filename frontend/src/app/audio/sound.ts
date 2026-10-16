@@ -14,12 +14,15 @@ import {
   VARIED_SOUNDS,
   VOLUME_STEPS,
 } from './sound-catalog';
-import { renderMusic, renderSound, Samples } from './synth';
+import { renderSound, Samples } from './synth';
+import { renderZoneMusic, ZONE_THEMES } from './zone-music';
 
 const SOUND_STORAGE_KEY = 'mine-explorer.volume';
 const MUSIC_STORAGE_KEY = 'mine-explorer.music-volume';
 /** La musique est calculée à basse fréquence : une nappe douce n'a pas besoin de plus, et le calcul reste court. */
 const MUSIC_SAMPLE_RATE = 22050;
+/** Fondu entre la musique d'une zone et celle de la suivante, en secondes. */
+const MUSIC_FADE_SECONDS = 2;
 /**
  * Gestes qui autorisent le son. Safari sur iPhone ne débloque l'audio qu'à la fin d'un toucher (touchend) ou
  * d'un clic, d'où plusieurs événements : le premier qui arrive crée le contexte, les suivants le relancent.
@@ -34,8 +37,9 @@ export const AUDIO_CONTEXT_FACTORY = new InjectionToken<() => AudioContext | nul
 
 /**
  * Bruitages et musique d'ambiance, joués avec l'API Web Audio du navigateur (aucune dépendance, aucun fichier :
- * tout est calculé par synth.ts). Les navigateurs mobiles n'autorisent le son qu'après un geste du joueur : le
- * contexte audio naît au premier toucher. Tout se met en pause quand l'onglet est caché.
+ * tout est calculé par synth.ts et zone-music.ts). Chaque zone a sa musique, qui prend le relais en fondu quand on
+ * change de zone. Les navigateurs mobiles n'autorisent le son qu'après un geste du joueur : le contexte audio naît
+ * au premier toucher. Tout se met en pause quand l'onglet est caché.
  */
 @Injectable({ providedIn: 'root' })
 export class Sound {
@@ -48,8 +52,13 @@ export class Sound {
   private context: AudioContext | null = null;
   private soundBus: GainNode | null = null;
   private musicBus: GainNode | null = null;
-  private musicBuffer: AudioBuffer | null = null;
+  /** Musiques déjà calculées, par thème : revenir dans une zone ne recalcule rien. */
+  private readonly musicBuffers = new Map<number, AudioBuffer>();
   private musicSource: AudioBufferSourceNode | null = null;
+  private musicFade: GainNode | null = null;
+  /** Thème joué (index dans ZONE_THEMES), et celui demandé par la zone en cours. */
+  private playingTheme: number | null = null;
+  private wantedTheme = 0;
   private readonly buffers = new Map<SoundId, AudioBuffer>();
   private readonly lastPlayed = new Map<SoundId, number>();
 
@@ -99,6 +108,12 @@ export class Sound {
     writeStorage(SOUND_STORAGE_KEY, String(volume));
   }
 
+  /** La zone affichée a changé : sa musique prend le relais, en fondu. */
+  setMusicZone(zone: number): void {
+    this.wantedTheme = Math.min(Math.max(zone, 1), ZONE_THEMES.length) - 1;
+    this.syncMusic();
+  }
+
   setMusicVolume(volume: number): void {
     this.musicVolumeState.set(volume);
     if (this.musicBus !== null) {
@@ -126,11 +141,7 @@ export class Sound {
     for (const id of SOUND_IDS) {
       this.buffers.set(id, toBuffer(context, renderSound(id, context.sampleRate), context.sampleRate));
     }
-    // La musique (32 s d'audio) se calcule juste après le toucher, pour qu'il ne paraisse pas lent
-    setTimeout(() => {
-      this.musicBuffer = toBuffer(context, renderMusic(MUSIC_SAMPLE_RATE), MUSIC_SAMPLE_RATE);
-      this.syncMusic();
-    });
+    this.syncMusic();
   }
 
   private bus(context: AudioContext, volume: number): GainNode {
@@ -140,27 +151,69 @@ export class Sound {
     return gain;
   }
 
-  /** Lance la boucle quand la musique est réglée au-dessus de zéro, l'arrête quand elle est coupée. */
+  /**
+   * Joue la musique de la zone en cours quand la musique est réglée au-dessus de zéro, l'arrête quand elle est
+   * coupée. Une musique pas encore calculée l'est juste après, pour que le toucher ou le changement de zone ne
+   * paraisse pas lent.
+   */
   private syncMusic(): void {
     if (this.musicVolume() === 0) {
       this.stopMusic();
       return;
     }
-    if (this.context === null || this.musicBus === null || this.musicBuffer === null || this.musicSource !== null) {
+    const context = this.context;
+    if (context === null || this.musicBus === null || this.playingTheme === this.wantedTheme) {
       return;
     }
-    const source = this.context.createBufferSource();
-    source.buffer = this.musicBuffer;
+    const theme = this.wantedTheme;
+    const cached = this.musicBuffers.get(theme);
+    if (cached === undefined) {
+      setTimeout(() => {
+        if (!this.musicBuffers.has(theme)) {
+          this.musicBuffers.set(theme, toBuffer(context, renderZoneMusic(theme + 1, MUSIC_SAMPLE_RATE), MUSIC_SAMPLE_RATE));
+        }
+        this.syncMusic();
+      });
+      return;
+    }
+    this.fadeOutMusic(context);
+    const fade = context.createGain();
+    fade.gain.setValueAtTime(0, context.currentTime);
+    fade.gain.linearRampToValueAtTime(1, context.currentTime + MUSIC_FADE_SECONDS);
+    fade.connect(this.musicBus);
+    const source = context.createBufferSource();
+    source.buffer = cached;
     source.loop = true;
-    source.connect(this.musicBus);
+    source.connect(fade);
     source.start();
     this.musicSource = source;
+    this.musicFade = fade;
+    this.playingTheme = theme;
+  }
+
+  /** La musique en cours s'éteint en fondu, puis se libère. */
+  private fadeOutMusic(context: AudioContext): void {
+    const source = this.musicSource;
+    const fade = this.musicFade;
+    if (source === null || fade === null) {
+      return;
+    }
+    fade.gain.cancelScheduledValues(context.currentTime);
+    fade.gain.setValueAtTime(fade.gain.value, context.currentTime);
+    fade.gain.linearRampToValueAtTime(0, context.currentTime + MUSIC_FADE_SECONDS);
+    source.stop(context.currentTime + MUSIC_FADE_SECONDS);
+    source.onended = () => fade.disconnect();
+    this.musicSource = null;
+    this.musicFade = null;
   }
 
   private stopMusic(): void {
     this.musicSource?.stop();
     this.musicSource?.disconnect();
+    this.musicFade?.disconnect();
     this.musicSource = null;
+    this.musicFade = null;
+    this.playingTheme = null;
   }
 
   /** Onglet caché ou application en arrière-plan : plus rien ne joue, et la batterie est épargnée. */

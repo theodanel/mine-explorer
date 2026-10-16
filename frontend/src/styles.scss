@@ -334,12 +334,13 @@ body {
       0 0.2cqw 0 0.5cqw var(--ink);
   }
 
-  &:disabled {
-    --face: #9b948b;
-    --lip: #5d5852;
+  // Désactivé : gris pierre, quelle que soit la couleur du bouton (le double sélecteur passe devant .green, .gold…)
+  &.game-button:disabled {
+    --face: #a8a097;
+    --lip: #615a52;
 
     cursor: not-allowed;
-    opacity: 0.85;
+    opacity: 0.8;
   }
 
   &:focus-visible {

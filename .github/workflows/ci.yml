@@ -1,5 +1,6 @@
 # Intégration et déploiement continus de Mine Explorer.
-# Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend.
+# Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend ;
+# construction et démarrage des images du docker compose.
 # Sur une PR verte de Théo, ou de Dependabot en version mineure ou corrective : fusion automatique.
 # Sur main uniquement, quand tout est vert : déploiement du frontend sur Cloudflare Pages.
 name: CI
@@ -74,9 +75,34 @@ jobs:
       - name: Build et tests
         run: sh ./mvnw -B -ntp verify
 
+  docker:
+    name: Docker (images et démarrage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Construire les images
+        run: docker compose build
+      # Démarrage réel : le jeu répond, le serveur démarre, puis tout s'arrête
+      - name: Démarrer et vérifier
+        run: |
+          docker compose up -d
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/ > /dev/null && break; sleep 2; done
+          curl -fsS http://localhost:8080/ | grep -q "<app-root"
+          for i in $(seq 1 45); do docker compose logs backend | grep -q "Started BackendApplication" && break; sleep 2; done
+          docker compose logs backend | grep -q "Started BackendApplication"
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose logs
+      - name: Arrêter
+        if: always()
+        run: docker compose down
+
   automerge:
     name: Fusion automatique
-    needs: [frontend, backend]
+    needs: [frontend, backend, docker]
     # Seulement les PR de ce dépôt, prêtes (pas en brouillon), sans le label qui la bloque, de Théo ou de Dependabot
     if: >-
       github.event_name == 'pull_request' &&

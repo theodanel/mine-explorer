@@ -74,11 +74,19 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
   private initialized = false;
+  /**
+   * Hauteur de la scène, en pixels de scène : 1280 en 9:16, plus sur un téléphone haut, où le cadre s'allonge.
+   * La galerie gagne alors du haut : tout le décor descend de `extra`, pour que le sol reste aligné sur les panneaux.
+   */
+  private readonly sceneHeight = signal(SCENE_HEIGHT);
+  private readonly extra = computed(() => this.sceneHeight() - SCENE_HEIGHT);
+  private floorY = 0;
+  private resizeObserver: ResizeObserver | null = null;
 
   /** Position de la barre de vie, en pourcentage de la scène : elle suit le rocher, quelle que soit la taille de l'écran. */
   protected readonly healthBarLeft = computed(() => (this.rockTop().x / SCENE_WIDTH) * PERCENT);
-  protected readonly healthBarTop = computed(() => ((this.rockTop().y - HEALTH_BAR_GAP) / SCENE_HEIGHT) * PERCENT);
-  protected readonly rockZoneTop = computed(() => (this.rockTop().y / SCENE_HEIGHT) * PERCENT);
+  protected readonly healthBarTop = computed(() => ((this.rockTop().y + this.extra() - HEALTH_BAR_GAP) / this.sceneHeight()) * PERCENT);
+  protected readonly rockZoneTop = computed(() => ((this.rockTop().y + this.extra()) / this.sceneHeight()) * PERCENT);
   protected readonly healthPercent = computed(() => Math.round(this.progression.health() * PERCENT));
   protected readonly remaining = computed(() => NUMBER_FORMAT.format(this.progression.remainingHp()));
   /** Le gardien de la zone est devant le mineur (jamais en zone passée). */
@@ -141,6 +149,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.mountCanvas();
+      this.followFrameSize();
 
       const frames = await loadStrikeFrames(APPRENTICE_STRIKE);
       if (this.destroyed) {
@@ -158,6 +167,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.resizeObserver?.disconnect();
     if (this.initialized) {
       this.destroyApp();
     }
@@ -170,6 +180,27 @@ export class MineScene implements AfterViewInit, OnDestroy {
     canvas.style.height = '100%';
     canvas.style.display = 'block';
     this.stage().nativeElement.appendChild(canvas);
+  }
+
+  /** Le cadre s'allonge sur un téléphone haut : la scène suit, sans déformer le décor. */
+  private followFrameSize(): void {
+    const element = this.stage().nativeElement;
+    const resize = () => {
+      if (element.clientWidth === 0 || this.destroyed) {
+        return;
+      }
+      const height = Math.max(Math.round((SCENE_WIDTH * element.clientHeight) / element.clientWidth), SCENE_HEIGHT);
+      if (height === this.sceneHeight()) {
+        return;
+      }
+      this.sceneHeight.set(height);
+      this.app.renderer.resize(SCENE_WIDTH, height);
+      this.app.stage.position.set(0, this.extra());
+      this.layoutBackground();
+    };
+    resize();
+    this.resizeObserver = new ResizeObserver(resize);
+    this.resizeObserver.observe(element);
   }
 
   private async startMining(frames: Texture[]): Promise<void> {
@@ -288,7 +319,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.shakeMs = Math.max(this.shakeMs - elapsedMs, 0);
     const strength = (this.shakeMs / SHAKE_MS) * SHAKE_PX;
-    this.app.stage.position.set((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength);
+    this.app.stage.position.set((Math.random() - 0.5) * 2 * strength, this.extra() + (Math.random() - 0.5) * 2 * strength);
   }
 
   private updateSquash(elapsedMs: number): void {
@@ -308,13 +339,25 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background.texture = texture;
-      // Les images sont quasi en 9:16 (572×1024) : les étirer sur la scène les déforme de moins de 1 %
-      this.background.setSize(SCENE_WIDTH, SCENE_HEIGHT);
-      this.background.y = MINER_FEET_Y - floorY;
+      this.floorY = floorY;
+      this.layoutBackground();
     } catch (error) {
       // On garde l'ancien décor plutôt qu'un écran vide
       console.error(`Fond de la zone ${zone} introuvable`, error);
     }
+  }
+
+  /**
+   * Le sol du décor se pose sous les pieds du mineur. Les images sont quasi en 9:16 (572×1024) : les étirer sur la
+   * scène les déforme de moins de 1 %. Sur un écran haut, le décor grandit jusqu'à couvrir le ciel gagné en haut.
+   */
+  private layoutBackground(): void {
+    if (!this.background || this.floorY <= 0) {
+      return;
+    }
+    const scale = Math.max(1, (MINER_FEET_Y + this.extra()) / this.floorY);
+    this.background.setSize(SCENE_WIDTH * scale, SCENE_HEIGHT * scale);
+    this.background.position.set((SCENE_WIDTH - SCENE_WIDTH * scale) / 2, MINER_FEET_Y - this.floorY * scale);
   }
 
   private destroyApp(): void {

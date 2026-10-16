@@ -37,6 +37,8 @@
 
 .cards {
   display: grid;
+  // minmax(0, 1fr) : sans lui, une carte s'élargit à son contenu et déborde du cadre sur un écran étroit
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 4cqw;
   margin: 0;
@@ -108,13 +110,16 @@
 .card-text {
   display: grid;
   flex: 1;
+  // Sans min-width à 0, un long titre (« Expédition aux flambeaux ») pousse le bouton hors de la carte
+  min-width: 0;
   gap: 1.2cqw;
 
   strong {
     color: #ffd34d;
     font-size: 5cqw;
+    line-height: 1.1;
     text-shadow: 0 0.4cqw 0 #1a0f07;
-    white-space: nowrap;
+    text-wrap: balance;
   }
 }
 

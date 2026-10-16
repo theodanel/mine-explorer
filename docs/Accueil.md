@@ -37,6 +37,7 @@ Documentation technique de référence, tenue à jour à chaque changement du co
 
 - [[architecture]] : découpage du frontend, état et sauvegarde, backend.
 - [[installation]] : prérequis, lancement en local, commandes.
+- [[docker]] : tout le projet dans Docker Compose, conteneurs sans root (16/10/2026).
 - [[tests]] : stratégie, couverture, simulateur d'économie.
 - [[ci-cd]] : intégration continue, CodeQL, Dependabot.
 - [[deploiement]] : mise en ligne sur Cloudflare Pages, secrets, restriction d'accès.

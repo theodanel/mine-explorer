@@ -42,7 +42,7 @@
   background: linear-gradient(#ffd34d, #c48a1a);
   box-shadow: 0 0.5cqw 0 #6b4510;
   color: #2a1a0d;
-  font: bold 3.4cqw / 1 Arial, sans-serif;
+  font: bold 3.4cqw / 1 var(--font-body);
 }
 
 .close {
@@ -54,7 +54,7 @@
   background: linear-gradient(#ee6a4f, #a3271a);
   box-shadow: 0 0.6cqw 0 #561109;
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -74,7 +74,7 @@
   background: linear-gradient(color-mix(in srgb, var(--branch-color) 35%, #4a3019), #2a1a0d);
   box-shadow: 0 0.8cqw 0 #1a0f07;
   color: #f3e6d0;
-  font: bold 3.4cqw / 1.1 Arial, sans-serif;
+  font: bold 3.4cqw / 1.1 var(--font-body);
   cursor: pointer;
   opacity: 0.75;
 

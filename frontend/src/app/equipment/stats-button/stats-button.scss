@@ -15,7 +15,7 @@
   background: radial-gradient(circle at 35% 30%, #a77a4c, #5b3b22);
   box-shadow: 0 0.7cqw 0 #24170d;
   color: #fff3d6;
-  font: bold 2.7cqw / 1 Arial, sans-serif;
+  font: bold 2.7cqw / 1 var(--font-body);
   cursor: pointer;
 
   &:focus-visible {
@@ -107,7 +107,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 

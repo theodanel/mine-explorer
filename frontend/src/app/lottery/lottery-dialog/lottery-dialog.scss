@@ -35,7 +35,7 @@
   background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
   box-shadow: 0 0.6cqw 0 #5a170b;
   color: #fff;
-  font: bold 5cqw / 1 Arial, sans-serif;
+  font: bold 5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -100,7 +100,7 @@
   border-radius: 999px;
   background: rgb(0 0 0 / 45%);
   color: #f3e6d0;
-  font: bold 2.8cqw / 1.2 Arial, sans-serif;
+  font: bold 2.8cqw / 1.2 var(--font-body);
 }
 
 .result {

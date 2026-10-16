@@ -52,7 +52,7 @@
   padding: 0.4cqw 0;
   background: rgb(0 0 0 / 35%);
   color: #fff3d6;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
   text-align: center;
 }
 
@@ -109,5 +109,5 @@
 
 .artifact-hint {
   color: rgb(255 243 214 / 55%);
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  font: bold 2.6cqw / 1 var(--font-body);
 }

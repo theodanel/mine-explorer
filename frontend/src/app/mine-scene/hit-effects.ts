@@ -56,7 +56,7 @@ class FloatingText implements Effect {
     this.view = new Text({
       text: label,
       style: {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: ['Lilita One', 'Segoe UI', 'Roboto', 'sans-serif'],
         fontSize,
         fontWeight: 'bold',
         fill: color,

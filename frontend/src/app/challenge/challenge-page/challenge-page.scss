@@ -47,7 +47,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -159,7 +159,7 @@
 .milestone-points {
   min-width: 11cqw;
   color: #ffd34d;
-  font: bold 4cqw / 1 Arial, sans-serif;
+  font: bold 4cqw / 1 var(--font-body);
   text-align: center;
 }
 
@@ -180,7 +180,7 @@
 .done {
   width: 12cqw;
   color: #6fdc6f;
-  font: bold 5cqw / 1 Arial, sans-serif;
+  font: bold 5cqw / 1 var(--font-display);
   text-align: center;
 }
 

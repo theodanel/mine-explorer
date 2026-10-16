@@ -33,7 +33,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 6.5cqw / 1 Arial, sans-serif;
+  font: bold 6.5cqw / 1 var(--font-display);
   cursor: pointer;
 
   &:disabled {
@@ -46,7 +46,7 @@
   padding: 1cqw 2.5cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 40%);
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 }
 
 // Les 10 frappes, en pastilles qui se colorent selon la note
@@ -205,7 +205,7 @@
   left: 50%;
   z-index: 4;
   color: #fff3d6;
-  font: bold 7cqw / 1 Arial, sans-serif;
+  font: bold 7cqw / 1 var(--font-display);
   text-shadow: 0 0.6cqw 0.6cqw rgb(0 0 0 / 60%);
   white-space: nowrap;
   transform: translateX(-50%);

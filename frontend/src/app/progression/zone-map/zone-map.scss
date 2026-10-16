@@ -30,7 +30,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -167,7 +167,7 @@
   border-radius: 999px;
   background: linear-gradient(#ffe27a, #e09a12);
   color: #3a2405;
-  font: bold 3.4cqw / 1 Arial, sans-serif;
+  font: bold 3.4cqw / 1 var(--font-body);
   transform: translateX(-50%);
 
   .future & {
@@ -182,7 +182,7 @@
   display: grid;
   place-items: center;
   color: #d8dce2;
-  font: bold 11cqw / 1 Arial, sans-serif;
+  font: bold 11cqw / 1 var(--font-display);
   text-shadow: 0 0.6cqw 0 #000;
 }
 
@@ -198,7 +198,7 @@
   border-radius: 50%;
   background: linear-gradient(#7ee08a, #2e9d43);
   color: #fff;
-  font: bold 4cqw / 1 Arial, sans-serif;
+  font: bold 4cqw / 1 var(--font-body);
 }
 
 // Le mineur sur la zone où il mine
@@ -228,7 +228,7 @@
   padding: 0.6cqw 2cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 55%);
-  font: bold 2.9cqw / 1.2 Arial, sans-serif;
+  font: bold 2.9cqw / 1.2 var(--font-body);
   text-align: center;
 
   img {

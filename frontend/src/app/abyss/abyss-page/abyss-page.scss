@@ -15,7 +15,7 @@
   background-repeat: repeat-y;
   background-size: 100% auto;
   color: #f3e6d0;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
   transition: background-position 0.35s ease-out;
   touch-action: manipulation;
   user-select: none;
@@ -59,7 +59,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 7cqw / 1 Arial, sans-serif;
+  font: bold 7cqw / 1 var(--font-display);
   cursor: pointer;
 
   &:disabled {
@@ -75,7 +75,7 @@
   padding: 1cqw 2.5cqw 1cqw 1.5cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 55%);
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 
   img {
     width: 5cqw;
@@ -144,7 +144,7 @@
   padding: 1cqw 2.5cqw;
   border-radius: 999px;
   background: linear-gradient(#ff9a3c, #d4561e);
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
   animation: pulse 0.3s ease-out;
 }
 
@@ -196,7 +196,7 @@
   padding: 1cqw 2.5cqw;
   border: 0.4cqw solid #1a0f07;
   border-radius: 999px;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 }
 
 .guardian-tag {
@@ -291,7 +291,7 @@
 
 .pop {
   position: absolute;
-  font: bold 4.5cqw / 1 Arial, sans-serif;
+  font: bold 4.5cqw / 1 var(--font-body);
   text-shadow: 0 0.4cqw 0 #1a0f07;
   white-space: nowrap;
   transform: translateX(-50%);

@@ -50,7 +50,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 6.5cqw / 1 Arial, sans-serif;
+  font: bold 6.5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -59,7 +59,7 @@
   padding: 1cqw 2.5cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 40%);
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 }
 
 // ─── La file de rochers ──────────────────────────────────────────────────
@@ -187,7 +187,7 @@
   padding: 1cqw 3cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 45%);
-  font: bold 3.2cqw / 1 Arial, sans-serif;
+  font: bold 3.2cqw / 1 var(--font-body);
   animation: breathe 1.4s ease-in-out infinite alternate;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .burst-loot {
-  font: bold 7cqw / 1 Arial, sans-serif;
+  font: bold 7cqw / 1 var(--font-display);
   color: #fff4c8;
   text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
 }
@@ -323,7 +323,7 @@
   display: flex;
   align-items: center;
   gap: 1cqw;
-  font: bold 4.4cqw / 1 Arial, sans-serif;
+  font: bold 4.4cqw / 1 var(--font-body);
   color: #ffd34d;
 
   img {
@@ -362,7 +362,7 @@
 }
 
 .danger-value {
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
 }
 
 .danger.high {

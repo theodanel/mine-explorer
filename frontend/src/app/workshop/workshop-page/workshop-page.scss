@@ -30,7 +30,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -61,7 +61,7 @@
     padding: 0.8cqw 2.5cqw 0.8cqw 1cqw;
     border-radius: 999px;
     background: rgb(0 0 0 / 35%);
-    font: bold 3.6cqw / 1 Arial, sans-serif;
+    font: bold 3.6cqw / 1 var(--font-body);
   }
 
   img {
@@ -142,7 +142,7 @@
   border-radius: 999px;
   background: linear-gradient(#ffe27a, #e09a12);
   color: #3a2405;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 }
 
 .text {
@@ -190,7 +190,7 @@
   border-radius: 999px;
   background: rgb(0 0 0 / 30%);
   color: #ffd34d;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 
   img {
     width: 4.5cqw;
@@ -220,7 +220,7 @@
   border-radius: 999px;
   background: linear-gradient(#7fe8ff, #2a9bc4);
   color: #082a36;
-  font: bold 2.8cqw / 1.2 Arial, sans-serif;
+  font: bold 2.8cqw / 1.2 var(--font-body);
   cursor: pointer;
 }
 
@@ -267,7 +267,7 @@
   background: rgb(0 0 0 / 35%);
   box-shadow: inset 0 0 0 0.3cqw rgb(255 211 77 / 35%);
   color: #f3e6d0;
-  font: bold 2.7cqw / 1 Arial, sans-serif;
+  font: bold 2.7cqw / 1 var(--font-body);
   cursor: pointer;
 
   &:disabled {

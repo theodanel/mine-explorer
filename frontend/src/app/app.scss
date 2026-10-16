@@ -19,7 +19,7 @@
   height: var(--h);
   overflow: hidden;
   container-type: inline-size;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .scene {
@@ -71,7 +71,7 @@
   border-radius: 999px;
   background: linear-gradient(#5fd16a, #23802f);
   color: #fff;
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  font: bold 2.6cqw / 1 var(--font-body);
   animation: evolve-pulse 1s ease-in-out infinite alternate;
 
   @media (prefers-reduced-motion: reduce) {
@@ -137,7 +137,7 @@
   border: 0.5cqw solid #2a1a0d;
   border-radius: 999px;
   background: rgb(20 12 6 / 75%);
-  font: bold 3.2cqw / 1 Arial, sans-serif;
+  font: bold 3.2cqw / 1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 

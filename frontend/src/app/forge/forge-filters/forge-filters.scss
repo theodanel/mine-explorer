@@ -40,7 +40,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 5.5cqw / 1 Arial, sans-serif;
+  font: bold 5.5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -74,7 +74,7 @@
   background: linear-gradient(#5b3d24, #3d2815);
   box-shadow: 0 0.5cqw 0 #1a0f07;
   color: #f3e6d0;
-  font: bold 3cqw / 1.1 Arial, sans-serif;
+  font: bold 3cqw / 1.1 var(--font-body);
   cursor: pointer;
 
   &.on {

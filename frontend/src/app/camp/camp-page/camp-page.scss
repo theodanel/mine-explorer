@@ -32,7 +32,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 7cqw / 1 Arial, sans-serif;
+  font: bold 7cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -51,7 +51,7 @@
     padding: 0.6cqw 2cqw 0.6cqw 1cqw;
     border-radius: 999px;
     background: rgb(0 0 0 / 45%);
-    font: bold 3cqw / 1 Arial, sans-serif;
+    font: bold 3cqw / 1 var(--font-body);
   }
 
   img {
@@ -129,7 +129,7 @@
   border-radius: 999px;
   background: rgb(20 12 6 / 85%);
   color: #f3e6d0;
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  font: bold 2.6cqw / 1 var(--font-body);
   white-space: nowrap;
 }
 
@@ -143,7 +143,7 @@
   border-radius: 999px;
   background: linear-gradient(#c79bff, #7a46d6);
   color: #fff;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
   animation: bob 1s ease-in-out infinite alternate;
 
   @media (prefers-reduced-motion: reduce) {
@@ -207,7 +207,7 @@
   padding: 0.8cqw 2.2cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 40%);
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
 }
 
 .role {
@@ -238,7 +238,7 @@
 
   dd {
     margin: 0;
-    font: bold 3cqw / 1.2 Arial, sans-serif;
+    font: bold 3cqw / 1.2 var(--font-body);
     text-align: right;
   }
 
@@ -276,7 +276,7 @@
   display: flex;
   align-items: center;
   gap: 1cqw;
-  font: bold 3.2cqw / 1 Arial, sans-serif;
+  font: bold 3.2cqw / 1 var(--font-body);
 
   img {
     width: 5cqw;

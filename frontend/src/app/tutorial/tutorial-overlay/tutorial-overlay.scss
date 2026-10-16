@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-tutorial);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
   cursor: pointer;
 
   // Étape « touche l'élément » : les touchers traversent jusqu'au jeu, le composant filtre ceux hors de la cible

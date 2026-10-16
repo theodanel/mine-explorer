@@ -29,7 +29,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -124,7 +124,7 @@
   border-radius: 999px;
   background: #d0352a;
   color: #fff;
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  font: bold 2.6cqw / 1 var(--font-body);
 
   &.ready {
     background: linear-gradient(#5fd16a, #23802f);
@@ -174,7 +174,7 @@
     border: none;
     background: #3b2716;
     color: #f3e6d0;
-    font: bold 3cqw / 1 Arial, sans-serif;
+    font: bold 3cqw / 1 var(--font-body);
     cursor: pointer;
 
     & + button {

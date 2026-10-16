@@ -35,7 +35,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 6.5cqw / 1 Arial, sans-serif;
+  font: bold 6.5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -44,7 +44,7 @@
   padding: 1cqw 2.5cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 40%);
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
   white-space: nowrap;
 }
 
@@ -64,7 +64,7 @@
   padding: 1cqw 3cqw;
   border-radius: 999px;
   background: rgb(0 0 0 / 55%);
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
 
   img {
     width: 6.5cqw;
@@ -301,7 +301,7 @@
   background: rgb(36 23 13 / 92%);
   box-shadow: inset 0 0 0 0.35cqw rgb(255 211 77 / 50%);
   color: #ffd34d;
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
   white-space: nowrap;
   transform: translateX(-50%);
   animation: toast 1.1s ease-out both;

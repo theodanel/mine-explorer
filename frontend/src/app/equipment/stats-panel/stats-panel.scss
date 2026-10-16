@@ -14,7 +14,7 @@
     inset 0 0 0 0.6cqw #9a6c43,
     0 1cqw 0 rgb(0 0 0 / 40%);
   color: #fff3d6;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 // Titre gardé pour les lecteurs d'écran : la place manque depuis l'arrivée de la barre de menus et des sorts

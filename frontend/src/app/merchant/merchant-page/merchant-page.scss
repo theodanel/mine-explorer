@@ -32,7 +32,7 @@
   border-radius: 50%;
   background: linear-gradient(#8a5a33, #4e2f17);
   color: #f3e6d0;
-  font: bold 6.5cqw / 1 Arial, sans-serif;
+  font: bold 6.5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -98,7 +98,7 @@
   border-radius: 3cqw;
   background: #fff3d6;
   color: #3a2405;
-  font: 3.4cqw / 1.35 Arial, sans-serif;
+  font: 3.4cqw / 1.35 var(--font-body);
   box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 35%);
   animation: pop 0.3s ease-out;
 
@@ -201,7 +201,7 @@
   align-items: center;
   gap: 1cqw;
   color: #ffd34d;
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
 
   img {
     width: 4.5cqw;
@@ -213,7 +213,7 @@
   justify-self: start;
   padding: 0.6cqw 2cqw;
   border-radius: 999px;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
 
   &.sold {
     background: rgb(126 224 138 / 25%);

@@ -6,7 +6,7 @@
   display: grid;
   justify-items: center;
   gap: 1.5cqw;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .title {
@@ -23,7 +23,7 @@
   border-radius: 2cqw;
   background: rgb(0 0 0 / 50%);
   color: #f3e6d0;
-  font: bold 4.5cqw / 1.2 Arial, sans-serif;
+  font: bold 4.5cqw / 1.2 var(--font-body);
   cursor: pointer;
 }
 
@@ -39,7 +39,7 @@
   border-radius: 999px;
   background: linear-gradient(#7fe8ff, #2a9bc4);
   color: #082a36;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
   cursor: pointer;
 }
 
@@ -51,7 +51,7 @@
   background: rgb(20 12 6 / 65%);
   box-shadow: inset 0 0 0 0.3cqw rgb(196 92 255 / 45%);
   color: #f0dcff;
-  font: bold 2.7cqw / 1 Arial, sans-serif;
+  font: bold 2.7cqw / 1 var(--font-body);
   cursor: pointer;
 
   .power {
@@ -75,7 +75,7 @@
   border-radius: 999px;
   background: rgb(20 12 6 / 75%);
   color: #f3e6d0;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
 
   img {
     width: 6cqw;

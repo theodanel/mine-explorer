@@ -31,7 +31,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -66,7 +66,7 @@
     inset 0 0 0 0.6cqw #8a5f38,
     0 1.2cqw 0 rgb(0 0 0 / 45%);
   color: #f3e6d0;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
   transition: transform 0.12s ease-out;
@@ -133,7 +133,7 @@
   padding: 1cqw 2.5cqw;
   border: 0.4cqw solid #1a0f07;
   border-radius: 999px;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
 
   &.ready {
     background: linear-gradient(#5fd16a, #23802f);
@@ -154,7 +154,7 @@
   background: linear-gradient(#ffd34d, #e09a12);
   box-shadow: 0 0.8cqw 0 #6b3f07;
   color: #3a2405;
-  font: bold 3.4cqw / 1 Arial, sans-serif;
+  font: bold 3.4cqw / 1 var(--font-body);
 }
 
 // Le marchand qui approche : sa silhouette, toute noire

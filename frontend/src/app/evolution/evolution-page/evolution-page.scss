@@ -29,7 +29,7 @@
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -105,7 +105,7 @@
   border-radius: 2cqw;
   background: rgb(0 0 0 / 40%);
   color: #9dffa4;
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
 
   small {
     font-size: 2.4cqw;
@@ -178,7 +178,7 @@
   border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: linear-gradient(#6e4a2c, #4a3019);
-  font: bold 4.2cqw / 1 Arial, sans-serif;
+  font: bold 4.2cqw / 1 var(--font-body);
 
   .current & {
     background: linear-gradient(#ffe27a, #e09a12);
@@ -219,7 +219,7 @@
   border-radius: 999px;
   background: #d0352a;
   color: #fff;
-  font: bold 2.4cqw / 1 Arial, sans-serif;
+  font: bold 2.4cqw / 1 var(--font-body);
 }
 
 .locked-note {
@@ -290,7 +290,7 @@
   display: grid;
   place-items: center;
   color: #fff;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
   text-shadow: 0 0.3cqw 0 rgb(0 0 0 / 70%);
 }
 
@@ -310,7 +310,7 @@
 .claimed {
   width: 12cqw;
   color: #6fdc6f;
-  font: bold 5cqw / 1 Arial, sans-serif;
+  font: bold 5cqw / 1 var(--font-display);
   text-align: center;
 }
 

@@ -36,7 +36,7 @@
   border-radius: 999px;
   background: rgb(20 12 6 / 80%);
   color: #fff3d6;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
   white-space: nowrap;
 }
 
@@ -101,7 +101,7 @@
   border-radius: 999px;
   background: rgb(20 12 6 / 85%);
   color: #ffd34d;
-  font: bold 3.6cqw / 1 Arial, sans-serif;
+  font: bold 3.6cqw / 1 var(--font-body);
   white-space: nowrap;
   translate: -50% 0;
   animation: loot-rise 2s ease-out forwards;

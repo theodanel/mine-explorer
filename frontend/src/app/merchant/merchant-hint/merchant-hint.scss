@@ -14,7 +14,7 @@
   background: rgb(20 12 6 / 72%);
   box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 35%);
   color: #f3e6d0;
-  font: italic 2.7cqw / 1.3 Arial, sans-serif;
+  font: italic 2.7cqw / 1.3 var(--font-body);
   text-align: left;
   cursor: pointer;
   animation:
@@ -78,7 +78,7 @@
 .go,
 .close {
   flex: none;
-  font: bold 4cqw / 1 Arial, sans-serif;
+  font: bold 4cqw / 1 var(--font-body);
   opacity: 0.8;
 }
 

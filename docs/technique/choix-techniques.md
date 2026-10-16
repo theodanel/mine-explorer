@@ -44,4 +44,4 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 
 ## Polices (16/10/2026)
 
-Lilita One (titres, chiffres, boutons) et Nunito (texte), choisies par Théo pour le style cartoon. Toutes deux sous licence OFL, installées par les paquets npm `@fontsource/lilita-one` et `@fontsource/nunito` (versions figées), et déclarées dans `angular.json` (sous-ensemble latin, accents et œ compris). Le build les copie avec le site : aucune requête vers Google Fonts, et la CSP garde `font-src 'self'`. Lilita One na
+Lilita One (titres, chiffres, boutons) et Nunito (texte), choisies par Théo pour le style cartoon. Toutes deux sous licence OFL, installées par les paquets npm `@fontsource/lilita-one` et `@fontsource/nunito` (versions figées), et déclarées dans `angular.json` (sous-ensemble latin, accents et œ compris). Le build les copie avec le site : aucune requête vers Google Fonts, et la CSP garde `font-src 'self'`. Lilita One n'a qu'une graisse : `font-synthesis-weight: none` empêche le navigateur de l'épaissir.

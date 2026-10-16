@@ -29,6 +29,11 @@ const LABELS: Readonly<Record<EvolutionMetric, (target: number) => string>> = {
   rocksBroken: (target) => `Épuiser ${target} filons`,
 };
 
+/** Nom affiché d'une forme, avec ses étoiles de Légende : « Légende de la mine ★★ ». */
+export function formTitle(form: EvolutionForm): string {
+  return form.stars > 0 ? `${form.label} ${'★'.repeat(form.stars)}` : form.label;
+}
+
 /** Forme suivante, ou null si le mineur est déjà à sa dernière forme. */
 export function nextForm(formIndex: number): EvolutionForm | null {
   return EVOLUTION_FORMS[formIndex + 1] ?? null;

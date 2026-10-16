@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { EVOLUTION_FORMS, evolutionStrikeMultiplier } from '../balance/balance';
 import { Inventory } from '../equipment/inventory';
 import { GeodeShards } from '../wallet/geode-shards';
-import { canEvolve, currentTier, objectivesFor } from './evolution-rules';
+import { canEvolve, currentTier, formTitle, objectivesFor } from './evolution-rules';
 import { Evolution } from './evolution';
 
 const MINER = EVOLUTION_FORMS[1];
@@ -75,7 +75,27 @@ describe('Evolution', () => {
 
 describe('Évolutions', () => {
   it('multiplient les bonus de Frappe entre eux', () => {
-    expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 4);
+    // 4 formes à +50 %, 5 étoiles de Légende à +50 %, puis la forme finale à +100 %
+    expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 9 * 2);
+  });
+
+  it("gardent les anciennes sauvegardes : les étoiles viennent après la Légende, la forme finale en dernier", () => {
+    expect(EVOLUTION_FORMS.slice(0, 5).map((form) => form.id)).toEqual(['apprentice', 'miner', 'foreman', 'master', 'legend']);
+    expect(EVOLUTION_FORMS.slice(4, 10).map((form) => [form.id, form.stars])).toEqual([
+      ['legend', 0],
+      ['legend', 1],
+      ['legend', 2],
+      ['legend', 3],
+      ['legend', 4],
+      ['legend', 5],
+    ]);
+    expect(EVOLUTION_FORMS.at(-1)?.id).toBe('heart');
+  });
+
+  it('affichent les étoiles de Légende dans le nom de la forme', () => {
+    expect(formTitle(EVOLUTION_FORMS[4])).toBe('Légende de la mine');
+    expect(formTitle(EVOLUTION_FORMS[6])).toBe('Légende de la mine ★★');
+    expect(formTitle(EVOLUTION_FORMS[EVOLUTION_FORMS.length - 1])).toBe('Légende du Cœur du monde');
   });
 
   it("demandent des objectifs de plus en plus grands, d'un palier et d'une forme à l'autre", () => {

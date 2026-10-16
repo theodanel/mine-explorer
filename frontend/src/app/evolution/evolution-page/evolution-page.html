@@ -90,7 +90,7 @@
         <small>{{ evolution.ready() ? 'Devenir ' + next.label : 'Remplis les trois paliers' }}</small>
       </button>
     } @else {
-      <p class="ultimate">Ton mineur a atteint sa forme ultime : Légende de la mine.</p>
+      <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().label }}.</p>
     }
   </div>
 </section>

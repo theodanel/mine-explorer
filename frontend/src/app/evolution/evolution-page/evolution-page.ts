@@ -5,7 +5,7 @@ import { EVOLUTION_FORMS } from '../../balance/balance';
 import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Evolution } from '../evolution';
-import { isClaimable } from '../evolution-rules';
+import { formTitle, isClaimable } from '../evolution-rules';
 import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
 const NUMBER = new Intl.NumberFormat('fr-FR');
@@ -30,7 +30,7 @@ export class EvolutionPage {
 
   protected readonly current = computed(() => {
     const form = this.evolution.form();
-    return { label: form.label, portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl };
+    return { label: formTitle(form), portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl };
   });
 
   protected readonly next = computed(() => {
@@ -40,7 +40,7 @@ export class EvolutionPage {
     }
     const rank = EVOLUTION_FORMS.indexOf(form);
     return {
-      label: form.label,
+      label: formTitle(form),
       portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl,
       bonus: Math.round(form.strikeBonus * PERCENT),
       rank,

@@ -6,7 +6,7 @@ import { MissionCounters } from '../missions/mission-counters';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
-import { canEvolve, currentTier, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
+import { canEvolve, currentTier, formTitle, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
 
 const STORAGE_KEY = 'mine-explorer.evolution';
 /** Récompenses déjà touchées pour la forme suivante (index des objectifs). */
@@ -28,6 +28,13 @@ export class Evolution {
   readonly index = this.formIndex.asReadonly();
   readonly form = computed(() => EVOLUTION_FORMS[this.formIndex()]);
   readonly next = computed(() => nextForm(this.formIndex()));
+  /** Nom de la forme actuelle, étoiles comprises. */
+  readonly title = computed(() => formTitle(this.form()));
+  /** Nom de la forme suivante, étoiles comprises (null à la forme ultime). */
+  readonly nextTitle = computed(() => {
+    const form = this.next();
+    return form === null ? null : formTitle(form);
+  });
   /** Multiplicateur de Frappe cumulé de toutes les formes atteintes. */
   readonly strikeMultiplier = computed(() => evolutionStrikeMultiplier(this.formIndex()));
 

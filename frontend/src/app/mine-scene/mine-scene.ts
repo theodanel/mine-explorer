@@ -15,6 +15,7 @@ import { GUARDIAN_STAGE } from '../progression/progression-rules';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
 import { MineRock, RockTop } from './mine-rock';
+import { auraLook, MinerAura } from './miner-aura';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -71,6 +72,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private squashMs = 0;
   private shakeMs = 0;
   private effects: HitEffects | null = null;
+  private aura: MinerAura | null = null;
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
   private initialized = false;
@@ -121,6 +123,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
       if (this.staticBody) {
         void this.showForm(form);
       }
+    });
+    // Étoiles de Légende et forme finale : le halo derrière le mineur
+    effect(() => {
+      const look = auraLook(this.evolution.form());
+      this.aura?.show(look);
     });
     // Nouvelle zone (ou retour dans une zone passée), nouveau décor : le fond se charge pendant que le mineur continue
     effect(() => {
@@ -216,7 +223,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.app.stage.addChild(miner, this.staticBody, effectsLayer);
+    const auraLayer = new Container();
+    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.aura.show(auraLook(this.evolution.form()));
+    this.app.stage.addChild(auraLayer, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -234,6 +244,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     };
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
+      this.aura?.update(ticker.deltaMS);
       this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);

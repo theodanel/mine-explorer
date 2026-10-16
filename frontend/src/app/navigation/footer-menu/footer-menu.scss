@@ -11,11 +11,11 @@
   gap: 0.8cqw;
   height: 100%;
   padding: 1.2cqw 1.5cqw 1.8cqw;
-  border-top: 0.4cqw solid rgb(26 15 7 / 80%);
+  border-top: 0.6cqw solid var(--ink);
   background:
-    linear-gradient(rgb(255 255 255 / 6%), transparent 30%),
-    linear-gradient(#4e3420, #33220f);
-  box-shadow: inset 0 0.35cqw 0 rgb(138 95 56 / 60%);
+    linear-gradient(rgb(255 255 255 / 10%), transparent 35%),
+    linear-gradient(#5e3d22, #3a2412);
+  box-shadow: inset 0 0.5cqw 0 rgb(183 129 74 / 55%);
 }
 
 .tab-wrapper {
@@ -35,8 +35,10 @@
   border: none;
   border-radius: 3cqw;
   background: transparent;
-  color: #e8d6b8;
-  font: bold 2.2cqw / 1.1 var(--font-body);
+  color: #fff;
+  font: 800 2.4cqw / 1.1 var(--font-display);
+  -webkit-text-stroke: 0.25cqw var(--ink);
+  paint-order: stroke fill;
   cursor: pointer;
 
   &:focus-visible {
@@ -49,7 +51,7 @@
 .current {
   background: radial-gradient(ellipse at 50% 40%, rgb(255 211 77 / 35%), rgb(255 211 77 / 8%) 70%);
   box-shadow: inset 0 0 0 0.35cqw rgb(255 211 77 / 45%);
-  color: #ffe9a8;
+  color: var(--gold);
 }
 
 .soon {
@@ -68,7 +70,7 @@
 .tab-label {
   max-width: 100%;
   overflow: hidden;
-  font-size: 2.2cqw;
+  font-size: 2.4cqw;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

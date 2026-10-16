@@ -229,10 +229,27 @@
   inset: calc(var(--extra) + var(--core) * 0.585) 3cqw auto auto;
 }
 
+// Panneau crème du bas : un parchemin cerclé d'encre, posé sur une planche de bois, d'un bord à l'autre
+.bottom-panel {
+  position: absolute;
+  inset: calc(var(--extra) + var(--core) * 0.622) 0 calc(var(--core) * 0.095 - 2cqw);
+  border: 0.6cqw solid var(--ink);
+  border-bottom: none;
+  border-radius: 5cqw 5cqw 0 0;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgb(255 255 255 / 45%), transparent 60%),
+    linear-gradient(var(--parchment), var(--parchment-shade));
+  box-shadow:
+    inset 0 0 0 0.9cqw var(--wood),
+    inset 0 0 0 1.4cqw var(--wood-dark),
+    0 -1cqw 2.5cqw rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
 // Panneau d'équipement en bas, à la place des anciennes colonnes et du panneau de stats
 .equipment-bar {
   position: absolute;
-  inset: calc(var(--extra) + var(--core) * 0.65) 3cqw auto;
+  inset: calc(var(--extra) + var(--core) * 0.65) 4.5cqw auto;
 }
 
 // Bouton rond des stats, en bas à droite de la barre de forge

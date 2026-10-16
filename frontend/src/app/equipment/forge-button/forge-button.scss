@@ -44,9 +44,8 @@
 }
 
 .side-level {
-  color: #ffd34d;
-  font-size: 4.3cqw;
-  text-shadow: 0 0.3cqw 0.3cqw rgb(26 15 7 / 70%);
+  color: var(--gold);
+  font-size: 4.6cqw;
 }
 
 .side-timer {
@@ -75,18 +74,24 @@
 }
 
 .tool {
-  padding: 0.8cqw 2cqw;
-  border: 0.35cqw solid rgb(26 15 7 / 70%);
+  padding: 0.9cqw 2.4cqw;
+  border: 0.45cqw solid var(--ink);
   border-radius: 999px;
-  background: linear-gradient(#6e4a2c, #4a3019);
-  box-shadow: 0 0.4cqw 0.8cqw rgb(0 0 0 / 35%);
-  color: #f3e6d0;
-  font: bold 2.7cqw / 1 var(--font-body);
+  background:
+    linear-gradient(rgb(255 255 255 / 25%), transparent 55%),
+    var(--wood-light);
+  box-shadow: 0 0.5cqw 0 var(--wood-dark);
+  color: #fff;
+  font: 800 2.8cqw / 1 var(--font-display);
+  -webkit-text-stroke: 0.25cqw var(--ink);
+  paint-order: stroke fill;
   cursor: pointer;
 
   &.on {
-    background: linear-gradient(#5fd16a, #23802f);
-    color: #fff;
+    background:
+      linear-gradient(rgb(255 255 255 / 25%), transparent 55%),
+      #5cc85a;
+    box-shadow: 0 0.5cqw 0 #2b7f32;
   }
 
   &:focus-visible {

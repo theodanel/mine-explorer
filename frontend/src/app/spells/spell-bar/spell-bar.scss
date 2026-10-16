@@ -22,10 +22,12 @@
   height: 8.5cqw;
   padding: 0;
   overflow: hidden;
-  border: 0.45cqw solid var(--rarity-color, #7a5636);
+  border: 0.7cqw solid var(--rarity-color, var(--gold));
   border-radius: 50%;
-  background: rgb(20 12 6 / 70%);
-  box-shadow: 0 0.3cqw 0.6cqw rgb(0 0 0 / 50%);
+  background: radial-gradient(circle at 50% 35%, #5a3c22, #2a1a0d 75%);
+  box-shadow:
+    0 0 0 0.45cqw var(--ink),
+    0 0.8cqw 0 0.45cqw rgb(0 0 0 / 35%);
   color: #fff3d6;
   font: bold 2.7cqw / 1.1 var(--font-body);
   text-align: center;

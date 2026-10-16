@@ -93,6 +93,8 @@ jobs:
           curl -fsS http://localhost:8080/ | grep -q "<app-root"
           for i in $(seq 1 45); do docker compose logs backend | grep -q "Started BackendApplication" && break; sleep 2; done
           docker compose logs backend | grep -q "Started BackendApplication"
+          for i in $(seq 1 30); do [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q frontend)")" = healthy ] && break; sleep 2; done
+          [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q frontend)")" = healthy ]
       - name: Journaux en cas d'échec
         if: failure()
         run: docker compose logs

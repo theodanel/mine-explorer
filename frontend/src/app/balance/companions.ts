@@ -1,6 +1,6 @@
 // Équilibrage des compagnons : œufs, éclosion, étoiles, niveaux et expéditions.
 // Fichier pur, simulé par tools/simulate.mts. Voir docs/game-design/idees-fun.md (idée 4, déblocage validé le 13/10/2026).
-import { BonusId, Rarity } from './skill-tree';
+import { BonusId, Rarity, SpellEffect } from './skill-tree';
 
 export const COMPANION_IDS = ['canary', 'mole', 'bat', 'firefly', 'golem', 'dragonling'] as const;
 export type CompanionId = (typeof COMPANION_IDS)[number];
@@ -12,7 +12,26 @@ export interface CompanionDef {
   /** Bonus de base, à 1 étoile, quand il accompagne le mineur. */
   readonly effects: Readonly<Partial<Record<BonusId, number>>>;
   readonly description: string;
+  /** Compétence unique, lancée comme un sort depuis la barre de sorts quand il accompagne le mineur. */
+  readonly ability: CompanionAbility;
 }
+
+/**
+ * Compétence d'un familier (demande de Théo, 16/10/2026) : un effet de sort à lui, avec sa recharge. Les étoiles la
+ * renforcent : une explosion frappe plus fort, un effet dure plus longtemps.
+ */
+export interface CompanionAbility {
+  readonly label: string;
+  readonly summary: string;
+  readonly cooldownMs: number;
+  /** 0 pour un coup unique. */
+  readonly durationMs: number;
+  readonly effect: SpellEffect;
+}
+
+const SECOND = 1000;
+/** Chaque étoile au-delà de la première allonge l'effet d'une seconde. */
+export const ABILITY_SECONDS_PER_STAR = 1;
 
 /**
  * Un seul compagnon accompagne le mineur : son bonus forme une famille à part, multipliée aux autres.
@@ -26,6 +45,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'common',
     effects: { goldPct: 0.05 },
     description: 'Il chante tant que l\'air est bon, et le mineur creuse plus content.',
+    ability: {
+      label: 'Chant de prospecteur',
+      summary: "Le canari chante : chaque coup rapporte deux fois plus d'or pendant quelques secondes.",
+      cooldownMs: 60 * SECOND,
+      durationMs: 8 * SECOND,
+      effect: { kind: 'gold', multiplier: 2 },
+    },
   },
   mole: {
     id: 'mole',
@@ -33,6 +59,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'common',
     effects: { strikePct: 0.03 },
     description: 'Elle attaque la roche par en dessous : chaque coup porte mieux.',
+    ability: {
+      label: 'Galerie souterraine',
+      summary: 'La taupe sape le filon par en dessous : un coup de 6 fois la Frappe.',
+      cooldownMs: 40 * SECOND,
+      durationMs: 0,
+      effect: { kind: 'blast', strike: 6, strikePerRank: 0 },
+    },
   },
   bat: {
     id: 'bat',
@@ -40,6 +73,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'rare',
     effects: { critChance: 0.015 },
     description: 'Son écho trouve les failles que l\'œil ne voit pas.',
+    ability: {
+      label: 'Écholocation',
+      summary: 'Son cri révèle chaque faille : tous les coups sont critiques pendant quelques secondes.',
+      cooldownMs: 50 * SECOND,
+      durationMs: 5 * SECOND,
+      effect: { kind: 'crit' },
+    },
   },
   firefly: {
     id: 'firefly',
@@ -47,6 +87,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'rare',
     effects: { critDamage: 0.1 },
     description: 'Sa lumière tombe pile sur le point faible du filon.',
+    ability: {
+      label: 'Nuée lumineuse',
+      summary: 'La luciole éclaire les géodes : chaque coup peut faire tomber un éclat, pendant quelques secondes.',
+      cooldownMs: 60 * SECOND,
+      durationMs: 8 * SECOND,
+      effect: { kind: 'shard', chance: 0.2, chancePerRank: 0 },
+    },
   },
   golem: {
     id: 'golem',
@@ -54,6 +101,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'epic',
     effects: { strikePct: 0.05, speed: 0.02 },
     description: 'Lent à se décider, mais il frappe avec toi.',
+    ability: {
+      label: 'Poing de pierre',
+      summary: 'Le golem abat son poing sur le filon : un coup de 15 fois la Frappe.',
+      cooldownMs: 60 * SECOND,
+      durationMs: 0,
+      effect: { kind: 'blast', strike: 15, strikePerRank: 0 },
+    },
   },
   dragonling: {
     id: 'dragonling',
@@ -61,6 +115,13 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
     rarity: 'legendary',
     effects: { strikePct: 0.06, blastPct: 0.15 },
     description: 'Il souffle sur la mèche : la dynamite part plus fort.',
+    ability: {
+      label: 'Souffle de magma',
+      summary: 'Le dragonnet crache sa lave : le mineur frappe deux fois plus vite pendant quelques secondes.',
+      cooldownMs: 50 * SECOND,
+      durationMs: 7 * SECOND,
+      effect: { kind: 'speed', amount: 1 },
+    },
   },
 };
 

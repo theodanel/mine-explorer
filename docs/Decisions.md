@@ -32,6 +32,7 @@ Retour à [[Accueil]].
 ### Mineur
 
 - Cinq formes : Apprenti → Mineur (zone 5) → Contremaître (zone 7) → Maître des profondeurs (zone 9) → Légende de la mine (zone 11). Chacune coûte des minerais de paliers et de l'or et multiplie la Frappe. Fenêtre ouverte en tapant le portrait.
+- Après la Légende (16/10/2026) : cinq étoiles de Légende puis la Légende du Cœur du monde, gagnées par missions comme les formes, plutôt qu'un prestige. Voir [[etoiles-de-legende]].
 - Cinq stats liées aux emplacements : Frappe (pioche), Vitesse (bottes), Critique (gants), Dégâts critiques (casque), Bonus d'or (sac). Le vocabulaire de combat est ainsi rattaché au forage (point 5 de [[GDD_points_a_trancher]]).
 
 ### Compétences et artefacts (12/10/2026)

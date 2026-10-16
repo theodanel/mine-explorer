@@ -345,7 +345,7 @@ export function zoneMaterial(zone: number): TierId | null {
 export const ORE_FIND_CHANCE = 0.03;
 export const ZONE_CLEAR_ORES = 20;
 
-export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';
+export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend' | 'heart';
 
 /**
  * Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie.
@@ -368,13 +368,45 @@ function tiered(shards: number, tiers: readonly (readonly (readonly [EvolutionMe
 }
 
 export interface EvolutionForm {
+  /** Visuel de la forme : les étoiles de Légende gardent celui de la Légende. */
   readonly id: EvolutionId;
   readonly label: string;
+  /** Étoiles de Légende (0 hors Légende) : des rangs en plus après la Légende, sans nouveau personnage. */
+  readonly stars: number;
   /** Objectifs à remplir pour passer à cette forme, façon « Adventure Rank » de Legend of Mushroom. */
   readonly objectives: readonly EvolutionObjective[];
   /** Bonus de Frappe de cette forme, cumulé avec les précédentes. */
   readonly strikeBonus: number;
 }
+
+/**
+ * Étoiles de Légende (choix de Théo, 16/10/2026) : la Légende arrive vers la zone 12, il restait 8 zones sans rang à
+ * viser. Cinq étoiles prennent le relais, une par zone de la 13 à la 17, avec la même mécanique de missions ; chacune
+ * donne de la Frappe, ce qui apporte la Puissance qui manquait au-delà de la zone 16. Les objectifs de zone ne
+ * demandent que d'atteindre la zone, jamais de battre son gardien : l'étoile aide justement à le battre.
+ */
+const LEGEND_STAR_BONUS = 0.5;
+/** Zone à atteindre, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la zone atteinte). */
+const LEGEND_STAR_GOALS: readonly (readonly [zone: number, pickaxe: number, items: number, rocks: number])[] = [
+  [13, 25, 7500, 190],
+  [14, 26, 10000, 200],
+  [15, 27, 13000, 215],
+  [16, 28, 16500, 230],
+  [17, 30, 21000, 245],
+];
+
+const LEGEND_STARS: readonly EvolutionForm[] = LEGEND_STAR_GOALS.map(([zone, pickaxe, items, rocks], index) => ({
+  id: 'legend',
+  label: 'Légende de la mine',
+  stars: index + 1,
+  // Palier 1 : la zone ; palier 2 : le chemin ; palier 3 : tout en entier
+  objectives: tiered(12, [
+    [['zone', zone], ['itemsForged', Math.round(items * 0.8)]],
+    [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.9)], ['rocksBroken', rocks - 5]],
+    [['itemsForged', items], ['rocksBroken', rocks]],
+  ]),
+  strikeBonus: LEGEND_STAR_BONUS,
+}));
 
 /**
  * Formes du mineur, de la première à la dernière. Chacune se gagne en remplissant des missions rangées en 3 paliers,
@@ -385,10 +417,11 @@ export interface EvolutionForm {
  * Chaque forme donne +50 % de Frappe, multipliés entre eux (×5 en Légende) : les paliers multiplicateurs des jeux idle.
  */
 export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
-  { id: 'apprentice', label: 'Apprenti', objectives: [], strikeBonus: 0 },
+  { id: 'apprentice', label: 'Apprenti', stars: 0, objectives: [], strikeBonus: 0 },
   {
     id: 'miner',
     label: 'Mineur',
+    stars: 0,
     objectives: tiered(4, [
       [['zone', 2], ['pickaxeLevel', 3], ['itemsForged', 40]],
       [['zone', 3], ['pickaxeLevel', 6], ['itemsForged', 120], ['rocksBroken', 25]],
@@ -399,6 +432,7 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   {
     id: 'foreman',
     label: 'Contremaître',
+    stars: 0,
     objectives: tiered(6, [
       [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350]],
       [['pickaxeLevel', 12], ['itemsForged', 480], ['rocksBroken', 65]],
@@ -409,6 +443,7 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   {
     id: 'master',
     label: 'Maître des profondeurs',
+    stars: 0,
     objectives: tiered(8, [
       [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 900]],
       [['pickaxeLevel', 19], ['itemsForged', 1050], ['rocksBroken', 125]],
@@ -419,12 +454,25 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   {
     id: 'legend',
     label: 'Légende de la mine',
+    stars: 0,
     objectives: tiered(10, [
       [['zone', 10], ['pickaxeLevel', 22], ['itemsForged', 2600]],
       [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['rocksBroken', 165]],
       [['zone', 12], ['pickaxeLevel', 24], ['itemsForged', 4000], ['rocksBroken', 180]],
     ]),
     strikeBonus: 0.5,
+  },
+  ...LEGEND_STARS,
+  {
+    id: 'heart',
+    label: 'Légende du Cœur du monde',
+    stars: 0,
+    objectives: tiered(20, [
+      [['zone', 18], ['itemsForged', 24000], ['rocksBroken', 260]],
+      [['itemsForged', 26000], ['rocksBroken', 270]],
+      [['zone', 19], ['itemsForged', 28000], ['rocksBroken', 275]],
+    ]),
+    strikeBonus: 1,
   },
 ];
 

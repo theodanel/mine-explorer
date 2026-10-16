@@ -9,7 +9,7 @@
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <div class="miner-text">
         <h3>Petit mineur</h3>
-        <p class="form">{{ evolution.form().label }}</p>
+        <p class="form">{{ evolution.title() }}</p>
         <p class="zone">Zone {{ progression.zone() }}</p>
       </div>
     </article>
@@ -17,8 +17,8 @@
     <button type="button" class="card evolution" (click)="openEvolution()">
       <span class="evolution-text">
         <strong>Évolution</strong>
-        @if (evolution.next(); as next) {
-          <span>Vers {{ next.label }} · palier {{ evolution.tier() }} sur 3</span>
+        @if (evolution.nextTitle(); as next) {
+          <span>Vers {{ next }} · palier {{ evolution.tier() }} sur 3</span>
         } @else {
           <span>Forme ultime atteinte</span>
         }

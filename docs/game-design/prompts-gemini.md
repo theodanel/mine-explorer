@@ -252,6 +252,8 @@ Form: master of the depths, wise and powerful. Mithril helmet with a glowing cry
 Form: legendary mine guardian, majestic. White-gold divine armor with star engravings, a radiant halo-like lamp above the helmet, glowing golden runes on the scales, small luminous wings on the back, tail tip glowing like molten gold, heroic expression. Keep any glow close to the body (no green in the glow).
 ```
 
+**6. Légende du Cœur du monde (zone 19, forme finale)** : ses prompts complets (portrait, en pied, vidéo de frappe) sont dans [[etoiles-de-legende]].
+
 ### Conseils
 
 - Génère d'abord l'Apprenti en pied, puis donne cette image à Gemini comme référence pour toutes les autres : c'est le meilleur moyen de garder le même personnage.

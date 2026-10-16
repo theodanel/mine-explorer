@@ -301,6 +301,8 @@ export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> =
   foreman: { portraitUrl: 'assets/evolutions/contremaitre-portrait.webp', body: { kind: 'animated', strike: FOREMAN_STRIKE } },
   master: { portraitUrl: 'assets/evolutions/maitre-portrait.webp', body: { kind: 'animated', strike: MASTER_STRIKE } },
   legend: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'animated', strike: LEGEND_STRIKE } },
+  // En attendant ses images Gemini (prompt dans docs/game-design/etoiles-de-legende.md), elle reprend la Légende
+  heart: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'animated', strike: LEGEND_STRIKE } },
 };
 
 /** Fichiers du corps d'une forme à précharger, en plus de l'Apprenti qui cadence toujours les coups. */

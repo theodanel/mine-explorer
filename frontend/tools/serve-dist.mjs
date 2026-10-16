@@ -16,6 +16,8 @@ const TYPES = {
   '.ico': 'image/x-icon',
   '.ogg': 'audio/ogg',
   '.mp3': 'audio/mpeg',
+  '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
 };
 
 /** En-têtes de la section « /* » du fichier _headers. */

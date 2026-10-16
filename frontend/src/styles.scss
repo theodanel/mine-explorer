@@ -260,7 +260,9 @@ body {
 // (16/10/2026) d'un jeu cartoon aux tons pastel qu'il aime beaucoup : aplats sans reflet brillant, contour brun chaud,
 // coins très arrondis, panneaux crème semés de petits points, titres blancs cerclés de brun.
 :root {
-  // Titres, chiffres et boutons : une police ronde et épaisse. Texte courant : une police ronde et lisible.
+  // Titres, chiffres et boutons : Lilita One, ronde et épaisse. Texte courant : Nunito, ronde et lisible (choix de
+  // Théo, 16/10/2026). Toutes deux libres (OFL), servies par le site via @fontsource (angular.json) : la CSP
+  // « font-src 'self' » reste stricte.
   --font-display: 'Lilita One', ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', 'Roboto', system-ui, sans-serif;
   --font-body: 'Nunito', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
 
@@ -278,6 +280,12 @@ body {
   // Accents
   --gold: #f7c84a;
   --gold-dark: #c08a1c;
+}
+
+// Lilita One n'existe qu'en une graisse : le navigateur ne doit pas l'épaissir lui-même quand un style demande du gras,
+// le rendu baverait. Nunito, elle, a ses vraies graisses (400, 700, 800).
+.game {
+  font-synthesis-weight: none;
 }
 
 // Texte cerclé d'encre, comme les titres et les chiffres des jeux du genre : lisible sur n'importe quel décor

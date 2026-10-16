@@ -30,6 +30,10 @@
               }
             ],
             "styles": [
+              "@fontsource/lilita-one/latin-400.css",
+              "@fontsource/nunito/latin-400.css",
+              "@fontsource/nunito/latin-700.css",
+              "@fontsource/nunito/latin-800.css",
               "src/styles.scss"
             ]
           },

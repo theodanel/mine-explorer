@@ -1,15 +1,28 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
+import { CompanionAbility, CompanionId, COMPANIONS } from '../balance/companions';
 import { SpellDef, spellCooldownMs, spellDurationMs, SPELLS } from '../balance/skill-tree';
+import { abilityBuffs, abilityCooldownMs, abilityDurationMs, combineBuffs } from '../companions/companion-ability-rules';
 import { Artifacts } from '../artifacts/artifacts';
 import { Companions } from '../companions/companions';
 import { combineFamilies } from '../miner/miner-rules';
 import { CLOCK } from '../shared/clock';
 import { Skills } from '../skills/skills';
-import { activeBuffs, ActiveSpell, isActive, isReady, SpellTimers } from './spell-rules';
+import { activeBuffs, ActiveSpell, isActive, isReady, SpellTimer, SpellTimers } from './spell-rules';
 
 /** Assez fin pour que la jauge de recharge et la fin d'un effet se voient sans à-coup. */
 const TICK_MS = 200;
+
+/** Compétence du familier qui accompagne le mineur, dans la barre de sorts. */
+export interface CompanionSlotView {
+  readonly id: CompanionId;
+  readonly ability: CompanionAbility;
+  readonly stars: number;
+  readonly ready: boolean;
+  readonly active: boolean;
+  readonly cooldownLeft: number;
+  readonly cooldownLeftMs: number;
+}
 
 export interface SpellSlotView {
   readonly spell: SpellDef;
@@ -32,6 +45,8 @@ export class Spells {
   private readonly companions = inject(Companions);
   private readonly clock = inject(CLOCK);
   private readonly timers = signal<SpellTimers>({});
+  /** Minuteurs des compétences de familiers, un par familier : changer de familier ne remet pas à zéro. */
+  private readonly companionTimers = signal<Readonly<Partial<Record<CompanionId, SpellTimer>>>>({});
   private readonly now = signal(this.clock());
 
   /** Recharge, durée et explosions : les bonus de l'arbre et de l'artefact réunis. */
@@ -60,17 +75,62 @@ export class Spells {
     });
   });
 
-  readonly buffs = computed(() =>
-    activeBuffs(
+  /** Familier actif et son nombre d'étoiles, ou null. */
+  private readonly companion = computed(() => {
+    const id = this.companions.active();
+    const owned = id === null ? undefined : this.companions.owned()[id];
+    return id === null || owned === undefined ? null : { id, stars: owned.stars };
+  });
+
+  readonly companionSlot = computed<CompanionSlotView | null>(() => {
+    const companion = this.companion();
+    if (companion === null) {
+      return null;
+    }
+    const ability = COMPANIONS[companion.id].ability;
+    const timer = this.companionTimers()[companion.id];
+    const now = this.now();
+    const cooldownMs = abilityCooldownMs(ability, this.modifiers().cooldownPct);
+    const cooldownLeftMs = Math.max((timer?.readyAt ?? 0) - now, 0);
+    return {
+      ...companion,
+      ability,
+      ready: cooldownLeftMs === 0,
+      active: (timer?.activeUntil ?? 0) > now,
+      cooldownLeft: Math.min(cooldownLeftMs / cooldownMs, 1),
+      cooldownLeftMs,
+    };
+  });
+
+  readonly buffs = computed(() => {
+    const spells = activeBuffs(
       this.equippedSpells().filter((spell): spell is ActiveSpell => spell !== null),
       this.timers(),
       this.now(),
-    ),
-  );
+    );
+    const slot = this.companionSlot();
+    return slot?.active ? combineBuffs(spells, abilityBuffs(slot.ability)) : spells;
+  });
 
   constructor() {
     const timer = setInterval(() => this.now.set(this.clock()), TICK_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
+
+  /** Lance la compétence du familier si elle est prête, et la renvoie avec ses étoiles (null sinon). */
+  triggerCompanion(): { readonly ability: CompanionAbility; readonly stars: number } | null {
+    const companion = this.companion();
+    const now = this.clock();
+    if (companion === null || (this.companionTimers()[companion.id]?.readyAt ?? 0) > now) {
+      return null;
+    }
+    const ability = COMPANIONS[companion.id].ability;
+    const { cooldownPct, durationPct } = this.modifiers();
+    const readyAt = now + abilityCooldownMs(ability, cooldownPct);
+    const duration = abilityDurationMs(ability, companion.stars, durationPct);
+    this.companionTimers.update((timers) => ({ ...timers, [companion.id]: { readyAt, activeUntil: duration > 0 ? now + duration : 0 } }));
+    this.now.set(now);
+    return { ability, stars: companion.stars };
   }
 
   /** Lance le sort de l'emplacement s'il est prêt, et renvoie ce qui a été lancé (null sinon). */

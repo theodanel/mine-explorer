@@ -75,6 +75,7 @@ import { eventGain, nextEventDelayMs, rollEventId } from '../src/app/mine-events
 import { GALLERIES, type GalleryId } from '../src/app/balance/galleries.ts';
 import { rollOffer, scaleAmount } from '../src/app/galleries/gallery-rules.ts';
 import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId, zoneClearGivesEgg } from '../src/app/balance/companions.ts';
+import { abilityBlastMultiplier, abilityBuffs, abilityCooldownMs, abilityDurationMs, combineBuffs } from '../src/app/companions/companion-ability-rules.ts';
 import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
 import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
@@ -323,6 +324,9 @@ let workshop: WorkshopLevels = {};
 let goldWorkshop = 0;
 /** Sorts équipés et leurs minuteurs, en secondes de simulation. */
 let spellSlots: { spell: SpellId; readyAt: number; activeUntil: number }[] = [];
+/** Compétence du familier actif, lancée en automatique comme les sorts. */
+const companionAbilityTimer = { readyAt: 0, activeUntil: 0 };
+let abilityDamage = 0;
 let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
@@ -371,6 +375,10 @@ function buffsAt(now: number): SpellBuffs {
     if (effect.kind === 'crit') buffs = { ...buffs, guaranteedCrit: true };
     if (effect.kind === 'gold') buffs = { ...buffs, goldMultiplier: buffs.goldMultiplier * effect.multiplier };
     if (effect.kind === 'shard') buffs = { ...buffs, shardChance: buffs.shardChance + shardEchoChance(SPELLS[slot.spell], spellRank(ranks, slot.spell)) };
+  }
+  const active = companions.active;
+  if (withCompanions && active !== null && now < companionAbilityTimer.activeUntil) {
+    buffs = combineBuffs(buffs, abilityBuffs(COMPANIONS[active].ability));
   }
   return buffs;
 }
@@ -748,7 +756,23 @@ function castReadySpells(now: number): void {
       slot.activeUntil = now + spellDurationMs(spell, rank, profileNow.durationPct) / 1000;
     }
   }
+  castCompanionAbility(now);
   profileNow = profileAt(now);
+}
+
+function castCompanionAbility(now: number): void {
+  const active = companions.active;
+  if (!withCompanions || active === null || now < companionAbilityTimer.readyAt) return;
+  const ability = COMPANIONS[active].ability;
+  const stars = companions.owned[active]?.stars ?? 1;
+  companionAbilityTimer.readyAt = now + abilityCooldownMs(ability, profileNow.cooldownPct) / 1000;
+  if (ability.effect.kind === 'blast') {
+    const damage = Math.round(gear.strikePower * (1 + passiveBonuses(ranks).strikePct) * abilityBlastMultiplier(ability, stars, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
+    abilityDamage += damage;
+    dealDamage(now, damage);
+  } else {
+    companionAbilityTimer.activeUntil = now + abilityDurationMs(ability, stars, profileNow.durationPct) / 1000;
+  }
 }
 
 function strike(now: number, interval: number): void {
@@ -819,6 +843,8 @@ for (let day = 0; day < days; day++) {
       slot.readyAt = Math.min(slot.readyAt, start);
       slot.activeUntil = 0;
     }
+    companionAbilityTimer.readyAt = Math.min(companionAbilityTimer.readyAt, start);
+    companionAbilityTimer.activeUntil = 0;
     let now = start;
     let nextDecision = now;
     // Le compte à rebours des événements ne tourne qu'en jeu : il repart à chaque session
@@ -876,7 +902,7 @@ if (withNewSystems) {
   const gearOnly = minerProfile(gear, [NO_BONUSES], NO_BUFFS);
   console.log(
     `Apport final : arbre + artefact ×${(powerOf(finalStats) / powerOf(gearOnly.stats)).toFixed(2)} de Puissance, ` +
-      `explosions ${pct(blastDamage / totalDamage)} des dégâts, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
+      `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefact porté ${artifacts.equipped ?? 'aucun'} (niv. ${artifacts.equipped ? artifacts.owned[artifacts.equipped] : 0}), ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );

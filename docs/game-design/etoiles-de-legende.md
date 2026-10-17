@@ -47,7 +47,7 @@ Les gardiens des zones 13 à 20 tombent en 7 à 28 s : ils restent un vrai comba
 
 ## Prompts Gemini de la Légende du Cœur du monde
 
-Même méthode que les autres formes (voir [[prompts-gemini]]) : une image par message, et `art-source/evolutions/legende-pied.png` jointe comme référence, pour garder le même personnage. Dépose les résultats dans `art-source/evolutions/` (`coeur-portrait.png`, `coeur-pied.png`) et la vidéo dans `art-source/animations/coeur-frappe.mp4`. Ensuite, `decouper-frappe.py` fabrique l'animation, et `EVOLUTION_VISUALS.heart` dans `loading/game-assets.ts` pointe vers les nouveaux fichiers.
+Même méthode que les autres formes (voir [[prompts-gemini]]) : une image par message, et `art-source/evolutions/legende-pied.png` jointe comme référence, pour garder le même personnage. Dépose les résultats dans `art-source/evolutions/` (`coeur-portrait.png`, `coeur-pied.jpg`) et la vidéo dans `art-source/animations/coeur-frappe.mp4`. Ensuite, `decouper-frappe.py` fabrique l'animation, et `EVOLUTION_VISUALS.heart` dans `loading/game-assets.ts` pointe vers les nouveaux fichiers.
 
 ### Description commune (à coller en tête du portrait et de l'image en pied)
 

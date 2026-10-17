@@ -1,6 +1,6 @@
 """Prépare les images de la Légende du Cœur du monde et des étoiles de rang (sources Gemini sur fond vert #00FF00).
 
-  evolutions/coeur-pied.png -> frontend/public/assets/evolutions/coeur.webp (corps fixe, en attendant l'animation)
+  evolutions/coeur-pied.jpg -> frontend/public/assets/evolutions/coeur.webp (corps fixe, en attendant l'animation)
                             -> art-source/animations/coeur-depart-16x9.png (image de départ de la vidéo de frappe)
   evolutions/coeur-portrait.jpg -> frontend/public/assets/evolutions/coeur-portrait.webp (tête et plastron, 160 px)
   ui/etoiles.png            -> frontend/public/assets/ui/etoile-pleine.webp et etoile-vide.webp
@@ -53,7 +53,7 @@ def fit_height(image: Image.Image, height: int) -> Image.Image:
 
 
 def prepare_heart() -> None:
-    keyed = key_out_green(Image.open(ART / "evolutions" / "coeur-pied.png"))
+    keyed = key_out_green(Image.open(ART / "evolutions" / "coeur-pied.jpg"))
     body = trim(keyed)
     fit_height(body, BODY_HEIGHT).save(ASSETS / "evolutions" / "coeur.webp", quality=QUALITY)
     start = Image.new("RGBA", START_SIZE, (*GREEN, 255))

@@ -1,8 +1,8 @@
 """Prépare les images de la Légende du Cœur du monde et des étoiles de rang (sources Gemini sur fond vert #00FF00).
 
   evolutions/coeur-pied.png -> frontend/public/assets/evolutions/coeur.webp (corps fixe, en attendant l'animation)
-                            -> frontend/public/assets/evolutions/coeur-portrait.webp (tête et épaules, 160 px)
                             -> art-source/animations/coeur-depart-16x9.png (image de départ de la vidéo de frappe)
+  evolutions/coeur-portrait.jpg -> frontend/public/assets/evolutions/coeur-portrait.webp (tête et plastron, 160 px)
   ui/etoiles.png            -> frontend/public/assets/ui/etoile-pleine.webp et etoile-vide.webp
 
 Lancer depuis la racine du dépôt : python art-source/evolutions/preparer-coeur.py
@@ -19,8 +19,8 @@ GREEN_TRANSPARENT = 110
 QUALITY = 90
 BODY_HEIGHT = 512
 PORTRAIT_SIZE = 160
-# Cadre du portrait dans coeur-pied.png (2048 × 2048) : cornes, casque et cœur serti dans le plastron
-PORTRAIT_BOX = (470, 150, 1470, 1150)
+# Cadre du portrait dans coeur-portrait.jpg (2048 × 2048) : cornes, casque et cœur serti dans le plastron
+PORTRAIT_BOX = (250, 120, 1690, 1560)
 STAR_SIZE = 128
 # Image de départ de la vidéo : 16:9, le personnage n'occupe que 62 % de la hauteur, pour que Gemini
 # garde la tête et les pieds dans le cadre pendant tout le coup
@@ -56,13 +56,17 @@ def prepare_heart() -> None:
     keyed = key_out_green(Image.open(ART / "evolutions" / "coeur-pied.png"))
     body = trim(keyed)
     fit_height(body, BODY_HEIGHT).save(ASSETS / "evolutions" / "coeur.webp", quality=QUALITY)
-    keyed.crop(PORTRAIT_BOX).resize((PORTRAIT_SIZE, PORTRAIT_SIZE), Image.LANCZOS).save(
-        ASSETS / "evolutions" / "coeur-portrait.webp", quality=QUALITY
-    )
     start = Image.new("RGBA", START_SIZE, (*GREEN, 255))
     small = fit_height(body, round(START_SIZE[1] * START_BODY_SHARE))
     start.alpha_composite(small, ((START_SIZE[0] - small.width) // 2, (START_SIZE[1] - small.height) // 2))
     start.convert("RGB").save(ART / "animations" / "coeur-depart-16x9.png")
+
+
+def prepare_portrait() -> None:
+    portrait = key_out_green(Image.open(ART / "evolutions" / "coeur-portrait.jpg")).crop(PORTRAIT_BOX)
+    portrait.resize((PORTRAIT_SIZE, PORTRAIT_SIZE), Image.LANCZOS).save(
+        ASSETS / "evolutions" / "coeur-portrait.webp", quality=QUALITY
+    )
 
 
 def prepare_stars() -> None:
@@ -76,6 +80,7 @@ def prepare_stars() -> None:
 
 if __name__ == "__main__":
     prepare_heart()
+    prepare_portrait()
     prepare_stars()
     for path in ("evolutions/coeur.webp", "evolutions/coeur-portrait.webp", "ui/etoile-pleine.webp", "ui/etoile-vide.webp"):
         with Image.open(ASSETS / path) as result:

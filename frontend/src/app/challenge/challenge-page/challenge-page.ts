@@ -9,7 +9,7 @@ import { formatDuration } from '../../shared/format-duration';
 import { Challenge } from '../challenge';
 import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
-const SHARD_ICON = 'assets/ui/geode-shard.png';
+const SHARD_ICON = 'assets/ui/geode-shard.webp';
 
 /** Texte et icône d'une récompense de palier. */
 function describeReward(reward: ChallengeReward): { readonly label: string; readonly icon: string } {

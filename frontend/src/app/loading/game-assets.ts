@@ -109,42 +109,42 @@ export function rockUrl(zone: number): string {
 
 /** Images de l'interface, préchargées pour éviter qu'elles n'apparaissent une à une au lancement. */
 export const UI_IMAGES: readonly string[] = [
-  'assets/ui/coin.png',
-  'assets/ui/geode-shard.png',
-  'assets/ui/forge-icon.png',
+  'assets/ui/coin.webp',
+  'assets/ui/geode-shard.webp',
+  'assets/ui/forge-icon.webp',
   'assets/ui/forge-anvil.webp',
-  'assets/ui/miner-portrait.png',
-  'assets/ui/helmet.png',
-  'assets/ui/pickaxe.png',
-  'assets/ui/backpack.png',
-  'assets/ui/gloves.png',
-  'assets/ui/boots.png',
+  'assets/ui/miner-portrait.webp',
+  'assets/ui/helmet.webp',
+  'assets/ui/pickaxe.webp',
+  'assets/ui/backpack.webp',
+  'assets/ui/gloves.webp',
+  'assets/ui/boots.webp',
 ];
 
 /** Icônes peintes des sorts, des compétences passives, des artefacts et de la barre de menus (planches Gemini découpées). */
 export function spellIconUrl(spell: SpellId): string {
-  return `assets/ui/spells/${spell}.png`;
+  return `assets/ui/spells/${spell}.webp`;
 }
 
 export function skillIconUrl(nodeId: string): string {
   const node = SKILL_NODES.find((candidate) => candidate.id === nodeId);
-  return node?.kind === 'spell' ? spellIconUrl(node.spell) : `assets/ui/skills/${nodeId}.png`;
+  return node?.kind === 'spell' ? spellIconUrl(node.spell) : `assets/ui/skills/${nodeId}.webp`;
 }
 
 export function artifactIconUrl(artifact: ArtifactId): string {
-  return `assets/ui/artifacts/${artifact}.png`;
+  return `assets/ui/artifacts/${artifact}.webp`;
 }
 
 /** Icône peinte d'un matériau : minerais, paliers de forge, filtres. */
 export function materialIconUrl(tier: TierId): string {
-  return `assets/ui/materials/${tier}.png`;
+  return `assets/ui/materials/${tier}.webp`;
 }
 
 export const MENU_ICONS = {
-  skills: 'assets/ui/menu/skills.png',
-  artifacts: 'assets/ui/menu/artifacts.png',
-  companions: 'assets/ui/menu/companions.png',
-  workshop: 'assets/ui/menu/workshop.png',
+  skills: 'assets/ui/menu/skills.webp',
+  artifacts: 'assets/ui/menu/artifacts.webp',
+  companions: 'assets/ui/menu/companions.webp',
+  workshop: 'assets/ui/menu/workshop.webp',
   adventures: 'assets/ui/aventures/aventures.webp',
 } as const;
 
@@ -171,11 +171,11 @@ export function pageBackground(url: string): string {
 /** Préchargées avec l'interface : la barre de menus et les sorts s'affichent sans clignoter. */
 /** Visuels des événements de mine (planche 6 et rat voleur). La géode a 4 états, du plus fermé au plus ouvert. */
 export const EVENT_IMAGES = {
-  geode: ['assets/events/geode-1.png', 'assets/events/geode-2.png', 'assets/events/geode-3.png', 'assets/events/geode-4.png'],
-  chestClosed: 'assets/events/chest-closed.png',
-  chestOpen: 'assets/events/chest-open.png',
-  crystal: 'assets/events/crystal.png',
-  coinSack: 'assets/events/coin-sack.png',
+  geode: ['assets/events/geode-1.webp', 'assets/events/geode-2.webp', 'assets/events/geode-3.webp', 'assets/events/geode-4.webp'],
+  chestClosed: 'assets/events/chest-closed.webp',
+  chestOpen: 'assets/events/chest-open.webp',
+  crystal: 'assets/events/crystal.webp',
+  coinSack: 'assets/events/coin-sack.webp',
   /** Bande de 20 images de 240 × 180 px : la course du rat en boucle. */
   ratStrip: 'assets/events/rat-thief.webp',
 } as const;
@@ -213,9 +213,9 @@ export const TORCHLIGHT_IMAGES = {
   miner: 'assets/evolutions/legende-portrait.webp',
   monster: 'assets/ui/aventures/monstre.webp',
   wall: 'assets/rocks/zone4.webp',
-  stones: 'assets/ui/refonte/awakening-stone.png',
+  stones: 'assets/ui/refonte/awakening-stone.webp',
   chest: EVENT_IMAGES.coinSack,
-  oil: 'assets/ui/artifacts/minersFlask.png',
+  oil: 'assets/ui/artifacts/minersFlask.webp',
   treasure: EVENT_IMAGES.chestClosed,
   treasureOpen: EVENT_IMAGES.chestOpen,
 } as const;
@@ -229,22 +229,22 @@ export const MINEHUNT_IMAGES = {
   /** L'éboulement qui tombe et emporte la cagnotte. */
   caveIn: 'assets/ui/aventures/eboulement.webp',
   /** Les étais, en bois de mine. */
-  prop: 'assets/ui/materials/wood.png',
+  prop: 'assets/ui/materials/wood.webp',
 } as const;
 
 /** Vignette de chaque galerie des embranchements (planche 7). */
 export function galleryIconUrl(id: GalleryId): string {
-  return `assets/galleries/${id}.png`;
+  return `assets/galleries/${id}.webp`;
 }
 
 /** Portrait de chaque compagnon (planche 8). */
 export function companionIconUrl(id: CompanionId): string {
-  return `assets/companions/${id}.png`;
+  return `assets/companions/${id}.webp`;
 }
 
 /** Œuf de chaque rareté (planche 9). */
 export function eggIconUrl(rarity: Rarity): string {
-  return `assets/companions/eggs/${rarity}.png`;
+  return `assets/companions/eggs/${rarity}.webp`;
 }
 
 /**
@@ -261,10 +261,10 @@ export const LOTTERY_ICON = 'assets/ui/refonte/lottery.webp';
 
 /** Icônes de la refonte (planche 10) : pierre d'éveil, trophée du Défi, parchemin des stats, et la bannière du Défi. */
 export const REFONTE_IMAGES = {
-  awakeningStone: 'assets/ui/refonte/awakening-stone.png',
-  challengeTrophy: 'assets/ui/refonte/challenge-trophy.png',
-  statsScroll: 'assets/ui/refonte/stats-scroll.png',
-  challengeBanner: 'assets/ui/refonte/challenge-banner.png',
+  awakeningStone: 'assets/ui/refonte/awakening-stone.webp',
+  challengeTrophy: 'assets/ui/refonte/challenge-trophy.webp',
+  statsScroll: 'assets/ui/refonte/stats-scroll.webp',
+  challengeBanner: 'assets/ui/refonte/challenge-banner.webp',
 } as const;
 
 export const ICON_IMAGES: readonly string[] = [
@@ -296,7 +296,7 @@ interface EvolutionVisual {
 }
 
 export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> = {
-  apprentice: { portraitUrl: 'assets/ui/miner-portrait.png', body: { kind: 'animated', strike: APPRENTICE_STRIKE } },
+  apprentice: { portraitUrl: 'assets/ui/miner-portrait.webp', body: { kind: 'animated', strike: APPRENTICE_STRIKE } },
   miner: { portraitUrl: 'assets/evolutions/mineur-portrait.webp', body: { kind: 'animated', strike: MINER_STRIKE } },
   foreman: { portraitUrl: 'assets/evolutions/contremaitre-portrait.webp', body: { kind: 'animated', strike: FOREMAN_STRIKE } },
   master: { portraitUrl: 'assets/evolutions/maitre-portrait.webp', body: { kind: 'animated', strike: MASTER_STRIKE } },
@@ -305,23 +305,34 @@ export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> =
   heart: { portraitUrl: 'assets/evolutions/coeur-portrait.webp', body: { kind: 'static', url: 'assets/evolutions/coeur.webp' } },
 };
 
-/** Fichiers du corps d'une forme à précharger, en plus de l'Apprenti qui cadence toujours les coups. */
+/**
+ * Animation qui cadence les coups au lancement : celle de la forme, ou celle de l'Apprenti (rendu invisible) sous une
+ * forme en image fixe.
+ */
+export function cadenceStrike(form: EvolutionId): StrikeAnimation {
+  const { body } = EVOLUTION_VISUALS[form];
+  return body.kind === 'animated' ? body.strike : APPRENTICE_STRIKE;
+}
+
+/**
+ * Fichiers du corps d'une forme à précharger. L'Apprenti (0,9 Mo) n'est chargé que s'il cadence une forme en image
+ * fixe : un joueur évolué ne le télécharge plus.
+ */
 export function bodyAssetUrls(form: EvolutionId): readonly string[] {
   const { body } = EVOLUTION_VISUALS[form];
-  const url = body.kind === 'animated' ? body.strike.atlasUrl : body.url;
-  return url === APPRENTICE_STRIKE.atlasUrl ? [url] : [APPRENTICE_STRIKE.atlasUrl, url];
+  return body.kind === 'animated' ? [body.strike.atlasUrl] : [APPRENTICE_STRIKE.atlasUrl, body.url];
 }
 
 /** Icône de la pioche selon son matériau. Bois et Fer n'ont pas encore la leur : l'icône générique les remplace. */
 const PICKAXE_ICONS: Readonly<Partial<Record<TierId, string>>> = {
-  stone: 'assets/ui/pickaxes/pierre.png',
-  copper: 'assets/ui/pickaxes/cuivre.png',
-  steel: 'assets/ui/pickaxes/acier.png',
-  gold: 'assets/ui/pickaxes/or.png',
-  mithril: 'assets/ui/pickaxes/mithril.png',
-  crystal: 'assets/ui/pickaxes/cristal.png',
-  magma: 'assets/ui/pickaxes/magma.png',
-  divine: 'assets/ui/pickaxes/divin.png',
+  stone: 'assets/ui/pickaxes/pierre.webp',
+  copper: 'assets/ui/pickaxes/cuivre.webp',
+  steel: 'assets/ui/pickaxes/acier.webp',
+  gold: 'assets/ui/pickaxes/or.webp',
+  mithril: 'assets/ui/pickaxes/mithril.webp',
+  crystal: 'assets/ui/pickaxes/cristal.webp',
+  magma: 'assets/ui/pickaxes/magma.webp',
+  divine: 'assets/ui/pickaxes/divin.webp',
 };
 
 /** Icône d'un objet : celle de son matériau pour une pioche, sinon celle de l'emplacement. */

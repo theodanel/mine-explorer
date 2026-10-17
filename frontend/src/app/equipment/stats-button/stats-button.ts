@@ -60,7 +60,7 @@ export class StatsDetails {
   imports: [StatsDetails],
   template: `
     <button type="button" class="stats-button" aria-label="Détails des stats" (click)="open.set(true)">
-      <img src="assets/ui/refonte/stats-scroll.png" alt="" width="160" height="160" />
+      <img src="assets/ui/refonte/stats-scroll.webp" alt="" width="160" height="160" />
       <span>Stats</span>
     </button>
     @if (open()) {

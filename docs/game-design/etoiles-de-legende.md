@@ -1,28 +1,31 @@
-# Étoiles de Légende et Légende du Cœur du monde
+# Légende du Cœur du monde et ses étoiles
 
-Demande de Théo (16/10/2026) : avec 20 zones et 5 rangs, la Légende arrivait vers la zone 12 et il ne restait plus rien à viser jusqu'à la zone 20. Choix retenu : des **étoiles de Légende**, puis une **forme finale**. Le prestige a été écarté : le jeu n'a ni la boucle courte ni les ressources pensées pour ça.
+Demande de Théo (16/10/2026) : avec 20 zones et 5 rangs, la Légende arrivait vers la zone 12 et il ne restait plus rien à viser jusqu'à la zone 20. Le prestige a été écarté : le jeu n'a ni la boucle courte ni les ressources pensées pour ça. Une première version (16/10) mettait cinq étoiles sur la Légende, puis la forme finale en zone 19 ; Théo l'a revue le 17/10 :
+
+- la **Légende de la mine** reste le rang 5 ;
+- la **Légende du Cœur du monde** arrive ensuite en 5 étoiles : ★ en zone 12, ★★ en 14, ★★★ en 16, ★★★★ en 18 et ★★★★★ en 20.
 
 ## Règles
 
-- Après la Légende de la mine viennent 5 étoiles (★ à ★★★★★), puis la **Légende du Cœur du monde**. Ce sont des rangs comme les autres : 3 paliers de missions, des éclats par mission, puis la promotion. L'écran d'évolution compte donc 10 rangs.
-- Les étoiles gardent le visuel de la Légende. Le mineur gagne un **halo doré** derrière lui, plus vif à chaque étoile (`mine-scene/miner-aura.ts`). La forme finale a un halo de lave, en attendant ses propres images (prompts plus bas).
-- Le titre affiche les étoiles : « Légende de la mine ★★★ ».
-- Les sauvegardes restent valables : la forme est rangée par son numéro, et les nouveaux rangs viennent après la Légende.
+- Chaque étoile est un rang comme les autres : 3 paliers de missions, des éclats par mission, puis la promotion. L'écran d'évolution compte 9 rangs.
+- Le titre affiche les étoiles : « Légende du Cœur du monde ★★★ ».
+- Un **halo de lave** brille derrière le mineur dès la première étoile, plus vif à chacune (`mine-scene/miner-aura.ts`). En attendant ses propres images (prompts plus bas), la forme reprend celles de la Légende.
+- Les sauvegardes restent valables : la forme est rangée par son numéro, la Légende garde le sien, et une sauvegarde de la première version au-delà du dernier rang garde le rang le plus haut.
 
 ## Objectifs (dernier palier)
 
 | Rang | Zone atteinte | Pioche | Objets forgés | Filons épuisés | Frappe |
 |---|---|---|---|---|---|
-| ★ | 13 | 25 | 7 500 | 190 | +50 % |
-| ★★ | 14 | 26 | 10 000 | 200 | +50 % |
-| ★★★ | 15 | 27 | 13 000 | 215 | +50 % |
-| ★★★★ | 16 | 28 | 16 500 | 230 | +50 % |
-| ★★★★★ | 17 | 30 | 21 000 | 245 | +50 % |
-| Légende du Cœur du monde | 19 | | 28 000 | 275 | +100 % |
+| ★ | 12 | 25 | 9 000 | 185 | +100 % |
+| ★★ | 14 | 26 | 13 000 | 200 | +100 % |
+| ★★★ | 16 | 28 | 18 000 | 230 | +100 % |
+| ★★★★ | 18 | 30 | 25 000 | 255 | +100 % |
+| ★★★★★ | 20 | 30 | 34 000 | 285 | +100 % |
 
-- **Jamais de blocage** : un objectif de zone demande d'**atteindre** la zone, pas de battre son gardien. L'étoile apporte justement la Frappe qui aide à le battre. La forme finale se gagne en zone 19, et son bonus sert à finir la zone 20.
+- **Jamais de blocage** : un objectif de zone demande d'**atteindre** la zone, pas de battre son gardien. L'étoile apporte justement la Frappe qui aide à le battre.
+- **+100 % par étoile** : à +75 %, le joueur régulier restait bloqué au gardien de la zone 19 et n'atteignait jamais la zone 20, donc jamais la cinquième étoile. Avec +100 %, la Frappe totale passe de ×5 (Légende) à ×162 (★★★★★).
 - **Objets forgés** : c'est l'horloge de la fin de partie, car ils montent d'environ 600 par jour même quand le joueur piétine. Les filons, eux, suivent la zone atteinte.
-- Chaque étoile rapporte 12 éclats par mission, la forme finale 20.
+- Les missions rapportent 12 éclats à la première étoile, puis 2 de plus à chaque étoile (20 à la cinquième).
 
 ## Ce que dit le simulateur (régulier, 3 tirages, 100 jours)
 
@@ -33,13 +36,13 @@ Après :
 | Étape | Jour |
 |---|---|
 | Légende | 13,4 |
-| ★ / ★★ / ★★★ | 16 / 20 / 25 |
-| ★★★★ / ★★★★★ | 30,5 / 37,5 |
-| Zone 19 | 51,7 |
-| Légende du Cœur du monde | 62,4 |
-| Zone 20 | 78,6 |
+| ★ / ★★ / ★★★ | 18,4 / 25 / 32,7 |
+| ★★★★ | 43,7 |
+| Zone 19 | 46,5 |
+| Zone 20 et ★★★★★ | 66,6 |
+| Zone 20 terminée | avant le jour 100 |
 
-Les gardiens des zones 13 à 19 tombent en 5 à 28 s : ils restent un vrai combat, sans mur. Au jour 100, le joueur régulier est en zone 20, filon 7 ou 8 sur 15 (un filon prend alors environ 1 h 50). La zone 20 reste la très longue fin de partie.
+Les gardiens des zones 13 à 20 tombent en 7 à 28 s : ils restent un vrai combat, sans mur. La zone 20 est la longue fin de partie (un filon y prend environ 1 h 20).
 
 ## Prompts Gemini de la Légende du Cœur du monde
 

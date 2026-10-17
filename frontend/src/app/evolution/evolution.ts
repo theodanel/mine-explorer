@@ -96,7 +96,11 @@ function loadFormIndex(): number {
     return 0;
   }
   const index = Number(raw);
-  if (!Number.isSafeInteger(index) || index < 0 || index >= EVOLUTION_FORMS.length) {
+  // Une sauvegarde au-delà du dernier rang (avant le 17/10/2026, il y en avait 11) garde le rang le plus haut
+  if (Number.isSafeInteger(index) && index >= EVOLUTION_FORMS.length) {
+    return EVOLUTION_FORMS.length - 1;
+  }
+  if (!Number.isSafeInteger(index) || index < 0) {
     console.warn(`Forme d'évolution invalide ignorée : "${raw}"`);
     return 0;
   }

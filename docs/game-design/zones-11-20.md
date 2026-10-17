@@ -190,4 +190,4 @@ Simulation du 14/10/2026 (`tools/simulate.mts`, 200 jours) :
 
 1. ~~Brancher les décors~~ : fait le 14/10/2026 pour les zones 11 à 13 et 15 à 20 (`zoneBackground` et `rockUrl` dans `loading/game-assets.ts`, sol mesuré image par image). Le décor de la **zone 14 (obsidienne)** est arrivé le 14/10/2026 ; son **rocher manque encore** et reprend celui du magma (zone 9). Une fois `art-source/rocks/zone14.png` déposé, lancer `python art-source/rocks/preparer-zones.py 14` et retirer la zone 14 de `STAND_IN_ROCK_ZONE`.
 2. **Minerai** : à partir de la zone 10, toutes les zones donnent du Divin (`zoneMaterial`). De nouveaux minerais voudraient dire de nouveaux paliers d'équipement (cadres, chances de forge, Atelier) : gros chantier, à décider.
-3. ~~**Fin de partie**~~ : réglé le 16/10/2026 par les étoiles de Légende et la Légende du Cœur du monde (voir [[etoiles-de-legende]]) ; le joueur régulier atteint la zone 20 vers le jour 79.
+3. ~~**Fin de partie**~~ : réglé le 17/10/2026 par les cinq étoiles de la Légende du Cœur du monde (voir [[etoiles-de-legende]]) ; le joueur régulier atteint la zone 20 vers le jour 67.

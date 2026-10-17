@@ -20,3 +20,11 @@ Mesuré au lancement d'une nouvelle partie (images et sons préchargés par l'é
 - Les fichiers du build Angular (`*.js`, `*.css`, polices dans `media/`) portent une empreinte de leur contenu : cache d'un an, `immutable`.
 - Les images et sons de `assets/` gardent leur nom quand on les remplace : cache d'un jour puis revérification (`stale-while-revalidate` une semaine). Avant, ils étaient `immutable` 30 jours : un visuel refait pouvait rester invisible un mois.
 - Mêmes règles dans `public/_headers` (Cloudflare Pages) et `frontend/nginx.conf` (Docker, Coolify).
+
+## Fluidité : le son hors du fil principal
+
+Les bruitages et les musiques du jeu sont calculés en code (aucun fichier audio). Ce calcul figeait le jeu : environ 0,13 s pour les 12 bruitages au premier toucher et 0,13 s par musique de zone sur ordinateur, plusieurs fois plus sur téléphone.
+
+- Les deux passent maintenant par un Web Worker (`audio/audio.worker.ts`, piloté par `audio/audio-renderer.ts`) : le jeu continue de tourner pendant le calcul, et le tampon revient sans copie.
+- Mesuré dans Chrome au premier toucher (tâche longue la plus lourde du fil principal) : 668 ms → 60 à 75 ms. Le changement de zone ne fige plus du tout.
+- Sans Worker (vieux navigateur, tests), le calcul se fait sur le fil principal comme avant. La CSP autorise déjà `worker-src 'self'`.

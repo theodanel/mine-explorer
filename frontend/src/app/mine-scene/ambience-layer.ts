@@ -6,6 +6,7 @@ import {
   AmbiencePreset,
   Particle,
   Passer,
+  PASSERS_ENABLED,
   passerDelay,
   spawnParticle,
   stepParticle,
@@ -60,7 +61,7 @@ export class AmbienceLayer {
     this.particles.removeChildren().forEach((child) => child.destroy());
     this.drawn = Array.from({ length: preset.count }, () => this.draw(spawnParticle(preset, this.random, true), preset));
     this.endCrossing();
-    this.passer = zonePasser(zone);
+    this.passer = PASSERS_ENABLED ? zonePasser(zone) : null;
     this.secondsToPasser = passerDelay(this.random, true);
   }
 

@@ -218,6 +218,12 @@ export function zonePasser(zone: number): Passer {
   return PASSERS[ZONE_PASSERS[index]];
 }
 
+/**
+ * Passages coupés le 17/10/2026 : en image fixe qui glisse, les créatures paraissaient raides et collées sur le décor
+ * (retour de Théo). Ils reviendront avec des animations en boucle (ailes qui battent, pas de marche), faites en vidéo.
+ */
+export const PASSERS_ENABLED = false;
+
 /** Une silhouette passe toutes les 2 à 4 minutes ; la première un peu plus tôt, pour qu'on la remarque. */
 export const PASSER_DELAY_SECONDS: readonly [min: number, max: number] = [120, 240];
 export const FIRST_PASSER_DELAY_SECONDS: readonly [min: number, max: number] = [40, 80];

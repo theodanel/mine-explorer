@@ -1,5 +1,8 @@
 <main class="game">
-  <app-mine-scene class="scene" />
+  <!-- PixiJS (0,6 Mo) arrive dans son propre fichier, en parallèle de l'écran de chargement -->
+  @defer (on immediate) {
+    <app-mine-scene class="scene" />
+  }
   <div class="bottom-shade" aria-hidden="true"></div>
 
   <header class="top-bar">

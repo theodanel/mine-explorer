@@ -9,6 +9,7 @@ import { Miner } from '../miner/miner';
 import { Evolution } from '../evolution/evolution';
 import { APPRENTICE_STRIKE, cadenceStrike, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
 import { Mining, StrikeOutcome } from '../mining/mining';
+import { Navigation } from '../navigation/navigation';
 import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
 import { RANDOM } from '../shared/random';
@@ -50,6 +51,8 @@ const HEALTH_BAR_GAP = 14;
 const PERCENT = 100;
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 const MS_PER_SECOND = 1000;
+/** Sous un menu, la mine ne se voit presque plus : 30 images par seconde suffisent et ménagent la batterie. */
+const COVERED_MAX_FPS = 30;
 
 @Component({
   selector: 'app-mine-scene',
@@ -62,6 +65,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly mining = inject(Mining);
   private readonly progression = inject(Progression);
   private readonly evolution = inject(Evolution);
+  private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   private readonly app = new Application();
   /** Mineur animé : il cadence les coups, même invisible derrière une image fixe. */
@@ -127,7 +131,14 @@ export class MineScene implements AfterViewInit, OnDestroy {
         void this.showForm(form);
       }
     });
-    // Étoiles de Légende et forme finale : le halo derrière le mineur
+    // Sous un menu, la scène tourne au ralenti ; les coups gardent leur cadence (animation au temps écoulé)
+    effect(() => {
+      const covered = this.navigation.page() !== 'mine';
+      if (this.initialized) {
+        this.app.ticker.maxFPS = covered ? COVERED_MAX_FPS : 0;
+      }
+    });
+    // Étoiles du Cœur du monde : le halo derrière le mineur
     effect(() => {
       const look = auraLook(this.evolution.form());
       this.aura?.show(look);

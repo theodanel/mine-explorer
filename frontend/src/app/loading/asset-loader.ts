@@ -1,5 +1,4 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Assets } from 'pixi.js';
 
 import { Evolution } from '../evolution/evolution';
 import { Progression } from '../progression/progression';
@@ -31,6 +30,8 @@ export class AssetLoader {
   }
 
   private async loadAll(): Promise<void> {
+    // PixiJS n'est plus dans le fichier principal : il se charge ici, en même temps que les images
+    const { Assets } = await import('pixi.js');
     const tasks = [
       ...this.bodyUrls.map((url) => Assets.load(url)),
       Assets.load(zoneBackground(this.progression.playingZone()).url),

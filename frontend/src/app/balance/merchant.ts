@@ -1,15 +1,16 @@
-// Équilibrage du Marchand nain : 5 jours de visite par mois, des offres à marchander. Voir docs/game-design/marchand-nain.md.
+// Équilibrage du Marchand nain : 10 jours de visite par mois, des offres à marchander. Voir docs/game-design/marchand-nain.md.
 import type { Rarity } from './skill-tree';
 import type { EvolutionId } from './balance';
 
 /** Le marchand sert à partir du Contremaître ; avant, ses visites passent sans qu'on les remarque. */
 export const MERCHANT_UNLOCK_FORM: EvolutionId = 'foreman';
 
-/** Il reste 5 jours d'affilée, à partir d'un jour du mois tiré du calendrier (entre le 3 et le 22). */
-export const VISIT_DAYS = 5;
-export const FIRST_POSSIBLE_DAY = 3;
-export const POSSIBLE_START_DAYS = 20;
-/** Les indices commencent 5 jours avant son arrivée. */
+/**
+ * Il passe 10 jours par mois, tirés au hasard dans le mois et pas d'affilée (choix de Théo, 17/10/2026 ; c'était
+ * 5 jours d'affilée). Les jours se tirent du calendrier : les mêmes pour tous les joueurs.
+ */
+export const VISIT_DAYS = 10;
+/** Les indices commencent jusqu'à 5 jours avant son arrivée (moins quand il est passé peu avant). */
 export const HINT_DAYS = 5;
 
 /** Trois offres par jour de visite. Leur prix se compte en filons d'or de la zone du joueur. */

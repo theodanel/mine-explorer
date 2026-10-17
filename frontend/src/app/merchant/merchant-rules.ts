@@ -2,61 +2,68 @@
 import {
   ATTEMPTS_PER_OFFER,
   BLUFF,
-  FIRST_POSSIBLE_DAY,
   HAGGLE,
   HINT_DAYS,
   MERCHANT_CATALOGUE,
   MerchantOffer,
   MOOD_AFTER_PURCHASE,
   OFFERS_PER_DAY,
-  POSSIBLE_START_DAYS,
   START_MOOD,
   VISIT_DAYS,
 } from '../balance/merchant';
 import { seededRandom } from '../lottery/lottery-rules';
 
-const DAY_MS = 86_400_000;
+/** Assez loin pour trouver à coup sûr sa prochaine visite : il passe tous les mois. */
+const SEARCH_DAYS = 62;
 
-/** Premier jour de visite du mois (1 à 31), le même pour tous les joueurs : il se tire du calendrier. */
-export function visitStartDay(year: number, month: number): number {
-  return FIRST_POSSIBLE_DAY + Math.floor(seededRandom(`marchand-${year}-${month}`)() * POSSIBLE_START_DAYS);
+/**
+ * Jours de visite du mois (1 à 31), triés : 10 jours tirés au hasard parmi ceux du mois, sans qu'il y en ait
+ * forcément d'affilée. Les mêmes pour tous les joueurs : ils se tirent du calendrier.
+ */
+export function visitDays(year: number, month: number): readonly number[] {
+  const random = seededRandom(`marchand-${year}-${month}`);
+  const days = Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, index) => index + 1);
+  // Mélange de Fisher-Yates, puis les 10 premiers
+  for (let index = days.length - 1; index > 0; index--) {
+    const other = Math.floor(random() * (index + 1));
+    [days[index], days[other]] = [days[other], days[index]];
+  }
+  return days.slice(0, VISIT_DAYS).sort((a, b) => a - b);
+}
+
+function isVisitDay(day: Date): boolean {
+  return visitDays(day.getFullYear(), day.getMonth()).includes(day.getDate());
 }
 
 export type MerchantPhase =
   | { readonly kind: 'away' }
   /** Il approche : les indices montent à mesure que le jour J se rapproche. */
   | { readonly kind: 'coming'; readonly daysLeft: number }
-  /** Il est là, jour 1 à 5 de sa visite. */
-  | { readonly kind: 'here'; readonly day: number; readonly lastDay: boolean };
+  /** Il est là ; lastDay : il repart ce soir et ne revient pas demain. */
+  | { readonly kind: 'here'; readonly lastDay: boolean };
 
 /** Où en est le marchand, à cette date (heure du joueur). */
 export function merchantPhase(now: Date): MerchantPhase {
-  const today = startOfDay(now);
-  // Sa visite de ce mois-ci, ou celle du mois prochain si les indices ont déjà commencé
-  for (const offset of [0, 1, -1]) {
-    const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    const start = new Date(first.getFullYear(), first.getMonth(), visitStartDay(first.getFullYear(), first.getMonth()));
-    // Arrondi : un jour de changement d'heure dure 23 ou 25 h
-    const daysFromStart = Math.round((today.getTime() - start.getTime()) / DAY_MS);
-    if (daysFromStart >= 0 && daysFromStart < VISIT_DAYS) {
-      return { kind: 'here', day: daysFromStart + 1, lastDay: daysFromStart === VISIT_DAYS - 1 };
-    }
-    if (daysFromStart < 0 && -daysFromStart <= HINT_DAYS) {
-      return { kind: 'coming', daysLeft: -daysFromStart };
-    }
+  if (isVisitDay(now)) {
+    return { kind: 'here', lastDay: !isVisitDay(addDays(now, 1)) };
   }
-  return { kind: 'away' };
+  const daysLeft = daysUntilVisit(now);
+  return daysLeft <= HINT_DAYS ? { kind: 'coming', daysLeft } : { kind: 'away' };
 }
 
 /** Jours avant sa prochaine arrivée (0 s'il est là). */
 export function daysUntilVisit(now: Date): number {
-  for (let ahead = 0; ahead < 62; ahead++) {
-    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ahead);
-    if (merchantPhase(day).kind === 'here') {
+  for (let ahead = 0; ahead < SEARCH_DAYS; ahead++) {
+    if (isVisitDay(addDays(now, ahead))) {
       return ahead;
     }
   }
-  return 62;
+  return SEARCH_DAYS;
+}
+
+/** Même jour quelques jours plus tard, par le calendrier, pour ne pas buter sur un changement d'heure. */
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days, 12);
 }
 
 /** Les 3 offres du jour, les mêmes pour tous les joueurs ce jour-là. */
@@ -171,8 +178,4 @@ export function isValidMerchantState(value: unknown): value is MerchantState {
       (status === 'open' || status === 'bought' || status === 'withdrawn')
     );
   });
-}
-
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }

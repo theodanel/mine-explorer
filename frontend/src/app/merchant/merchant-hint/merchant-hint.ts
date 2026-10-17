@@ -32,6 +32,7 @@ export class MerchantHint {
   private readonly sound = inject(Sound);
   protected readonly footprintsImage = MERCHANT_IMAGES.footprints;
   protected readonly merchantImage = MERCHANT_IMAGES.merchant;
+  /** Indice fermé, avec son jour : le marchand passe plusieurs fois par mois, le même indice revient. */
   private readonly dismissed = signal<string | null>(null);
 
   protected readonly hint = computed<Hint | null>(() => {
@@ -44,10 +45,10 @@ export class MerchantHint {
       hint = comingHint(phase.daysLeft);
     } else if (phase.kind === 'here') {
       hint = phase.lastDay
-        ? { key: 'last', text: 'Le marchand remballe, dernier jour', open: true, footprints: false }
+        ? { key: 'last', text: 'Le marchand remballe ce soir', open: true, footprints: false }
         : { key: 'here', text: 'Un marchand est de passage', open: true, footprints: false };
     }
-    return hint !== null && hint.key !== this.dismissed() ? hint : null;
+    return hint !== null && this.dismissalId(hint.key) !== this.dismissed() ? hint : null;
   });
 
   constructor() {
@@ -58,7 +59,7 @@ export class MerchantHint {
       if (timer !== null) {
         clearTimeout(timer);
       }
-      timer = key === null ? null : setTimeout(() => this.dismissed.set(key), HINT_VISIBLE_MS);
+      timer = key === null ? null : setTimeout(() => this.dismissed.set(this.dismissalId(key)), HINT_VISIBLE_MS);
     });
     inject(DestroyRef).onDestroy(() => {
       if (timer !== null) {
@@ -77,13 +78,17 @@ export class MerchantHint {
     if (hint.open) {
       this.navigation.open('merchant');
     } else {
-      this.dismissed.set(hint.key);
+      this.dismissed.set(this.dismissalId(hint.key));
     }
   }
 
   protected dismiss(hint: Hint, event: Event): void {
     event.stopPropagation();
-    this.dismissed.set(hint.key);
+    this.dismissed.set(this.dismissalId(hint.key));
+  }
+
+  private dismissalId(key: string): string {
+    return `${untracked(() => this.merchant.today())}:${key}`;
   }
 }
 

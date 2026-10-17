@@ -125,9 +125,6 @@ export class AmbienceLayer {
   }
 
   private async startCrossing(passer: Passer): Promise<void> {
-    if (passer.url === null) {
-      return;
-    }
     const token = this.zoneToken;
     let texture: Texture;
     try {
@@ -148,7 +145,7 @@ export class AmbienceLayer {
     const towardsRight = this.random() < 0.5;
     // L'image regarde vers la droite : on la retourne pour un passage vers la gauche
     sprite.scale.set(towardsRight ? scale : -scale, scale);
-    sprite.tint = PASSER_TINT;
+    sprite.tint = passer.tint ?? PASSER_TINT;
     sprite.alpha = PASSER_ALPHA;
     sprite.position.set(towardsRight ? -passer.width : AMBIENCE_AREA.right + passer.width, passer.y);
     // Derrière les particules : la silhouette est plus loin, au fond de la grotte

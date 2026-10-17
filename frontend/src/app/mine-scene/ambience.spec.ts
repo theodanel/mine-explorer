@@ -40,9 +40,10 @@ describe('ambience', () => {
     expect(moved).toBe(true);
   });
 
-  it("ne fait passer une silhouette que si son image est livrée", () => {
+  it('fait passer la silhouette de la zone : chauves-souris en zone 1, dragon divin au sanctuaire', () => {
     expect(zonePasser(1)).toBe(PASSERS.bats);
-    expect(zonePasser(10)).toBeNull();
+    expect(zonePasser(10)).toBe(PASSERS.divineDragon);
+    expect(zonePasser(25)).toBe(zonePasser(20));
   });
 
   it('fait passer la première silhouette plus tôt que les suivantes', () => {

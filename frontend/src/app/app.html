@@ -31,7 +31,7 @@
         aria-label="Pièces"
         tabindex="0"
       >
-        <img class="resource-icon" data-flight-target="coins" src="assets/ui/coin.png" alt="" width="128" height="128" />
+        <img class="resource-icon" data-flight-target="coins" src="assets/ui/coin.webp" alt="" width="128" height="128" />
         <span class="coin-count" [attr.title]="wallet.coins()">{{ coinsLabel() }}</span>
       </li>
       <li
@@ -39,7 +39,7 @@
         aria-label="Éclats de géode"
         tabindex="0"
       >
-        <img class="resource-icon" data-flight-target="shards" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
+        <img class="resource-icon" data-flight-target="shards" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />
         <span class="shard-count">{{ shardsLabel() }}</span>
       </li>
       @if (zoneOre(); as ore) {
@@ -62,7 +62,7 @@
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
-      <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !
+      <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.webp" alt="" width="160" height="160" />Défi : récompense !
     </button>
   }
   <app-companion-buddy class="buddy" />

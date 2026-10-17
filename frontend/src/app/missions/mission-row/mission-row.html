@@ -17,7 +17,7 @@
     <span class="done">Récupéré</span>
   } @else {
     <button type="button" class="game-button green claim" appRewardFlight [disabled]="!view().complete" (click)="claim.emit()">
-      <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />+{{
+      <img class="resource-icon" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />+{{
         view().mission.reward.shards
       }}
     </button>

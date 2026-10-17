@@ -13,7 +13,7 @@
     <!-- Pierres d'éveil : elles font monter les étoiles -->
     <div class="purse">
       <span class="stones" aria-label="Pierres d'éveil">
-        <img class="stone-icon" src="assets/ui/refonte/awakening-stone.png" alt="" width="160" height="160" />
+        <img class="stone-icon" src="assets/ui/refonte/awakening-stone.webp" alt="" width="160" height="160" />
         <strong>{{ companions.stones() }}</strong> pierres d'éveil
       </span>
     </div>
@@ -138,7 +138,7 @@
           @if (pet.starCost !== null) {
             <button type="button" class="game-button feed" [disabled]="!pet.canRaise" (click)="raiseStar(pet.id)">
               +1 ★
-              <span class="price"><img class="stone-icon" src="assets/ui/refonte/awakening-stone.png" alt="" width="160" height="160" />{{ pet.starCost }} pierres</span>
+              <span class="price"><img class="stone-icon" src="assets/ui/refonte/awakening-stone.webp" alt="" width="160" height="160" />{{ pet.starCost }} pierres</span>
             </button>
           } @else {
             <p class="note">5 étoiles : ton compagnon est au maximum.</p>

@@ -16,8 +16,8 @@ const FIRST_STEP_MS = 60;
 const LAST_STEP_MS = 320;
 
 const ICONS = {
-  gold: 'assets/ui/coin.png',
-  shards: 'assets/ui/geode-shard.png',
+  gold: 'assets/ui/coin.webp',
+  shards: 'assets/ui/geode-shard.webp',
   stones: REFONTE_IMAGES.awakeningStone,
 } as const;
 

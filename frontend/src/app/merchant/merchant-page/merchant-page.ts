@@ -99,7 +99,7 @@ export class MerchantPage {
   private describe(goods: MerchantGoods): { label: string; icon: string } {
     switch (goods.kind) {
       case 'shards':
-        return { label: `${goods.amount} éclats`, icon: 'assets/ui/geode-shard.png' };
+        return { label: `${goods.amount} éclats`, icon: 'assets/ui/geode-shard.webp' };
       case 'stones':
         return { label: `${goods.amount} pierres d'éveil`, icon: REFONTE_IMAGES.awakeningStone };
       case 'egg':
@@ -107,7 +107,7 @@ export class MerchantPage {
       case 'ores': {
         const tier = zoneMaterial(this.progression.zone());
         return tier === null
-          ? { label: `${goods.amount} minerais`, icon: 'assets/ui/geode-shard.png' }
+          ? { label: `${goods.amount} minerais`, icon: 'assets/ui/geode-shard.webp' }
           : { label: `${goods.amount} ${TIER_LABELS[tier]}`, icon: materialIconUrl(tier) };
       }
     }

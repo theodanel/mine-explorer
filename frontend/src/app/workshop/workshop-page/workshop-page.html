@@ -15,7 +15,7 @@
 
   <ul class="purse" aria-label="Ce que tu peux dépenser">
     <li>
-      <img src="assets/ui/coin.png" alt="" width="128" height="128" />
+      <img src="assets/ui/coin.webp" alt="" width="128" height="128" />
       <span>{{ coins() }}</span>
     </li>
   </ul>
@@ -42,7 +42,7 @@
             @if (row.gold !== null) {
               <p class="cost">
                 <span class="price" [class.short]="row.check === 'gold'">
-                  <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
+                  <img src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ row.gold }}
                 </span>
                 @if (row.ore; as ore) {
                   <span class="price" [class.short]="row.check === 'ores'">
@@ -65,7 +65,7 @@
               <div class="reforge">
                 <span class="reforge-title">
                   Reforge
-                  <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ offer.gold }}
+                  <img src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ offer.gold }}
                   @if (offer.ore; as ore) {
                     <img [src]="ore.icon" alt="" width="128" height="128" />{{ ore.need }}
                   }

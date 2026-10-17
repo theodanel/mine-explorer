@@ -7,7 +7,7 @@ import { speedMultiplier } from '../equipment/equipment-rules';
 import { EvolutionId, GUARDIAN_SECONDS } from '../balance/balance';
 import { Miner } from '../miner/miner';
 import { Evolution } from '../evolution/evolution';
-import { APPRENTICE_STRIKE, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
+import { APPRENTICE_STRIKE, cadenceStrike, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
 import { Mining, StrikeOutcome } from '../mining/mining';
 import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
@@ -162,7 +162,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.mountCanvas();
       this.followFrameSize();
 
-      const frames = await loadStrikeFrames(APPRENTICE_STRIKE);
+      // L'animation de la forme dès le départ : pas d'Apprenti à télécharger pour un joueur évolué
+      const strike = cadenceStrike(this.evolution.form().id);
+      const frames = await loadStrikeFrames(strike);
       if (this.destroyed) {
         return;
       }
@@ -171,7 +173,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.ambience.showZone(this.progression.playingZone());
       await this.showZoneBackground(this.progression.playingZone());
       void this.rock.show(this.progression.playingZone(), this.guardian());
-      await this.startMining(frames);
+      await this.startMining(frames, strike);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);
     }
@@ -215,12 +217,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.resizeObserver.observe(element);
   }
 
-  private async startMining(frames: Texture[]): Promise<void> {
+  private async startMining(frames: Texture[], strike: StrikeAnimation): Promise<void> {
     const miner = new AnimatedSprite(frames);
     miner.anchor.set(0.5, 1);
     miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
-    this.placeMiner(APPRENTICE_STRIKE);
+    this.strike = strike;
+    this.placeMiner(strike);
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
     this.effects = effects;

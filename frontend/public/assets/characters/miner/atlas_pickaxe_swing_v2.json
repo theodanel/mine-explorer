@@ -514,7 +514,7 @@
   "meta": {
     "app": "custom chroma-key pipeline (ffmpeg + Pillow)",
     "version": "1.0",
-    "image": "spritesheet_pickaxe_swing_v2.png",
+    "image": "spritesheet_pickaxe_swing_v2.webp",
     "format": "RGBA8888",
     "size": {
       "w": 3082,

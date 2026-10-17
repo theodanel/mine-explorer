@@ -1,17 +1,18 @@
 # Marchand nain
 
-Idée validée par Théo le 14/10/2026 : un marchand qui ne passe que 5 jours par mois, annoncé par des indices de plus en plus nets.
+Idée validée par Théo le 14/10/2026 : un marchand qui ne passe que quelques jours par mois, annoncé par des indices de plus en plus nets.
 
 ## Calendrier
 
-- **5 jours d'affilée par mois.** Le premier jour se tire du calendrier (entre le 3 et le 22), il est donc le même pour tous les joueurs : on peut se prévenir entre amis.
+- **10 jours par mois, au hasard** (demande de Théo, 17/10/2026 ; c'était 5 jours d'affilée). Les 10 jours sont tirés parmi ceux du mois, sans être d'affilée, et se tirent du calendrier : ils sont les mêmes pour tous les joueurs, on peut se prévenir entre amis. Le dernier jour d'une série (il ne revient pas le lendemain), il « remballe ce soir ».
+- Comme il revient souvent, les indices ne vont pas toujours jusqu'à J-5 : ils commencent après son départ précédent. Une bulle fermée revient le jour où le même indice réapparaît.
 - **Les indices montent** sur l'écran de la mine, dans une petite bulle sous le bandeau de zone. Elle ne reste que 6 secondes puis s'estompe (demande de Théo, 15/10/2026) : la carte des Aventures garde l'information.
   - J-5 et J-4 : « Un vieux mineur parle d'un marchand qui sillonne les galeries… » ;
   - J-3 : des traces de pas de nain dans la poussière (avec leur image une fois livrée) ;
   - J-2 : des clochettes de mule, avec un tintement ;
   - J-1 : une lanterne qui vacille ; dans Aventures, une silhouette noire « ??? » et « Arrive demain ».
 - **Jour J** : « Un marchand est de passage », avec son portrait et un liseré doré ; la toucher ouvre son étal.
-- **Dernier jour** : « Le marchand remballe, dernier jour ».
+- **Dernier jour d'une série** : « Le marchand remballe ce soir » ; dans Aventures, « Repart ce soir ! » (sinon « Encore là demain »).
 - **Hors visite**, sa carte dans Aventures indique dans combien de jours il revient.
 - **Limite connue** : sans serveur, avancer l'horloge du téléphone le fait venir plus tôt, comme pour le reste du jeu.
 

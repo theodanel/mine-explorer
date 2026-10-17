@@ -16,33 +16,53 @@ import {
   merchantPhase,
   offerState,
   purchase,
-  visitStartDay,
+  visitDays,
 } from './merchant-rules';
 
 describe('merchant-rules : calendrier', () => {
-  it('reste 5 jours d’affilée par mois, annoncé 5 jours avant', () => {
-    const start = visitStartDay(2026, 10);
-    const phases = Array.from({ length: 30 }, (_, index) => merchantPhase(new Date(2026, 10, index + 1, 15)));
-    expect(phases.filter((phase) => phase.kind === 'here')).toHaveLength(VISIT_DAYS);
-    expect(merchantPhase(new Date(2026, 10, start, 9))).toEqual({ kind: 'here', day: 1, lastDay: false });
-    expect(merchantPhase(new Date(2026, 10, start + VISIT_DAYS - 1, 23))).toEqual({ kind: 'here', day: VISIT_DAYS, lastDay: true });
-    expect(merchantPhase(new Date(2026, 10, start - 1))).toEqual({ kind: 'coming', daysLeft: 1 });
-    expect(merchantPhase(new Date(2026, 10, start - HINT_DAYS))).toEqual({ kind: 'coming', daysLeft: HINT_DAYS });
+  it('passe 10 jours par mois, tirés au hasard, les mêmes pour tout le monde', () => {
+    for (let month = 0; month < 12; month++) {
+      const days = visitDays(2027, month);
+      expect(days).toHaveLength(VISIT_DAYS);
+      expect(new Set(days).size).toBe(VISIT_DAYS);
+      expect(days.every((day) => day >= 1 && day <= new Date(2027, month + 1, 0).getDate())).toBe(true);
+      expect(visitDays(2027, month)).toEqual(days);
+    }
   });
 
-  it('tombe entre le 3 et le 22, le même jour pour tout le monde', () => {
+  it("ne reste pas 10 jours d'affilée", () => {
     for (let month = 0; month < 12; month++) {
-      const start = visitStartDay(2027, month);
-      expect(start).toBeGreaterThanOrEqual(3);
-      expect(start).toBeLessThanOrEqual(22);
-      expect(visitStartDay(2027, month)).toBe(start);
+      const days = visitDays(2027, month);
+      expect(days[days.length - 1] - days[0]).toBeGreaterThan(VISIT_DAYS - 1);
+    }
+  });
+
+  it('est là ses jours de visite, et dit quand il repart', () => {
+    const days = visitDays(2026, 10);
+    const phases = Array.from({ length: 30 }, (_, index) => merchantPhase(new Date(2026, 10, index + 1, 15)));
+    expect(phases.filter((phase) => phase.kind === 'here')).toHaveLength(VISIT_DAYS);
+    for (const day of days) {
+      expect(merchantPhase(new Date(2026, 10, day, 9))).toEqual({ kind: 'here', lastDay: !days.includes(day + 1) });
+    }
+  });
+
+  it("s'annonce par des indices les jours qui précèdent sa visite", () => {
+    const days = visitDays(2026, 10);
+    for (let day = 1; day <= 30; day++) {
+      if (days.includes(day)) {
+        continue;
+      }
+      const date = new Date(2026, 10, day, 12);
+      const daysLeft = daysUntilVisit(date);
+      expect(daysLeft).toBeGreaterThan(0);
+      expect(merchantPhase(date)).toEqual(daysLeft <= HINT_DAYS ? { kind: 'coming', daysLeft } : { kind: 'away' });
     }
   });
 
   it('compte les jours avant son retour', () => {
-    const start = visitStartDay(2026, 10);
-    expect(daysUntilVisit(new Date(2026, 10, start - 3, 12))).toBe(3);
-    expect(daysUntilVisit(new Date(2026, 10, start, 12))).toBe(0);
+    const [first] = visitDays(2026, 10);
+    expect(daysUntilVisit(new Date(2026, 10, first, 12))).toBe(0);
+    expect(daysUntilVisit(new Date(2026, 9, 31, 12))).toBe(first);
   });
 });
 
@@ -109,7 +129,7 @@ describe('Merchant', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   it('vend une offre pendant sa visite, contre de l’or', () => {
-    const merchant = setup(new Date(2026, 10, visitStartDay(2026, 10), 12), 1e12);
+    const merchant = setup(new Date(2026, 10, visitDays(2026, 10)[0], 12), 1e12);
     expect(merchant.here()).toBe(true);
     const offer = merchant.offers()[0];
     const shards = TestBed.inject(GeodeShards).amount();
@@ -122,8 +142,10 @@ describe('Merchant', () => {
   });
 
   it('ne vend rien hors de sa visite, ni sans assez d’or', () => {
-    const start = visitStartDay(2026, 10);
-    const away = setup(new Date(2026, 10, start + VISIT_DAYS + 2, 12), 1e12);
+    const days = visitDays(2026, 10);
+    const start = days[0];
+    const awayDay = Array.from({ length: 30 }, (_, index) => index + 1).find((day) => !days.includes(day)) ?? 1;
+    const away = setup(new Date(2026, 10, awayDay, 12), 1e12);
     expect(away.here()).toBe(false);
     expect(away.buy(away.offers()[0].id)).toBe(false);
     TestBed.resetTestingModule();

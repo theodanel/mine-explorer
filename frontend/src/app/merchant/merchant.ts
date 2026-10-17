@@ -45,7 +45,7 @@ export interface MerchantReaction {
 }
 
 /**
- * Marchand nain : il passe 5 jours par mois (les mêmes pour tous), annoncé par des indices les jours d'avant.
+ * Marchand nain : il passe 10 jours par mois tirés au hasard (les mêmes pour tous), annoncé par des indices les jours d'avant.
  * Ses trois offres du jour se marchandent ; son humeur décide si le marchandage et le bluff passent.
  */
 @Injectable({ providedIn: 'root' })
@@ -67,7 +67,8 @@ export class Merchant {
   readonly phase = computed(() => merchantPhase(new Date(this.now())));
   readonly here = computed(() => this.phase().kind === 'here');
   readonly daysUntil = computed(() => daysUntilVisit(new Date(this.now())));
-  private readonly today = computed(() => dayKey(this.now()));
+  /** Jour du joueur (« 2026-10-17 ») : la journée de marchandage et les indices s'y rattachent. */
+  readonly today = computed(() => dayKey(this.now()));
   /** État du jour : humeur et offres marchandées. Un nouveau jour repart à neuf. */
   readonly state = computed(() => {
     const saved = this.saved();

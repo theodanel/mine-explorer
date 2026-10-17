@@ -88,7 +88,7 @@ export class AdventuresPage {
     this.merchantCard(),
   ]);
 
-  /** Le marchand : absent, une silhouette la veille de son arrivée, puis son étal pendant 5 jours. */
+  /** Le marchand : absent, une silhouette la veille de son arrivée, puis son étal ses jours de visite. */
   private merchantCard(): Adventure {
     const phase = this.merchant.phase();
     const base = { page: 'merchant' as const, icon: MERCHANT_IMAGES.merchant, scene: `url(${MERCHANT_IMAGES.stall})` };
@@ -101,7 +101,7 @@ export class AdventuresPage {
         title: 'Marchand nain',
         text: 'Marchande, bluffe, repars avec des trésors.',
         locked: null,
-        status: phase.lastDay ? 'Dernier jour !' : `Encore ${6 - phase.day} jours`,
+        status: phase.lastDay ? 'Repart ce soir !' : 'Encore là demain',
       };
     }
     if (phase.kind === 'coming' && phase.daysLeft === 1) {

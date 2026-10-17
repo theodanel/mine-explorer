@@ -50,35 +50,35 @@ Même méthode que les autres formes (voir [[prompts-gemini]]) : une image par m
 
 ### Description commune (à coller en tête du portrait et de l'image en pied)
 
-Version du 17/10/2026. La première version tassait le personnage (grande couronne et noyau flottant au-dessus de la tête) : les proportions de la Légende sont maintenant imposées, la couronne est basse, et le cœur du monde est serti dans le plastron, à la demande de Théo.
+Version du 17/10/2026. Référence à joindre : **le nouvel Apprenti** (`art-source/evolutions/apprenti-v2-pied.png`, l'image au casque jaune refaite dans le style de l'écran de lancement), et non plus `legende-pied.png`. Les versions précédentes tassaient le personnage (grande couronne, noyau flottant) puis sortaient lisses et trop saturées : le style usé de l'Apprenti, ses proportions et le cœur serti dans le plastron sont maintenant imposés.
 
 ```
-Use the attached image as the strict reference for the character's species, face, body proportions and size. Keep EXACTLY the same proportions as the reference: same head size, same body height, same leg length, about 2.5 heads tall, standing straight. The character must not look squashed, stretched, shorter or wider than the reference. Exactly ONE character in ONE image.
+Use the attached image as the strict reference for the ART STYLE, the character's species, face, body proportions and size. Draw in exactly the same style as the attached image: hand-painted 2D cartoon with a gritty, weathered look, visible brush texture, dirt stains, scratches and worn edges on every material, rough dark-brown outlines of varying thickness, muted earthy palette with low saturation, matte surfaces, warm soft lighting. NOT glossy, NOT clean vector art, NOT neon, NOT oversaturated. Keep EXACTLY the same proportions as the reference: same head size, same body height, same leg length, standing straight, not squashed, not stretched. Exactly ONE character in ONE image.
 
-Character: the same cute chibi dwarf-dragon miner: blue-grey scaly skin with orange spots, large amber eyes, short snout, thick tail with small dark spikes, three-quarter view facing right. Hand-painted 2D cartoon style, soft painterly shading, rich textures, thick dark-brown outlines, small highlights in the eyes.
+Character: the same cute chibi dwarf-dragon miner: blue-grey scaly skin with orange spots, large amber eyes, short snout, thick tail with an orange tip and small dark spikes, three-quarter view facing right.
 
-Form: "Legend of the World's Heart", the ultimate form, the miner who reached the molten core of the planet and carries it in his chest. Epic but still cute and readable at small size.
-- The World's Heart: a round glowing gem the size of his fist, set in the center of his chestplate like a heart: a tiny planet of swirling molten gold and orange lava, held by a gold setting with a thin golden ring around it. It is the brightest point of the character. Nothing floats above his head.
-- Armor: polished black obsidian plates with molten gold seams that glow softly and all lead to the heart gem, small engraved star and mountain runes, gold trims, same armor shapes as the reference.
-- Head: a LOW and compact crown-helmet in black obsidian and gold, with a short row of small rainbow crystal shards (amber, ruby, sapphire, amethyst) no taller than one third of the head height.
-- Back: a short cape that turns from deep night blue with tiny stars at the top into flowing molten lava at its hem; two small wings made of amber crystal feathers, close to the back.
-- Body: the orange spots on the scales glow warm gold; the tail tip is a small glowing chunk of molten core with tiny crystal spikes.
+Form: "Legend of the World's Heart", the ultimate form, the miner who reached the molten core of the planet and carries it in his chest. Epic but still cute, and it must look like the same game as the reference.
+- The World's Heart: a round gem the size of his fist, set in the center of his chestplate like a heart: a tiny planet of molten gold and orange lava in a scratched gold setting, with a soft warm glow. Nothing floats above his head.
+- Armor: worn black obsidian plates with chipped edges and dull gold trims, thin lines of molten gold in the cracks leading to the heart gem, a few engraved runes. Matte, battle-worn, not shiny.
+- Head: his miner helmet turned into a low crown: a dented dark helmet with a brass headlamp and a short row of small dull crystal shards (amber, ruby, sapphire, amethyst) on top, no taller than one third of the head height.
+- Back: a short tattered cape, dark night blue fading into dark red-orange at the hem like cooling lava; his backpack is still there with a rolled red blanket.
+- Body: a few orange spots on the scales glow faintly; the tail tip looks like a warm ember.
 - Expression: calm, proud and kind, a confident little smile.
-- Every glow is warm (gold, orange, amber, white) and stays tight around the character: no green in any glow, no light rays reaching the edges of the image.
+- Every glow is warm, soft and small, close to the character: no green in any glow, no light rays.
 
-No text, no letters, no logo, no watermark, no scenery, no ground, no shadow, no floating objects, no particles far from the character. Solid pure green background #00FF00 filling the whole image, no green on the character.
+No text, no letters, no logo, no watermark, no scenery, no ground, no shadow, no floating objects, no particles. Solid pure green background #00FF00 filling the whole image, no green on the character.
 ```
 
 ### Portrait (cadre rond en haut à gauche)
 
 ```
-Framing: bust portrait, head, crown, shoulders and the top of the chestplate with the glowing heart gem visible, centered, square 1:1, the face fills half of the image.
+Framing: bust portrait, head, helmet-crown, shoulders and the top of the chestplate with the heart gem visible, centered, square 1:1, the face fills half of the image.
 ```
 
 ### En pied (référence de la vidéo de frappe)
 
 ```
-Framing: full body, same pose as the reference: standing in a mining stance, BOTH hands gripping the handle of the World's Heart pickaxe held diagonally across the body, the pickaxe head on the right side at shoulder height. The pickaxe: a black obsidian handle wrapped in gold, its head a double-pointed pick of glowing magma crystal, same size as the reference pickaxe. Feet slightly apart at the bottom of the image, square 1:1, the character fills 85% of the image height, some empty space on the right for the swing.
+Framing: full body, same pose as the reference: standing in a mining stance, one hand gripping the pickaxe handle in front of him, the pickaxe head on the right side at shoulder height. The pickaxe: a worn dark obsidian handle with brass bands, its head a double-pointed pick of dark magma rock with glowing orange cracks, same size as the reference pickaxe. Feet slightly apart at the bottom of the image, square 1:1, the character fills 85% of the image height, some empty space on the right for the swing.
 ```
 
 Si le corps sort encore tassé, ajouter dans le même message : `Same character but taller body and longer legs, exactly the proportions of the first attached image.`

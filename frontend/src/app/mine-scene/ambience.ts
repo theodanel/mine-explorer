@@ -170,25 +170,27 @@ export function stepParticle(particle: Particle, preset: AmbiencePreset, seconds
 export type PasserId = 'bats' | 'dwarfCart' | 'crystalGolem' | 'fireDragon' | 'divineDragon' | 'abyssWhale' | 'fairies';
 
 export interface Passer {
-  /** Image Gemini sur fond transparent, tournée vers la droite ; null tant qu'elle n'est pas livrée. */
-  readonly url: string | null;
+  /** Image Gemini détourée (art-source/passages), tournée vers la droite. */
+  readonly url: string;
   /** Largeur à l'écran, en pixels de scène. */
   readonly width: number;
   /** Hauteur de son passage (milieu de la silhouette), en pixels de scène. */
   readonly y: number;
   /** Durée de la traversée, en secondes. */
   readonly seconds: number;
+  /** Assombrissement propre : une créature lumineuse le reste un peu plus que les autres. */
+  readonly tint?: number;
 }
 
 export const PASSERS: Readonly<Record<PasserId, Passer>> = {
-  // La chauve-souris des compagnons, en attendant la nuée de chauves-souris
-  bats: { url: 'assets/companions/bat.png', width: 90, y: 260, seconds: 9 },
-  dwarfCart: { url: null, width: 170, y: 520, seconds: 22 },
-  crystalGolem: { url: null, width: 170, y: 500, seconds: 26 },
-  fireDragon: { url: null, width: 300, y: 300, seconds: 14 },
-  divineDragon: { url: null, width: 320, y: 280, seconds: 16 },
-  abyssWhale: { url: null, width: 340, y: 320, seconds: 24 },
-  fairies: { url: null, width: 160, y: 330, seconds: 12 },
+  bats: { url: 'assets/ui/passages/chauves-souris.webp', width: 200, y: 270, seconds: 9 },
+  // Ceux qui marchent passent sur un sol plus lointain, un peu au-dessus de celui du mineur
+  dwarfCart: { url: 'assets/ui/passages/wagonnet.webp', width: 190, y: 545, seconds: 22 },
+  crystalGolem: { url: 'assets/ui/passages/golem.webp', width: 140, y: 540, seconds: 26 },
+  fireDragon: { url: 'assets/ui/passages/dragon-feu.webp', width: 300, y: 300, seconds: 14 },
+  divineDragon: { url: 'assets/ui/passages/dragon-divin.webp', width: 320, y: 280, seconds: 16, tint: 0xd8ccb6 },
+  abyssWhale: { url: 'assets/ui/passages/baleine.webp', width: 340, y: 320, seconds: 24 },
+  fairies: { url: 'assets/ui/passages/fees.webp', width: 170, y: 330, seconds: 12 },
 };
 
 /** Silhouette qui peut passer dans chaque zone, de la 1 à la 20. */
@@ -210,11 +212,10 @@ const ZONE_PASSERS: readonly PasserId[] = [
   'divineDragon',
 ];
 
-/** La silhouette de la zone, si son image est livrée. */
-export function zonePasser(zone: number): Passer | null {
+/** La silhouette qui passe dans la zone ; au-delà de la zone 20, celle du Cœur du monde. */
+export function zonePasser(zone: number): Passer {
   const index = Math.min(Math.max(zone, 1), ZONE_PASSERS.length) - 1;
-  const passer = PASSERS[ZONE_PASSERS[index]];
-  return passer.url === null ? null : passer;
+  return PASSERS[ZONE_PASSERS[index]];
 }
 
 /** Une silhouette passe toutes les 2 à 4 minutes ; la première un peu plus tôt, pour qu'on la remarque. */

@@ -23,17 +23,17 @@ Des particules discrètes, en mélange additif (elles éclairent le décor au li
 
 Une silhouette traverse le fond de la grotte, assombrie et un peu transparente, avec un léger tangage, d'un côté ou de l'autre au hasard. La première passe 40 à 80 s après l'arrivée dans la zone, les suivantes toutes les 2 à 4 minutes. Elle passe derrière le rocher et le mineur.
 
-| Silhouette | Zones | Image |
-|---|---|---|
-| Nuée de chauves-souris | 1 à 4, 11 | chauve-souris des compagnons en attendant |
-| Nain et son wagonnet | 5, 6, 13 | à venir |
-| Golem de cristal | 7, 8, 15 | à venir |
-| Dragon de feu | 9, 14, 16 | à venir |
-| Dragon divin | 10, 20 | à venir |
-| Baleine des profondeurs | 12, 18 | à venir |
-| Ronde de fées | 17, 19 | à venir |
+| Silhouette | Zones |
+|---|---|
+| Nuée de chauves-souris | 1 à 4, 11 |
+| Nain et son wagonnet | 5, 6, 13 |
+| Golem de cristal | 7, 8, 15 |
+| Dragon de feu | 9, 14, 16 |
+| Dragon divin (moins assombri, pour garder sa lumière) | 10, 20 |
+| Baleine des profondeurs | 12, 18 |
+| Ronde de fées | 17, 19 |
 
-Une silhouette sans image (`url: null` dans `PASSERS`) ne passe pas. Pour en brancher une : détourer l'image Gemini (fond vert), la déposer dans `frontend/public/assets/ui/passages/` et renseigner son `url`.
+Les images Gemini (17/10/2026) sont dans `art-source/passages/`, détourées par `art-source/passages/preparer-passages.py` vers `frontend/public/assets/ui/passages/`. Ceux qui marchent (nain, golem) passent sur un sol plus lointain, un peu au-dessus de celui du mineur.
 
 ## Prompts Gemini
 

@@ -1,41 +1,49 @@
-<section class="page game-panel" data-theme="gold" aria-labelledby="evolution-title">
+<section class="page game-panel" [attr.data-theme]="heartMode() ? 'ember' : 'gold'" aria-labelledby="evolution-title">
   <header class="page-header">
     <h2 id="evolution-title">Évolution</h2>
     <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
   </header>
 
   <div class="scroll">
-    <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
-    <article class="rank">
-      <figure class="form">
-        <img [src]="current().portraitUrl" alt="" width="160" height="160" />
-        <figcaption>
-          {{ current().label }}
-          @if (current().stars > 0) {
-            <app-rank-stars [count]="current().stars" />
-          }
-        </figcaption>
-      </figure>
-      @if (next(); as next) {
-        <div class="arrow" aria-hidden="true">
-          <span class="chevron">▶</span>
-          <span class="bonus">+{{ next.bonus }} %<small>Frappe</small></span>
-        </div>
-        <figure class="form next">
-          <!-- Promotion prête : la forme visée rayonne, pour donner envie d'appuyer -->
-          <span [class.rays]="evolution.ready()"><img [src]="next.portraitUrl" alt="" width="160" height="160" /></span>
+    @if (heartMode()) {
+      <app-heart-card [stars]="evolution.form().stars" [ready]="evolution.ready()" [revealing]="revealing()" />
+    } @else {
+      <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
+      <article class="rank">
+        <figure class="form">
+          <img [src]="current().portraitUrl" alt="" width="160" height="160" />
           <figcaption>
-            {{ next.label }}
-            @if (next.stars > 0) {
-              <app-rank-stars [count]="next.stars" />
+            {{ current().label }}
+            @if (current().stars > 0) {
+              <app-rank-stars [count]="current().stars" />
             }
           </figcaption>
         </figure>
-      }
-    </article>
+        @if (next(); as next) {
+          <div class="arrow" aria-hidden="true">
+            <span class="chevron">▶</span>
+            <span class="bonus">+{{ next.bonus }} %<small>Frappe</small></span>
+          </div>
+          <figure class="form next">
+            <!-- Promotion prête : la forme visée rayonne, pour donner envie d'appuyer -->
+            <span [class.rays]="evolution.ready()"><img [src]="next.portraitUrl" alt="" width="160" height="160" /></span>
+            <figcaption>
+              {{ next.label }}
+              @if (next.stars > 0) {
+                <app-rank-stars [count]="next.stars" />
+              }
+            </figcaption>
+          </figure>
+        }
+      </article>
+    }
 
     @if (next(); as next) {
-      <p class="rank-count">Rang {{ next.rank }} sur {{ next.ranks }}</p>
+      @if (heartMode()) {
+        <p class="rank-count">Étoile {{ next.stars }} sur 5 : remplis ses trois paliers pour l'éveiller</p>
+      } @else {
+        <p class="rank-count">Rang {{ next.rank }} sur {{ next.ranks }}</p>
+      }
 
       <!-- Frise des paliers : on peut regarder un palier fermé, pas encore le remplir -->
       <ol class="tiers" aria-label="Paliers de missions">
@@ -96,7 +104,7 @@
       </ul>
 
       <button type="button" class="game-button promote" [class.green]="evolution.ready()" [disabled]="!evolution.ready()" (click)="promote()">
-        Promotion
+        {{ heartMode() ? "Éveiller l'étoile" : 'Promotion' }}
         <small>{{ evolution.ready() ? 'Devenir ' + next.title : 'Remplis les trois paliers' }}</small>
       </button>
     } @else {

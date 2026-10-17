@@ -13,6 +13,17 @@ Demande de Théo (16/10/2026) : avec 20 zones et 5 rangs, la Légende arrivait v
 - **Visuels** (17/10/2026) : portrait et image en pied venus de Gemini, préparés par `art-source/evolutions/preparer-coeur.py`. En attendant une vidéo de frappe utilisable, le mineur s'affiche en image fixe qui s'écrase un peu à chaque coup. Les étoiles sont des icônes (`assets/ui/etoile-pleine.webp` et `etoile-vide.webp`, composant `evolution/rank-stars`), sous le titre et dans l'écran d'évolution.
 - Les sauvegardes restent valables : la forme est rangée par son numéro, la Légende garde le sien, et une sauvegarde de la première version au-delà du dernier rang garde le rang le plus haut.
 
+## Écran d'évolution transformé (17/10/2026)
+
+Demande de Théo : dès la Légende de la mine, l'écran d'évolution ne montre plus « forme actuelle → forme suivante » mais la dernière transformation (`evolution/heart-card/`) :
+
+- une carte d'obsidienne veinée de lave, titrée « Dernière transformation · Légende du Cœur du monde » ;
+- le portrait du Cœur du monde dans un anneau de lave qui respire, terne tant qu'aucune étoile n'est éveillée ;
+- les 5 étoiles avec leur zone (12, 14, 16, 18, 20), l'étoile visée qui palpite ;
+- en dessous, les paliers de missions de l'étoile suivante et un bouton « Éveiller l'étoile ».
+
+La première fois que le joueur voit cet écran en Légende (en l'ouvrant, ou juste après sa promotion), l'interface se transforme : la carte tremble, le portrait doré de la Légende s'illumine et s'efface dans un éclat de lave, l'anneau apparaît en tournant, puis les étoiles surgissent une à une. Animation jouée une seule fois (`mine-explorer.coeur-revele`), coupée si le téléphone demande moins d'animations.
+
 ## Objectifs (dernier palier)
 
 | Rang | Zone atteinte | Pioche | Objets forgés | Filons épuisés | Frappe |

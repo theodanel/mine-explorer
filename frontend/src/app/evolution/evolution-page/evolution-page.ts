@@ -7,6 +7,7 @@ import { Navigation } from '../../navigation/navigation';
 import { Evolution } from '../evolution';
 import { formTitle, isClaimable } from '../evolution-rules';
 import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
+import { RankStars } from '../rank-stars/rank-stars';
 
 const NUMBER = new Intl.NumberFormat('fr-FR');
 const PERCENT = 100;
@@ -17,7 +18,7 @@ const PERCENT = 100;
  */
 @Component({
   selector: 'app-evolution-page',
-  imports: [RewardFlightDirective],
+  imports: [RewardFlightDirective, RankStars],
   templateUrl: './evolution-page.html',
   styleUrl: './evolution-page.scss',
 })
@@ -30,7 +31,7 @@ export class EvolutionPage {
 
   protected readonly current = computed(() => {
     const form = this.evolution.form();
-    return { label: formTitle(form), portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl };
+    return { label: form.label, stars: form.stars, title: formTitle(form), portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl };
   });
 
   protected readonly next = computed(() => {
@@ -40,7 +41,9 @@ export class EvolutionPage {
     }
     const rank = EVOLUTION_FORMS.indexOf(form);
     return {
-      label: formTitle(form),
+      label: form.label,
+      stars: form.stars,
+      title: formTitle(form),
       portraitUrl: EVOLUTION_VISUALS[form.id].portraitUrl,
       bonus: Math.round(form.strikeBonus * PERCENT),
       rank,

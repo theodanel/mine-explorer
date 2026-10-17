@@ -1,0 +1,14 @@
+:host {
+  display: inline-flex;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 0.08em;
+}
+
+img {
+  width: 1.15em;
+  height: auto;
+  filter: drop-shadow(0 0.06em 0 rgb(0 0 0 / 35%));
+}

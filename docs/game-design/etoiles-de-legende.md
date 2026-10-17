@@ -9,7 +9,8 @@ Demande de Théo (16/10/2026) : avec 20 zones et 5 rangs, la Légende arrivait v
 
 - Chaque étoile est un rang comme les autres : 3 paliers de missions, des éclats par mission, puis la promotion. L'écran d'évolution compte 9 rangs.
 - Le titre affiche les étoiles : « Légende du Cœur du monde ★★★ ».
-- Un **halo de lave** brille derrière le mineur dès la première étoile, plus vif à chacune (`mine-scene/miner-aura.ts`). En attendant ses propres images (prompts plus bas), la forme reprend celles de la Légende.
+- Un **halo de lave** brille derrière le mineur dès la première étoile, plus vif à chacune (`mine-scene/miner-aura.ts`).
+- **Visuels** (17/10/2026) : portrait et image en pied venus de Gemini, préparés par `art-source/evolutions/preparer-coeur.py`. En attendant une vidéo de frappe utilisable, le mineur s'affiche en image fixe qui s'écrase un peu à chaque coup. Les étoiles sont des icônes (`assets/ui/etoile-pleine.webp` et `etoile-vide.webp`, composant `evolution/rank-stars`), sous le titre et dans l'écran d'évolution.
 - Les sauvegardes restent valables : la forme est rangée par son numéro, la Légende garde le sien, et une sauvegarde de la première version au-delà du dernier rang garde le rang le plus haut.
 
 ## Objectifs (dernier palier)
@@ -83,12 +84,14 @@ Framing: full body, same pose as the reference: standing in a mining stance, one
 
 Si le corps sort encore tassé, ajouter dans le même message : `Same character but taller body and longer legs, exactly the proportions of the first attached image.`
 
-### Vidéo du coup de pioche (joins l'image en pied comme image de départ)
+### Vidéo du coup de pioche
+
+La première vidéo (17/10/2026) zoomait sur le personnage : casque et pieds sortaient du cadre, inutilisable pour l'animation. Image de départ à joindre : `art-source/animations/coeur-depart-16x9.png`, l'image en pied posée sur un fond vert 16:9 où le personnage n'occupe que 62 % de la hauteur (fabriquée par `preparer-coeur.py`). La consigne de cadrage est en tête du prompt.
 
 ```
-Animate the attached character. Camera completely fixed, no zoom, no pan, 16:9, the character stays at the same size, the same proportions and the same place in the frame, centered. Solid pure green background #00FF00 for the whole video, no ground, no shadow, no scenery.
+Animate the attached image exactly as framed: the camera never moves, never zooms in, never pans, never crops. The whole character, from the top of the helmet crystals to the soles of the boots, stays fully visible in every frame with a wide empty green margin above the head and below the feet, at exactly the size and position of the attached image. 16:9. Solid pure green background #00FF00 for the whole video, no ground, no shadow, no scenery.
 
-Action: one single powerful pickaxe strike. The character starts in the idle mining stance of the image and breathes for half a second, the heart gem in his chest pulsing softly. Then he raises the pickaxe high above his head with both hands, the crystal wings open a little and the cape lifts. He swings it down hard in front of him, to the right, and the pickaxe head hits the ground level near his feet with a small bounce of the body, the heart gem flashing brighter. At the impact, a short burst of golden sparks, small glowing magma chips and tiny crystal shards flies to the right and fades quickly. He pulls the pickaxe back up and returns to exactly the starting pose, then stays still and breathes until the end of the video.
+Action: one single powerful pickaxe strike. The character starts in the idle mining stance of the image and breathes for half a second, the heart gem in his chest pulsing softly. Then he raises the pickaxe high above his head with both hands, the cape and the tail lift a little. He swings it down hard in front of him, to the right, and the pickaxe head hits the ground level near his feet with a small bounce of the body, the heart gem flashing brighter. At the impact, a short burst of golden sparks, small glowing magma chips and tiny crystal shards flies to the right and fades quickly. He pulls the pickaxe back up and returns to exactly the starting pose, then stays still and breathes until the end of the video.
 
 Only one strike in the whole video, no second swing. Keep the same face, outfit, colors, proportions and hand-painted cartoon style as the image in every frame. All glows stay warm and close to the character, never green. No text, no extra character.
 ```

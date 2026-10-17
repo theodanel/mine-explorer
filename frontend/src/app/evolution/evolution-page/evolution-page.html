@@ -9,7 +9,12 @@
     <article class="rank">
       <figure class="form">
         <img [src]="current().portraitUrl" alt="" width="160" height="160" />
-        <figcaption>{{ current().label }}</figcaption>
+        <figcaption>
+          {{ current().label }}
+          @if (current().stars > 0) {
+            <app-rank-stars [count]="current().stars" />
+          }
+        </figcaption>
       </figure>
       @if (next(); as next) {
         <div class="arrow" aria-hidden="true">
@@ -19,7 +24,12 @@
         <figure class="form next">
           <!-- Promotion prête : la forme visée rayonne, pour donner envie d'appuyer -->
           <span [class.rays]="evolution.ready()"><img [src]="next.portraitUrl" alt="" width="160" height="160" /></span>
-          <figcaption>{{ next.label }}</figcaption>
+          <figcaption>
+            {{ next.label }}
+            @if (next.stars > 0) {
+              <app-rank-stars [count]="next.stars" />
+            }
+          </figcaption>
         </figure>
       }
     </article>
@@ -87,10 +97,10 @@
 
       <button type="button" class="game-button promote" [class.green]="evolution.ready()" [disabled]="!evolution.ready()" (click)="promote()">
         Promotion
-        <small>{{ evolution.ready() ? 'Devenir ' + next.label : 'Remplis les trois paliers' }}</small>
+        <small>{{ evolution.ready() ? 'Devenir ' + next.title : 'Remplis les trois paliers' }}</small>
       </button>
     } @else {
-      <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().label }}.</p>
+      <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().title }}.</p>
     }
   </div>
 </section>

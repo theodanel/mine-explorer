@@ -15,7 +15,8 @@ import {
   VOLUME_STEPS,
 } from './sound-catalog';
 import { renderSound, Samples } from './synth';
-import { renderZoneMusic, ZONE_THEMES } from './zone-music';
+import { AudioRenderer } from './audio-renderer';
+import { ZONE_THEMES } from './zone-music';
 
 const SOUND_STORAGE_KEY = 'mine-explorer.volume';
 const MUSIC_STORAGE_KEY = 'mine-explorer.music-volume';
@@ -54,6 +55,9 @@ export class Sound {
   private musicBus: GainNode | null = null;
   /** Musiques déjà calculées, par thème : revenir dans une zone ne recalcule rien. */
   private readonly musicBuffers = new Map<number, AudioBuffer>();
+  /** Bruitages et musiques se calculent dans un Web Worker ; une musique en cours de calcul n'est pas redemandée. */
+  private readonly renderer = new AudioRenderer();
+  private readonly renderingThemes = new Set<number>();
   private musicSource: AudioBufferSourceNode | null = null;
   private musicFade: GainNode | null = null;
   /** Thème joué (index dans ZONE_THEMES), et celui demandé par la zone en cours. */
@@ -138,8 +142,15 @@ export class Sound {
     this.context = context;
     this.soundBus = this.bus(context, this.volume());
     this.musicBus = this.bus(context, this.musicVolume());
+    // Les bruitages arrivent du Worker un instant après le premier toucher ; sans Worker, tout de suite
     for (const id of SOUND_IDS) {
-      this.buffers.set(id, toBuffer(context, renderSound(id, context.sampleRate), context.sampleRate));
+      if (this.renderer.usesWorker) {
+        void this.renderer.render({ kind: 'sound', id, rate: context.sampleRate }).then((samples) => {
+          this.buffers.set(id, toBuffer(context, samples, context.sampleRate));
+        });
+      } else {
+        this.buffers.set(id, toBuffer(context, renderSound(id, context.sampleRate), context.sampleRate));
+      }
     }
     this.syncMusic();
   }
@@ -153,8 +164,8 @@ export class Sound {
 
   /**
    * Joue la musique de la zone en cours quand la musique est réglée au-dessus de zéro, l'arrête quand elle est
-   * coupée. Une musique pas encore calculée l'est juste après, pour que le toucher ou le changement de zone ne
-   * paraisse pas lent.
+   * coupée. Une musique pas encore calculée l'est dans un Web Worker, pour que le toucher ou le changement de zone
+   * ne fige pas le jeu.
    */
   private syncMusic(): void {
     if (this.musicVolume() === 0) {
@@ -168,12 +179,14 @@ export class Sound {
     const theme = this.wantedTheme;
     const cached = this.musicBuffers.get(theme);
     if (cached === undefined) {
-      setTimeout(() => {
-        if (!this.musicBuffers.has(theme)) {
-          this.musicBuffers.set(theme, toBuffer(context, renderZoneMusic(theme + 1, MUSIC_SAMPLE_RATE), MUSIC_SAMPLE_RATE));
-        }
-        this.syncMusic();
-      });
+      if (!this.renderingThemes.has(theme)) {
+        this.renderingThemes.add(theme);
+        void this.renderer.render({ kind: 'music', zone: theme + 1, rate: MUSIC_SAMPLE_RATE }).then((samples) => {
+          this.renderingThemes.delete(theme);
+          this.musicBuffers.set(theme, toBuffer(context, samples, MUSIC_SAMPLE_RATE));
+          this.syncMusic();
+        });
+      }
       return;
     }
     this.fadeOutMusic(context);

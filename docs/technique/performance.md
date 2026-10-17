@@ -28,3 +28,8 @@ Les bruitages et les musiques du jeu sont calculés en code (aucun fichier audio
 - Les deux passent maintenant par un Web Worker (`audio/audio.worker.ts`, piloté par `audio/audio-renderer.ts`) : le jeu continue de tourner pendant le calcul, et le tampon revient sans copie.
 - Mesuré dans Chrome au premier toucher (tâche longue la plus lourde du fil principal) : 668 ms → 60 à 75 ms. Le changement de zone ne fige plus du tout.
 - Sans Worker (vieux navigateur, tests), le calcul se fait sur le fil principal comme avant. La CSP autorise déjà `worker-src 'self'`.
+
+## Rendu et code chargé au démarrage
+
+- **PixiJS hors du fichier principal** : la scène de la mine est chargée par `@defer (on immediate)` et le préchargeur importe PixiJS à la demande. Code JavaScript initial : 1,07 Mo → 0,44 Mo (304 → 132 ko compressés). L'écran de chargement s'affiche avant que PixiJS soit arrivé, qui se télécharge en parallèle des images. Le budget de 500 ko d'Angular est de nouveau respecté.
+- **Scène au ralenti sous un menu** : quand une page couvre la mine, PixiJS dessine 30 images par seconde au lieu de 60. Les animations avancent au temps écoulé : la cadence des coups, et donc les gains, ne changent pas.

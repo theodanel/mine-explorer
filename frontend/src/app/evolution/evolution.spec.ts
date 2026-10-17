@@ -31,6 +31,14 @@ describe('Evolution', () => {
     return TestBed.inject(Evolution);
   }
 
+  it('garde le rang le plus haut quand la sauvegarde va au-delà du dernier rang', () => {
+    localStorage.clear();
+    localStorage.setItem('mine-explorer.evolution', '10');
+    const evolution = TestBed.inject(Evolution);
+    expect(evolution.index()).toBe(EVOLUTION_FORMS.length - 1);
+    expect(evolution.title()).toBe('Légende du Cœur du monde ★★★★★');
+  });
+
   it('commence en Apprenti', () => {
     const evolution = setup(false);
     expect(evolution.form().id).toBe('apprentice');
@@ -75,27 +83,36 @@ describe('Evolution', () => {
 
 describe('Évolutions', () => {
   it('multiplient les bonus de Frappe entre eux', () => {
-    // 4 formes à +50 %, 5 étoiles de Légende à +50 %, puis la forme finale à +100 %
-    expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 9 * 2);
+    // 4 formes à +50 %, puis 5 étoiles du Cœur du monde à +100 %
+    expect(evolutionStrikeMultiplier(EVOLUTION_FORMS.length - 1)).toBeCloseTo(1.5 ** 4 * 2 ** 5);
   });
 
-  it("gardent les anciennes sauvegardes : les étoiles viennent après la Légende, la forme finale en dernier", () => {
-    expect(EVOLUTION_FORMS.slice(0, 5).map((form) => form.id)).toEqual(['apprentice', 'miner', 'foreman', 'master', 'legend']);
-    expect(EVOLUTION_FORMS.slice(4, 10).map((form) => [form.id, form.stars])).toEqual([
+  it('gardent les anciennes sauvegardes : la Légende reste le rang 5, le Cœur du monde vient après en 5 étoiles', () => {
+    expect(EVOLUTION_FORMS.map((form) => [form.id, form.stars])).toEqual([
+      ['apprentice', 0],
+      ['miner', 0],
+      ['foreman', 0],
+      ['master', 0],
       ['legend', 0],
-      ['legend', 1],
-      ['legend', 2],
-      ['legend', 3],
-      ['legend', 4],
-      ['legend', 5],
+      ['heart', 1],
+      ['heart', 2],
+      ['heart', 3],
+      ['heart', 4],
+      ['heart', 5],
     ]);
-    expect(EVOLUTION_FORMS.at(-1)?.id).toBe('heart');
   });
 
-  it('affichent les étoiles de Légende dans le nom de la forme', () => {
+  it('demandent les zones 12, 14, 16, 18 et 20 pour les étoiles du Cœur du monde', () => {
+    const zones = EVOLUTION_FORMS.filter((form) => form.id === 'heart').map((form) =>
+      Math.max(...form.objectives.filter((objective) => objective.metric === 'zone').map((objective) => objective.target)),
+    );
+    expect(zones).toEqual([12, 14, 16, 18, 20]);
+  });
+
+  it('affichent les étoiles du Cœur du monde dans le nom de la forme', () => {
     expect(formTitle(EVOLUTION_FORMS[4])).toBe('Légende de la mine');
-    expect(formTitle(EVOLUTION_FORMS[6])).toBe('Légende de la mine ★★');
-    expect(formTitle(EVOLUTION_FORMS[EVOLUTION_FORMS.length - 1])).toBe('Légende du Cœur du monde');
+    expect(formTitle(EVOLUTION_FORMS[5])).toBe('Légende du Cœur du monde ★');
+    expect(formTitle(EVOLUTION_FORMS[9])).toBe('Légende du Cœur du monde ★★★★★');
   });
 
   it("demandent des objectifs de plus en plus grands, d'un palier et d'une forme à l'autre", () => {

@@ -368,10 +368,10 @@ function tiered(shards: number, tiers: readonly (readonly (readonly [EvolutionMe
 }
 
 export interface EvolutionForm {
-  /** Visuel de la forme : les étoiles de Légende gardent celui de la Légende. */
+  /** Visuel de la forme : toutes les étoiles du Cœur du monde partagent le même. */
   readonly id: EvolutionId;
   readonly label: string;
-  /** Étoiles de Légende (0 hors Légende) : des rangs en plus après la Légende, sans nouveau personnage. */
+  /** Étoiles de la Légende du Cœur du monde (0 avant) : ses rangs, de la zone 12 à la zone 20. */
   readonly stars: number;
   /** Objectifs à remplir pour passer à cette forme, façon « Adventure Rank » de Legend of Mushroom. */
   readonly objectives: readonly EvolutionObjective[];
@@ -380,32 +380,33 @@ export interface EvolutionForm {
 }
 
 /**
- * Étoiles de Légende (choix de Théo, 16/10/2026) : la Légende arrive vers la zone 12, il restait 8 zones sans rang à
- * viser. Cinq étoiles prennent le relais, une par zone de la 13 à la 17, avec la même mécanique de missions ; chacune
- * donne de la Frappe, ce qui apporte la Puissance qui manquait au-delà de la zone 16. Les objectifs de zone ne
- * demandent que d'atteindre la zone, jamais de battre son gardien : l'étoile aide justement à le battre.
+ * Légende du Cœur du monde (choix de Théo, 17/10/2026) : la Légende arrive vers la zone 12, il restait 8 zones sans rang
+ * à viser. La forme finale prend le relais en 5 étoiles, une toutes les deux zones (12, 14, 16, 18, 20), avec la même
+ * mécanique de missions ; chacune donne de la Frappe, ce qui apporte la Puissance qui manquait au-delà de la zone 16.
+ * Les objectifs de zone ne demandent que d'atteindre la zone, jamais de battre son gardien : l'étoile aide justement à
+ * le battre. Les objets forgés, qui montent même quand le joueur piétine, espacent les étoiles dans le temps.
  */
-const LEGEND_STAR_BONUS = 0.5;
+const HEART_STAR_BONUS = 1;
 /** Zone à atteindre, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la zone atteinte). */
-const LEGEND_STAR_GOALS: readonly (readonly [zone: number, pickaxe: number, items: number, rocks: number])[] = [
-  [13, 25, 7500, 190],
-  [14, 26, 10000, 200],
-  [15, 27, 13000, 215],
-  [16, 28, 16500, 230],
-  [17, 30, 21000, 245],
+const HEART_STAR_GOALS: readonly (readonly [zone: number, pickaxe: number, items: number, rocks: number])[] = [
+  [12, 25, 9000, 185],
+  [14, 26, 13000, 200],
+  [16, 28, 18000, 230],
+  [18, 30, 25000, 255],
+  [20, 30, 34000, 285],
 ];
 
-const LEGEND_STARS: readonly EvolutionForm[] = LEGEND_STAR_GOALS.map(([zone, pickaxe, items, rocks], index) => ({
-  id: 'legend',
-  label: 'Légende de la mine',
+const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, pickaxe, items, rocks], index) => ({
+  id: 'heart',
+  label: 'Légende du Cœur du monde',
   stars: index + 1,
   // Palier 1 : la zone ; palier 2 : le chemin ; palier 3 : tout en entier
-  objectives: tiered(12, [
+  objectives: tiered(12 + 2 * index, [
     [['zone', zone], ['itemsForged', Math.round(items * 0.8)]],
     [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.9)], ['rocksBroken', rocks - 5]],
     [['itemsForged', items], ['rocksBroken', rocks]],
   ]),
-  strikeBonus: LEGEND_STAR_BONUS,
+  strikeBonus: HEART_STAR_BONUS,
 }));
 
 /**
@@ -462,18 +463,7 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     ]),
     strikeBonus: 0.5,
   },
-  ...LEGEND_STARS,
-  {
-    id: 'heart',
-    label: 'Légende du Cœur du monde',
-    stars: 0,
-    objectives: tiered(20, [
-      [['zone', 18], ['itemsForged', 24000], ['rocksBroken', 260]],
-      [['itemsForged', 26000], ['rocksBroken', 270]],
-      [['zone', 19], ['itemsForged', 28000], ['rocksBroken', 275]],
-    ]),
-    strikeBonus: 1,
-  },
+  ...HEART_STARS,
 ];
 
 /** Multiplicateur de Frappe cumulé jusqu'à la forme d'index donné. */

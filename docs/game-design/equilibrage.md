@@ -51,10 +51,9 @@ Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne
 | Contremaître | 6 | 13 | 600 | 80 | ×2,25 |
 | Maître des profondeurs | 9 | 20 | 1 200 | 140 | ×3,4 |
 | Légende de la mine | 12 | 24 | 4 000 | 180 | ×5,1 |
-| ★ à ★★★★★ (une par zone) | 13 à 17 | 25 à 30 | 7 500 à 21 000 | 190 à 245 | ×1,5 chacune, ×38 à ★★★★★ |
-| Légende du Cœur du monde | 19 | | 28 000 | 275 | ×77 |
+| Légende du Cœur du monde ★ à ★★★★★ | 12, 14, 16, 18, 20 | 25 à 30 | 9 000 à 34 000 | 185 à 285 | ×2 chacune, ×162 à ★★★★★ |
 
-- **Étoiles de Légende** (16/10/2026) : cinq rangs de plus après la Légende, puis une forme finale, pour que les zones 13 à 20 aient toujours un rang à viser et la Puissance qui manquait après la zone 16. Détails, calage et prompts dans [[etoiles-de-legende]].
+- **Légende du Cœur du monde** (17/10/2026) : la forme finale arrive après la Légende en cinq étoiles, une toutes les deux zones, pour que les zones 12 à 20 aient toujours un rang à viser et la Puissance qui manquait après la zone 16. Détails, calage et prompts dans [[etoiles-de-legende]].
 
 - **Calage** : les objectifs reprenaient d'abord ce que le joueur régulier faisait avec l'ancien coût en or et minerais. Le 14/10/2026, Théo a demandé un Mineur et un Contremaître plus rapides, pour ouvrir plus tôt l'Atelier et le Puits sans fond : leurs objectifs ont baissé (Contremaître en zone 6 et pioche 13 au lieu de 7 et 16), et l'Atelier coûte désormais au départ des segments de la pioche 14 au lieu de 17, pour être vraiment utilisable à son ouverture. Simulé (régulier) : Mineur en 12 h (deuxième session du premier jour), Contremaître jour 2,8 (au lieu de 4,5), Maître jour 7,9, Légende jour 16,3. Pour que la fin de partie reste longue, le segment de pioche passe à ×2,09 : pioche 30 au jour 47,8 en moyenne sur 5 tirages.
 - **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10), 1 par filon et 20 de plus en fin de zone. Ils ne servent plus qu'à l'Atelier.

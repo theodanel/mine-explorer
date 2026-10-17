@@ -12,7 +12,12 @@
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
         <span class="player-name">Petit mineur</span>
-        <span class="player-title">{{ evolution.title() }}</span>
+        <span class="player-title">
+          {{ evolution.form().label }}
+          @if (evolution.form().stars > 0) {
+            <app-rank-stars [count]="evolution.form().stars" />
+          }
+        </span>
       </span>
       @if (evolution.ready()) {
         <span class="evolve-badge">Évoluer !</span>

@@ -46,6 +46,7 @@ import { LotteryButton } from './lottery/lottery-button/lottery-button';
 import { RewardFlightLayer } from './reward-flight/reward-flight-layer';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
+import { RankStars } from './evolution/rank-stars/rank-stars';
 
 /** En dessous de 100 000, le nombre exact ; au-delà, la forme courte. */
 const COMPACT_FROM = 100_000;
@@ -59,6 +60,7 @@ function resourceLabel(amount: number): string {
   selector: 'app-root',
   imports: [
     MineScene,
+    RankStars,
     RewardFlightLayer,
     LotteryButton,
     ZoneBanner,

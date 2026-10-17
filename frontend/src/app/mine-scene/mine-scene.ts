@@ -11,10 +11,12 @@ import { APPRENTICE_STRIKE, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground }
 import { Mining, StrikeOutcome } from '../mining/mining';
 import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
+import { RANDOM } from '../shared/random';
 import { GUARDIAN_STAGE } from '../progression/progression-rules';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
 import { MineRock, RockTop } from './mine-rock';
+import { AmbienceLayer } from './ambience-layer';
 import { auraLook, MinerAura } from './miner-aura';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
@@ -75,6 +77,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private aura: MinerAura | null = null;
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
+  private readonly ambience = new AmbienceLayer(inject(RANDOM));
   private initialized = false;
   /**
    * Hauteur de la scène, en pixels de scène : 1280 en 9:16, plus sur un téléphone haut, où le cadre s'allonge.
@@ -134,6 +137,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const zone = this.progression.playingZone();
       if (this.background) {
         void this.showZoneBackground(zone);
+        this.ambience.showZone(zone);
       }
     });
     // Le gardien de fin de zone remplace le rocher le temps du combat
@@ -163,7 +167,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background = new Sprite();
-      this.app.stage.addChild(this.background, this.rock.sprite);
+      this.app.stage.addChild(this.background, this.ambience.container, this.rock.sprite);
+      this.ambience.showZone(this.progression.playingZone());
       await this.showZoneBackground(this.progression.playingZone());
       void this.rock.show(this.progression.playingZone(), this.guardian());
       await this.startMining(frames);
@@ -245,6 +250,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
       this.aura?.update(ticker.deltaMS);
+      this.ambience.update(ticker.deltaMS);
       this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);

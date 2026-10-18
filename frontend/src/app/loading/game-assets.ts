@@ -53,6 +53,14 @@ const LEGEND_STRIKE: StrikeAnimation = {
   impactOffset: { x: 122, y: -30 },
 };
 
+const HEART_STRIKE: StrikeAnimation = {
+  atlasUrl: 'assets/characters/evolutions/coeur-frappe.json',
+  // Images de 432 × 368 découpées par art-source/animations/decouper-frappe.py ; mesures sur ses grilles
+  scale: 0.83,
+  bodyOffsetX: 56,
+  impactOffset: { x: 74, y: -18 },
+};
+
 const MASTER_STRIKE: StrikeAnimation = {
   atlasUrl: 'assets/characters/evolutions/maitre-frappe.json',
   // Les cornes du casque le rendent plus haut que le Contremaître
@@ -301,8 +309,7 @@ export const EVOLUTION_VISUALS: Readonly<Record<EvolutionId, EvolutionVisual>> =
   foreman: { portraitUrl: 'assets/evolutions/contremaitre-portrait.webp', body: { kind: 'animated', strike: FOREMAN_STRIKE } },
   master: { portraitUrl: 'assets/evolutions/maitre-portrait.webp', body: { kind: 'animated', strike: MASTER_STRIKE } },
   legend: { portraitUrl: 'assets/evolutions/legende-portrait.webp', body: { kind: 'animated', strike: LEGEND_STRIKE } },
-  // Image fixe en attendant sa vidéo de frappe (prompts dans docs/game-design/etoiles-de-legende.md)
-  heart: { portraitUrl: 'assets/evolutions/coeur-portrait.webp', body: { kind: 'static', url: 'assets/evolutions/coeur.webp' } },
+  heart: { portraitUrl: 'assets/evolutions/coeur-portrait.webp', body: { kind: 'animated', strike: HEART_STRIKE } },
 };
 
 /**

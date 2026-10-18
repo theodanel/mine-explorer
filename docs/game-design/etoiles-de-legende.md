@@ -10,7 +10,7 @@ Demande de Théo (16/10/2026) : avec 20 zones et 5 rangs, la Légende arrivait v
 - Chaque étoile est un rang comme les autres : 3 paliers de missions, des éclats par mission, puis la promotion. L'écran d'évolution compte 9 rangs.
 - Le titre affiche les étoiles : « Légende du Cœur du monde ★★★ ».
 - Un **halo de lave** brille derrière le mineur dès la première étoile, plus vif à chacune (`mine-scene/miner-aura.ts`).
-- **Visuels** (17/10/2026) : portrait et image en pied venus de Gemini, préparés par `art-source/evolutions/preparer-coeur.py`. En attendant une vidéo de frappe utilisable, le mineur s'affiche en image fixe qui s'écrase un peu à chaque coup. Les étoiles sont des icônes (`assets/ui/etoile-pleine.webp` et `etoile-vide.webp`, composant `evolution/rank-stars`), sous le titre et dans l'écran d'évolution.
+- **Visuels** : portrait et image en pied venus de Gemini, préparés par `art-source/evolutions/preparer-coeur.py`. Depuis le 18/10/2026, le Cœur du monde a son animation de frappe (`art-source/animations/coeur-frappe.mp4`, impact à l'image 67, découpée par `decouper-frappe.py`). Les étoiles sont des icônes (`assets/ui/etoile-pleine.webp` et `etoile-vide.webp`, composant `evolution/rank-stars`), sous le titre et dans l'écran d'évolution.
 - Les sauvegardes restent valables : la forme est rangée par son numéro, la Légende garde le sien, et une sauvegarde de la première version au-delà du dernier rang garde le rang le plus haut.
 
 ## Écran d'évolution transformé (17/10/2026)

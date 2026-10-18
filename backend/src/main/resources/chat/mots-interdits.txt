@@ -1,0 +1,44 @@
+# Mots masqués par des étoiles dans la discussion (ChatRules) : insultes, injures racistes, sexistes ou homophobes.
+# Un mot par ligne, en minuscules ; accents, majuscules, lettres répétées, chiffres à la place des lettres et pluriel
+# sont reconnus seuls. Seulement des mots entiers : « con » ne masque ni « content » ni « contre ».
+con
+conne
+connard
+connasse
+salope
+salaud
+pute
+putain
+pétasse
+pouffiasse
+enculé
+enculer
+fils de pute
+fdp
+ntm
+nique
+niquer
+ta gueule
+tg
+batard
+enfoiré
+ordure
+abruti
+débile
+crétin
+mongol
+attardé
+merde
+chier
+bite
+couille
+pd
+pédé
+tapette
+gouine
+nègre
+negro
+bougnoule
+youpin
+bicot
+nazi

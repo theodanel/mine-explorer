@@ -10,7 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** Un message de la discussion : qui, quelle phrase prédéfinie, quand. */
+/** Un message de la discussion : qui, quoi (déjà filtré par {@link ChatRules}), quand, et s'il est caché. */
 @Entity
 @Table(name = "chat_message")
 public class ChatMessage {
@@ -22,19 +22,22 @@ public class ChatMessage {
 	@Column(name = "player_id", nullable = false)
 	private UUID playerId;
 
-	@Column(nullable = false, length = 32)
-	private String phrase;
+	@Column(nullable = false, length = 800)
+	private String text;
 
 	@Column(name = "sent_at", nullable = false)
 	private Instant sentAt;
+
+	@Column(nullable = false)
+	private boolean hidden;
 
 	protected ChatMessage() {
 		// Requis par JPA
 	}
 
-	public ChatMessage(UUID playerId, ChatPhrase phrase, Instant sentAt) {
+	public ChatMessage(UUID playerId, String text, Instant sentAt) {
 		this.playerId = playerId;
-		this.phrase = phrase.key();
+		this.text = text;
 		this.sentAt = sentAt;
 	}
 
@@ -46,11 +49,19 @@ public class ChatMessage {
 		return playerId;
 	}
 
-	public String getPhrase() {
-		return phrase;
+	public String getText() {
+		return text;
 	}
 
 	public Instant getSentAt() {
 		return sentAt;
+	}
+
+	public boolean isHidden() {
+		return hidden;
+	}
+
+	public void hide() {
+		hidden = true;
 	}
 }

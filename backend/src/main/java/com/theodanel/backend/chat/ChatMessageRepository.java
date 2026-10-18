@@ -12,10 +12,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-	/** Derniers messages avec le pseudo actuel de leur auteur, du plus récent au plus ancien. */
-	@Query("select new com.theodanel.backend.chat.ChatLine(m.id, m.playerId, p.pseudo, m.phrase, m.sentAt)"
-			+ " from ChatMessage m join Player p on p.id = m.playerId order by m.id desc")
-	List<ChatLine> latest(Limit limit);
+	/** Derniers messages visibles avec le pseudo actuel de leur auteur, du plus récent au plus ancien. */
+	@Query("select new com.theodanel.backend.chat.ChatLine(m.id, m.playerId, p.pseudo, m.text, m.sentAt)"
+			+ " from ChatMessage m join Player p on p.id = m.playerId where m.hidden = false order by m.id desc")
+	List<ChatLine> latestVisible(Limit limit);
 
 	boolean existsByPlayerIdAndSentAtAfter(UUID playerId, Instant since);
 
@@ -24,4 +24,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 	@Modifying
 	@Query("delete from ChatMessage m where m.sentAt < :before")
 	int deleteSentBefore(@Param("before") Instant before);
+
+	@Modifying
+	@Query("update ChatMessage m set m.hidden = true where m.playerId = :playerId")
+	int hideAllFrom(@Param("playerId") UUID playerId);
 }

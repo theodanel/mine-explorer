@@ -3,25 +3,16 @@ import { Component, computed, DestroyRef, ElementRef, inject, output, signal, vi
 import { GoogleButton } from '../google-button/google-button';
 import { OnlineAccount } from '../online-account';
 import { OnlineApi } from '../online-api';
-import { CHAT_PHRASES, ChatMessage, chatPhraseText, isChatMessages } from './chat-phrases';
+import { CHAT_EMOJIS, CHAT_MAX_LENGTH, ChatView, chatLength, chatRefusalText, isChatView } from './chat-model';
 
-/** La discussion est relue toutes les 8 s tant qu'elle est ouverte, jamais en arrière-plan. */
-const REFRESH_MS = 8000;
-/** Même délai que le serveur entre deux messages (ChatService.COOLDOWN). */
-const COOLDOWN_MS = 5000;
+/** La discussion est relue toutes les 6 s tant qu'elle est ouverte, jamais en arrière-plan. */
+const REFRESH_MS = 6000;
 const TIME_FORMAT = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-interface ShownMessage {
-  readonly id: number;
-  readonly pseudo: string;
-  readonly text: string;
-  readonly time: string;
-  readonly mine: boolean;
-}
-
 /**
- * Discussion entre joueurs, faite de phrases prédéfinies : tout le monde lit, un joueur connecté choisit une phrase
- * à envoyer. Ouverte depuis la bulle en haut à gauche de la mine.
+ * Discussion entre joueurs : tout le monde lit ; un joueur connecté écrit ce qu'il veut (200 caractères, petits
+ * emojis), signale un message gênant ; un modérateur retire un message ou coupe son auteur. Le serveur filtre tout.
+ * Ouverte depuis la bulle en haut à gauche de la mine.
  */
 @Component({
   selector: 'app-chat-page',
@@ -34,25 +25,26 @@ export class ChatPage {
   protected readonly account = inject(OnlineAccount);
   readonly closed = output();
 
-  protected readonly phrases = CHAT_PHRASES;
-  private readonly messages = signal<readonly ChatMessage[] | null>(null);
+  protected readonly emojis = CHAT_EMOJIS;
+  protected readonly maxLength = CHAT_MAX_LENGTH;
+  private readonly view = signal<ChatView | null>(null);
   protected readonly failed = signal(false);
-  protected readonly cooling = signal(false);
+  protected readonly draft = signal('');
+  protected readonly sending = signal(false);
+  protected readonly emojisOpen = signal(false);
   protected readonly notice = signal<string | null>(null);
+  /** Messages signalés pendant cette visite : le bouton devient « Signalé ». */
+  protected readonly reported = signal<ReadonlySet<number>>(new Set());
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
+  private readonly input = viewChild<ElementRef<HTMLInputElement>>('input');
 
-  protected readonly shown = computed<readonly ShownMessage[] | null>(() => {
-    const messages = this.messages();
-    if (messages === null) {
-      return null;
-    }
-    return messages.flatMap((message) => {
-      const text = chatPhraseText(message.phrase);
-      return text === null
-        ? []
-        : [{ id: message.id, pseudo: message.pseudo, text, time: TIME_FORMAT.format(new Date(message.sentAt)), mine: message.mine }];
-    });
-  });
+  protected readonly canWrite = computed(() => this.view()?.canWrite ?? false);
+  protected readonly moderator = computed(() => this.view()?.moderator ?? false);
+  protected readonly remaining = computed(() => CHAT_MAX_LENGTH - chatLength(this.draft()));
+  protected readonly canSend = computed(() => !this.sending() && this.draft().trim() !== '' && this.remaining() >= 0);
+  protected readonly messages = computed(() =>
+    this.view()?.messages.map((message) => ({ ...message, time: TIME_FORMAT.format(new Date(message.sentAt)) })) ?? null,
+  );
 
   constructor() {
     void this.refresh();
@@ -60,19 +52,46 @@ export class ChatPage {
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
 
-  protected async send(key: string): Promise<void> {
-    if (this.cooling()) {
+  protected addEmoji(emoji: string): void {
+    if (chatLength(this.draft() + emoji) <= CHAT_MAX_LENGTH) {
+      this.draft.update((text) => text + emoji);
+    }
+    this.input()?.nativeElement.focus();
+  }
+
+  protected async send(): Promise<void> {
+    if (!this.canSend()) {
       return;
     }
-    this.cooling.set(true);
-    setTimeout(() => this.cooling.set(false), COOLDOWN_MS);
-    const result = await this.api.write('POST', '/api/chat', { phrase: key });
+    this.sending.set(true);
+    const result = await this.api.write('POST', '/api/chat', { text: this.draft() });
+    this.sending.set(false);
     if (result.ok) {
+      this.draft.set('');
       this.notice.set(null);
+      this.emojisOpen.set(false);
       await this.refresh();
     } else {
-      this.notice.set(result.code === 'chat-too-fast' ? 'Doucement : un message toutes les 5 secondes.' : 'Message non envoyé, réessaie.');
+      this.notice.set(chatRefusalText(result.code));
     }
+  }
+
+  protected async report(id: number): Promise<void> {
+    const result = await this.api.write('POST', `/api/chat/${id}/report`);
+    if (result.ok) {
+      this.reported.update((ids) => new Set([...ids, id]));
+      await this.refresh();
+    }
+  }
+
+  protected async remove(id: number): Promise<void> {
+    await this.api.write('DELETE', `/api/chat/${id}`);
+    await this.refresh();
+  }
+
+  protected async muteAuthor(id: number): Promise<void> {
+    await this.api.write('POST', `/api/chat/${id}/mute-author`);
+    await this.refresh();
   }
 
   protected close(): void {
@@ -81,13 +100,16 @@ export class ChatPage {
 
   private async refresh(): Promise<void> {
     const result = await this.api.get('/api/chat');
-    if (result.ok && isChatMessages(result.body)) {
-      const previousLast = this.messages()?.at(-1)?.id;
-      this.messages.set(result.body.messages);
+    if (result.ok && isChatView(result.body)) {
+      const previousLast = this.view()?.messages.at(-1)?.id;
+      this.view.set(result.body);
       this.failed.set(false);
       if (result.body.messages.at(-1)?.id !== previousLast) {
         // Nouveau message : on descend tout en bas une fois la liste redessinée
-        setTimeout(() => this.list()?.nativeElement.scrollTo({ top: this.list()?.nativeElement.scrollHeight ?? 0 }));
+        setTimeout(() => {
+          const list = this.list()?.nativeElement;
+          list?.scrollTo({ top: list.scrollHeight });
+        });
       }
     } else {
       this.failed.set(true);

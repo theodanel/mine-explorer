@@ -3,6 +3,7 @@ package com.theodanel.backend.config;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
@@ -25,7 +26,15 @@ public record MineProperties(
 		@Valid @NotNull Limits limits,
 		@Valid @NotNull RateLimit rateLimit,
 		@Valid @NotNull Session session,
-		@Valid @NotNull AntiCheat antiCheat) {
+		@Valid @NotNull AntiCheat antiCheat,
+		@Valid @NotNull Chat chat) {
+
+	/**
+	 * Discussion. {@code moderators} : identifiants des joueurs qui peuvent retirer un message ou couper un joueur
+	 * (identifiant visible dans « Télécharger mes données »), vide par défaut.
+	 */
+	public record Chat(@NotNull List<UUID> moderators) {
+	}
 
 	/** Adresse du jeu : retour après connexion, et seule origine autorisée à appeler l'API avec ses cookies. */
 	public record Front(@NotBlank String url, @NotEmpty List<@NotBlank String> allowedOrigins) {

@@ -58,7 +58,7 @@ public class AccountController {
 	public record SaveExport(long version, Instant updatedAt, Map<String, String> data) {
 	}
 
-	public record ChatExport(String phrase, Instant sentAt) {
+	public record ChatExport(String text, Instant sentAt) {
 	}
 
 	/** Toutes les données gardées sur le joueur (droit d'accès et de portabilité, RGPD). */
@@ -94,7 +94,7 @@ public class AccountController {
 			.orElse(null);
 		List<ChatExport> chatMessages = chat.sentBy(player.getId())
 			.stream()
-			.map(message -> new ChatExport(message.getPhrase(), message.getSentAt()))
+			.map(message -> new ChatExport(message.getText(), message.getSentAt()))
 			.toList();
 		return new AccountExport(player.getId(), player.getPseudo(), player.getCreatedAt(), identities, save,
 				chatMessages);

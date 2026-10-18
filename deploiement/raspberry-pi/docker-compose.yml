@@ -25,6 +25,8 @@ services:
       SPRING_FLYWAY_PASSWORD: "${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env (voir LISEZMOI.md)}"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env (voir LISEZMOI.md)}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env (voir LISEZMOI.md)}"
+      # Modérateurs de la discussion : identifiants de joueurs séparés par des virgules (facultatif)
+      MINE_MODERATORS: "${MINE_MODERATORS:-}"
     # Plafond du conteneur, appliqué seulement si le cgroup mémoire est activé sur le Pi (voir LISEZMOI.md)
     mem_limit: 768m
     depends_on:

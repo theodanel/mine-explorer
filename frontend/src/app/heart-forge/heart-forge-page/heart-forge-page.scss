@@ -34,52 +34,59 @@
   overflow-y: auto;
 }
 
-// Anneau d'obsidienne cerclé d'or, dessiné en attendant son image ; les emplacements tournent autour du centre
+// L'anneau d'obsidienne de Gemini ; emplacements et gemmes sont posés sur ses alvéoles, à 33 % du centre
 .ring {
+  --socket-radius: 24.6cqw;
+
   position: relative;
   width: 74cqw;
   height: 74cqw;
   margin: 1cqw 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, transparent 52%, #2a1d16 53%, #3b2a20 70%, #1d140f 74%, transparent 75%),
-    radial-gradient(circle, rgb(255 122 42 / 35%), transparent 70%);
-  box-shadow:
-    inset 0 0 0 0.9cqw #b08a3e,
-    0 0 0 0.6cqw var(--ink),
-    0 1.5cqw 0 rgb(0 0 0 / 40%);
+  background: url('/assets/ui/forge-du-coeur/anneau.webp') center / contain no-repeat;
+  filter: drop-shadow(0 1.2cqw 0 rgb(0 0 0 / 35%));
 }
 
 .portrait {
   position: absolute;
-  inset: 22%;
-  width: 56%;
-  height: 56%;
-  border: 0.6cqw solid #b08a3e;
+  inset: 27%;
+  width: 46%;
+  height: 46%;
   border-radius: 50%;
   background: radial-gradient(#5a3420, #1c120b);
 }
 
-.socket {
+.socket,
+.gem {
   position: absolute;
   top: 50%;
   left: 50%;
+  transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle)));
+}
+
+.gem {
+  width: 6cqw;
+  height: 6cqw;
+  margin: -3cqw 0 0 -3cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1.2cqw rgb(255 122 42 / 70%));
+}
+
+.socket {
   display: grid;
   place-items: center;
-  width: 13cqw;
-  height: 13cqw;
-  margin: -6.5cqw 0 0 -6.5cqw;
+  width: 9cqw;
+  height: 9cqw;
+  margin: -4.5cqw 0 0 -4.5cqw;
   padding: 0;
-  border: 0.45cqw solid #b08a3e;
+  border: none;
   border-radius: 50%;
-  background: #120c08;
-  transform: rotate(var(--angle)) translateY(-31cqw) rotate(calc(-1 * var(--angle)));
+  background: none;
   cursor: default;
 
   img {
-    width: 82%;
-    height: 82%;
-    opacity: 0.22;
+    width: 100%;
+    height: 100%;
+    opacity: 0.18;
     filter: grayscale(0.8);
   }
 
@@ -88,13 +95,13 @@
     animation: socket-call 1.4s ease-in-out infinite;
 
     img {
-      opacity: 0.75;
+      opacity: 0.7;
       filter: none;
     }
   }
 
   &.filled {
-    box-shadow: 0 0 3cqw 0.6cqw rgb(255 196 90 / 65%);
+    filter: drop-shadow(0 0 1.6cqw rgb(255 196 90 / 80%));
 
     img {
       opacity: 1;
@@ -105,22 +112,22 @@
 
 .socket-rank {
   position: absolute;
-  right: -0.6cqw;
-  bottom: -0.6cqw;
+  right: -1cqw;
+  bottom: -1cqw;
   display: grid;
   place-items: center;
-  width: 4.6cqw;
-  height: 4.6cqw;
-  border: 0.35cqw solid var(--ink);
+  width: 4cqw;
+  height: 4cqw;
+  border: 0.3cqw solid var(--ink);
   border-radius: 50%;
   background: #ffd36a;
   color: var(--ink);
-  font: 2.6cqw / 1 var(--font-display);
+  font: 2.3cqw / 1 var(--font-display);
 }
 
 @keyframes socket-call {
   50% {
-    box-shadow: 0 0 3cqw 0.8cqw rgb(255 196 90 / 80%);
+    transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle))) scale(1.15);
   }
 }
 
@@ -142,13 +149,10 @@
   }
 }
 
-// Éclat de cœur : un petit fragment de lave, en attendant son image
 .heart-shard {
   width: 6cqw;
   height: 6cqw;
-  border-radius: 40% 60% 35% 65%;
-  background: radial-gradient(circle at 35% 35%, #ffd36a, #ff6a2a 45%, #2a1d16 75%);
-  box-shadow: 0 0 2cqw rgb(255 122 42 / 60%);
+  object-fit: contain;
 }
 
 .message {

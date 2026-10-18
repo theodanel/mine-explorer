@@ -1,6 +1,8 @@
 """Détoure les images de la Forge du Cœur (sources Gemini sur fond vert #00FF00).
 
-  forge-du-coeur/runes.png -> frontend/public/assets/ui/forge-du-coeur/rune-<élément>.webp (5 runes, 128 px)
+  forge-du-coeur/runes.png       -> frontend/public/assets/ui/forge-du-coeur/rune-<élément>.webp (5 runes, 128 px)
+  forge-du-coeur/anneau.png      -> frontend/public/assets/ui/forge-du-coeur/anneau.webp (600 px, centre transparent)
+  forge-du-coeur/eclat-coeur.png -> frontend/public/assets/ui/forge-du-coeur/eclat-coeur.webp (128 px)
 
 Lancer depuis la racine du dépôt : python art-source/forge-du-coeur/preparer-forge.py
 """
@@ -15,6 +17,7 @@ ELEMENTS = ("fire", "ice", "earth", "shadow", "light")
 GREEN_OPAQUE = 40
 GREEN_TRANSPARENT = 110
 ICON_SIZE = 128
+RING_SIZE = 600
 QUALITY = 90
 
 
@@ -64,6 +67,20 @@ def prepare_runes() -> None:
         print(element, rune.size)
 
 
+def prepare_ring() -> None:
+    # Pas de recadrage : l'anneau reste centré dans son carré, comme les emplacements calculés par la page
+    ring = key_out_green(Image.open(SOURCE / "anneau.png"))
+    ring.resize((RING_SIZE, RING_SIZE), Image.LANCZOS).save(TARGET / "anneau.webp", quality=QUALITY)
+
+
+def prepare_heart_shard() -> None:
+    shard = trim(key_out_green(Image.open(SOURCE / "eclat-coeur.png")))
+    shard.thumbnail((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
+    shard.save(TARGET / "eclat-coeur.webp", quality=QUALITY)
+
+
 if __name__ == "__main__":
     TARGET.mkdir(parents=True, exist_ok=True)
     prepare_runes()
+    prepare_ring()
+    prepare_heart_shard()

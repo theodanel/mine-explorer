@@ -3,7 +3,6 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 import { Sound } from '../../audio/sound';
 import {
   MAX_RUNE_RANK,
-  RING_SOCKETS,
   RUNE_ELEMENTS,
   RUNE_FORGE_ORES,
   RUNE_FORGE_SHARDS,
@@ -19,8 +18,15 @@ import { HeartForge } from '../heart-forge';
 import { fusionFailChance, runeCount, socketRune } from '../heart-forge-rules';
 
 const PERCENT = 100;
-/** Angle entre deux emplacements de l'anneau, le premier tout en haut. */
-const SOCKET_ANGLE = 360 / RING_SOCKETS;
+/**
+ * L'anneau dessiné a 12 emplacements, un tous les 30° : ceux du haut et du bas portent une gemme de lave fixe, les 10
+ * autres attendent les runes, 2 par étoile en tournant dans le sens des aiguilles d'une montre.
+ */
+const RING_STEP = 30;
+const GEM_ANGLES = [0, 180];
+const RUNE_SOCKET_ANGLES = Array.from({ length: 360 / RING_STEP }, (_, index) => index * RING_STEP).filter(
+  (angle) => !GEM_ANGLES.includes(angle),
+);
 /** Durée d'affichage du résultat d'une fusion. */
 const FUSION_MESSAGE_MS = 2500;
 
@@ -43,6 +49,7 @@ export class HeartForgePage {
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   protected readonly portraitUrl = EVOLUTION_VISUALS.heart.portraitUrl;
+  protected readonly gemAngles = GEM_ANGLES;
   protected readonly ranks = Array.from({ length: MAX_RUNE_RANK }, (_, index) => index + 1);
   protected readonly forgeShards = RUNE_FORGE_SHARDS;
   protected readonly forgeOres = RUNE_FORGE_ORES;
@@ -61,7 +68,7 @@ export class HeartForgePage {
         icon: runeIconUrl(rune.element),
         label: `${RUNE_LABELS[rune.element]} rang ${rune.rank}`,
         ready: !filled && runeCount(state, rune) > 0,
-        angle: index * SOCKET_ANGLE,
+        angle: RUNE_SOCKET_ANGLES[index],
       };
     });
   });

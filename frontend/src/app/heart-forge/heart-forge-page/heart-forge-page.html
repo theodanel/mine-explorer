@@ -8,6 +8,9 @@
     <!-- L'anneau : 10 emplacements, 2 par étoile, à sertir avec la rune qu'ils attendent -->
     <div class="ring" role="group" aria-label="Anneau du Cœur du monde">
       <img class="portrait" [src]="portraitUrl" alt="" width="160" height="160" />
+      @for (angle of gemAngles; track angle) {
+        <img class="gem" [style.--angle.deg]="angle" src="assets/ui/forge-du-coeur/eclat-coeur.webp" alt="" width="128" height="128" />
+      }
       @for (socket of sockets(); track socket.index) {
         <button
           type="button"
@@ -27,7 +30,7 @@
     <p class="hint">Chaque étoile demande 2 runes serties. Une rune qui brille peut être sertie : touche-la.</p>
 
     <div class="purse">
-      <span class="heart-shard" aria-hidden="true"></span>
+      <img class="heart-shard" src="assets/ui/forge-du-coeur/eclat-coeur.webp" alt="" width="128" height="128" />
       <strong>{{ forge.shards() }}</strong> éclats de cœur
     </div>
 

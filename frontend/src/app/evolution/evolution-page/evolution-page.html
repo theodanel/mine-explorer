@@ -7,7 +7,10 @@
   <div class="scroll">
     @if (heartMode()) {
       <app-heart-card [stars]="evolution.form().stars" [ready]="evolution.ready()" [revealing]="revealing()" />
-      <button type="button" class="game-button gold forge-link" (click)="openForge()">Forge du Cœur</button>
+      <div class="forge-row">
+        <button type="button" class="game-button gold forge-link" (click)="openForge()">Forge du Cœur</button>
+        <button type="button" class="info" aria-label="Comment éveiller les étoiles ?" (click)="helpOpen.set(true)">i</button>
+      </div>
     } @else {
       <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
       <article class="rank">
@@ -117,4 +120,8 @@
       <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().title }}.</p>
     }
   </div>
+
+  @if (helpOpen()) {
+    <app-heart-forge-help (closed)="helpOpen.set(false)" />
+  }
 </section>

@@ -15,6 +15,8 @@ import { EVOLUTION_VISUALS, materialIconUrl } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Ores } from '../../ores/ores';
 import { HeartForge } from '../heart-forge';
+import { HeartForgeHelp } from '../heart-forge-help/heart-forge-help';
+import { readStorage, writeStorage } from '../../shared/local-storage';
 import { fusionFailChance, runeCount, socketRune } from '../heart-forge-rules';
 
 const PERCENT = 100;
@@ -27,6 +29,8 @@ const GEM_ANGLES = [0, 180];
 const RUNE_SOCKET_ANGLES = Array.from({ length: 360 / RING_STEP }, (_, index) => index * RING_STEP).filter(
   (angle) => !GEM_ANGLES.includes(angle),
 );
+/** L'aide s'ouvre d'elle-même à la première visite de la Forge ; ce drapeau s'en souvient. */
+const HELP_SEEN_KEY = 'mine-explorer.forge-du-coeur-aide';
 /** Durée d'affichage du résultat d'une fusion. */
 const FUSION_MESSAGE_MS = 2500;
 
@@ -40,6 +44,7 @@ export function runeIconUrl(element: RuneElement): string {
  */
 @Component({
   selector: 'app-heart-forge-page',
+  imports: [HeartForgeHelp],
   templateUrl: './heart-forge-page.html',
   styleUrl: './heart-forge-page.scss',
 })
@@ -55,6 +60,7 @@ export class HeartForgePage {
   protected readonly forgeOres = RUNE_FORGE_ORES;
   protected readonly fusionCount = RUNE_FUSION_COUNT;
   protected readonly message = signal<{ text: string; success: boolean } | null>(null);
+  protected readonly helpOpen = signal(readStorage(HELP_SEEN_KEY) === null);
 
   protected readonly sockets = computed(() => {
     const state = { shards: this.forge.shards(), runes: this.forge.runes(), sockets: this.forge.sockets() };
@@ -95,6 +101,7 @@ export class HeartForgePage {
   });
 
   constructor() {
+    writeStorage(HELP_SEEN_KEY, '1');
     // Résultat de la dernière fusion : un petit message, puis il s'efface
     let timer: ReturnType<typeof setTimeout> | null = null;
     effect(() => {

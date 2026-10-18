@@ -1,6 +1,7 @@
 <section class="page game-panel" data-theme="ember" aria-labelledby="heart-forge-title">
   <header class="page-header">
     <h2 id="heart-forge-title">Forge du Cœur</h2>
+    <button type="button" class="info" aria-label="Comment éveiller les étoiles ?" (click)="helpOpen.set(true)">i</button>
     <button type="button" class="close" aria-label="Revenir à l'évolution" (click)="close()">×</button>
   </header>
 
@@ -78,4 +79,8 @@
     </table>
     <p class="hint">Fusionner {{ fusionCount }} runes du même élément et du même rang en donne une du rang suivant. À partir du rang 3, une fusion peut rater : il ne reste alors qu'une rune.</p>
   </div>
+
+  @if (helpOpen()) {
+    <app-heart-forge-help (closed)="helpOpen.set(false)" />
+  }
 </section>

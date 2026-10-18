@@ -21,9 +21,30 @@
   }
 }
 
+.page-header .info {
+  margin-left: 2cqw;
+}
+
 .close {
   margin-left: auto;
 }
+
+// Petit « i » entouré : ouvre la page d'aide de la Forge du Cœur
+.info {
+  display: grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  padding: 0;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 50%;
+  background: #fdebcb;
+  color: var(--ink);
+  font: italic 4.2cqw / 1 Georgia, serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 
 .scroll {
   display: grid;

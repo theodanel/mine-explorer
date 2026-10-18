@@ -344,10 +344,33 @@
   text-align: center;
 }
 
+.forge-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2.5cqw;
+}
+
 .forge-link {
-  justify-self: center;
   padding: 1.6cqw 5cqw;
 }
+
+// Petit « i » entouré : ouvre la page d'aide de la Forge du Cœur
+.info {
+  display: grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  padding: 0;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 50%;
+  background: #fdebcb;
+  color: var(--ink);
+  font: italic 4.2cqw / 1 Georgia, serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 
 .runes-line {
   margin: 0;

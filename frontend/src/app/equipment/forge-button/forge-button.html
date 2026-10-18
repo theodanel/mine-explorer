@@ -2,7 +2,7 @@
   <button
     type="button"
     class="game-button wood side-button"
-    data-tuto="pickaxe"
+    appReveal="pickaxe"
     (click)="upgradeOpen.set(true)"
   >
     <span class="side-title">Pioche</span>
@@ -12,13 +12,10 @@
     }
   </button>
 
-  <span
-    class="forge-wrapper"
-  >
+  <span class="forge-wrapper" appReveal="forge">
     <button
       type="button"
       class="forge"
-      data-tuto="forge"
       [attr.aria-label]="forgeLabel()"
       (click)="onForgeClick()"
       [disabled]="!inventory.canForge() && !inventory.pending()"
@@ -48,7 +45,7 @@
       </span>
     }
     <!-- Forge automatique : l'interrupteur et ses filtres, collés à la forge -->
-    <span class="forge-tools">
+    <span class="forge-tools" appReveal="forgeTools">
       <button
         type="button"
         class="tool auto"
@@ -72,7 +69,7 @@
   <button
     type="button"
     class="game-button wood side-button missions-button"
-    data-tuto="missions"
+    appReveal="missions"
     [attr.aria-label]="'Missions, ' + missions.claimableCount() + ' récompense(s) à récupérer'"
     (click)="missionsOpen.set(true)"
   >

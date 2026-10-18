@@ -5,6 +5,7 @@ import { COMPANIONS_UNLOCK_ZONE } from '../../balance/companions';
 import { Camp } from '../../camp/camp';
 import { Companions } from '../../companions/companions';
 import { MENU_ICONS } from '../../loading/game-assets';
+import { RevealDirective } from '../../onboarding/reveal.directive';
 import { Tooltip } from '../../shared/tooltip/tooltip';
 import { Skills } from '../../skills/skills';
 import { Workshop } from '../../workshop/workshop';
@@ -40,7 +41,7 @@ const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = {
  */
 @Component({
   selector: 'app-footer-menu',
-  imports: [Tooltip],
+  imports: [Tooltip, RevealDirective],
   templateUrl: './footer-menu.html',
   styleUrl: './footer-menu.scss',
 })

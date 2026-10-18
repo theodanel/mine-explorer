@@ -1,6 +1,7 @@
-<nav class="footer" aria-label="Menus du jeu">
+<!-- Le bandeau reste, les onglets surgissent quand le menu est dévoilé -->
+<nav class="footer" aria-label="Menus du jeu" data-reveal="footer">
   @for (tab of tabs(); track tab.label) {
-    <span class="tab-wrapper" [appTooltip]="tab.tooltip">
+    <span class="tab-wrapper" [appTooltip]="tab.tooltip" appReveal="footer" [revealAnchor]="false">
       <button
         type="button"
         class="tab"

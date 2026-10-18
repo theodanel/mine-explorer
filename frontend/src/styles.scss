@@ -183,6 +183,28 @@ body {
 }
 
 // Compteur du haut qui sursaute quand une récompense y arrive
+// Dévoilement progressif : l'élément garde sa place cachée, puis surgit à sa première apparition.
+// « scale » (et non transform) pour ne pas écraser le placement des éléments déjà transformés.
+.unrevealed {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.reveal-pop {
+  animation: reveal-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    scale: 0.2;
+  }
+}
+
 .counter-bump {
   animation: counter-bump 0.35s ease-out;
 }
@@ -470,8 +492,8 @@ body {
   --z-footer: 9;
   --z-dialog: 10;
   --z-flight: 20;
-  // Le tutoriel ne se montre qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
-  --z-tutorial: 30;
+  // Les bulles du dévoilement ne se montrent qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
+  --z-reveal-hint: 30;
   --z-splash: 40;
   --z-tooltip: 50;
 }

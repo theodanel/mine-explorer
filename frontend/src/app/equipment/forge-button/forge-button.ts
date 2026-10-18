@@ -9,6 +9,7 @@ import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { ForgeFiltersDialog } from '../../forge/forge-filters/forge-filters';
 import { Missions } from '../../missions/missions';
+import { RevealDirective } from '../../onboarding/reveal.directive';
 import { Overlays } from '../../shared/overlays';
 import { MissionsDialog } from '../../missions/missions-dialog/missions-dialog';
 import { formatDuration } from '../../shared/format-duration';
@@ -26,7 +27,7 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
-  imports: [MissionsDialog, ForgeFiltersDialog],
+  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })

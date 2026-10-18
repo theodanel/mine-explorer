@@ -31,9 +31,10 @@ import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
-import { TutorialOverlay } from './tutorial/tutorial-overlay/tutorial-overlay';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
+import { RevealDirective } from './onboarding/reveal.directive';
+import { RevealHint } from './onboarding/reveal-hint/reveal-hint';
 import { Ores } from './ores/ores';
 import { FooterMenu } from './navigation/footer-menu/footer-menu';
 import { Navigation } from './navigation/navigation';
@@ -89,7 +90,8 @@ function resourceLabel(amount: number): string {
     HeartForgePage,
     ProfilePage,
     SplashScreen,
-    TutorialOverlay,
+    RevealHint,
+    RevealDirective,
     MineEventLayer,
     GalleryChoice,
     CompanionsPage,

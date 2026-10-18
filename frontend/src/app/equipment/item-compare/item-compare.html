@@ -9,23 +9,28 @@
       (click)="$event.stopPropagation()"
     >
       <h2 id="item-compare-title">
-        <img class="title-icon" [src]="view.iconUrl" alt="" width="128" height="128" />
+        <img class="title-icon item-frame" [attr.data-tier]="view.candidate.tier" [src]="view.iconUrl" alt="" width="128" height="128" />
         {{ view.isPrevious ? 'Ancien' : 'Nouveau' }} : {{ view.slot.label }}
         <span class="tier" [attr.data-tier]="view.candidate.tier"
           >{{ view.candidate.tierLabel }} · Niv. {{ view.candidate.level }}</span
         >
       </h2>
 
-      <p class="power" [attr.data-trend]="view.powerTrend">
-        <span class="power-label">Puissance</span>
-        <span class="power-value">{{ view.power }}</span>
-        @if (view.powerTrend === 'better') {
-          <span class="power-arrow" aria-label="meilleur que l'objet porté">▲</span>
-        } @else if (view.powerTrend === 'worse') {
-          <span class="power-arrow" aria-label="moins bon que l'objet porté">▼</span>
-        }
-        <span class="power-delta">{{ view.powerDelta > 0 ? '+' : '' }}{{ view.powerDelta }}</span>
-      </p>
+      <!-- Ce que l'objet change en premier ; la Puissance totale du mineur en dessous, pour ne pas la prendre pour celle de l'objet -->
+      <div class="power" [attr.data-trend]="view.powerTrend">
+        <p class="power-gain">
+          @if (view.powerTrend === 'better') {
+            <span class="power-arrow" aria-label="meilleur que l'objet porté">▲</span>
+          } @else if (view.powerTrend === 'worse') {
+            <span class="power-arrow" aria-label="moins bon que l'objet porté">▼</span>
+          }
+          <span class="power-delta">{{ view.powerDelta > 0 ? '+' : '' }}{{ view.powerDelta }}</span>
+          <span class="power-label">Puissance</span>
+        </p>
+        <p class="power-total">
+          Ta Puissance : {{ view.powerBefore }} → <strong class="power-value">{{ view.power }}</strong>
+        </p>
+      </div>
 
       <table class="compare">
         <thead>

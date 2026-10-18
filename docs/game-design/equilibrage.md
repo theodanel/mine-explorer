@@ -26,7 +26,14 @@ Depuis `frontend/` :
 1. **Miner.** Chaque zone compte 15 filons, de 1-1 à 1-15, puis 2-1, etc. Chaque filon a un peu plus de PV que le précédent. Chaque coup rapporte 0,34 pièce par PV miné (plus le bonus d'or).
 2. **Éclats de géode.** Chaque coup a 4 % de chances d'en déterrer un (environ 75 par heure sans bonus de Vitesse). En plus, les 5 premiers filons en donnent 4 (les 5 emplacements remplis en une minute), puis chaque filon 3 jusqu'à la fin de la zone 4, et 2 ensuite. Une zone terminée en donne 5, et l'absence 1 toutes les 6 minutes (40 au maximum). Les missions, les objectifs d'évolution, le Défi de la mine, les événements et les expéditions complètent :
    - une mission principale à la fois, qui s'enchaîne sans fin (épuise des filons, forge, atteins un filon, paie des segments, vends, monte la pioche) ; les objectifs grandissent à chaque tour, mais les filons et les segments sont plafonnés à 3, et la mission de segments se valide d'elle-même quand la pioche est au maximum ;
-   - trois missions du jour (épuise un filon, forge 10 objets, vends 5 objets) et un coffre de 10 éclats quand les trois sont récupérées, soit 27 éclats par jour. Elles changent à minuit, heure du joueur.
+   - des missions du jour qui changent à minuit, heure du joueur, et un coffre de 15 éclats quand toutes sont récupérées. Depuis le 14/10/2026, il y en a sept, chacune liée à un pan du jeu et visible une fois ce menu ouvert :
+     - épuise un filon, forge 10 objets, vends 5 objets ;
+     - touche 3 événements ;
+     - renforce 3 fois à l'Atelier (dès le Mineur) ;
+     - joue une aventure (dès le Contremaître) ;
+     - envoie un compagnon en expédition (dès la zone 2).
+
+     Soit jusqu'à 60 éclats par jour.
 3. **Forger.** 2 éclats = 1 tirage. Le palier de l'objet dépend uniquement du niveau de la pioche.
 4. **Équiper ou vendre.** La comparaison montre le gain ou la perte de Puissance. L'objet remplacé est vendu automatiquement.
 5. **Améliorer la pioche.** L'or remplit 10 segments, puis un minuteur fait passer au niveau suivant. Le minuteur continue quand le jeu est fermé.
@@ -42,8 +49,11 @@ Depuis le 13/10/2026 (voir [[refonte-compagnons-evolution]]), une forme se gagne
 | Apprenti | départ | | | | ×1 |
 | Mineur | 4 | 8 | 220 | 45 | ×1,5 |
 | Contremaître | 6 | 13 | 600 | 80 | ×2,25 |
-| Maître des profondeurs | 9 | 20 | 1 900 | 140 | ×3,4 |
+| Maître des profondeurs | 9 | 20 | 1 200 | 140 | ×3,4 |
 | Légende de la mine | 12 | 24 | 4 000 | 180 | ×5,1 |
+| Légende du Cœur du monde ★ à ★★★★★ | 12, 14, 16, 18, 20 | 25 à 30 | 9 000 à 34 000 | 185 à 285 | ×2 chacune, ×162 à ★★★★★ |
+
+- **Légende du Cœur du monde** (17/10/2026) : la forme finale arrive après la Légende en cinq étoiles, une toutes les deux zones, pour que les zones 12 à 20 aient toujours un rang à viser et la Puissance qui manquait après la zone 16. Détails, calage et prompts dans [[etoiles-de-legende]].
 
 - **Calage** : les objectifs reprenaient d'abord ce que le joueur régulier faisait avec l'ancien coût en or et minerais. Le 14/10/2026, Théo a demandé un Mineur et un Contremaître plus rapides, pour ouvrir plus tôt l'Atelier et le Puits sans fond : leurs objectifs ont baissé (Contremaître en zone 6 et pioche 13 au lieu de 7 et 16), et l'Atelier coûte désormais au départ des segments de la pioche 14 au lieu de 17, pour être vraiment utilisable à son ouverture. Simulé (régulier) : Mineur en 12 h (deuxième session du premier jour), Contremaître jour 2,8 (au lieu de 4,5), Maître jour 7,9, Légende jour 16,3. Pour que la fin de partie reste longue, le segment de pioche passe à ×2,09 : pioche 30 au jour 47,8 en moyenne sur 5 tirages.
 - **Minerais** : chaque zone donne le minerai de son décor (Pierre en zone 2, Cuivre en zone 3… Divin à partir de la zone 10), 1 par filon et 20 de plus en fin de zone. Ils ne servent plus qu'à l'Atelier.
@@ -113,7 +123,7 @@ Stats simulées d'un joueur régulier : Frappe 566, Vitesse +13 %, Critique 12 %
 - **Or** = dégâts × 0,34 × (1 + Bonus d'or). C'était 0,25 tant que le sac portait toujours de l'or : l'or est devenu un choix de build, le revenu de base compense.
 - **Segment de pioche** = 15 × 2,09^(niveau − 1) pièces (2,065 jusqu'au Campement, 2,085 avec lui, 2,09 depuis les évolutions plus rapides du 14/10/2026), et 10 segments font un niveau. À ×2, l'arbre de compétences et les artefacts amenaient la pioche 30 au jour 35 ; à ×2,05, les éclats plus faciles du 13/10/2026 (deux fois plus de forges) l'amenaient au jour 43 : le coût a été relevé pour garder le rythme (pioche 30 au jour 49,3 en moyenne sur 5 tirages).
 - **Minuteur d'amélioration** = 1 min × 1,25^(niveau − 1), moins de 2 jours cumulés jusqu'au niveau 30.
-- **Absence** = or de 50 % du DPS et 1 éclat toutes les 6 minutes, sur 4 h au maximum.
+- **Absence** = or de 35 % du DPS (50 % avant le 15/10/2026) et 1 éclat toutes les 6 minutes, sur 4 h au maximum.
 - **Éclats** = 4 % de chances par coup, plus 4 par filon du 1-1 au 1-5, 3 jusqu'au 4-15, puis 2.
 - **Valeur de référence d'une stat** = base × croissance du palier^palier × croissance du niveau^(niveau − 1), avec une variation de ±10 %
   - Frappe : base 4, ×1,6 par palier, ×1,1 par niveau
@@ -224,3 +234,44 @@ Résultats de `tools/simulate.mts`, avec les vraies règles du jeu. Le joueur fo
 ## Sauvegarde
 
 Tout est sauvegardé dans le navigateur (`localStorage`). Une ancienne sauvegarde « vie de zone » garde sa zone et repart du premier rocher de cette zone. Une ancienne pioche sans minuteur est complétée automatiquement. Les nouveaux réglages s'appliquent aux sauvegardes existantes sans migration : seuls les prix, les PV et les minuteurs changent.
+
+
+## Économie relevée (14/10/2026)
+
+Demande de Théo : le minerai doit tomber au coup de pioche dans toutes les zones, et les éclats manquaient pour forger.
+
+- **Minerai** : 3 % par coup de pioche, au lieu d'un par filon épuisé ; le lot de fin de zone reste. Plus abondant en profondeur, où un filon demande des centaines de coups. L'Atelier demande donc plus de minerai : 6, puis un de plus tous les 4 niveaux.
+- **Éclats** : 6 % par coup (4 % avant).
+- **Missions du jour** : 3 de plus, coffre à 15 (voir plus haut).
+- **Puits sans fond** : 2 éclats par étage et 30 par palier de record.
+- **Expéditions** : 3 éclats et 0,5 pierre d'éveil par heure (1 et 0,25 avant).
+
+Simulé (joueur régulier, 5 graines) :
+- la pioche 30 arrive vers le jour 42 au lieu de 47,6 : le jeu est plus riche, comme demandé ;
+- le Contremaître arrive au jour 2,5 au lieu de 2,8 ;
+- le Mineur (12 h), le Maître (jour 7,3) et la Légende (jour 16) ne bougent pas.
+
+## Gardien de zone (15/10/2026)
+
+Le dernier filon de chaque zone est un gardien à casser en 30 secondes, ses PV calculés sur 50 % de la Puissance conseillée du filon 15 (voir [[gardien-de-zone]]). Simulé : pioche 30 toujours vers le jour 41, gardiens cassés en 15 à 28 s, mais blocage en fin de partie au gardien de la zone 16.
+
+## Jeu actif et creux de la pioche (15/10/2026)
+
+Retour de Théo : bloqué avant le Maître des profondeurs en zone magma, avec un stuff mithril, faute d'or et d'éclats. Constat chiffré : en zone 9, environ 9 M d'or par heure de jeu pour une pioche 19 → 20 à 87 M. Et 78 % de l'or du joueur régulier venait de l'absence, 10 % seulement du minage.
+
+- **Or en jeu ×2** (`ACTIVE_GOLD_MULTIPLIER`, `minedGold`) : chaque PV miné en jeu rapporte 0,68 pièce. L'absence passe de 50 % à 35 % des dégâts, au tarif de base (0,34).
+- **Pioche** : ×1,95 par niveau entre 15 et 25 au lieu de ×2,09. Les niveaux 25 à 29 rattrapent l'écart (×2,4), si bien que le dernier niveau coûte comme avant.
+- **Maître des profondeurs** : 900 / 1 050 / 1 200 objets forgés au lieu de 1 300 / 1 600 / 1 900.
+- **Éclats par filon** : un par tranche de 40 s de son temps visé (3 en zone 5, 8 en zone 9, 18 en zone 12) au lieu de 2. Le coffre du gardien en donne 5 par numéro de zone, au lieu de 5.
+
+Simulé sur 5 graines :
+
+| Profil | Avant | Après |
+|---|---|---|
+| Régulier : Maître / Légende / pioche 30 | jour 6,9 / 15,5 / 41,4 | jour 6,9 / 14,4 / 37,0 |
+| Régulier : or du minage | 63 Md | 136 Md |
+| Assidu (graine 12345) : Maître / Légende / pioche 30 | jour 4,7 / 9,4 / 28,9 | jour 4,3 / 6,9 / 22,8 |
+| Assidu : or du minage / absence | 67 / 184 Md | 166 / 178 Md |
+| Éclats des filons (régulier) | 540 | 3 300 |
+
+Le joueur assidu progresse nettement plus vite, et le joueur régulier un peu. La fin de partie reste bloquée au gardien de la zone 16 ([[gardien-de-zone]]).

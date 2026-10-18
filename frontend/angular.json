@@ -22,6 +22,7 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "webWorkerTsConfig": "tsconfig.worker.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -30,6 +31,10 @@
               }
             ],
             "styles": [
+              "@fontsource/lilita-one/latin-400.css",
+              "@fontsource/nunito/latin-400.css",
+              "@fontsource/nunito/latin-700.css",
+              "@fontsource/nunito/latin-800.css",
               "src/styles.scss"
             ]
           },
@@ -39,7 +44,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1.1MB"
+                  "maximumError": "1.2MB"
                 },
                 {
                   "type": "anyComponentStyle",

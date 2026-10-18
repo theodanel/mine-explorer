@@ -1,0 +1,534 @@
+:host {
+  display: block;
+}
+
+.page {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 3cqw;
+  height: 100%;
+  padding: 4cqw;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+
+  // Toute la page tremble sous l'éboulement
+  &.shake {
+    animation: shake 0.45s;
+  }
+}
+
+@keyframes shake {
+  15%,
+  55% {
+    transform: translate(-1.4cqw, 0.6cqw);
+  }
+
+  35%,
+  75% {
+    transform: translate(1.4cqw, -0.6cqw);
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  border: 0.4cqw solid rgb(26 15 7 / 70%);
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 6.5cqw / 1 var(--font-display);
+  cursor: pointer;
+}
+
+.chip {
+  margin-left: auto;
+  padding: 1cqw 2.5cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 40%);
+  font: bold 3cqw / 1 var(--font-body);
+}
+
+// ─── La file de rochers ──────────────────────────────────────────────────
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 1cqw;
+  margin: 0;
+  padding: 1.6cqw;
+  border-radius: 3cqw;
+  background: rgb(20 12 6 / 55%);
+  list-style: none;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 1.6cqw;
+  background: rgb(0 0 0 / 30%);
+  transition: transform 0.25s;
+
+  img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    animation: pop 0.35s ease-out;
+  }
+
+  // Les rochers à venir restent dans l'ombre
+  .rock-thumb {
+    opacity: 0.45;
+    filter: grayscale(0.6) brightness(0.8);
+    animation: none;
+  }
+
+  &.current {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 0.45cqw #ffd34d;
+
+    .rock-thumb {
+      opacity: 1;
+      filter: none;
+    }
+  }
+
+  &.loot {
+    background: rgb(255 211 77 / 18%);
+  }
+
+  &.propped {
+    background: rgb(150 110 60 / 30%);
+  }
+
+  &.caveIn {
+    background: rgb(200 60 40 / 35%);
+  }
+}
+
+// ─── Le rocher du moment ─────────────────────────────────────────────────
+
+.arena {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.rock {
+  display: grid;
+  justify-items: center;
+  gap: 2cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:active:not(:disabled) .rock-image {
+    transform: scale(0.94);
+  }
+
+  &.striking .rock-image {
+    animation: hit 0.32s ease-in-out;
+  }
+}
+
+.rock-image {
+  width: 52cqw;
+  height: 52cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 2cqw 1.5cqw rgb(0 0 0 / 55%));
+  transition: transform 0.1s;
+  animation: arrive 0.4s ease-out;
+}
+
+@keyframes hit {
+  25% {
+    transform: rotate(-4deg) scale(0.96);
+  }
+
+  50% {
+    transform: rotate(4deg) scale(1.02);
+    filter: brightness(1.4) drop-shadow(0 2cqw 1.5cqw rgb(0 0 0 / 55%));
+  }
+
+  75% {
+    transform: rotate(-2deg) scale(0.98);
+  }
+}
+
+@keyframes arrive {
+  from {
+    transform: translateX(30cqw) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.tap {
+  padding: 1cqw 3cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  font: bold 3.2cqw / 1 var(--font-body);
+  animation: breathe 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  to {
+    opacity: 0.6;
+  }
+}
+
+// Le butin jaillit du rocher
+.burst {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  animation: pop 0.4s ease-out;
+
+  strong {
+    color: #ffd34d;
+    font-size: 5cqw;
+    text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+  }
+}
+
+.rays:not(.record)::before {
+  opacity: 0.5;
+}
+
+.burst-icon {
+  width: 30cqw;
+  height: 30cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0 3cqw rgb(255 211 77 / 70%));
+  animation: jump 0.6s ease-out;
+}
+
+.burst-loot {
+  font: bold 7cqw / 1 var(--font-display);
+  color: #fff4c8;
+  text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(4cqw) scale(0.4);
+  }
+
+  50% {
+    transform: translateY(-3cqw) scale(1.15);
+  }
+}
+
+// L'éboulement tombe d'en haut ; l'étai le retient
+.fall {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1cqw;
+
+  strong {
+    color: #ffd34d;
+    font-size: 5cqw;
+    text-shadow: 0 0.4cqw 0.6cqw rgb(0 0 0 / 70%);
+  }
+}
+
+.fall-image {
+  width: 62cqw;
+  height: 62cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 2cqw 2cqw rgb(0 0 0 / 60%));
+  animation: fall 0.45s cubic-bezier(0.5, 0, 0.9, 0.5) both;
+}
+
+.propped .fall-image {
+  width: 44cqw;
+  height: 44cqw;
+}
+
+.beam {
+  width: 22cqw;
+  height: 22cqw;
+  margin-top: -14cqw;
+  object-fit: contain;
+  transform: rotate(90deg);
+  animation: pop 0.3s 0.3s ease-out both;
+}
+
+@keyframes fall {
+  from {
+    transform: translateY(-70cqw);
+    opacity: 0;
+  }
+
+  70% {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+// ─── Cagnotte, risque et étais ───────────────────────────────────────────
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2cqw;
+  padding: 2.5cqw 3cqw;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 82%);
+}
+
+.pot,
+.danger {
+  display: grid;
+  gap: 1cqw;
+}
+
+.pot-title,
+.danger-title {
+  font-size: 2.8cqw;
+  opacity: 0.75;
+}
+
+.pot-loot {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  font: bold 4.4cqw / 1 var(--font-body);
+  color: #ffd34d;
+
+  img {
+    width: 6cqw;
+    height: 6cqw;
+    object-fit: contain;
+
+    &:not(:first-child) {
+      margin-left: 2cqw;
+    }
+  }
+}
+
+.danger {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+
+  .danger-title {
+    grid-column: 1 / -1;
+  }
+}
+
+.danger-bar {
+  height: 2.4cqw;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.danger-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f0c24a, #f08a3a);
+  transition: width 0.4s;
+}
+
+.danger-value {
+  font: bold 3.6cqw / 1 var(--font-body);
+}
+
+.danger.high {
+  .danger-fill {
+    background: linear-gradient(90deg, #f08a3a, #e2483a);
+  }
+
+  .danger-value {
+    color: #ff8a7a;
+  }
+}
+
+.props {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 1.2cqw;
+
+  &::before {
+    content: 'Étais';
+    margin-right: 1cqw;
+    font-size: 2.8cqw;
+    opacity: 0.75;
+  }
+
+  img {
+    width: 6cqw;
+    height: 6cqw;
+    object-fit: contain;
+  }
+}
+
+.no-prop {
+  font-size: 2.8cqw;
+  opacity: 0.6;
+}
+
+.cash {
+  justify-self: center;
+  min-width: 50cqw;
+  padding: 2.8cqw 6cqw;
+  font-size: 4.6cqw;
+}
+
+// Bilan, posé sur la scène
+.result {
+  position: absolute;
+  right: 6cqw;
+  bottom: 6cqw;
+  left: 6cqw;
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  padding: 4cqw;
+  border-radius: 4cqw;
+  background: linear-gradient(rgb(62 42 24 / 96%), rgb(39 26 15 / 96%));
+  box-shadow:
+    inset 0 0 0 0.45cqw rgb(138 95 56 / 70%),
+    0 2cqw 4cqw rgb(0 0 0 / 50%);
+  text-align: center;
+  animation: pop 0.35s ease-out;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h3 {
+    color: #ffd34d;
+    font-size: 5.5cqw;
+  }
+}
+
+.result-icon {
+  width: 22cqw;
+  height: 22cqw;
+  object-fit: contain;
+}
+
+.loot-line {
+  font-size: 4.2cqw;
+}
+
+.note {
+  font-size: 3.2cqw;
+  opacity: 0.85;
+}
+
+.actions {
+  display: flex;
+  gap: 3cqw;
+  margin-top: 1cqw;
+
+  .game-button {
+    padding: 2.2cqw 5cqw;
+  }
+}
+
+// ─── Accueil ─────────────────────────────────────────────────────────────
+
+.lobby {
+  display: grid;
+  grid-row: 2 / -1;
+  align-content: center;
+  justify-items: center;
+  gap: 3.5cqw;
+  text-align: center;
+}
+
+.hero {
+  width: 30cqw;
+  height: auto;
+  filter: drop-shadow(0 1.5cqw 1cqw rgb(0 0 0 / 60%));
+  animation: float 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  to {
+    transform: translateY(-1.5cqw);
+  }
+}
+
+.rules {
+  display: grid;
+  gap: 1.8cqw;
+  margin: 0;
+  padding: 3.5cqw 4cqw;
+  border-radius: 3cqw;
+  background: rgb(36 23 13 / 80%);
+  font-size: 3.2cqw;
+  line-height: 1.35;
+  text-align: left;
+  list-style: none;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.go {
+  min-width: 50cqw;
+  padding: 3cqw 6cqw;
+  font-size: 4.8cqw;
+}
+
+.runs {
+  margin: 0;
+  font-size: 3.2cqw;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page.shake,
+  .slot img,
+  .rock-image,
+  .rock.striking .rock-image,
+  .tap,
+  .burst,
+  .burst-icon,
+  .fall-image,
+  .beam,
+  .hero,
+  .result {
+    animation: none;
+  }
+}

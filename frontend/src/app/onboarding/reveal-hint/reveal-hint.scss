@@ -1,0 +1,57 @@
+// Rien ne bloque le jeu : la couche laisse passer tous les touchers
+.reveal-hint {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-reveal-hint);
+  pointer-events: none;
+  font-family: var(--font-body);
+}
+
+.ring {
+  position: absolute;
+  border: 3px solid #ffd34d;
+  border-radius: 18px;
+  box-shadow: 0 0 18px rgb(255 211 77 / 70%);
+  animation: pulse 1s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes pulse {
+  to {
+    transform: scale(1.04);
+    box-shadow: 0 0 28px rgb(255 211 77 / 90%);
+  }
+}
+
+.bubble {
+  position: absolute;
+  left: 50%;
+  width: min(78vw, 300px);
+  margin: 0;
+  padding: 10px 14px;
+  color: #f3e6d0;
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: center;
+  // Au-dessus de la cible par défaut ; .below la place dessous
+  transform: translate(-50%, -100%);
+  animation: bubble-in 0.35s ease-out both;
+
+  &.below {
+    transform: translate(-50%, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}

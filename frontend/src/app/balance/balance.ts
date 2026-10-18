@@ -89,6 +89,8 @@ export const AFFIX_SHARE: Readonly<MiningStats> = {
   goldBonus: 1.2,
 };
 export const NEXT_AFFIX_RATIO = 0.6;
+/** Une stat d'affinité de l'emplacement sort 3 fois plus souvent qu'une autre en affixe. */
+export const AFFINITY_WEIGHT = 3;
 
 /** Croissance par niveau d'objet (le niveau de l'objet est celui de la pioche qui l'a forgé). */
 const STRIKE_LEVEL_GROWTH = 1.1;
@@ -143,12 +145,27 @@ const SEGMENT_BASE_COST = 15;
 // plus rapides et l'Atelier moins cher à l'ouverture : pioche 30 au jour 47,8 sur 5 tirages
 const SEGMENT_COST_GROWTH = 2.09;
 
+/**
+ * Entre les niveaux 15 et 25, le prix monte moins vite (×1,95) : c'est là que Théo butait, le 15/10/2026, entre le
+ * Contremaître et le Maître des profondeurs, avec un stuff en retard sur sa zone. Les niveaux 25 à 29 rattrapent
+ * l'écart (×2,4) : le niveau 29 coûte comme avant, pour que la fin de partie ne raccourcisse pas.
+ */
+const SOFT_SEGMENT_FROM = 15;
+const SOFT_SEGMENT_TO = 25;
+const SOFT_SEGMENT_GROWTH = 1.95;
+const SOFT_SPAN = SOFT_SEGMENT_TO - SOFT_SEGMENT_FROM;
+const CATCH_UP_SPAN = MAX_PICKAXE_LEVEL - 1 - SOFT_SEGMENT_TO;
+const CATCH_UP_GROWTH = SEGMENT_COST_GROWTH * (SEGMENT_COST_GROWTH / SOFT_SEGMENT_GROWTH) ** (SOFT_SPAN / CATCH_UP_SPAN);
+
 /** Prix en or d'un segment au niveau donné, ou null au niveau maximum. */
 export function segmentCost(pickaxeLevel: number): number | null {
   if (pickaxeLevel >= MAX_PICKAXE_LEVEL) {
     return null;
   }
-  return Math.round(SEGMENT_BASE_COST * SEGMENT_COST_GROWTH ** (pickaxeLevel - 1));
+  const softSteps = Math.min(Math.max(pickaxeLevel - SOFT_SEGMENT_FROM, 0), SOFT_SPAN);
+  const catchUpSteps = Math.max(pickaxeLevel - SOFT_SEGMENT_TO, 0);
+  const steps = pickaxeLevel - 1 - softSteps - catchUpSteps;
+  return Math.round(SEGMENT_BASE_COST * SEGMENT_COST_GROWTH ** steps * SOFT_SEGMENT_GROWTH ** softSteps * CATCH_UP_GROWTH ** catchUpSteps);
 }
 
 /**
@@ -228,27 +245,42 @@ const GOLD_PER_DAMAGE = 0.34;
 /**
  * Les éclats viennent de deux sources en jouant. Théo les trouvait trop rares : le 13/10/2026, coups, filons
  * et absence en donnent 50 % de plus, soit environ 200 forges par jour pour le joueur régulier, à tout moment.
- * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 4 % par coup depuis le
- *    13/10/2026 au soir (3 % avant), soit environ 75 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
+ * 1. Chaque coup peut en déterrer un : un débit régulier qui ne dépend pas de la zone. 6 % par coup depuis le
+ *    14/10/2026 au soir (4 % avant, 3 % encore avant ; Théo trouvait la forge trop pauvre), soit environ 75 éclats par heure sans bonus de Vitesse, une forge toutes les 2 minutes même en profondeur,
  *    où les filons durent longtemps.
  * 2. Chaque filon épuisé en donne. Comme dans Legends of Mushroom, le début arrose : les 5 premiers filons
  *    donnent de quoi forger deux fois chacun (les 5 emplacements remplis en une minute), puis un tirage par filon.
  * Les missions, les fins de zone, l'absence, les événements, les objectifs d'évolution et le Défi de la mine complètent.
  */
-export const SHARD_FIND_CHANCE = 0.04;
+export const SHARD_FIND_CHANCE = 0.06;
 const WELCOME_STAGES = 5;
 const WELCOME_SHARDS = 4;
 /** Les filons des zones adoucies donnent un éclat de plus : le début de partie forge davantage. */
 const EARLY_STAGE_SHARDS = 3;
-const STAGE_SHARDS = 2;
-export const ZONE_CLEAR_SHARDS = 5;
+/**
+ * Plus loin, un filon donne un éclat par tranche de 40 s de son temps visé : il dure plus longtemps, il rapporte
+ * plus (demande de Théo, 15/10/2026 : 2 éclats par filon en zone 9, pour 5 minutes de minage, c'était trop peu).
+ * 3 en zone 5, 8 en zone 9, 18 en zone 12.
+ */
+const STAGE_SHARD_SECONDS = 40;
+const MIN_STAGE_SHARDS = 2;
+/** Le gardien de chaque zone garde un coffre d'éclats : 5 par numéro de zone (45 en zone 9). */
+const ZONE_CLEAR_SHARDS_PER_ZONE = 5;
 
 /** Éclats gagnés en épuisant le filon `stage` de la zone `zone`. */
 export function shardsForStage(zone: number, stage: number): number {
   if (zone === 1 && stage <= WELCOME_STAGES) {
     return WELCOME_SHARDS;
   }
-  return zone <= SOFT_START_ZONES ? EARLY_STAGE_SHARDS : STAGE_SHARDS;
+  if (zone <= SOFT_START_ZONES) {
+    return EARLY_STAGE_SHARDS;
+  }
+  return Math.max(Math.round(stageTargetSeconds(zone) / STAGE_SHARD_SECONDS), MIN_STAGE_SHARDS);
+}
+
+/** Éclats du coffre du gardien, en terminant la zone. */
+export function zoneClearShards(zone: number): number {
+  return ZONE_CLEAR_SHARDS_PER_ZONE * zone;
 }
 
 export function stageIndex(zone: number, stage: number): number {
@@ -282,6 +314,17 @@ export function goldForDamage(damage: number, goldBonus: number): number {
   return Math.round(damage * GOLD_PER_DAMAGE * (1 + goldBonus));
 }
 
+/**
+ * En jeu, chaque PV miné rapporte deux fois plus (15/10/2026). Avant, 78 % de l'or venait de l'absence : le joueur
+ * qui jouait voyait son or stagner, celui qui fermait le jeu avançait. L'absence passe en même temps de 50 % à 35 %.
+ */
+export const ACTIVE_GOLD_MULTIPLIER = 2;
+
+/** Or d'un coup porté en jeu (pioche ou sort). */
+export function minedGold(damage: number, goldBonus: number): number {
+  return goldForDamage(damage * ACTIVE_GOLD_MULTIPLIER, goldBonus);
+}
+
 // ─── Minerais et évolutions ────────────────────────────────────────────────
 
 /**
@@ -295,17 +338,20 @@ export function zoneMaterial(zone: number): TierId | null {
   return TIER_ORDER[Math.min(zone, TIER_ORDER.length) - 1];
 }
 
-/** Minerai gagné à chaque filon épuisé, et lot offert quand la zone est terminée. */
-export const ORE_PER_ROCK = 1;
+/**
+ * Minerai : chaque coup de pioche a une chance d'en déterrer un, dans toutes les zones (choix de Théo, 14/10/2026 ;
+ * c'était 1 par filon épuisé). Une zone terminée en offre en plus un lot.
+ */
+export const ORE_FIND_CHANCE = 0.03;
 export const ZONE_CLEAR_ORES = 20;
 
-export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend';
+export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legend' | 'heart';
 
 /**
  * Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie.
  * Que des mesures qui dépendent du joueur, pas du hasard : les événements de mine en ont été retirés le 13/10/2026.
  */
-export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'rocksBroken';
+export type EvolutionMetric = 'zone' | 'zoneCleared' | 'pickaxeLevel' | 'itemsForged' | 'rocksBroken';
 
 export interface EvolutionObjective {
   /** Palier de la mission, à partir de 1 : un palier s'ouvre quand le précédent est rempli. */
@@ -322,13 +368,51 @@ function tiered(shards: number, tiers: readonly (readonly (readonly [EvolutionMe
 }
 
 export interface EvolutionForm {
+  /** Visuel de la forme : toutes les étoiles du Cœur du monde partagent le même. */
   readonly id: EvolutionId;
   readonly label: string;
+  /** Étoiles de la Légende du Cœur du monde (0 avant) : ses rangs, de la zone 12 à la zone 20. */
+  readonly stars: number;
   /** Objectifs à remplir pour passer à cette forme, façon « Adventure Rank » de Legend of Mushroom. */
   readonly objectives: readonly EvolutionObjective[];
   /** Bonus de Frappe de cette forme, cumulé avec les précédentes. */
   readonly strikeBonus: number;
 }
+
+/**
+ * Légende du Cœur du monde (choix de Théo, 17/10/2026) : la Légende arrive vers la zone 12, il restait 8 zones sans rang
+ * à viser. La forme finale prend le relais en 5 étoiles, une toutes les deux zones (12, 14, 16, 18, 20), avec la même
+ * mécanique de missions ; chacune donne de la Frappe, ce qui apporte la Puissance qui manquait au-delà de la zone 16.
+ * Les objectifs de zone ne demandent que d'atteindre la zone, jamais de battre son gardien : l'étoile aide justement à
+ * le battre. Les objets forgés, qui montent même quand le joueur piétine, espacent les étoiles dans le temps.
+ */
+const HEART_STAR_BONUS = 1;
+/**
+ * Zone à atteindre, zone à terminer, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la
+ * zone atteinte). La 5e étoile ne demande pas de terminer la zone 20 : c'est elle qui donne la Frappe pour son gardien ;
+ * à la place, il faut y épuiser quelques filons.
+ */
+const HEART_STAR_GOALS: readonly (readonly [zone: number, cleared: number, pickaxe: number, items: number, rocks: number])[] = [
+  [12, 12, 25, 11500, 190],
+  [14, 14, 26, 17000, 215],
+  [16, 16, 28, 23500, 245],
+  [18, 18, 30, 32500, 275],
+  [20, 19, 30, 44000, 292],
+];
+
+const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, cleared, pickaxe, items, rocks], index) => ({
+  id: 'heart',
+  label: 'Légende du Cœur du monde',
+  stars: index + 1,
+  // Palier 1 : atteindre la zone ; palier 2 : le chemin ; palier 3 : la terminer (battre son gardien), et tout le reste.
+  // Plus exigeant qu'atteindre la zone (demande de Théo, 18/10/2026) ; le gardien reste battable sans l'étoile.
+  objectives: tiered(12 + 2 * index, [
+    [['zone', zone], ['itemsForged', Math.round(items * 0.75)]],
+    [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.85)], ['rocksBroken', rocks - 10]],
+    [['zoneCleared', cleared], ['itemsForged', items], ['rocksBroken', rocks]],
+  ]),
+  strikeBonus: HEART_STAR_BONUS,
+}));
 
 /**
  * Formes du mineur, de la première à la dernière. Chacune se gagne en remplissant des missions rangées en 3 paliers,
@@ -339,10 +423,11 @@ export interface EvolutionForm {
  * Chaque forme donne +50 % de Frappe, multipliés entre eux (×5 en Légende) : les paliers multiplicateurs des jeux idle.
  */
 export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
-  { id: 'apprentice', label: 'Apprenti', objectives: [], strikeBonus: 0 },
+  { id: 'apprentice', label: 'Apprenti', stars: 0, objectives: [], strikeBonus: 0 },
   {
     id: 'miner',
     label: 'Mineur',
+    stars: 0,
     objectives: tiered(4, [
       [['zone', 2], ['pickaxeLevel', 3], ['itemsForged', 40]],
       [['zone', 3], ['pickaxeLevel', 6], ['itemsForged', 120], ['rocksBroken', 25]],
@@ -353,6 +438,7 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   {
     id: 'foreman',
     label: 'Contremaître',
+    stars: 0,
     objectives: tiered(6, [
       [['zone', 5], ['pickaxeLevel', 10], ['itemsForged', 350]],
       [['pickaxeLevel', 12], ['itemsForged', 480], ['rocksBroken', 65]],
@@ -363,16 +449,18 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
   {
     id: 'master',
     label: 'Maître des profondeurs',
+    stars: 0,
     objectives: tiered(8, [
-      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 1300]],
-      [['pickaxeLevel', 19], ['itemsForged', 1600], ['rocksBroken', 125]],
-      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1900], ['rocksBroken', 140]],
+      [['zone', 8], ['pickaxeLevel', 18], ['itemsForged', 900]],
+      [['pickaxeLevel', 19], ['itemsForged', 1050], ['rocksBroken', 125]],
+      [['zone', 9], ['pickaxeLevel', 20], ['itemsForged', 1200], ['rocksBroken', 140]],
     ]),
     strikeBonus: 0.5,
   },
   {
     id: 'legend',
     label: 'Légende de la mine',
+    stars: 0,
     objectives: tiered(10, [
       [['zone', 10], ['pickaxeLevel', 22], ['itemsForged', 2600]],
       [['zone', 11], ['pickaxeLevel', 23], ['itemsForged', 3300], ['rocksBroken', 165]],
@@ -380,6 +468,7 @@ export const EVOLUTION_FORMS: readonly EvolutionForm[] = [
     ]),
     strikeBonus: 0.5,
   },
+  ...HEART_STARS,
 ];
 
 /** Multiplicateur de Frappe cumulé jusqu'à la forme d'index donné. */
@@ -391,8 +480,8 @@ export function evolutionStrikeMultiplier(formIndex: number): number {
 
 /** Les gains hors ligne s'arrêtent après 4 h, comme dans Forge Master : il faut revenir pour en profiter. */
 export const OFFLINE_CAP_MS = 4 * 60 * 60 * 1000;
-/** Hors ligne, le mineur rapporte moitié moins qu'en jeu. */
-export const OFFLINE_EFFICIENCY = 0.5;
+/** Hors ligne, le mineur rapporte 35 % de ses dégâts (50 % avant le 15/10/2026), sans le bonus du jeu actif. */
+export const OFFLINE_EFFICIENCY = 0.35;
 /** En dessous, l'absence est trop courte pour mériter un message. */
 export const OFFLINE_MIN_MS = 60 * 1000;
 
@@ -459,6 +548,24 @@ export function stageTargetSeconds(zone: number): number {
 /** Puissance qui casse le rocher de l'étape dans le temps visé. En dessous, ça marche quand même, mais plus lentement. */
 export function recommendedPower(zone: number, stage: number): number {
   return Math.ceil((rockHp(zone, stage) / stageTargetSeconds(zone)) * POWER_PER_DPS);
+}
+
+/**
+ * Gardien de fin de zone : le dernier filon de chaque zone est un gardien à casser en 30 secondes, sinon il se
+ * reforme et le joueur reste dans la zone (demande de Théo, 15/10/2026 : en laissant tourner le jeu, n'importe quelle
+ * Frappe finissait par passer toutes les zones). Ses PV ne suivent pas les filons : ils valent ce qu'inflige en
+ * 30 secondes un joueur à GUARDIAN_POWER_SHARE de la Puissance conseillée pour le dernier filon de la zone.
+ */
+export const GUARDIAN_SECONDS = 30;
+export const GUARDIAN_POWER_SHARE = 0.5;
+
+export function guardianHp(zone: number): number {
+  return Math.round(GUARDIAN_SECONDS * (recommendedPower(zone, STAGES_PER_ZONE) / POWER_PER_DPS) * GUARDIAN_POWER_SHARE);
+}
+
+/** Puissance qui casse le gardien de la zone juste à temps. */
+export function guardianPower(zone: number): number {
+  return Math.ceil((guardianHp(zone) / GUARDIAN_SECONDS) * POWER_PER_DPS);
 }
 
 /** Secondes pour miner les PV restants à cette Puissance. */

@@ -1,0 +1,308 @@
+:host {
+  display: block;
+}
+
+.page {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 2.5cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 6.5cqw;
+  }
+}
+
+.close {
+  margin-left: auto;
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 50%;
+  background: linear-gradient(#ee6a4f, #a3271a);
+  color: #fff;
+  font: bold 6cqw / 1 var(--font-display);
+  cursor: pointer;
+}
+
+.intro {
+  margin: 0;
+  font-size: 3.1cqw;
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+// La carte défile sur le sol de la mine (une tuile sans couture qui se répète), calé en bas : la zone 1 part des rails
+.scroll {
+  min-height: 0;
+  overflow-y: auto;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 3cqw;
+  background:
+    linear-gradient(rgb(20 12 6 / 25%), rgb(20 12 6 / 25%)) local,
+    url('/assets/ui/refonte/carte-fond.webp') center bottom / 100% auto repeat-y local,
+    #2a1b0e;
+}
+
+.map {
+  position: relative;
+  margin: 8cqw 0;
+}
+
+// Le sentier qui relie les zones, en pointillés comme sur une carte au trésor
+.trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  path {
+    fill: none;
+    stroke: #e8c48a;
+    stroke-width: 2.2cqw;
+    stroke-dasharray: 1.5cqw 2cqw;
+    stroke-linecap: round;
+    opacity: 0.55;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.nodes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.node-slot {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+  width: 40cqw;
+  transform: translate(-50%, 0);
+}
+
+.node {
+  position: relative;
+  width: 22cqw;
+  height: 22cqw;
+  padding: 0;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 50%;
+  background: #120b06;
+  box-shadow: 0 1.2cqw 0 rgb(0 0 0 / 50%);
+  cursor: pointer;
+  transition: transform 0.15s;
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &.done {
+    border-color: #ffd34d;
+    box-shadow:
+      0 0 0 0.6cqw #1a0f07,
+      0 1.2cqw 0 rgb(0 0 0 / 50%);
+  }
+
+  &.current {
+    width: 28cqw;
+    height: 28cqw;
+    border-color: #7fe8ff;
+    animation: glow 1.4s ease-in-out infinite alternate;
+  }
+
+  &.future {
+    cursor: default;
+
+    .thumb {
+      filter: grayscale(1) brightness(0.35) blur(0.3cqw);
+    }
+  }
+
+  &.selected {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow:
+      0 0 0 0.6cqw #1a0f07,
+      0 0 2cqw 0.5cqw rgb(127 232 255 / 40%);
+  }
+
+  to {
+    box-shadow:
+      0 0 0 0.6cqw #1a0f07,
+      0 0 6cqw 2cqw rgb(127 232 255 / 75%);
+  }
+}
+
+// La vignette : le décor de la zone, recadré sur son sol
+.thumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-position: center 55%;
+  background-size: 200% auto;
+}
+
+.number {
+  position: absolute;
+  bottom: -2cqw;
+  left: 50%;
+  min-width: 8cqw;
+  padding: 0.6cqw 1.5cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#ffe27a, #e09a12);
+  color: #3a2405;
+  font: bold 3.4cqw / 1 var(--font-body);
+  transform: translateX(-50%);
+
+  .future & {
+    background: linear-gradient(#8a8f96, #4d5157);
+    color: #e6e8eb;
+  }
+}
+
+.mystery {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #d8dce2;
+  font: bold 11cqw / 1 var(--font-display);
+  text-shadow: 0 0.6cqw 0 #000;
+}
+
+.check {
+  position: absolute;
+  top: -1cqw;
+  right: -1cqw;
+  display: grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  border: 0.5cqw solid #1a0f07;
+  border-radius: 50%;
+  background: linear-gradient(#7ee08a, #2e9d43);
+  color: #fff;
+  font: bold 4cqw / 1 var(--font-body);
+}
+
+// Le mineur sur la zone où il mine
+.you {
+  position: absolute;
+  top: -8cqw;
+  left: 50%;
+  width: 13cqw;
+  height: 13cqw;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 50%;
+  background: radial-gradient(#e8b45c, #9a6230);
+  transform: translateX(-50%);
+  animation: hop 1s ease-in-out infinite alternate;
+}
+
+@keyframes hop {
+  to {
+    translate: 0 -1.5cqw;
+  }
+}
+
+.caption {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 0.6cqw 2cqw;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 55%);
+  font: bold 2.9cqw / 1.2 var(--font-body);
+  text-align: center;
+
+  img {
+    width: 4.5cqw;
+    height: 4.5cqw;
+  }
+}
+
+// Fiche de la zone touchée, en bas de la carte
+.sheet {
+  position: absolute;
+  right: 4cqw;
+  bottom: 3cqw;
+  left: 4cqw;
+  display: grid;
+  gap: 2cqw;
+  padding: 3cqw;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 3cqw;
+  background: linear-gradient(#5b3d24, #2f1e10);
+  box-shadow:
+    inset 0 0 0 0.5cqw #8a5f38,
+    0 1.5cqw 3cqw rgb(0 0 0 / 60%);
+
+  h3 {
+    margin: 0;
+    font-size: 4.2cqw;
+  }
+
+  .game-button {
+    padding: 2.5cqw;
+    font-size: 4.2cqw;
+  }
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
+
+.sheet-thumb {
+  width: 16cqw;
+  height: 16cqw;
+  flex: none;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 50%;
+  background-position: center 55%;
+  background-size: 200% auto;
+}
+
+.ore {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  margin: 1cqw 0 0;
+  font-size: 3.1cqw;
+
+  img {
+    width: 5cqw;
+    height: 5cqw;
+  }
+}
+
+.note {
+  margin: 0;
+  font-size: 3cqw;
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node.current,
+  .you {
+    animation: none;
+  }
+}

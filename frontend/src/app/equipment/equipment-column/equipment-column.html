@@ -10,6 +10,7 @@
             type="button"
             class="slot artifact"
             [class.empty-artifact]="cell.empty"
+            [class.item-frame]="!cell.empty"
             [attr.data-rarity]="cell.empty ? null : cell.rarity"
             [attr.aria-label]="cell.empty ? 'Artefact : aucun' : 'Artefact : ' + cell.label + ', niveau ' + cell.level"
             (click)="openArtifacts()"
@@ -29,6 +30,7 @@
             type="button"
             class="slot companion"
             [class.empty-artifact]="cell.empty"
+            [class.item-frame]="!cell.empty"
             [attr.data-rarity]="cell.empty ? null : cell.rarity"
             [attr.aria-label]="cell.empty ? 'Compagnon : aucun' : 'Compagnon : ' + cell.label + ', ' + cell.stars + ' étoiles'"
             (click)="openCompanions()"
@@ -44,15 +46,16 @@
       }
       @case ('item') {
         <li
-          class="slot"
+          class="slot item-frame"
           tabindex="0"
+          [class.breathe]="cell.best"
           [appTooltip]="cell.tooltip"
           [attr.data-tier]="cell.tier"
           [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
         >
           <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
           @if (cell.level !== null) {
-            <span class="slot-level">Niv. {{ cell.level }}</span>
+            <span class="slot-level frame-label">Niv. {{ cell.level }}</span>
           }
         </li>
       }

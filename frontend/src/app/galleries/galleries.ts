@@ -22,7 +22,8 @@ export class Galleries {
   /** Galerie de la zone en cours. Une sauvegarde d'une autre zone, ou aucune, donne la galerie ordinaire. */
   readonly current = computed<GalleryId>(() => {
     const state = this.state();
-    return state !== null && state.zone === this.progression.zone() ? state.gallery : 'neutral';
+    // De retour dans une zone passée, la galerie de la zone en cours ne s'applique pas
+    return state !== null && state.zone === this.progression.zone() && this.progression.farmZone() === null ? state.gallery : 'neutral';
   });
   readonly gallery = computed(() => GALLERIES[this.current()]);
   readonly modifiers = computed(() => this.gallery().modifiers);
@@ -31,7 +32,7 @@ export class Galleries {
   readonly offer = computed(() => {
     const state = this.state();
     const { zone, stage } = this.progression.progress();
-    if (state === null || state.offer === null || state.zone !== zone || stage > 1) {
+    if (state === null || state.offer === null || state.zone !== zone || stage > 1 || this.progression.farmZone() !== null) {
       return null;
     }
     return state.offer;

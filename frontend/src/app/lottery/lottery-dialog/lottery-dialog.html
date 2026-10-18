@@ -1,0 +1,50 @@
+<div class="backdrop" (click)="closed.emit()">
+  <section
+    class="dialog game-panel"
+    data-theme="amethyst"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="lottery-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="page-header">
+      <h2 id="lottery-title">Loterie du jour</h2>
+      <button type="button" class="close" aria-label="Fermer" (click)="closed.emit()">×</button>
+    </header>
+
+    <p class="intro">Un tirage gratuit par jour. Les lots changent à minuit.</p>
+
+    <ul class="lots">
+      @for (lot of lots(); track $index) {
+        <li
+          class="lot item-frame"
+          [attr.data-rarity]="lot.rarity"
+          [class.lit]="lit() === $index"
+          [class.won]="won()?.index === $index"
+          [attr.aria-label]="lot.label + ', ' + lot.rarityLabel + ', ' + lot.chanceLabel + ' de chance'"
+        >
+          <span class="icon" [class.rays]="won()?.index === $index">
+            <img [src]="lot.icon" alt="" width="128" height="128" />
+          </span>
+          <strong class="label">{{ lot.label }}</strong>
+          <span class="chance">{{ lot.chanceLabel }}</span>
+        </li>
+      }
+    </ul>
+
+    <p class="result" role="status">
+      @if (won(); as won) {
+        <span>Gagné : <strong>{{ won.label }}</strong> !</span>
+        @if (won.lot.prize.kind === 'egg') {
+          <span class="hint">Il attend dans l'onglet Compagnons.</span>
+        } @else if (won.lot.prize.kind === 'stones') {
+          <span class="hint">Elles font monter les étoiles des compagnons.</span>
+        }
+      }
+    </p>
+
+    <button type="button" class="game-button green draw" [disabled]="!lottery.available() || spinning()" (click)="spin()">
+      {{ spinning() ? 'Tirage…' : lottery.available() ? 'Tirer' : 'Reviens demain' }}
+    </button>
+  </section>
+</div>

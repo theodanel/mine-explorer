@@ -1,0 +1,16 @@
+@for (piece of pieces(); track piece.id) {
+  <img
+    class="piece"
+    [src]="piece.icon"
+    alt=""
+    width="96"
+    height="96"
+    [style.left.px]="piece.x"
+    [style.top.px]="piece.y"
+    [style.--dx]="piece.dx + 'px'"
+    [style.--dy]="piece.dy + 'px'"
+    [style.--sx]="piece.sx + 'px'"
+    [style.--sy]="piece.sy + 'px'"
+    [style.animation-delay.ms]="piece.delayMs"
+  />
+}

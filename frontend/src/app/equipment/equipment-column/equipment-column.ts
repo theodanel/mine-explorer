@@ -1,6 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import { ARTIFACTS } from '../../balance/artifacts';
+import { tierIndex } from '../../balance/balance';
 import { COMPANIONS } from '../../balance/companions';
 import { companionEffects } from '../../companions/companion-rules';
 import { Companions } from '../../companions/companions';
@@ -35,8 +36,21 @@ export class EquipmentColumn {
   readonly row = input(false);
   private readonly companions = inject(Companions);
 
+  /** Emplacement de la meilleure pièce portée (le palier le plus haut) : elle respire pour attirer l'œil. */
+  private readonly bestSlot = computed(() => {
+    let best: { slot: string; rank: number } | null = null;
+    for (const [slot, item] of Object.entries(this.inventory.equipped())) {
+      const rank = item === undefined ? -1 : tierIndex(item.tier) * 100 + item.level;
+      if (item !== undefined && (best === null || rank > best.rank)) {
+        best = { slot, rank };
+      }
+    }
+    return best?.slot ?? null;
+  });
+
   protected readonly cells = computed(() => {
     const equipped = this.inventory.equipped();
+    const bestSlot = this.bestSlot();
     return this.slots().map((slot, index) => {
       if (slot === null) {
         return { key: `locked-${index}`, kind: 'locked' as const, tooltip: 'Emplacement bientôt disponible.' };
@@ -56,6 +70,7 @@ export class EquipmentColumn {
         iconUrl: itemIconUrl(slot, item?.tier ?? null, iconUrl),
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
+        best: slot === bestSlot,
         tooltip: item ? itemCard(label, item) : `${label} : vide. Forge un objet pour l'équiper ici.`,
       };
     });

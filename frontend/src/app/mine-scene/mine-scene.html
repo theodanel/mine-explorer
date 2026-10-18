@@ -3,13 +3,21 @@
   <!-- Zone du rocher, invisible : le tutoriel l'entoure pour présenter le filon -->
   <div
     class="rock-zone"
-    data-tuto="rock"
     aria-hidden="true"
     [style.left.%]="healthBarLeft()"
     [style.top.%]="rockZoneTop()"
   ></div>
+  @if (guardian()) {
+    <!-- Combat contre le gardien : le chrono s'affiche au-dessus de sa vie -->
+    <div class="guardian-timer" [class.urgent]="guardianSeconds() <= 10" [style.left.%]="healthBarLeft()" [style.top.%]="healthBarTop()" role="timer">
+      <span class="guardian-name">Gardien</span>
+      <span class="timer-bar"><span class="timer-fill" [style.width.%]="guardianTimePercent()"></span></span>
+      <span class="timer-value">{{ guardianSeconds() }} s</span>
+    </div>
+  }
   <div
     class="health"
+    [class.guardian]="guardian()"
     role="progressbar"
     aria-label="Résistance du filon"
     aria-valuemin="0"

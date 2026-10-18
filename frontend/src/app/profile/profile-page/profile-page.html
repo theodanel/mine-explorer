@@ -1,7 +1,7 @@
 @if (leaderboardOpen()) {
   <app-leaderboard-page (closed)="leaderboardOpen.set(false)" />
 } @else {
-  <section class="page game-panel" aria-labelledby="profile-title">
+  <section class="page game-panel" data-theme="teal" aria-labelledby="profile-title">
     <header class="page-header">
       <h2 id="profile-title">Profil</h2>
       <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
@@ -12,7 +12,7 @@
         <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
         <div class="miner-text">
           <h3>{{ playerName.label() }}</h3>
-          <p class="form">{{ evolution.form().label }}</p>
+          <p class="form">{{ evolution.title() }}</p>
           <p class="zone">Zone {{ progression.zone() }}</p>
         </div>
       </article>
@@ -20,8 +20,8 @@
       <button type="button" class="card evolution" (click)="openEvolution()">
         <span class="evolution-text">
           <strong>Évolution</strong>
-          @if (evolution.next(); as next) {
-            <span>Vers {{ next.label }} · palier {{ evolution.tier() }} sur 3</span>
+          @if (evolution.nextTitle(); as next) {
+            <span>Vers {{ next }} · palier {{ evolution.tier() }} sur 3</span>
           } @else {
             <span>Forme ultime atteinte</span>
           }

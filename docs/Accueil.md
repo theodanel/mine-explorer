@@ -11,10 +11,22 @@ Commence par [[Decisions]] : ce qui est déjà tranché, en game design comme en
 - [[recherche-equilibrage]] : comment Forge Master et Legend of Mushroom gèrent leur progression (minuteurs, coûts exponentiels).
 - [[ressources-game-design]] : synthèse des articles partagés (Deconstructor of Fun sur LoM, Math of Idle Games III sur le prestige, exemple de GDD) et chiffres des jeux de référence.
 - [[competences-et-artefacts]] : arbre de compétences, sorts actifs et artefacts (budget de puissance, tables, découvertes).
+- [[carte-des-zones]] : carte des zones façon jeu mobile, retour dans une zone passée pour miner son minerai sans fin (14/10/2026).
+- [[gardien-de-zone]] : le dernier filon de chaque zone est un gardien à casser en 30 secondes, pour qu'on ne passe plus les zones en laissant tourner le jeu (15/10/2026).
+- [[atelier]] : renforcement de l'équipement par qualité, niveaux 1 à 50, prix et ouverture au Mineur (14/10/2026).
 - [[idees-fun]] : ce qui rendrait le jeu plus fun et plus addictif (Atelier, événements de mine, embranchements, compagnons, son), avec l'équilibrage de chaque idée.
 - [[refonte-compagnons-evolution]] : équipements en bas, évolution par objectifs, Défi de la mine et pierres d'éveil, éclats plus faciles (13/10/2026).
 - [[puits-sans-fond]] : 3 descentes chronométrées par jour, étages de plus en plus durs, record personnel (14/10/2026).
+- [[zones-11-20]] : décors et rochers des zones 11 à 20 (prompts Gemini), rythme simulé au-delà de la zone 10 (14/10/2026).
+- [[loterie-du-jour]] : un tirage gratuit par jour, six lots (or, éclats, pierres d'éveil, œufs) qui changent à minuit (14/10/2026).
+- [[aventures-prompts]] : prompts Gemini des quatre nouvelles aventures (Chasse au filon, Marchand nain, Forge express, Expédition aux flambeaux), 14/10/2026.
+- [[forge-express]] : rythme à l'enclume dès le Maître des profondeurs, un objet bonus selon le score (14/10/2026).
+- [[marchand-nain]] : marchand qui passe 5 jours par mois, annoncé par des indices, à marchander ou bluffer (14/10/2026).
+- [[chasse-au-filon]] : « Quitte ou double » dès le Contremaître, une file de rochers à casser avant l'éboulement, 3 parties par jour (15/10/2026, remplace le démineur du 14/10).
+- [[expedition-flambeaux]] : grotte dans le noir à la torche dès la Légende, 30 pas pour le trésor, pierres d'éveil (15/10/2026).
+- [[wagonnet-fou]] (retiré) : dès le Contremaître, 3 courses de wagonnet par jour sur 3 voies, aiguillages sûrs ou risqués, or et minerai pour l'Atelier (14/10/2026).
 - [[campement]] : Taverne, Entrepôt et Puits, à faire grandir lentement dans l'onglet Aventures (14/10/2026).
+- [[direction-visuelle]] : ce qui plaît dans le genre, couleurs par écran, par stat et par qualité, prochaines étapes (14/10/2026).
 - [[builds-libres]] : toutes les stats sur toutes les pièces, affixes selon la qualité, réglage des builds (13/10/2026).
 - [[equilibrage]] : les chiffres en vigueur dans le jeu (formules, coûts, zones, courbe simulée). Source de vérité : `frontend/src/app/balance/balance.ts`.
 - [[prompt-refonte-majeure]] : analyse et plan de la refonte en phases (talents, compagnons, prestige, événements…).
@@ -25,6 +37,7 @@ Documentation technique de référence, tenue à jour à chaque changement du co
 
 - [[architecture]] : découpage du frontend, état et sauvegarde, backend.
 - [[installation]] : prérequis, lancement en local, commandes.
+- [[docker]] : tout le projet dans Docker Compose, conteneurs sans root (16/10/2026).
 - [[tests]] : stratégie, couverture, simulateur d'économie.
 - [[ci-cd]] : intégration continue, CodeQL, Dependabot.
 - [[deploiement]] : mise en ligne sur Cloudflare Pages, secrets, restriction d'accès.
@@ -50,3 +63,6 @@ Notes d'étude du début du projet, conservées pour mémoire ; elles ne décriv
 - `technique/` : documentation technique à jour ; `technique/historique/` : études du début du projet.
 - À la racine : cet accueil et [[Decisions]].
 - Les PDF de référence (guides Gamearly) et les images restent hors du coffre.
+- [[recherches]] : proposition de compétences façon Forge Master (parchemins, temps d'étude, 40 nœuds), à valider (16/10/2026).
+- [[competences-des-familiers]] : une compétence unique par familier, lancée comme un sort depuis la barre (16/10/2026).
+- [[musiques-des-zones]] : une musique d'ambiance par zone, calculée par le code, en fondu d'une zone à l'autre (16/10/2026).

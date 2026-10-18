@@ -2,19 +2,15 @@
   display: block;
 }
 
-// Planche de bois cloutée plutôt que le cadre crème de la référence, pour coller à la mine
+// Fiche crème semée de points, comme les panneaux du style cartoon
 .panel {
-  padding: 2cqw 2.5cqw;
-  border: 0.9cqw solid #2a1a0d;
+  padding: 2cqw 2.2cqw;
+  border: 0.55cqw solid var(--ink);
   border-radius: 3.5cqw;
-  background:
-    repeating-linear-gradient(0deg, rgb(0 0 0 / 6%) 0 0.4cqw, transparent 0.4cqw 5cqw),
-    linear-gradient(#7a5434, #5b3b22);
-  box-shadow:
-    inset 0 0 0 0.6cqw #9a6c43,
-    0 1cqw 0 rgb(0 0 0 / 40%);
-  color: #fff3d6;
-  font-family: Arial, sans-serif;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
+  font-family: var(--font-body);
 }
 
 // Titre gardé pour les lecteurs d'écran : la place manque depuis l'arrivée de la barre de menus et des sorts
@@ -29,46 +25,68 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5cqw;
   margin: 0;
 }
+
+// Chaque stat a sa couleur, reprise par sa tuile : on retrouve la Frappe en rouge, la Vitesse en bleu…
+[data-stat='strikePower'] { --stat-color: #ff6b5a; }
+[data-stat='miningSpeed'] { --stat-color: #4fd6ff; }
+[data-stat='critChance'] { --stat-color: #ffd34d; }
+[data-stat='critDamage'] { --stat-color: #ff9a3c; }
+[data-stat='goldBonus'] { --stat-color: #f2c230; }
+[data-stat='dps'] { --stat-color: #c48bff; }
 
 .stat {
   display: grid;
   grid-template: 'icon label' auto 'icon value' auto / auto 1fr;
   align-items: center;
-  column-gap: 1.5cqw;
-  padding: 1cqw 1.5cqw;
-  border-radius: 2cqw;
-  background: rgb(0 0 0 / 22%);
+  column-gap: 1cqw;
+  min-width: 0;
+  padding: 1.2cqw;
+  // Tuile pastel teintée de la couleur de la stat, cerclée de brun
+  border: 0.45cqw solid var(--ink);
+  border-radius: 2.5cqw;
+  background: color-mix(in srgb, var(--stat-color, #ffd34d) 28%, var(--parchment));
+  box-shadow: inset 0 -0.8cqw 0 color-mix(in srgb, var(--stat-color, #ffd34d) 40%, var(--parchment-shade));
 
   dt {
     grid-area: label;
-    font-size: 2.7cqw;
-    opacity: 0.85;
+    color: var(--parchment-text);
+    font-size: 2.6cqw;
+    font-weight: 700;
+    line-height: 1.1;
   }
 
   dd {
     grid-area: value;
     margin: 0;
-    font-size: 3.6cqw;
-    font-weight: bold;
-    color: #ffd34d;
+    overflow: hidden;
+    color: #fff;
+    // Assez petit pour « 200 % » ou « 27,3 k » dans un tiers d'écran étroit (iPhone) sans points de suspension
+    font: 3.5cqw / 1.1 var(--font-display);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-text-stroke: 0.35cqw var(--ink);
+    paint-order: stroke fill;
   }
 }
 
 // Une stat gonflée par un sort en cours passe au vert le temps de l'effet
 .boosted {
-  background: rgb(60 170 70 / 35%);
+  background: color-mix(in srgb, #7cbf6c 45%, var(--parchment));
 
   dd {
-    color: #9dffa4;
+    color: #b8f5a8;
   }
 }
 
 .stat-icon {
   grid-area: icon;
-  width: 6.5cqw;
-  height: 6.5cqw;
+  width: 6cqw;
+  height: 6cqw;
+  padding: 0.6cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--stat-color, #ffd34d) 45%, transparent), transparent 70%);
 }

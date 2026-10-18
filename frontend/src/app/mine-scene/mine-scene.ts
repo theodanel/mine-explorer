@@ -1,19 +1,26 @@
-import { AfterViewInit, Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, OnDestroy, signal, untracked, viewChild } from '@angular/core';
 import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Texture, Ticker } from 'pixi.js';
 // Version de PixiJS sans « eval » : le site interdit l'évaluation de code (CSP sans 'unsafe-eval')
 import 'pixi.js/unsafe-eval';
 
 import { speedMultiplier } from '../equipment/equipment-rules';
-import { EvolutionId } from '../balance/balance';
+import { EvolutionId, GUARDIAN_SECONDS } from '../balance/balance';
 import { Miner } from '../miner/miner';
 import { Evolution } from '../evolution/evolution';
-import { APPRENTICE_STRIKE, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
+import { APPRENTICE_STRIKE, cadenceStrike, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
 import { Mining, StrikeOutcome } from '../mining/mining';
+import { Navigation } from '../navigation/navigation';
 import { Sound } from '../audio/sound';
 import { Progression } from '../progression/progression';
+import { RANDOM } from '../shared/random';
+import { GUARDIAN_STAGE } from '../progression/progression-rules';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
 import { MineRock, RockTop } from './mine-rock';
+import { AmbienceLayer } from './ambience-layer';
+import { auraLook, MinerAura } from './miner-aura';
+import { PowerGain, powerGain } from './power-gain';
+import { MiningStats } from '../equipment/equipment.model';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -45,6 +52,18 @@ const DYNAMITE_SHAKE_SHARE = 0.4;
 const HEALTH_BAR_GAP = 14;
 const PERCENT = 100;
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
+const MS_PER_SECOND = 1000;
+/** Un Écho garde le décor de la zone, assombri et rougi : le monde a changé. Hors Écho, aucune teinte. */
+const ECHO_TINT = 0xb0786a;
+const NO_TINT = 0xffffff;
+/** Sous un menu, la mine ne se voit presque plus : 30 images par seconde suffisent et ménagent la batterie. */
+const COVERED_MAX_FPS = 30;
+/** Un filon qui cède secoue un peu la galerie : une part de la secousse du grisou. */
+const ROCK_BREAK_SHAKE_SHARE = 0.2;
+/** Gain de Puissance : le texte part de la tête du mineur, et le mineur brille d'or un instant. */
+const POWER_GAIN_ABOVE_FEET = 330;
+const POWER_GLOW_MS = 600;
+const POWER_GLOW_TINT = 0xffe08a;
 
 @Component({
   selector: 'app-mine-scene',
@@ -57,6 +76,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly mining = inject(Mining);
   private readonly progression = inject(Progression);
   private readonly evolution = inject(Evolution);
+  private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   private readonly app = new Application();
   /** Mineur animé : il cadence les coups, même invisible derrière une image fixe. */
@@ -69,17 +89,36 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private squashMs = 0;
   private shakeMs = 0;
   private effects: HitEffects | null = null;
+  private aura: MinerAura | null = null;
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
+  private readonly ambience = new AmbienceLayer(inject(RANDOM));
   private initialized = false;
+  /**
+   * Hauteur de la scène, en pixels de scène : 1280 en 9:16, plus sur un téléphone haut, où le cadre s'allonge.
+   * La galerie gagne alors du haut : tout le décor descend de `extra`, pour que le sol reste aligné sur les panneaux.
+   */
+  private readonly sceneHeight = signal(SCENE_HEIGHT);
+  private readonly extra = computed(() => this.sceneHeight() - SCENE_HEIGHT);
+  private floorY = 0;
+  private resizeObserver: ResizeObserver | null = null;
 
   /** Position de la barre de vie, en pourcentage de la scène : elle suit le rocher, quelle que soit la taille de l'écran. */
   protected readonly healthBarLeft = computed(() => (this.rockTop().x / SCENE_WIDTH) * PERCENT);
-  protected readonly healthBarTop = computed(() => ((this.rockTop().y - HEALTH_BAR_GAP) / SCENE_HEIGHT) * PERCENT);
-  protected readonly rockZoneTop = computed(() => (this.rockTop().y / SCENE_HEIGHT) * PERCENT);
+  protected readonly healthBarTop = computed(() => ((this.rockTop().y + this.extra() - HEALTH_BAR_GAP) / this.sceneHeight()) * PERCENT);
+  protected readonly rockZoneTop = computed(() => ((this.rockTop().y + this.extra()) / this.sceneHeight()) * PERCENT);
   protected readonly healthPercent = computed(() => Math.round(this.progression.health() * PERCENT));
   protected readonly remaining = computed(() => NUMBER_FORMAT.format(this.progression.remainingHp()));
+  /** Le gardien de la zone est devant le mineur (jamais en zone passée). */
+  protected readonly guardian = computed(() => this.progression.farmZone() === null && this.progression.progress().stage === GUARDIAN_STAGE);
+  protected readonly guardianSeconds = computed(() => Math.ceil(this.progression.guardianTimeLeft() / MS_PER_SECOND));
+  protected readonly guardianTimePercent = computed(() => (this.progression.guardianTimeLeft() / (GUARDIAN_SECONDS * MS_PER_SECOND)) * PERCENT);
   private destroyed = false;
+  /** Stats permanentes vues en dernier : un gain se mesure par rapport à elles. */
+  private lastStats: MiningStats | null = null;
+  /** Gain pas encore montré : il attend que le joueur revienne sur la mine (équipé depuis une page, par exemple). */
+  private readonly pendingGain = signal<PowerGain | null>(null);
+  private glowMs = 0;
 
   constructor() {
     // Changer de bottes ou lancer Frénésie accélère le mineur tout de suite, sans recréer la scène
@@ -101,6 +140,25 @@ export class MineScene implements AfterViewInit, OnDestroy {
         this.sound.play('blast');
       }
     });
+    // Le mineur devient plus fort (objet, compétence, artefact…) : on le note, et on le montre dès qu'il est à l'écran
+    effect(() => {
+      const stats = this.minerStats.permanent().stats;
+      const previous = this.lastStats;
+      this.lastStats = stats;
+      const gain = previous === null ? null : powerGain(previous, stats);
+      if (gain !== null) {
+        const pending = untracked(() => this.pendingGain());
+        // Plusieurs gains d'affilée (trois compétences apprises) : un seul, du premier « avant » au dernier « après »
+        this.pendingGain.set(pending === null ? gain : { ...gain, from: pending.from });
+      }
+    });
+    effect(() => {
+      const gain = this.pendingGain();
+      if (gain === null || this.navigation.page() !== 'mine' || !this.effects || !this.miner) {
+        return;
+      }
+      untracked(() => this.showPowerGain(gain));
+    });
     // Nouvelle forme, nouveau visuel, sans recréer la scène
     effect(() => {
       const form = this.evolution.form().id;
@@ -108,12 +166,39 @@ export class MineScene implements AfterViewInit, OnDestroy {
         void this.showForm(form);
       }
     });
-    // Nouvelle zone, nouveau décor : le fond suivant se charge pendant que le mineur continue
+    // Dans un Écho, le décor s'assombrit et rougit
     effect(() => {
-      const zone = this.progression.zone();
+      const echo = this.progression.inEcho();
+      if (this.background) {
+        this.background.tint = echo ? ECHO_TINT : NO_TINT;
+      }
+    });
+    // Sous un menu, la scène tourne au ralenti ; les coups gardent leur cadence (animation au temps écoulé)
+    effect(() => {
+      const covered = this.navigation.page() !== 'mine';
+      if (this.initialized) {
+        this.app.ticker.maxFPS = covered ? COVERED_MAX_FPS : 0;
+      }
+    });
+    // Étoiles du Cœur du monde : le halo derrière le mineur
+    effect(() => {
+      const look = auraLook(this.evolution.form());
+      this.aura?.show(look);
+    });
+    // Nouvelle zone (ou retour dans une zone passée), nouveau décor : le fond se charge pendant que le mineur continue
+    effect(() => {
+      const zone = this.progression.playingZone();
       if (this.background) {
         void this.showZoneBackground(zone);
-        void this.rock.show(zone);
+        this.ambience.showZone(zone);
+      }
+    });
+    // Le gardien de fin de zone remplace le rocher le temps du combat
+    effect(() => {
+      const zone = this.progression.playingZone();
+      const guardian = this.guardian();
+      if (this.background) {
+        void this.rock.show(zone, guardian);
       }
     });
   }
@@ -128,16 +213,20 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.mountCanvas();
+      this.followFrameSize();
 
-      const frames = await loadStrikeFrames(APPRENTICE_STRIKE);
+      // L'animation de la forme dès le départ : pas d'Apprenti à télécharger pour un joueur évolué
+      const strike = cadenceStrike(this.evolution.form().id);
+      const frames = await loadStrikeFrames(strike);
       if (this.destroyed) {
         return;
       }
       this.background = new Sprite();
-      this.app.stage.addChild(this.background, this.rock.sprite);
-      await this.showZoneBackground(this.progression.zone());
-      void this.rock.show(this.progression.zone());
-      await this.startMining(frames);
+      this.app.stage.addChild(this.background, this.ambience.container, this.rock.sprite);
+      this.ambience.showZone(this.progression.playingZone());
+      await this.showZoneBackground(this.progression.playingZone());
+      void this.rock.show(this.progression.playingZone(), this.guardian());
+      await this.startMining(frames, strike);
     } catch (error) {
       console.error('Impossible d\'afficher la scène de la mine', error);
     }
@@ -145,6 +234,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.resizeObserver?.disconnect();
     if (this.initialized) {
       this.destroyApp();
     }
@@ -159,12 +249,34 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.stage().nativeElement.appendChild(canvas);
   }
 
-  private async startMining(frames: Texture[]): Promise<void> {
+  /** Le cadre s'allonge sur un téléphone haut : la scène suit, sans déformer le décor. */
+  private followFrameSize(): void {
+    const element = this.stage().nativeElement;
+    const resize = () => {
+      if (element.clientWidth === 0 || this.destroyed) {
+        return;
+      }
+      const height = Math.max(Math.round((SCENE_WIDTH * element.clientHeight) / element.clientWidth), SCENE_HEIGHT);
+      if (height === this.sceneHeight()) {
+        return;
+      }
+      this.sceneHeight.set(height);
+      this.app.renderer.resize(SCENE_WIDTH, height);
+      this.app.stage.position.set(0, this.extra());
+      this.layoutBackground();
+    };
+    resize();
+    this.resizeObserver = new ResizeObserver(resize);
+    this.resizeObserver.observe(element);
+  }
+
+  private async startMining(frames: Texture[], strike: StrikeAnimation): Promise<void> {
     const miner = new AnimatedSprite(frames);
     miner.anchor.set(0.5, 1);
     miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
-    this.placeMiner(APPRENTICE_STRIKE);
+    this.strike = strike;
+    this.placeMiner(strike);
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
     this.effects = effects;
@@ -172,7 +284,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.app.stage.addChild(miner, this.staticBody, effectsLayer);
+    const auraLayer = new Container();
+    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.aura.show(auraLook(this.evolution.form()));
+    this.app.stage.addChild(auraLayer, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -184,15 +299,22 @@ export class MineScene implements AfterViewInit, OnDestroy {
         effects.spawn(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale, outcome);
         this.playStrikeSounds(outcome);
         this.rock.hit(outcome.rockBroken);
+        if (outcome.rockBroken) {
+          effects.spawnRockBreak(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale);
+          this.shakeMs = Math.max(this.shakeMs, SHAKE_MS * ROCK_BREAK_SHAKE_SHARE);
+        }
         this.squashMs = STRIKE_SQUASH_MS;
       }
       previousFrame = currentFrame;
     };
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
+      this.aura?.update(ticker.deltaMS);
+      this.ambience.update(ticker.deltaMS);
       this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);
+      this.updateGlow(ticker.deltaMS);
     });
     miner.play();
   }
@@ -269,13 +391,35 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
   }
 
+  private showPowerGain(gain: PowerGain): void {
+    this.pendingGain.set(null);
+    this.effects?.spawnPowerGain(SCENE_WIDTH / 2, MINER_FEET_Y - POWER_GAIN_ABOVE_FEET, gain);
+    this.glowMs = POWER_GLOW_MS;
+    this.sound.play('upgrade');
+  }
+
+  /** Le mineur (ou sa forme fixe) brille d'or puis reprend ses couleurs. */
+  private updateGlow(elapsedMs: number): void {
+    if (this.glowMs <= 0) {
+      return;
+    }
+    this.glowMs = Math.max(this.glowMs - elapsedMs, 0);
+    const tint = this.glowMs > 0 ? POWER_GLOW_TINT : NO_TINT;
+    if (this.miner) {
+      this.miner.tint = tint;
+    }
+    if (this.staticBody) {
+      this.staticBody.tint = tint;
+    }
+  }
+
   private updateShake(elapsedMs: number): void {
     if (this.shakeMs <= 0) {
       return;
     }
     this.shakeMs = Math.max(this.shakeMs - elapsedMs, 0);
     const strength = (this.shakeMs / SHAKE_MS) * SHAKE_PX;
-    this.app.stage.position.set((Math.random() - 0.5) * 2 * strength, (Math.random() - 0.5) * 2 * strength);
+    this.app.stage.position.set((Math.random() - 0.5) * 2 * strength, this.extra() + (Math.random() - 0.5) * 2 * strength);
   }
 
   private updateSquash(elapsedMs: number): void {
@@ -295,13 +439,26 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background.texture = texture;
-      // Les images sont quasi en 9:16 (572×1024) : les étirer sur la scène les déforme de moins de 1 %
-      this.background.setSize(SCENE_WIDTH, SCENE_HEIGHT);
-      this.background.y = MINER_FEET_Y - floorY;
+      this.background.tint = this.progression.inEcho() ? ECHO_TINT : NO_TINT;
+      this.floorY = floorY;
+      this.layoutBackground();
     } catch (error) {
       // On garde l'ancien décor plutôt qu'un écran vide
       console.error(`Fond de la zone ${zone} introuvable`, error);
     }
+  }
+
+  /**
+   * Le sol du décor se pose sous les pieds du mineur. Les images sont quasi en 9:16 (572×1024) : les étirer sur la
+   * scène les déforme de moins de 1 %. Sur un écran haut, le décor grandit jusqu'à couvrir le ciel gagné en haut.
+   */
+  private layoutBackground(): void {
+    if (!this.background || this.floorY <= 0) {
+      return;
+    }
+    const scale = Math.max(1, (MINER_FEET_Y + this.extra()) / this.floorY);
+    this.background.setSize(SCENE_WIDTH * scale, SCENE_HEIGHT * scale);
+    this.background.position.set((SCENE_WIDTH - SCENE_WIDTH * scale) / 2, MINER_FEET_Y - this.floorY * scale);
   }
 
   private destroyApp(): void {

@@ -9,6 +9,7 @@ import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { ForgeFiltersDialog } from '../../forge/forge-filters/forge-filters';
 import { Missions } from '../../missions/missions';
+import { RevealDirective } from '../../onboarding/reveal.directive';
 import { Overlays } from '../../shared/overlays';
 import { MissionsDialog } from '../../missions/missions-dialog/missions-dialog';
 import { formatDuration } from '../../shared/format-duration';
@@ -16,6 +17,7 @@ import { GeodeShards } from '../../wallet/geode-shards';
 import { Wallet } from '../../wallet/wallet';
 import { SLOTS, TIER_IDS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
+import { compactNumber } from '../../shared/format-number';
 
 const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
 
@@ -25,7 +27,7 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
-  imports: [MissionsDialog, ForgeFiltersDialog],
+  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })
@@ -86,6 +88,11 @@ export class ForgeButton {
   );
 
   /** Tant qu'un objet attend un choix, la Forge le remontre au lieu d'en forger un autre. */
+  /** Montants d'or en format court : un nombre à 7 chiffres devient illisible dans la fenêtre. */
+  protected compact(value: number): string {
+    return compactNumber(value);
+  }
+
   protected onForgeClick(): void {
     if (this.inventory.pending()) {
       this.inventory.reopenReview();

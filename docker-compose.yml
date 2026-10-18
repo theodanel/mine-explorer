@@ -1,0 +1,46 @@
+# Mine Explorer : le jeu (Angular servi par nginx) et le serveur Spring Boot, prêts pour Coolify.
+# Coolify place son proxy devant les services : rien n'est publié sur l'hôte (expose, pas ports), pas de nom de
+# conteneur ni de projet fixés (Coolify les préfixe), et le domaine du jeu vient de la variable magique
+# SERVICE_FQDN_FRONTEND_8080 (le proxy route vers le port 8080 du conteneur).
+# En local : docker compose up --build (docker-compose.override.yml publie les ports, voir docs/technique/docker.md).
+
+services:
+  frontend:
+    build: ./frontend
+    expose:
+      - "8080"
+    environment:
+      # Coolify génère le domaine du jeu et route vers le port 8080 ; sans Coolify, la variable est simplement ignorée
+      - SERVICE_FQDN_FRONTEND_8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    # Moindre privilège : système de fichiers en lecture seule, aucune capacité Linux, pas d'élévation
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  # Interne : joignable par le jeu sous le nom « backend:8080 », pas de domaine public tant qu'il n'a pas de route
+  backend:
+    build: ./backend
+    expose:
+      - "8080"
+    restart: unless-stopped
+    environment:
+      # Mémoire de la JVM ajustée à celle du conteneur
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

@@ -10,12 +10,12 @@
   width: 11cqw;
   height: 11cqw;
   padding: 0;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #a77a4c, #5b3b22);
   box-shadow: 0 0.7cqw 0 #24170d;
   color: #fff3d6;
-  font: bold 2.7cqw / 1 Arial, sans-serif;
+  font: bold 2.7cqw / 1 var(--font-body);
   cursor: pointer;
 
   &:focus-visible {
@@ -48,16 +48,20 @@
   place-items: center;
   align-content: center;
   gap: 3cqw;
+  // minmax(0, 1fr) : sans lui, la fenêtre s'élargit à son contenu et se colle au bord droit de l'écran
+  grid-template-columns: minmax(0, 1fr);
   padding: 5cqw;
   background: rgb(0 0 0 / 60%);
 }
 
 .dialog {
   display: grid;
-  gap: 2cqw;
+  gap: 2.4cqw;
   width: 100%;
-  max-height: 75cqh;
+  max-width: 100%;
+  max-height: 80%;
   padding: 4cqw;
+  overflow-x: hidden;
   overflow-y: auto;
 
   h2,
@@ -67,14 +71,13 @@
 
   h2 {
     font-size: 5.5cqw;
-    text-align: center;
   }
 
   h3 {
-    font-size: 3.2cqw;
-    text-transform: uppercase;
-    letter-spacing: 0.2cqw;
-    opacity: 0.8;
+    color: #fff;
+    font-size: 3.8cqw;
+    -webkit-text-stroke: 0.3cqw var(--ink);
+    paint-order: stroke fill;
   }
 }
 
@@ -84,30 +87,72 @@
   margin: 0;
 }
 
+// Une fiche crème par source de bonus
 .source {
-  padding: 1.5cqw 2.5cqw;
-  border-radius: 2cqw;
-  background: rgb(0 0 0 / 30%);
+  padding: 1.8cqw 2.8cqw;
+  border: 0.5cqw solid var(--ink);
+  border-radius: 3cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.5cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
 
   dt {
-    font-size: 3.2cqw;
-    font-weight: bold;
+    color: #4a2a10;
+    font: 4cqw / 1.1 var(--font-display);
   }
 
   dd {
-    margin: 0.4cqw 0 0;
-    color: #9dffa4;
-    font-size: 3cqw;
+    margin: 0.5cqw 0 0;
+    color: #2e8b3a;
+    font-size: 3.2cqw;
+    font-weight: 700;
   }
 }
 
 .close {
   width: 10cqw;
   height: 10cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
+}
+
+// Puissance en vedette : grand chiffre doré qui brille doucement
+.power {
+  display: grid;
+  justify-items: center;
+  gap: 0.5cqw;
+  margin: 0;
+  padding: 2.5cqw;
+  border: 0.55cqw solid var(--ink);
+  border-radius: 3.5cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+}
+
+.power-label {
+  color: var(--parchment-text);
+  font: 3.6cqw / 1 var(--font-display);
+}
+
+.power-value {
+  color: var(--gold);
+  font: 10cqw / 1 var(--font-display);
+  -webkit-text-stroke: 0.6cqw var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 0.6cqw 0 rgb(74 44 22 / 35%);
+  animation: power-glow 2s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes power-glow {
+  to {
+    opacity: 0.85;
+  }
 }

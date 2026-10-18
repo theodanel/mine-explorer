@@ -55,6 +55,9 @@ export const NO_BONUSES: Bonuses = {
  */
 export const SKILL_POINTS_PER_ZONE = 3;
 
+/** L'onglet s'ouvre à la zone 2 (choix de Théo, 18/10/2026), avec les 3 points de la zone 1 terminée. */
+export const SKILLS_UNLOCK_ZONE = 2;
+
 /** Points à dépenser dans une branche pour ouvrir chaque rangée, de la première à la quatrième. */
 export const ROW_THRESHOLDS: readonly number[] = [0, 3, 7, 12];
 

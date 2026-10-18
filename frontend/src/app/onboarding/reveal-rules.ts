@@ -1,5 +1,5 @@
-// Prise en main (retours Discord du 18/10/2026, ajustés par Théo) : le panneau du bas est là dès le début, et une
-// bulle d'une ligne présente chaque élément au moment où il sert. Les onglets du menu du bas, eux, n'apparaissent
+// Prise en main (retours Discord du 18/10/2026, ajustés par Théo) : le panneau du bas est là dès le début, grisé, et une
+// bulle d'une ligne débloque chaque élément au moment où il sert. Les onglets du menu du bas, eux, n'apparaissent
 // qu'une fois ouverts. Fichier pur : règles et textes, sans Angular. Voir docs/game-design/devoilement-progressif.md.
 
 export const REVEAL_IDS = [
@@ -43,7 +43,7 @@ interface RevealRule {
   readonly when: (facts: RevealFacts) => boolean;
   /** Bulle d'une ligne montrée à ce moment-là. */
   readonly hint: string;
-  /** Caché tant qu'il n'est pas présenté (onglets du menu du bas) ; sinon à l'écran dès le début. */
+  /** Caché tant qu'il n'est pas présenté (onglets du menu du bas) ; sinon visible dès le début, grisé et bloqué. */
   readonly hidden: boolean;
 }
 

@@ -183,11 +183,17 @@ body {
 }
 
 // Compteur du haut qui sursaute quand une récompense y arrive
-// Dévoilement progressif : l'élément garde sa place cachée, puis surgit à sa première apparition.
+// Prise en main : un onglet garde sa place caché, un élément du panneau reste grisé et bloqué ;
+// les deux surgissent à leur première apparition.
 // « scale » (et non transform) pour ne pas écraser le placement des éléments déjà transformés.
 .unrevealed {
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+.locked-ui {
+  filter: grayscale(1) brightness(0.75);
+  opacity: 0.7;
 }
 
 .reveal-pop {

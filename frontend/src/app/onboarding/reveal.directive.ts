@@ -12,6 +12,9 @@ import { RevealId } from './reveal-rules';
   selector: '[appReveal]',
   host: {
     '[class.unrevealed]': '!shown()',
+    '[class.locked-ui]': 'locked()',
+    // inert bloque toucher, clavier et lecteur d'écran tant que l'élément n'est pas débloqué
+    '[attr.inert]': "locked() ? '' : null",
     '[class.reveal-pop]': 'pop()',
     '[attr.data-reveal]': 'revealAnchor() ? appReveal() : null',
   },
@@ -21,5 +24,6 @@ export class RevealDirective {
   readonly appReveal = input.required<RevealId>();
   readonly revealAnchor = input(true);
   protected readonly shown = computed(() => this.reveal.isRevealed(this.appReveal()));
+  protected readonly locked = computed(() => this.reveal.isLocked(this.appReveal()));
   protected readonly pop = computed(() => this.reveal.isFresh(this.appReveal()));
 }

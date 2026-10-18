@@ -4,13 +4,13 @@ Retours de joueurs sur Discord (18/10/2026), relayés par Théo : les premières
 
 Choix de Théo, le même jour, après une première version qui cachait tout :
 
-- le panneau du bas (équipement, pioche, forge, missions, stats, Auto, Filtres) est là dès le début, présenté par un petit tuto ;
+- le panneau du bas (équipement, pioche, forge, missions, stats, Auto, Filtres) est visible dès le début, mais grisé et bloqué : chaque élément se débloque quand le tuto le présente ;
 - la barre de navigation n'affiche que les menus ouverts : un onglet apparaît quand son menu devient disponible ;
 - Compétences et Compagnons s'ouvrent à la zone 2, Artefacts à la zone 3.
 
 ## Le tuto en bulles
 
-Pas de flou, pas de passage obligé : une bulle d'une ligne entoure l'élément au moment où il sert, quelques secondes, et un toucher n'importe où la ferme en jouant normalement. Une bulle dont le joueur a déjà fait l'action (forger avant de la voir) est sautée. Une partie déjà avancée ne voit aucune bulle.
+Pas de flou, pas de passage obligé : l'élément se débloque (il quitte le gris et surgit), et une bulle d'une ligne l'entoure au moment où il sert, quelques secondes, et un toucher n'importe où la ferme en jouant normalement. Une bulle dont le joueur a déjà fait l'action (forger avant de la voir) est sautée. Une partie déjà avancée a tout débloqué et ne voit aucune bulle.
 
 | Élément | Quand | Bulle |
 |---|---|---|

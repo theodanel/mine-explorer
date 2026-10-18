@@ -27,8 +27,8 @@ const STORAGE_KEY = 'mine-explorer.devoilement';
 const LEGACY_TUTORIAL_KEY = 'mine-explorer.tutorial';
 
 /**
- * Prise en main : une bulle présente chaque élément du panneau du bas quand il sert, et les onglets du menu du bas
- * apparaissent à leur ouverture. Ce qui est présenté le reste, même si la condition retombe (l'or dépensé).
+ * Prise en main : les éléments du panneau du bas sont grisés et bloqués jusqu'à ce qu'une bulle les présente,
+ * quand ils servent ; les onglets du menu du bas apparaissent à leur ouverture. Ce qui est présenté le reste, même si la condition retombe (l'or dépensé).
  */
 @Injectable({ providedIn: 'root' })
 export class Reveal {
@@ -78,14 +78,19 @@ export class Reveal {
     });
   }
 
-  /** À l'écran : présenté, ou visible dès le début (seuls les onglets du menu du bas attendent). */
+  /** À l'écran : présenté, ou visible dès le début (seuls les onglets du menu du bas attendent ; le reste est grisé). */
   isRevealed(id: RevealId): boolean {
     return !hiddenUntilRevealed(id) || this.revealed().has(id);
   }
 
-  /** Vient d'apparaître pendant cette session : il entre avec une animation. */
+  /** Élément du panneau du bas pas encore présenté : visible, mais grisé et bloqué (choix de Théo). */
+  isLocked(id: RevealId): boolean {
+    return !hiddenUntilRevealed(id) && !this.revealed().has(id);
+  }
+
+  /** Vient d'apparaître ou de se débloquer pendant cette session : il surgit avec une animation. */
   isFresh(id: RevealId): boolean {
-    return hiddenUntilRevealed(id) && this.fresh().has(id);
+    return this.fresh().has(id);
   }
 
   /** Ferme la bulle affichée, et oublie au passage celles devenues inutiles avant elle. */

@@ -17,7 +17,10 @@
         </div>
       </div>
       <app-google-button (pressed)="account.signIn()" />
-      <p class="privacy">Aucun mot de passe. Google confirme seulement que c'est toi : ni ton e-mail ni ton nom ne nous sont transmis.</p>
+      <p class="privacy">
+        Aucun mot de passe. Google confirme seulement que c'est toi : ni ton e-mail ni ton nom ne nous sont transmis.
+        <a href="/confidentialite.html" target="_blank" rel="noopener">Règles de confidentialité</a>
+      </p>
       <button type="button" class="row" (click)="leaderboard.emit()">Voir le classement<span class="chevron" aria-hidden="true">›</span></button>
     }
     @case ('signed-in') {

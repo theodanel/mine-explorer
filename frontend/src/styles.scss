@@ -190,7 +190,9 @@ body {
 }
 
 .reveal-pop {
-  animation: reveal-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  // Sans « forwards » : une fois l'animation finie, l'élément ne garde aucun « scale ». Sinon il deviendrait le cadre
+  // de ses fenêtres en position fixed (le détail des stats s'ouvrait coincé dans le bouton Stats)
+  animation: reveal-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) backwards;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

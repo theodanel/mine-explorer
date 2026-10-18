@@ -42,9 +42,9 @@
   display: grid;
   grid-template: 'icon label' auto 'icon value' auto / auto 1fr;
   align-items: center;
-  column-gap: 1.5cqw;
+  column-gap: 1cqw;
   min-width: 0;
-  padding: 1.2cqw 1.5cqw;
+  padding: 1.2cqw;
   // Tuile pastel teintée de la couleur de la stat, cerclée de brun
   border: 0.45cqw solid var(--ink);
   border-radius: 2.5cqw;
@@ -64,7 +64,8 @@
     margin: 0;
     overflow: hidden;
     color: #fff;
-    font: 3.9cqw / 1.1 var(--font-display);
+    // Assez petit pour « 200 % » ou « 27,3 k » dans un tiers d'écran étroit (iPhone) sans points de suspension
+    font: 3.5cqw / 1.1 var(--font-display);
     text-overflow: ellipsis;
     white-space: nowrap;
     -webkit-text-stroke: 0.35cqw var(--ink);
@@ -83,8 +84,8 @@
 
 .stat-icon {
   grid-area: icon;
-  width: 7cqw;
-  height: 7cqw;
+  width: 6cqw;
+  height: 6cqw;
   padding: 0.6cqw;
   border-radius: 50%;
   background: radial-gradient(circle, color-mix(in srgb, var(--stat-color, #ffd34d) 45%, transparent), transparent 70%);

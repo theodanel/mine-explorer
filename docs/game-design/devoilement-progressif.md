@@ -35,6 +35,15 @@ Tous les onglets sont visibles dès le début, grisés et bloqués avec leur con
 
 Les seuils sont dans `frontend/src/app/onboarding/reveal-rules.ts` et les zones d'ouverture dans `balance/skill-tree.ts`, `balance/companions.ts` et `balance/artifacts.ts`.
 
-## Suite prévue
+## Progrès visible
 
-Rendre chaque progrès visible dans le jeu : afficher l'effet d'une amélioration sur le mineur (« Dégâts 12 → 15 »), une pioche qui grossit et brille avec son niveau, plus de retours visuels et sonores à la casse d'un filon.
+Second retour Discord : le jeu se résume à des chiffres qui montent, sans retour satisfaisant. Chaque progrès se voit maintenant dans la mine :
+
+- **Gain de Puissance** : dès que le mineur devient plus fort (objet équipé, compétence, artefact, Atelier…), une onde dorée part de lui, des étincelles jaillissent, il brille d'or un instant, et « Puissance +107 » s'affiche au-dessus de lui avec les stats qui ont le plus monté (« Frappe 5 → 7 », deux au plus), avec le son d'amélioration. Un gain obtenu depuis une page du menu s'affiche au retour sur la mine ; plusieurs gains d'affilée n'en font qu'un.
+- **Filon qui cède** : un flash blanc, une gerbe de gros éclats et une petite secousse de la galerie, en plus du son de casse.
+
+Calcul du gain : `frontend/src/app/mine-scene/power-gain.ts` ; effets : `hit-effects.ts`.
+
+## Pistes suivantes
+
+La pioche qui grossit et brille avec son niveau demande une animation du mineur par niveau de pioche (images à générer) : à trancher avec Théo.

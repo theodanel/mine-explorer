@@ -7,6 +7,10 @@
   <div class="scroll">
     @if (heartMode()) {
       <app-heart-card [stars]="evolution.form().stars" [ready]="evolution.ready()" [revealing]="revealing()" />
+      <div class="forge-row">
+        <button type="button" class="game-button gold forge-link" (click)="openForge()">Forge du Cœur</button>
+        <button type="button" class="info" aria-label="Comment éveiller les étoiles ?" (click)="helpOpen.set(true)">i</button>
+      </div>
     } @else {
       <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
       <article class="rank">
@@ -103,12 +107,21 @@
         }
       </ul>
 
+      @if (heartMode()) {
+        <!-- En plus des missions : les 2 runes de l'étoile, serties dans la Forge du Cœur -->
+        <p class="runes-line" [class.done]="evolution.runesSet()">{{ runesText() }}</p>
+      }
+
       <button type="button" class="game-button promote" [class.green]="evolution.ready()" [disabled]="!evolution.ready()" (click)="promote()">
         {{ heartMode() ? "Éveiller l'étoile" : 'Promotion' }}
-        <small>{{ evolution.ready() ? 'Devenir ' + next.title : 'Remplis les trois paliers' }}</small>
+        <small>{{ evolution.ready() ? 'Devenir ' + next.title : heartMode() && !evolution.runesSet() ? 'Paliers et runes à compléter' : 'Remplis les trois paliers' }}</small>
       </button>
     } @else {
       <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().title }}.</p>
     }
   </div>
+
+  @if (helpOpen()) {
+    <app-heart-forge-help (closed)="helpOpen.set(false)" />
+  }
 </section>

@@ -6,6 +6,7 @@ import { MissionCounters } from '../missions/mission-counters';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
+import { HeartForge } from '../heart-forge/heart-forge';
 import { canEvolve, currentTier, formTitle, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
 
 const STORAGE_KEY = 'mine-explorer.evolution';
@@ -22,6 +23,7 @@ export class Evolution {
   private readonly forge = inject(Forge);
   private readonly counters = inject(MissionCounters).counters;
   private readonly shards = inject(GeodeShards);
+  private readonly heartForge = inject(HeartForge);
   private readonly formIndex = signal(loadFormIndex());
   private readonly claimed = signal<readonly number[]>(loadClaims());
 
@@ -51,7 +53,12 @@ export class Evolution {
     const form = this.next();
     return form === null ? [] : objectivesFor(form, this.progress(), this.claimed());
   });
-  readonly ready = computed(() => canEvolve(this.objectives()));
+  /** Runes de l'étoile suivante serties dans l'anneau (toujours vrai hors Cœur du monde). */
+  readonly runesSet = computed(() => {
+    const next = this.next();
+    return next === null || next.id !== 'heart' || this.heartForge.starReady(next.stars);
+  });
+  readonly ready = computed(() => canEvolve(this.objectives()) && this.runesSet());
   /** Palier en cours de la forme suivante. */
   readonly tier = computed(() => {
     const form = this.next();

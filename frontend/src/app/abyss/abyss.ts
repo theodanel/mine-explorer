@@ -16,6 +16,7 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { cast, Fighter, Game, isOver, startGame, tap, tick } from './abyss-game';
 import { AbyssState, EMPTY_ABYSS, isValidAbyssState, runReward, RunReward, runsLeft } from './abyss-rules';
 import { MissionCounters } from '../missions/mission-counters';
+import { HeartForge } from '../heart-forge/heart-forge';
 
 const STORAGE_KEY = 'mine-explorer.abyss';
 /** Pas de la boucle de jeu : assez fin pour la mèche et le combo, sans charger le téléphone. */
@@ -26,7 +27,11 @@ export const ABYSS_UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id ==
 export interface RunResult extends RunReward {
   readonly floors: number;
   readonly newRecord: boolean;
+  /** Ressources des Échos gagnées dès la Légende (autant de chaque sorte), pour le Creuset du Cœur. */
+  readonly essencesEach: number;
 }
+
+const LEGEND_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === 'legend');
 
 export interface AbyssSpell {
   readonly id: SpellId;
@@ -49,6 +54,7 @@ export class Abyss {
   private readonly skills = inject(Skills);
   private readonly shards = inject(GeodeShards);
   private readonly companions = inject(Companions);
+  private readonly heartForge = inject(HeartForge);
   private readonly state = signal<AbyssState>(loadAbyss());
   private readonly today = signal(dayKey(this.clock()));
   private readonly gameState = signal<Game | null>(null);
@@ -152,7 +158,8 @@ export class Abyss {
     this.save({ ...current, record: Math.max(current.record, floors) });
     this.gameState.set(null);
     this.fighter = null;
-    this.lastResult.set({ ...reward, floors, newRecord: floors > current.record });
+    const essencesEach = this.evolution.index() >= LEGEND_INDEX ? this.heartForge.onAbyssRun(floors) : 0;
+    this.lastResult.set({ ...reward, floors, newRecord: floors > current.record, essencesEach });
   }
 
   private stopLoop(): void {

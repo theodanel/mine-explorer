@@ -114,6 +114,29 @@ import {
   setActive,
   type CompanionState,
 } from '../src/app/companions/companion-rules.ts';
+import {
+  ABYSS_FLOORS_PER_ESSENCES,
+  ALLIANCE_RECIPES,
+  ESSENCE_ELEMENTS,
+  ESSENCES,
+  RING_SOCKETS,
+  type EssenceId,
+  type RuneType,
+} from '../src/app/balance/heart-forge.ts';
+import {
+  addEssences,
+  brew,
+  canBrew,
+  canFuse,
+  canSocket,
+  EMPTY_HEART_FORGE,
+  fuseRunes,
+  runeCount,
+  socketRune,
+  socketRuneIn,
+  starRunesSet,
+  type HeartForgeState,
+} from '../src/app/heart-forge/heart-forge-rules.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -358,6 +381,18 @@ let goldOffline = 0;
 let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
+let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
+let essencesEarned = 0;
+let runesBrewed = 0;
+let fusionsFailed = 0;
+const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
+/** Minutes passées chaque jour dans les Échos, dès la Légende (le reste du temps actif va à la zone en cours). */
+const ECHO_MINUTES_PER_DAY = Number(process.env.ECHO_MINUTES ?? 20);
+const ECHO_ROCK_SECONDS = 120;
+function earnEssences(gains: Partial<Record<EssenceId, number>>): void {
+  heartForge = addEssences(heartForge, gains);
+  essencesEarned += Object.values(gains).reduce((sum, amount) => sum + (amount ?? 0), 0);
+}
 let artifactReforges = 0;
 let artifactReforgesKept = 0;
 const milestones: string[] = [];
@@ -471,6 +506,7 @@ function tryEvolve(now: number): void {
   const progressNow = { zone: progress.zone, zoneCleared: progress.zone - 1, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
+  if (next.id === 'heart' && !starRunesSet(heartForge, next.stars)) return;
   const reward = unclaimedShards(objectives);
   shards += reward;
   shardSources.evolution += reward;
@@ -569,6 +605,10 @@ function playAbyss(): void {
       }
     }
     const reward = runReward(game.floorsCleared, game.shards, abyssRecord);
+    if (formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) {
+      const each = Math.floor(game.floorsCleared / ABYSS_FLOORS_PER_ESSENCES);
+      earnEssences(Object.fromEntries(ESSENCES.map((id) => [id, each])));
+    }
     abyssRecord = Math.max(abyssRecord, game.floorsCleared);
     abyssBest = Math.max(abyssBest, game.floorsCleared);
     abyssFloorsTotal += game.floorsCleared;
@@ -662,6 +702,61 @@ function equipBestArtifact(now: number): void {
     if (best !== null) artifacts = equipArtifact(artifacts, best, slot, open);
   }
   refresh(now);
+}
+
+/** Recette d'une rune de rang 1 : 3 ressources de son élément, ou la recette de l'alliance. */
+function recipeOf(type: RuneType): readonly EssenceId[] {
+  if (type in ALLIANCE_RECIPES) return ALLIANCE_RECIPES[type as keyof typeof ALLIANCE_RECIPES];
+  const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
+  return [essence, essence, essence];
+}
+
+/**
+ * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos à récolter ce qui manque, puis
+ * verse au Creuset, fusionne et sertit les runes de la prochaine étoile.
+ */
+function craftRunes(): void {
+  if (formIndex < EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) return;
+  const socketsFree = Array.from({ length: RING_SOCKETS }, (_, index) => index).filter((index) => !heartForge.sockets[index]);
+  if (socketsFree.length === 0) return;
+  const star = Math.floor(socketsFree[0] / 2);
+  const targets = [star * 2, star * 2 + 1].filter((index) => !heartForge.sockets[index]);
+  // Récolte du jour : un filon d'Écho toutes les 2 minutes, dans l'Écho de la ressource qui manque le plus
+  let rocks = Math.round((ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
+  while (rocks > 0) {
+    const needs = targets.flatMap((socket) => recipeOf(socketRune(socket).type));
+    const lacking = [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
+    earnEssences({ [lacking]: 1 });
+    rocks--;
+  }
+  for (let guard = 0; guard < 5000; guard++) {
+    let progressMade = false;
+    for (const socket of targets) {
+      if (canSocket(heartForge, socket)) {
+        heartForge = socketRuneIn(heartForge, socket);
+        progressMade = true;
+      }
+    }
+    for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
+      const target = socketRune(socket);
+      for (let rank = 1; rank < target.rank; rank++) {
+        const rune = { type: target.type, rank };
+        if (canFuse(heartForge, rune)) {
+          const fused = fuseRunes(heartForge, rune, heartRandom);
+          heartForge = fused.state;
+          if (!fused.success) fusionsFailed++;
+          progressMade = true;
+        }
+      }
+      const recipe = recipeOf(target.type);
+      if (runeCount(heartForge, target) === 0 && canBrew(heartForge, recipe)) {
+        heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
+        runesBrewed++;
+        progressMade = true;
+      }
+    }
+    if (!progressMade) break;
+  }
 }
 
 /** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
@@ -920,6 +1015,7 @@ for (let day = 0; day < days; day++) {
     lastSeen = end;
   }
   reforgeArtifacts(lastSeen);
+  craftRunes();
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -953,6 +1049,8 @@ if (withNewSystems) {
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
       `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
+      `ressources du Cœur ${essencesEarned} récoltées, ${runesBrewed} runes du Creuset, ${fusionsFailed} fusions ratées, ` +
+      `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );
 }

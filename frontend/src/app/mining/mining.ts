@@ -16,6 +16,7 @@ import { Progression } from '../progression/progression';
 import { RANDOM } from '../shared/random';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
+import { HeartForge } from '../heart-forge/heart-forge';
 import { StrikeReward, strikeReward } from './mining-rules';
 
 export interface StrikeOutcome extends HitResult {
@@ -51,6 +52,7 @@ export class Mining {
   private readonly artifacts = inject(Artifacts);
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
+  private readonly heartForge = inject(HeartForge);
   private readonly lastBlast = signal<BlastEvent | null>(null);
   private blastCount = 0;
 
@@ -85,6 +87,10 @@ export class Mining {
     // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
     if (rockBroken && !farming) {
       this.missionCounters.record('rocksBroken');
+    }
+    // Un filon d'Écho donne sa ressource, sans tirage
+    if (rockBroken && struck.echoZone !== null) {
+      this.heartForge.onEchoRock(struck.echoZone);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
     // parfois un au coup de pioche, plus le lot de fin de zone

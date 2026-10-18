@@ -9,6 +9,7 @@ import { formTitle, isClaimable } from '../evolution-rules';
 import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 import { RankStars } from '../rank-stars/rank-stars';
 import { HeartCard } from '../heart-card/heart-card';
+import { HeartForgeHelp } from '../../heart-forge/heart-forge-help/heart-forge-help';
 import { readStorage, writeStorage } from '../../shared/local-storage';
 
 const NUMBER = new Intl.NumberFormat('fr-FR');
@@ -26,7 +27,7 @@ const REVEAL_MS = 2800;
  */
 @Component({
   selector: 'app-evolution-page',
-  imports: [RewardFlightDirective, RankStars, HeartCard],
+  imports: [RewardFlightDirective, RankStars, HeartCard, HeartForgeHelp],
   templateUrl: './evolution-page.html',
   styleUrl: './evolution-page.scss',
 })
@@ -40,6 +41,10 @@ export class EvolutionPage {
   /** Légende ou au-delà : l'écran se transforme pour le Cœur du monde. */
   protected readonly heartMode = computed(() => this.evolution.index() >= LEGEND_INDEX);
   protected readonly revealing = signal(false);
+  protected readonly helpOpen = signal(false);
+  protected readonly runesText = computed(() =>
+    this.evolution.runesSet() ? "✓ Runes de l'étoile serties" : 'Sertis les 2 runes de cette étoile à la Forge du Cœur',
+  );
 
   constructor() {
     // Première fois en Légende devant cet écran (en l'ouvrant, ou juste après la promotion) : l'interface se transforme
@@ -133,6 +138,10 @@ export class EvolutionPage {
       this.chosenTier.set(null);
       this.sound.play('upgrade');
     }
+  }
+
+  protected openForge(): void {
+    this.navigation.open('heart-forge');
   }
 
   protected close(): void {

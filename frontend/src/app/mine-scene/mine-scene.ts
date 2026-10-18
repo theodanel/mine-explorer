@@ -51,6 +51,9 @@ const HEALTH_BAR_GAP = 14;
 const PERCENT = 100;
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 const MS_PER_SECOND = 1000;
+/** Un Écho garde le décor de la zone, assombri et rougi : le monde a changé. Hors Écho, aucune teinte. */
+const ECHO_TINT = 0xb0786a;
+const NO_TINT = 0xffffff;
 /** Sous un menu, la mine ne se voit presque plus : 30 images par seconde suffisent et ménagent la batterie. */
 const COVERED_MAX_FPS = 30;
 
@@ -129,6 +132,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const form = this.evolution.form().id;
       if (this.staticBody) {
         void this.showForm(form);
+      }
+    });
+    // Dans un Écho, le décor s'assombrit et rougit
+    effect(() => {
+      const echo = this.progression.inEcho();
+      if (this.background) {
+        this.background.tint = echo ? ECHO_TINT : NO_TINT;
       }
     });
     // Sous un menu, la scène tourne au ralenti ; les coups gardent leur cadence (animation au temps écoulé)
@@ -370,6 +380,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background.texture = texture;
+      this.background.tint = this.progression.inEcho() ? ECHO_TINT : NO_TINT;
       this.floorY = floorY;
       this.layoutBackground();
     } catch (error) {

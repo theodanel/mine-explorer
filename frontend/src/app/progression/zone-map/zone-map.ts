@@ -8,6 +8,7 @@ import { EVOLUTION_VISUALS, LAST_DECORATED_ZONE, materialIconUrl, zoneBackground
 import { Navigation } from '../../navigation/navigation';
 import { Ores } from '../../ores/ores';
 import { Progression } from '../progression';
+import { Echoes } from '../../heart-forge/echoes';
 
 /** Nom de chaque zone, d'après son décor. Au-delà, on reste dans les profondeurs du Cœur du monde. */
 const ZONE_NAMES: readonly string[] = [
@@ -56,6 +57,7 @@ export function zoneName(zone: number): string {
 })
 export class ZoneMap implements AfterViewInit {
   protected readonly progression = inject(Progression);
+  protected readonly echoes = inject(Echoes);
   private readonly navigation = inject(Navigation);
   private readonly ores = inject(Ores);
   private readonly evolution = inject(Evolution);
@@ -117,7 +119,7 @@ export class ZoneMap implements AfterViewInit {
 
   /** Revient miner dans une zone passée : filons sans fin, son minerai, moins d'or. */
   protected farm(zone: number): void {
-    if (this.progression.startFarm(zone)) {
+    if (this.echoes.enter(zone)) {
       this.sound.play('upgrade');
       this.navigation.open('mine');
     }

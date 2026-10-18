@@ -161,11 +161,11 @@ Allumer le jeu en ligne dans le build de production : `frontend/src/environments
 
 | Fichier | Rôle |
 |---|---|
-| `environments/environment*.ts` | Interrupteur du jeu en ligne : **allumé avec `ng serve`** (serveur sur `http://localhost:8080`), **éteint dans le build de production** tant que le serveur n'est pas hébergé |
+| `environments/environment*.ts` | Interrupteur du jeu en ligne : allumé avec `ng serve` (serveur sur `http://localhost:8080`) et dans le build de production (`https://api.bouncylab.ovh`, autorisé dans `connect-src` de `public/_headers` et `nginx.conf`) |
 | `online-api.ts` | Appels `fetch` avec le cookie de session (`credentials: 'include'`) et le jeton CSRF, redemandé une fois s'il a expiré ; hors connexion, le jeu continue |
 | `online-account.ts` | État du compte (connecté, déconnecté, serveur injoignable), pseudo, export, suppression |
 | `cloud-sync.ts` | Sauvegarde entièrement automatique : premier envoi de la partie locale, envoi toutes les 5 minutes et quand l'onglet passe en arrière-plan, choix du joueur si le cloud a une autre partie (rien n'est écrasé sans lui) |
-| `account-card/`, `leaderboard-page/` | Carte « Compte » et classement, dans la page Profil. Style volontairement sobre et bouton Google officiel, pour inspirer confiance |
+| `account-card/`, `leaderboard-page/` | Carte « Compte » (Profil) et classement (Profil, ou trophée en haut à gauche de la mine), dans le style cartoon du jeu : parchemin, boutons de jeu, médailles du podium. Seul le bouton Google garde son aspect officiel |
 | `account-prompt/` | Bulle « Ne perds pas ta partie » : proposée après la première évolution (vers 30 min de jeu), jamais avant de jouer ; « Plus tard » la fait taire 3 jours. Fenêtre automatique la moins prioritaire (`shared/overlays.ts`) |
 
 Éteint, aucun appel réseau n'a lieu : la synchronisation n'est pas chargée, la carte et le classement vivent dans le morceau différé de la page Profil, et la bulle (chargée avec les autres fenêtres différées) ne s'affiche jamais. Les tests tournent jeu en ligne éteint (`src/test-providers.ts`) ; `online.spec.ts` l'allume contre un faux serveur.

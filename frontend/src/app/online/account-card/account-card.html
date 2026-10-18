@@ -6,14 +6,19 @@
     }
     @case ('offline') {
       <p class="muted">Serveur injoignable. Ta partie continue sur cet appareil.</p>
-      <button type="button" class="secondary" (click)="account.refresh()">Réessayer</button>
+      <button type="button" class="game-button action" (click)="account.refresh()">Réessayer</button>
     }
     @case ('signed-out') {
-      <p class="lead">Sauvegarde en ligne</p>
-      <p class="muted">Retrouve ta partie sur tous tes appareils et entre au classement.</p>
+      <div class="heading">
+        <img class="heading-icon" src="assets/ui/leaderboard.webp" alt="" width="128" height="128" />
+        <div>
+          <p class="lead">Sauvegarde en ligne</p>
+          <p class="muted">Retrouve ta partie sur tous tes appareils et entre au classement.</p>
+        </div>
+      </div>
       <app-google-button (pressed)="account.signIn()" />
       <p class="privacy">Aucun mot de passe. Google confirme seulement que c'est toi : ni ton e-mail ni ton nom ne nous sont transmis.</p>
-      <button type="button" class="row" (click)="leaderboard.emit()">Voir le classement<span aria-hidden="true">›</span></button>
+      <button type="button" class="row" (click)="leaderboard.emit()">Voir le classement<span class="chevron" aria-hidden="true">›</span></button>
     }
     @case ('signed-in') {
       @if (profile(); as me) {
@@ -23,14 +28,14 @@
             <form class="pseudo-form" (submit)="$event.preventDefault(); rename(pseudoInput.value)">
               <label class="visually-hidden" for="pseudo">Pseudo</label>
               <input #pseudoInput id="pseudo" [value]="me.pseudo" maxlength="20" autocomplete="nickname" />
-              <button type="submit" class="primary">OK</button>
+              <button type="submit" class="game-button green small">OK</button>
             </form>
           } @else {
             <span class="who">
               <strong>{{ me.pseudo }}</strong>
               <span class="muted">Connecté avec Google</span>
             </span>
-            <button type="button" class="secondary small" (click)="editing.set(true)">Modifier</button>
+            <button type="button" class="game-button small" (click)="editing.set(true)">Modifier</button>
           }
         </div>
         @if (pseudoError(); as error) {
@@ -56,13 +61,13 @@
         @if (state.kind === 'conflict') {
           <div class="conflict" role="alert">
             <p>Une autre partie est enregistrée sur ton compte. Laquelle veux-tu garder ?</p>
-            <button type="button" class="primary" (click)="sync.keepCloud()">Celle du compte (zone {{ state.cloudLabel }})</button>
-            <button type="button" class="secondary" (click)="sync.keepLocal()">Celle de cet appareil (zone {{ state.localLabel }})</button>
+            <button type="button" class="game-button green action" (click)="sync.keepCloud()">Celle du compte (zone {{ state.cloudLabel }})</button>
+            <button type="button" class="game-button action" (click)="sync.keepLocal()">Celle de cet appareil (zone {{ state.localLabel }})</button>
           </div>
         }
       }
 
-      <button type="button" class="row" (click)="leaderboard.emit()">Classement<span aria-hidden="true">›</span></button>
+      <button type="button" class="row" (click)="leaderboard.emit()">Classement<span class="chevron" aria-hidden="true">›</span></button>
 
       <details class="manage">
         <summary>Gérer mon compte</summary>
@@ -72,8 +77,8 @@
         @if (confirmingDelete()) {
           <div class="danger-zone" role="alert">
             <p>Ton compte et la partie enregistrée en ligne seront effacés définitivement. La partie de cet appareil est conservée.</p>
-            <button type="button" class="danger" (click)="deleteAccount()">Supprimer définitivement</button>
-            <button type="button" class="secondary" (click)="confirmingDelete.set(false)">Annuler</button>
+            <button type="button" class="game-button red action" (click)="deleteAccount()">Supprimer définitivement</button>
+            <button type="button" class="game-button action" (click)="confirmingDelete.set(false)">Annuler</button>
           </div>
         } @else {
           <button type="button" class="row danger-text" (click)="confirmingDelete.set(true)">Supprimer mon compte</button>

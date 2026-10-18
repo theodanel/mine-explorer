@@ -14,6 +14,8 @@ const TABS: readonly Tab[] = [
 ];
 
 const STAGES_PER_ZONE = 15;
+/** Les trois premiers reçoivent une médaille : or, argent, bronze. */
+const PODIUM = 3;
 
 /**
  * Classements entre joueurs : profondeur atteinte dans la mine, record du Puits sans fond. Ouvert depuis la page
@@ -30,6 +32,7 @@ export class LeaderboardPage {
   readonly closed = output();
 
   protected readonly tabs = TABS;
+  protected readonly podium = PODIUM;
   protected readonly type = signal<LeaderboardType>('depth');
   protected readonly board = signal<Leaderboard | null>(null);
   protected readonly failed = signal(false);
@@ -50,14 +53,14 @@ export class LeaderboardPage {
     }
   }
 
-  /** Valeur lisible : « 5-12 » pour la profondeur (même écriture que dans la mine), « 34 étages » pour le Puits. */
+  /** Valeur lisible : « Zone 5 · filon 12 » pour la profondeur (comme le bandeau de la mine), « 34 étages » pour le Puits. */
   protected format(value: number): string {
     if (this.type() === 'abyss') {
       return `${value} étage${value > 1 ? 's' : ''}`;
     }
     const zone = Math.floor((value - 1) / STAGES_PER_ZONE) + 1;
     const stage = ((value - 1) % STAGES_PER_ZONE) + 1;
-    return `${zone}-${stage}`;
+    return `Zone ${zone} · filon ${stage}`;
   }
 
   protected close(): void {

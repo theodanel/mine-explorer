@@ -8,12 +8,15 @@
   display: grid;
   gap: 2.2cqw;
   padding: 4cqw;
-  border: 0.4cqw solid rgb(255 255 255 / 15%);
-  border-radius: 3.5cqw;
-  background: rgb(24 16 9 / 94%);
-  box-shadow: 0 1.5cqw 4cqw rgb(0 0 0 / 50%);
-  color: #f3e6d0;
-  font-family: Arial, sans-serif;
+  // Parchemin cerclé de brun, comme les cartes du jeu
+  border: 0.6cqw solid var(--ink);
+  border-radius: 4cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow:
+    0 0.8cqw 0 rgb(74 44 22 / 40%),
+    0 2cqw 5cqw rgb(0 0 0 / 45%);
+  color: var(--parchment-text);
+  font-family: var(--font-body);
 }
 
 p {
@@ -22,8 +25,8 @@ p {
 }
 
 .title {
-  font-size: 4.4cqw;
-  font-weight: bold;
+  color: var(--ink);
+  font: 5cqw / 1.1 var(--font-display);
 }
 
 .text {
@@ -36,12 +39,13 @@ p {
   padding: 1.4cqw 3cqw;
   border: none;
   background: none;
-  color: #f3e6d0;
-  font: 3.2cqw Arial, sans-serif;
-  opacity: 0.75;
+  color: var(--parchment-text);
+  font: 700 3.2cqw var(--font-body);
+  text-decoration: underline;
+  opacity: 0.85;
   cursor: pointer;
 
   &:focus-visible {
-    outline: 0.5cqw solid #ffd34d;
+    outline: 0.5cqw solid var(--gold-dark);
   }
 }

@@ -41,9 +41,13 @@ Toutes les réponses d'erreur sont en `application/problem+json` avec un `code` 
 | `GET /api/save` | oui | `{version, updatedAt, data}` ou 404 `no-save` |
 | `PUT /api/save` | oui | `{expectedVersion, data}` → `{version, updatedAt}`. Erreurs : 409 `save-conflict` (avec `currentVersion`, sauf si deux appareils écrivent au même instant), 422 `implausible-progress`, 400 `save-invalid`, 413 `save-too-large`, 401 `account-gone` (compte supprimé depuis un autre appareil) |
 | `GET /api/leaderboard/depth` et `/abyss` | non | `{top: [{rank, pseudo, value}], me}` : 100 premiers, et la place du joueur s'il est connecté |
+| `GET /api/chat` | non | `{messages: [{id, pseudo, phrase, sentAt, mine}]}` : les 40 derniers messages de la discussion, du plus ancien au plus récent |
+| `POST /api/chat` | oui | `{phrase}` : clé d'une phrase prédéfinie (`ChatPhrase`, aucun texte libre) ; 204. Erreurs : 400 `chat-phrase-unknown`, 429 `chat-too-fast` (un message toutes les 5 s) |
 | `GET /actuator/health` | non | `{"status":"UP"}`, sans détail, pour l'hébergeur |
 
 `data` contient les clés `mine-explorer.*` du `localStorage` telles quelles (64 clés au plus, 64 Ko par valeur, 256 Ko en tout). Le serveur n'en lit que deux, pour l'anti-triche et le classement : `mine-explorer.progress` (zone, étape) et `mine-explorer.abyss` (record).
+
+**Discussion** (`chat/`) : uniquement des phrases prédéfinies, donc ni insulte ni information personnelle et rien à modérer. Le serveur ne garde que la clé de la phrase, l'auteur et l'heure ; le texte vit dans le jeu (`frontend/src/app/online/chat/chat-phrases.ts`, mêmes clés que `ChatPhrase.java`, vérifié par un test de chaque côté). Messages effacés après 7 jours (à chaque envoi), et avec le compte. Inclus dans l'export RGPD.
 
 **Verrou optimiste** : chaque appareil envoie la version sur laquelle il s'est basé (`null` au tout premier envoi). Si un autre appareil a écrit entre-temps, le serveur répond 409 au lieu d'écraser la partie, et le front propose au joueur de garder l'une ou l'autre.
 

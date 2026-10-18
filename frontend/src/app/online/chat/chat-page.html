@@ -1,0 +1,47 @@
+<section class="page game-panel" data-theme="sapphire" aria-labelledby="chat-title">
+  <header class="page-header">
+    <h2 id="chat-title">Discussion</h2>
+    <button type="button" class="close" aria-label="Fermer la discussion" (click)="close()">×</button>
+  </header>
+
+  <div class="list" #list aria-live="polite">
+    @if (shown(); as messages) {
+      @if (messages.length === 0) {
+        <p class="hint">Personne n'a encore rien dit. Lance la conversation !</p>
+      }
+      @for (message of messages; track message.id) {
+        <article class="message" [class.mine]="message.mine">
+          <header>
+            <strong>{{ message.mine ? 'Toi' : message.pseudo }}</strong>
+            <time>{{ message.time }}</time>
+          </header>
+          <p>{{ message.text }}</p>
+        </article>
+      }
+    } @else if (failed()) {
+      <p class="hint">Discussion indisponible pour l'instant.</p>
+    } @else {
+      <p class="hint">Chargement…</p>
+    }
+  </div>
+
+  <footer class="composer">
+    @if (account.signedIn()) {
+      @if (notice(); as text) {
+        <p class="notice" role="status">{{ text }}</p>
+      }
+      <ul class="phrases" aria-label="Phrases à envoyer">
+        @for (phrase of phrases; track phrase.key) {
+          <li>
+            <button type="button" class="phrase" [disabled]="cooling()" (click)="send(phrase.key)">{{ phrase.text }}</button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="sign-in">
+        <p>Relie ton compte pour écrire aux autres mineurs.</p>
+        <app-google-button (pressed)="account.signIn()" />
+      </div>
+    }
+  </footer>
+</section>

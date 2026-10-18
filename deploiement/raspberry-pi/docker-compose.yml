@@ -14,8 +14,9 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # Mémoire de la JVM ajustée à la limite du conteneur
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+      # Tas de la JVM fixé : Raspberry Pi OS n'active pas le cgroup mémoire, Docker ignore donc mem_limit
+      # (« Limitation discarded ») et une limite en pourcentage se calerait sur toute la mémoire du Pi
+      JAVA_TOOL_OPTIONS: "-Xmx512m"
       # L'appli se connecte avec un compte limité aux données ; Flyway, au démarrage, avec le propriétaire du schéma
       SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/${POSTGRES_DB:-mine}"
       SPRING_DATASOURCE_USERNAME: mine_app
@@ -24,7 +25,7 @@ services:
       SPRING_FLYWAY_PASSWORD: "${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env (voir LISEZMOI.md)}"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env (voir LISEZMOI.md)}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env (voir LISEZMOI.md)}"
-    # Une JVM 32 bits n'a pas besoin de plus ; évite qu'elle prenne la mémoire du Pi
+    # Plafond du conteneur, appliqué seulement si le cgroup mémoire est activé sur le Pi (voir LISEZMOI.md)
     mem_limit: 768m
     depends_on:
       db:

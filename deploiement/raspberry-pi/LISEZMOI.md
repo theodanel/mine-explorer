@@ -139,4 +139,4 @@ Ne **pas** utiliser `docker compose down -v` : le `-v` efface le volume de la ba
 
 - La limite de requêtes vit en mémoire : un seul conteneur `backend`, ne pas le multiplier.
 - Images construites sur le Pi : si Docker répond « no matching manifest », relancer avec `DOCKER_DEFAULT_PLATFORM=linux/arm/v7` devant (`DOCKER_DEFAULT_PLATFORM=linux/arm/v7 docker compose build`).
-- [INCERTAIN] Non testé sur le Pi lui-même : la première installation dira si la mémoire (768 Mo pour la JVM) suffit.
+- Raspberry Pi OS n'active pas le cgroup mémoire : Docker ignore `mem_limit` (« Limitation discarded »). Le tas de la JVM est donc fixé à 512 Mo (`-Xmx512m` dans `docker-compose.yml`). Pour que `mem_limit` s'applique aussi, ajouter `cgroup_enable=memory` à la fin de la ligne de `/boot/firmware/cmdline.txt` puis redémarrer le Pi [PROBABLE : chemin des versions récentes de Raspberry Pi OS].

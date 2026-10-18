@@ -1,4 +1,4 @@
-# Prépare l'envoi du serveur vers le Raspberry Pi : compile le jar sur ce PC, puis rassemble tout dans
+﻿# Prépare l'envoi du serveur vers le Raspberry Pi : compile le jar sur ce PC, puis rassemble tout dans
 # mine-explorer-api.tar.gz. Le Pi n'a ainsi rien à compiler.
 # Lancement, depuis ce dossier : powershell -ExecutionPolicy Bypass -File .\preparer.ps1
 

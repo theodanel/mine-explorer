@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
+import { ArtifactReforge } from '../../artifacts/artifact-reforge/artifact-reforge';
 import { Sound } from '../../audio/sound';
 import { tierZone, WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopMaterial } from '../../balance/workshop';
 import { formatStat } from '../../equipment/equipment-format';
@@ -27,6 +28,7 @@ const BLOCKED_TEXT: Readonly<Record<Exclude<UpgradeCheck, 'ok'>, string>> = {
 /** Atelier : la pièce portée de chaque emplacement se renforce dans sa qualité, niveau par niveau jusqu'à 50. */
 @Component({
   selector: 'app-workshop-page',
+  imports: [ArtifactReforge],
   templateUrl: './workshop-page.html',
   styleUrl: './workshop-page.scss',
 })

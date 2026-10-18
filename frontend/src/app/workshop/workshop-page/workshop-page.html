@@ -104,5 +104,8 @@
         </button>
       </li>
     }
+    @if (workshop.unlocked()) {
+      <li class="relics"><app-artifact-reforge /></li>
+    }
   </ul>
 </section>

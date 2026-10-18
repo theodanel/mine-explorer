@@ -1,4 +1,5 @@
 // Équilibrage des artefacts : objets rares de la mine, porteurs de son histoire, équipés dans la 6e case.
+import type { EvolutionId } from './balance';
 import { BonusId, Rarity } from './skill-tree';
 
 export const ARTIFACT_IDS = [
@@ -139,11 +140,53 @@ export const ARTIFACT_RARITY_WEIGHTS: Readonly<Record<Rarity, number>> = {
   legendary: 3,
 };
 
-/** Un doublon fait monter l'artefact d'un niveau, jusqu'au niveau 5 (effet ×2). Au-delà, il se change en éclats. */
+/**
+ * Un doublon fait monter l'artefact d'un niveau, jusqu'au niveau 5 (effet ×2). Au-delà, il donne un jeton de réforge
+ * de cet artefact (depuis le 18/10/2026 ; c'était 10 éclats).
+ */
 export const ARTIFACT_MAX_LEVEL = 5;
 export const ARTIFACT_LEVEL_STEP = 0.25;
-export const ARTIFACT_OVERFLOW_SHARDS = 10;
 
 export function artifactEffectMultiplier(level: number): number {
   return 1 + ARTIFACT_LEVEL_STEP * (Math.min(level, ARTIFACT_MAX_LEVEL) - 1);
 }
+
+// ─── Emplacements et réforge (Théo, 18/10/2026 ; voir docs/game-design/reliques.md) ───
+
+/** Trois artefacts portés : le 1er dès le départ, le 2e au Contremaître, le 3e à la Légende de la mine. */
+export const ARTIFACT_SLOT_COUNT = 3;
+export const ARTIFACT_SLOT_FORMS: readonly EvolutionId[] = ['foreman', 'legend'];
+
+/** Effet secondaire de réforge : son bonus et sa qualité. */
+export interface ArtifactAffix {
+  readonly bonus: BonusId;
+  readonly rarity: Rarity;
+}
+
+/** Valeur de chaque effet secondaire, de la qualité Commune à Légendaire (mêmes unités que les autres bonus). */
+export const AFFIX_VALUES: Readonly<Partial<Record<BonusId, readonly [number, number, number, number]>>> = {
+  strikePct: [0.04, 0.06, 0.08, 0.1],
+  goldPct: [0.06, 0.09, 0.12, 0.15],
+  speed: [0.03, 0.05, 0.06, 0.08],
+  critChance: [0.01, 0.015, 0.02, 0.03],
+  critDamage: [0.08, 0.12, 0.16, 0.2],
+  shardChance: [0.002, 0.003, 0.004, 0.005],
+};
+
+/** Chance de chaque qualité à la réforge. */
+export const AFFIX_RARITY_WEIGHTS: Readonly<Record<Rarity, number>> = {
+  common: 50,
+  rare: 30,
+  epic: 15,
+  legendary: 5,
+};
+
+/**
+ * Prix d'une réforge : ce nombre de minerais dans chacun de 3 matériaux différents (ceux dont le joueur a le plus).
+ * Chaque réforge du même artefact coûte 50 % de plus, jusqu'à 3 fois le prix de départ.
+ */
+export const REFORGE_ORE_KINDS = 3;
+export const REFORGE_BASE_ORES = 30;
+export const REFORGE_COST_GROWTH = 1.5;
+export const REFORGE_MAX_COST_FACTOR = 3;
+

@@ -1,4 +1,4 @@
-import { hiddenUntilRevealed, hintDone, isNewGame, newlyRevealed, parseRevealed, RevealFacts, RevealId } from './reveal-rules';
+import { hintDone, isNewGame, newlyRevealed, parseRevealed, RevealFacts, RevealId } from './reveal-rules';
 
 const START: RevealFacts = {
   itemsForged: 0,
@@ -38,15 +38,9 @@ describe('Prise en main', () => {
     expect(newlyRevealed({ ...START, itemsForged: 10 }, none)).toContain('forgeTools');
   });
 
-  it("fait apparaître l'onglet d'un menu à son ouverture", () => {
+  it("présente l'onglet d'un menu à son ouverture", () => {
     expect(newlyRevealed({ ...START, skillsOpen: true, companionsOpen: true }, none)).toEqual(['skills', 'companions']);
     expect(newlyRevealed({ ...START, artifactsOpen: true }, none)).toEqual(['artifacts']);
-  });
-
-  it('laisse le panneau du bas à l’écran dès le début, et cache seulement les onglets du menu', () => {
-    expect(hiddenUntilRevealed('forge')).toBe(false);
-    expect(hiddenUntilRevealed('missions')).toBe(false);
-    expect(hiddenUntilRevealed('skills')).toBe(true);
   });
 
   it('oublie la bulle de la forge quand le joueur a déjà forgé', () => {

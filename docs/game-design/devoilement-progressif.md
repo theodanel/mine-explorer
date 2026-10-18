@@ -5,7 +5,7 @@ Retours de joueurs sur Discord (18/10/2026), relayés par Théo : les premières
 Choix de Théo, le même jour, après une première version qui cachait tout :
 
 - le panneau du bas (équipement, pioche, forge, missions, stats, Auto, Filtres) est visible dès le début, mais grisé et bloqué : chaque élément se débloque quand le tuto le présente ;
-- la barre de navigation n'affiche que les menus ouverts : un onglet apparaît quand son menu devient disponible ;
+- la barre de navigation montre tous les menus, grisés et bloqués tant qu'ils ne sont pas ouverts ;
 - Compétences et Compagnons s'ouvrent à la zone 2, Artefacts à la zone 3.
 
 ## Le tuto en bulles
@@ -23,7 +23,7 @@ Pas de flou, pas de passage obligé : l'élément se débloque (il quitte le gri
 
 ## Les onglets du menu du bas
 
-Un onglet n'existe qu'une fois son menu ouvert ; il surgit alors avec une bulle « Nouveau : … ».
+Tous les onglets sont visibles dès le début, grisés et bloqués avec leur condition d'ouverture (« Zone 2 »…). À l'ouverture, l'onglet reprend ses couleurs, surgit, et une bulle « Nouveau : … » le présente.
 
 | Onglet | Ouverture |
 |---|---|

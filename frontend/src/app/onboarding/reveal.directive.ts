@@ -4,26 +4,22 @@ import { Reveal } from './reveal';
 import { RevealId } from './reveal-rules';
 
 /**
- * Cache l'élément tant qu'il n'est pas dévoilé, en gardant sa place pour que l'écran ne saute pas,
- * puis le fait surgir la première fois qu'il apparaît. data-reveal marque l'élément que la bulle entoure :
- * quand plusieurs éléments apparaissent ensemble, les autres passent revealAnchor à false.
+ * Élément du panneau du bas : grisé et bloqué tant que la prise en main ne l'a pas présenté, puis il surgit.
+ * data-reveal marque l'élément que la bulle entoure.
  */
 @Directive({
   selector: '[appReveal]',
   host: {
-    '[class.unrevealed]': '!shown()',
     '[class.locked-ui]': 'locked()',
     // inert bloque toucher, clavier et lecteur d'écran tant que l'élément n'est pas débloqué
     '[attr.inert]': "locked() ? '' : null",
     '[class.reveal-pop]': 'pop()',
-    '[attr.data-reveal]': 'revealAnchor() ? appReveal() : null',
+    '[attr.data-reveal]': 'appReveal()',
   },
 })
 export class RevealDirective {
   private readonly reveal = inject(Reveal);
   readonly appReveal = input.required<RevealId>();
-  readonly revealAnchor = input(true);
-  protected readonly shown = computed(() => this.reveal.isRevealed(this.appReveal()));
   protected readonly locked = computed(() => this.reveal.isLocked(this.appReveal()));
   protected readonly pop = computed(() => this.reveal.isFresh(this.appReveal()));
 }

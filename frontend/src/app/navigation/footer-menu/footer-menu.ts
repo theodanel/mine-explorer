@@ -1,11 +1,15 @@
 import { Component, computed, inject } from '@angular/core';
 
 import { Artifacts } from '../../artifacts/artifacts';
+import { ARTIFACTS_UNLOCK_ZONE } from '../../balance/artifacts';
+import { COMPANIONS_UNLOCK_ZONE } from '../../balance/companions';
+import { SKILLS_UNLOCK_ZONE } from '../../balance/skill-tree';
 import { Camp } from '../../camp/camp';
 import { Companions } from '../../companions/companions';
 import { MENU_ICONS } from '../../loading/game-assets';
-import { RevealDirective } from '../../onboarding/reveal.directive';
+import { Reveal } from '../../onboarding/reveal';
 import { RevealId } from '../../onboarding/reveal-rules';
+import { Tooltip } from '../../shared/tooltip/tooltip';
 import { Skills } from '../../skills/skills';
 import { Workshop } from '../../workshop/workshop';
 import { Navigation, PageId } from '../navigation';
@@ -16,10 +20,13 @@ interface Tab {
   /** Icône peinte, ou null tant qu'elle n'est pas livrée (le libellé suffit). */
   readonly icon: string | null;
   readonly page: PageId;
-  /** Élément de la prise en main : l'onglet apparaît, avec sa bulle, à l'ouverture du menu. */
+  /** Élément de la prise en main : l'onglet surgit, avec sa bulle « Nouveau », à l'ouverture du menu. */
   readonly reveal: RevealId;
-  readonly open: boolean;
+  /** Condition encore à remplir pour ouvrir ce menu (« Zone 3 »…), ou null s'il est ouvert. Le menu est alors grisé. */
+  readonly locked: string | null;
   readonly badge: number;
+  /** Seulement pour un menu verrouillé : ce qu'il faut faire pour l'ouvrir. */
+  readonly tooltip: string | null;
 }
 
 /** Pages ouvertes depuis une autre page du menu : leur onglet reste allumé (le Campement est dans les Aventures). */
@@ -39,7 +46,7 @@ const PARENT_TAB: Readonly<Partial<Record<PageId, PageId>>> = {
  */
 @Component({
   selector: 'app-footer-menu',
-  imports: [RevealDirective],
+  imports: [Tooltip],
   templateUrl: './footer-menu.html',
   styleUrl: './footer-menu.scss',
 })
@@ -51,53 +58,60 @@ export class FooterMenu {
   private readonly companions = inject(Companions);
   private readonly challenge = inject(Challenge);
   private readonly camp = inject(Camp);
+  protected readonly onboarding = inject(Reveal);
 
-  /** Seulement les menus ouverts (choix de Théo, 18/10/2026) : un onglet verrouillé n'apprend rien au joueur. */
-  protected readonly tabs = computed<readonly Tab[]>(() =>
-    [
-      {
-        label: 'Compétences',
-        icon: MENU_ICONS.skills,
-        page: 'skills' as const,
-        reveal: 'skills' as const,
-        open: this.skills.unlocked(),
-        badge: this.skills.available(),
-      },
-      {
-        label: 'Artefacts',
-        icon: MENU_ICONS.artifacts,
-        page: 'artifacts' as const,
-        reveal: 'artifacts' as const,
-        open: this.artifacts.unlocked(),
-        badge: this.artifacts.unseen(),
-      },
-      {
-        label: 'Compagnons',
-        icon: MENU_ICONS.companions,
-        page: 'companions' as const,
-        reveal: 'companions' as const,
-        open: this.companions.unlocked(),
-        // Un palier du Défi à récupérer compte aussi : c'est de là que viennent la plupart des œufs
-        badge: this.companions.ready() + this.challenge.claimable().length,
-      },
-      {
-        label: 'Atelier',
-        icon: MENU_ICONS.workshop,
-        page: 'workshop' as const,
-        reveal: 'workshop' as const,
-        open: this.workshop.unlocked(),
-        badge: this.workshop.affordable(),
-      },
-      {
-        label: 'Aventures',
-        icon: MENU_ICONS.adventures,
-        page: 'adventures' as const,
-        reveal: 'adventures' as const,
-        open: this.camp.unlocked(),
-        badge: this.camp.ready(),
-      },
-    ].filter((tab) => tab.open),
-  );
+  protected readonly tabs = computed<readonly Tab[]>(() => [
+    {
+      label: 'Compétences',
+      icon: MENU_ICONS.skills,
+      page: 'skills',
+      reveal: 'skills',
+      locked: this.skills.unlocked() ? null : `Zone ${SKILLS_UNLOCK_ZONE}`,
+      badge: this.skills.unlocked() ? this.skills.available() : 0,
+      tooltip: this.skills.unlocked() ? null : `Compétences : s'ouvrent à la zone ${SKILLS_UNLOCK_ZONE}.`,
+    },
+    {
+      label: 'Artefacts',
+      icon: MENU_ICONS.artifacts,
+      page: 'artifacts',
+      reveal: 'artifacts',
+      locked: this.artifacts.unlocked() ? null : `Zone ${ARTIFACTS_UNLOCK_ZONE}`,
+      badge: this.artifacts.unlocked() ? this.artifacts.unseen() : 0,
+      tooltip: this.artifacts.unlocked() ? null : `Artefacts : s'ouvrent à la zone ${ARTIFACTS_UNLOCK_ZONE}, avec un premier artefact.`,
+    },
+    {
+      label: 'Compagnons',
+      icon: MENU_ICONS.companions,
+      page: 'companions',
+      reveal: 'companions',
+      locked: this.companions.unlocked() ? null : `Zone ${COMPANIONS_UNLOCK_ZONE}`,
+      // Un palier du Défi à récupérer compte aussi : c'est de là que viennent la plupart des œufs
+      badge: this.companions.unlocked() ? this.companions.ready() + this.challenge.claimable().length : 0,
+      tooltip: this.companions.unlocked()
+        ? null
+        : `Compagnons : s'ouvre à la zone ${COMPANIONS_UNLOCK_ZONE}, avec un premier œuf offert.`,
+    },
+    {
+      label: 'Atelier',
+      icon: MENU_ICONS.workshop,
+      page: 'workshop',
+      reveal: 'workshop',
+      locked: this.workshop.unlocked() ? null : this.workshop.unlockLabel,
+      badge: this.workshop.unlocked() ? this.workshop.affordable() : 0,
+      tooltip: this.workshop.unlocked()
+        ? null
+        : `Atelier : s'ouvre quand ton mineur devient ${this.workshop.unlockLabel}.`,
+    },
+    {
+      label: 'Aventures',
+      icon: MENU_ICONS.adventures,
+      page: 'adventures',
+      reveal: 'adventures',
+      locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
+      badge: this.camp.unlocked() ? this.camp.ready() : 0,
+      tooltip: this.camp.unlocked() ? null : `Aventures : le Campement s'ouvre à la zone ${this.camp.unlockZone}.`,
+    },
+  ]);
 
   /** Onglet allumé : celui de la page ouverte, ou de la page dont elle dépend. */
   protected readonly currentTab = computed(() => {
@@ -106,6 +120,9 @@ export class FooterMenu {
   });
 
   protected open(tab: Tab): void {
+    if (tab.locked !== null) {
+      return;
+    }
     // Toucher l'onglet déjà allumé ramène à la mine
     this.navigation.open(this.currentTab() === tab.page ? 'mine' : tab.page);
   }

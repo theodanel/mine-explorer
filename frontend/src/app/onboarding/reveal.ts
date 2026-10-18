@@ -11,7 +11,6 @@ import { readStorage, writeStorage } from '../shared/local-storage';
 import { Skills } from '../skills/skills';
 import { Workshop } from '../workshop/workshop';
 import {
-  hiddenUntilRevealed,
   hintDone,
   isNewGame,
   newlyRevealed,
@@ -28,7 +27,7 @@ const LEGACY_TUTORIAL_KEY = 'mine-explorer.tutorial';
 
 /**
  * Prise en main : les éléments du panneau du bas sont grisés et bloqués jusqu'à ce qu'une bulle les présente,
- * quand ils servent ; les onglets du menu du bas apparaissent à leur ouverture. Ce qui est présenté le reste, même si la condition retombe (l'or dépensé).
+ * quand ils servent ; les onglets du menu du bas, grisés tant que leur menu est fermé, surgissent à son ouverture. Ce qui est présenté le reste, même si la condition retombe (l'or dépensé).
  */
 @Injectable({ providedIn: 'root' })
 export class Reveal {
@@ -42,7 +41,7 @@ export class Reveal {
   private readonly workshop = inject(Workshop);
   private readonly camp = inject(Camp);
   private readonly revealed = signal<ReadonlySet<RevealId>>(this.load());
-  /** Présentés pendant cette session : ceux qui étaient cachés entrent à l'écran avec une animation. */
+  /** Présentés pendant cette session : ils surgissent avec une animation. */
   private readonly fresh = signal<ReadonlySet<RevealId>>(new Set());
   private readonly hints = signal<readonly RevealId[]>([]);
 
@@ -78,14 +77,9 @@ export class Reveal {
     });
   }
 
-  /** À l'écran : présenté, ou visible dès le début (seuls les onglets du menu du bas attendent ; le reste est grisé). */
-  isRevealed(id: RevealId): boolean {
-    return !hiddenUntilRevealed(id) || this.revealed().has(id);
-  }
-
   /** Élément du panneau du bas pas encore présenté : visible, mais grisé et bloqué (choix de Théo). */
   isLocked(id: RevealId): boolean {
-    return !hiddenUntilRevealed(id) && !this.revealed().has(id);
+    return !this.revealed().has(id);
   }
 
   /** Vient d'apparaître ou de se débloquer pendant cette session : il surgit avec une animation. */

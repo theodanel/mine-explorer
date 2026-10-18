@@ -4,12 +4,10 @@
 
 // Planche de bois sur toute la largeur, comme les barres d'onglets des jeux mobiles
 .footer {
-  // Une colonne par onglet ouvert, de la largeur d'un cinquième, centrées : les onglets gardent leur taille
-  // quand il n'y en a qu'un ou deux, et la barre se remplit à mesure que les menus s'ouvrent
+  // Autant de colonnes que d'onglets, sur une seule ligne : un menu ajouté ne passe jamais à la ligne
   display: grid;
-  grid-auto-columns: calc((100% - 4 * 0.8cqw) / 5);
+  grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
-  justify-content: center;
   gap: 0.8cqw;
   height: 100%;
   padding: 1.2cqw 1.5cqw 1.8cqw;
@@ -54,6 +52,11 @@
   background: radial-gradient(ellipse at 50% 40%, rgb(255 211 77 / 35%), rgb(255 211 77 / 8%) 70%);
   box-shadow: inset 0 0 0 0.35cqw rgb(255 211 77 / 45%);
   color: var(--gold);
+}
+
+.soon {
+  filter: grayscale(0.9) brightness(0.65);
+  cursor: default;
 }
 
 .tab-icon {

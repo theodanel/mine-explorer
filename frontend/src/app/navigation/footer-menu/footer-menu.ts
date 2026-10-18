@@ -22,8 +22,8 @@ interface Tab {
   readonly page: PageId;
   /** Élément de la prise en main : l'onglet surgit, avec sa bulle « Nouveau », à l'ouverture du menu. */
   readonly reveal: RevealId;
-  /** Condition encore à remplir pour ouvrir ce menu (« Zone 3 »…), ou null s'il est ouvert. Le menu est alors grisé. */
-  readonly locked: string | null;
+  /** Menu encore fermé : l'onglet est grisé et son infobulle dit quand il s'ouvre. */
+  readonly locked: boolean;
   readonly badge: number;
   /** Seulement pour un menu verrouillé : ce qu'il faut faire pour l'ouvrir. */
   readonly tooltip: string | null;
@@ -66,7 +66,7 @@ export class FooterMenu {
       icon: MENU_ICONS.skills,
       page: 'skills',
       reveal: 'skills',
-      locked: this.skills.unlocked() ? null : `Zone ${SKILLS_UNLOCK_ZONE}`,
+      locked: !this.skills.unlocked(),
       badge: this.skills.unlocked() ? this.skills.available() : 0,
       tooltip: this.skills.unlocked() ? null : `Compétences : s'ouvrent à la zone ${SKILLS_UNLOCK_ZONE}.`,
     },
@@ -75,7 +75,7 @@ export class FooterMenu {
       icon: MENU_ICONS.artifacts,
       page: 'artifacts',
       reveal: 'artifacts',
-      locked: this.artifacts.unlocked() ? null : `Zone ${ARTIFACTS_UNLOCK_ZONE}`,
+      locked: !this.artifacts.unlocked(),
       badge: this.artifacts.unlocked() ? this.artifacts.unseen() : 0,
       tooltip: this.artifacts.unlocked() ? null : `Artefacts : s'ouvrent à la zone ${ARTIFACTS_UNLOCK_ZONE}, avec un premier artefact.`,
     },
@@ -84,7 +84,7 @@ export class FooterMenu {
       icon: MENU_ICONS.companions,
       page: 'companions',
       reveal: 'companions',
-      locked: this.companions.unlocked() ? null : `Zone ${COMPANIONS_UNLOCK_ZONE}`,
+      locked: !this.companions.unlocked(),
       // Un palier du Défi à récupérer compte aussi : c'est de là que viennent la plupart des œufs
       badge: this.companions.unlocked() ? this.companions.ready() + this.challenge.claimable().length : 0,
       tooltip: this.companions.unlocked()
@@ -96,7 +96,7 @@ export class FooterMenu {
       icon: MENU_ICONS.workshop,
       page: 'workshop',
       reveal: 'workshop',
-      locked: this.workshop.unlocked() ? null : this.workshop.unlockLabel,
+      locked: !this.workshop.unlocked(),
       badge: this.workshop.unlocked() ? this.workshop.affordable() : 0,
       tooltip: this.workshop.unlocked()
         ? null
@@ -107,7 +107,7 @@ export class FooterMenu {
       icon: MENU_ICONS.adventures,
       page: 'adventures',
       reveal: 'adventures',
-      locked: this.camp.unlocked() ? null : `Zone ${this.camp.unlockZone}`,
+      locked: !this.camp.unlocked(),
       badge: this.camp.unlocked() ? this.camp.ready() : 0,
       tooltip: this.camp.unlocked() ? null : `Aventures : le Campement s'ouvre à la zone ${this.camp.unlockZone}.`,
     },
@@ -120,7 +120,7 @@ export class FooterMenu {
   });
 
   protected open(tab: Tab): void {
-    if (tab.locked !== null) {
+    if (tab.locked) {
       return;
     }
     // Toucher l'onglet déjà allumé ramène à la mine

@@ -1,13 +1,14 @@
 <nav class="footer" aria-label="Menus du jeu">
   @for (tab of tabs(); track tab.label) {
-    <!-- Grisé et bloqué tant que le menu est fermé ; à son ouverture, l'onglet surgit et la bulle le présente -->
+    <!-- Grisé et bloqué tant que le menu est fermé : le toucher montre quand il s'ouvre (infobulle). À son ouverture,
+         l'onglet surgit et la bulle le présente. aria-disabled plutôt que disabled : l'appui doit arriver jusqu'à l'infobulle -->
     <span class="tab-wrapper" [appTooltip]="tab.tooltip" [attr.data-reveal]="tab.reveal" [class.reveal-pop]="onboarding.isFresh(tab.reveal)">
       <button
         type="button"
         class="tab"
         [class.current]="currentTab() === tab.page"
-        [class.soon]="tab.locked !== null"
-        [disabled]="tab.locked !== null"
+        [class.soon]="tab.locked"
+        [attr.aria-disabled]="tab.locked"
         [attr.aria-current]="currentTab() === tab.page ? 'page' : null"
         (click)="open(tab)"
       >
@@ -16,7 +17,7 @@
         } @else {
           <span class="tab-icon" aria-hidden="true"></span>
         }
-        <span class="tab-label">{{ tab.locked ?? tab.label }}</span>
+        <span class="tab-label">{{ tab.label }}</span>
         @if (tab.badge > 0) {
           <span class="badge" [attr.aria-label]="tab.badge + ' nouveauté(s)'">{{ tab.badge }}</span>
         }

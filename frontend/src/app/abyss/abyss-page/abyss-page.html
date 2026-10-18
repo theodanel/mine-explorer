@@ -1,55 +1,122 @@
-<section class="page game-panel abyss" aria-labelledby="abyss-title" [style.background-image]="background">
-  <header class="page-header">
-    <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
+<section class="abyss" [class.playing]="abyss.running()" [style.background-image]="scene" [style.background-position]="sceneOffset()" aria-labelledby="abyss-title">
+  <div class="veil" aria-hidden="true"></div>
+
+  <header class="top">
+    <button type="button" class="back" aria-label="Revenir aux aventures" [disabled]="abyss.running()" (click)="back()">‹</button>
     <h2 id="abyss-title">Puits sans fond</h2>
+    <span class="chip"><img [src]="images.record" alt="" width="139" height="186" />Record {{ abyss.record() }}</span>
   </header>
 
-  @if (abyss.unlocked()) {
-    <p class="intro">30 secondes pour descendre le plus bas possible avec ton build. Chaque étage rapporte un éclat, chaque record de {{ recordStep }} étages des éclats et des pierres d'éveil.</p>
-  } @else {
-    <p class="intro locked-note">Le Puits s'ouvre quand ton mineur devient <strong>{{ abyss.unlockLabel }}</strong>.</p>
-  }
-
-  <ul class="purse" aria-label="Ton Puits">
-    <li><img [src]="images.record" alt="" width="139" height="186" /><span>Record : {{ abyss.record() }} étages</span></li>
-    <li><img [src]="images.hourglass" alt="" width="137" height="190" /><span>Essais : {{ abyss.runsLeft() }} / {{ abyss.dailyRuns }}</span></li>
-  </ul>
-
-  <div class="stage-area">
-    @if (abyss.descent(); as descent) {
-      <div class="descent" aria-live="polite">
-        <p class="timer">{{ timeLeft() }} s</p>
-        <p class="floor">Étage {{ floor() }}</p>
-        @if (guardian()) {
-          <p class="guardian">Gardien !</p>
-        }
-        <div class="bar" role="progressbar" aria-label="Filon de l'étage" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="floorPercent()">
-          <div class="bar-fill" [style.width.%]="floorPercent()"></div>
-        </div>
-        <p class="passed">{{ descent.floors }} étages franchis</p>
+  @if (floor(); as floor) {
+    <!-- En jeu -->
+    <div class="hud">
+      <div class="timer" role="timer" [attr.aria-label]="timeLeft() + ' secondes restantes'">
+        <img [src]="images.hourglass" alt="" width="137" height="190" />
+        <div class="time-bar"><div class="time-fill" [style.width.%]="timePercent()"></div></div>
+        <strong>{{ timeLeft() }} s</strong>
       </div>
-    } @else {
+      <div class="depth">
+        <span class="floor-label">Étage <strong>{{ floor.number }}</strong></span>
+        @if (combo(); as combo) {
+          <span class="combo">Combo {{ combo }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="arena" [class.shake]="shake()">
+      @if (minerAtlas(); as atlas) {
+        <app-miner-sprite class="miner" [atlasUrl]="atlas" [height]="150" />
+      }
+
+      <div class="target" [class]="floor.kind">
+        @if (floor.kind === 'guardian') {
+          <span class="tag guardian-tag">Gardien !</span>
+        } @else if (floor.kind === 'trap') {
+          <span class="tag trap-tag">Piège : vite !</span>
+        } @else if (floor.kind === 'crystal') {
+          <span class="tag crystal-tag">Vise le point faible</span>
+        }
+        <div class="hp" role="progressbar" aria-label="Résistance de l'étage" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="hpPercent()">
+          <div class="hp-fill" [style.width.%]="hpPercent()"></div>
+        </div>
+        <button type="button" class="rock-button" aria-label="Frapper le rocher" (pointerdown)="tapRock($event)">
+          <img class="rock" [src]="rock()" alt="" width="398" height="260" />
+        </button>
+        @if (floor.weakPoint; as weak) {
+          <button
+            type="button"
+            class="weak"
+            aria-label="Frapper le point faible"
+            [style.left.%]="weak.x * 100"
+            [style.top.%]="weak.y * 100"
+            (pointerdown)="tapWeak($event)"
+          ></button>
+        }
+        @if (floor.kind === 'trap') {
+          <div class="fuse"><div class="fuse-fill" [style.width.%]="fusePercent()"></div></div>
+        }
+        <div class="pops" aria-hidden="true">
+          @for (pop of pops(); track pop.id) {
+            <span class="pop" [class]="pop.kind" [style.margin-left.px]="pop.x">{{ pop.text }}</span>
+          }
+        </div>
+      </div>
+
+      @if (crystalDrop(); as drop) {
+        <button
+          type="button"
+          class="time-crystal"
+          aria-label="Attraper le cristal de temps"
+          [style.left.%]="drop.left"
+          [style.top.%]="drop.fall * 0.7"
+          (pointerdown)="tapCrystal($event)"
+        >
+          <img [src]="images.timeCrystal" alt="" width="128" height="128" />
+        </button>
+      }
+    </div>
+
+    @if (abyss.spells().length > 0) {
+      <div class="spells">
+        @for (spell of abyss.spells(); track spell.id) {
+          <button type="button" class="spell" [disabled]="spell.used" [attr.aria-label]="spell.label" (click)="cast(spell.id)">
+            <img [src]="spellIcon(spell.id)" alt="" width="128" height="128" />
+          </button>
+        }
+      </div>
+    }
+    <p class="tip">Tape le rocher le plus vite possible !</p>
+  } @else {
+    <!-- Avant la descente, ou son bilan -->
+    <div class="lobby">
       @if (abyss.lastResult(); as result) {
         <div class="result">
-          <p class="floor">Étage {{ result.floors }} atteint</p>
+          <span class="rays" [class.record]="result.newRecord"><img class="chest" [src]="images.chest" alt="" width="256" height="256" /></span>
+          <p class="result-floor">Étage {{ result.floors }}</p>
           @if (result.newRecord) {
-            <p class="record">Nouveau record !</p>
+            <p class="record-banner">Nouveau record !</p>
           }
-          <p>+{{ result.shards }} éclats @if (result.stones > 0) { · +{{ result.stones }} pierres d'éveil }</p>
+          <p class="loot">+{{ result.shards }} éclats @if (result.stones > 0) { · +{{ result.stones }} pierres d'éveil } @if (result.essencesEach > 0) { · +{{ result.essencesEach }} de chaque ressource du Cœur }</p>
         </div>
+      } @else {
+        <img class="hero" [src]="images.abyssCard" alt="" width="183" height="171" />
+        <ul class="rules">
+          <li><strong>Tape le rocher</strong> : vite, et le combo grimpe jusqu'à ×1,9.</li>
+          <li><strong>Rocher à cristal</strong> : vise le point lumineux, ×3.</li>
+          <li><strong>Piège</strong> : casse-le avant la fin de la mèche.</li>
+          <li><strong>Cristal de temps</strong> : attrape-le, +2 s.</li>
+          <li><strong>Gardien</strong> tous les 10 étages. Record tous les {{ recordStep }} étages : éclats et pierres d'éveil.</li>
+        </ul>
       }
-      <button
-        type="button"
-        class="game-button green go"
-        [disabled]="!abyss.unlocked() || abyss.runsLeft() === 0"
-        (click)="start()"
-      >
-        @if (abyss.runsLeft() === 0) {
-          Reviens demain
-        } @else {
-          Descendre
-        }
-      </button>
-    }
-  </div>
+
+      @if (abyss.unlocked()) {
+        <button type="button" class="game-button green go" [disabled]="abyss.runsLeft() === 0" (click)="start()">
+          {{ abyss.runsLeft() === 0 ? 'Reviens demain' : abyss.lastResult() ? 'Redescendre' : 'Descendre' }}
+        </button>
+        <p class="runs">Essais du jour : {{ abyss.runsLeft() }} / {{ abyss.dailyRuns }}</p>
+      } @else {
+        <p class="locked-note">Le Puits s'ouvre quand ton mineur devient <strong>{{ abyss.unlockLabel }}</strong>.</p>
+      }
+    </div>
+  }
 </section>

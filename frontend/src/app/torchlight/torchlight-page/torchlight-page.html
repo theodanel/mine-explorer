@@ -1,0 +1,145 @@
+<section class="page game-panel" data-theme="ember" [style.background-image]="scene" aria-labelledby="torchlight-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
+    <h2 id="torchlight-title">Expédition aux flambeaux</h2>
+    <span class="chip">{{ torchlight.runsLeft() }} / {{ torchlight.dailyRuns }}</span>
+  </header>
+
+  @if (expedition(); as expedition) {
+    <!-- En expédition -->
+    <div class="hud">
+      <span class="steps" [class.low]="lowSteps()">
+        <img [src]="images.torch" alt="" width="256" height="256" />
+        <span><strong>{{ expedition.stepsLeft }}</strong> pas</span>
+      </span>
+      <span class="loot">
+        <img [src]="images.stones" alt="" width="128" height="128" />{{ expedition.stones }}
+      </span>
+    </div>
+
+    <div class="cave" [class.hurt]="hurt()" [style.--columns]="columns" [style.--rows]="rows" [style.--floor]="floor" role="grid" aria-label="Grotte">
+      @for (cell of cells(); track cell.index) {
+        <button
+          type="button"
+          class="cell"
+          [class]="cell.view.kind"
+          [class.here]="cell.here"
+          [class.reachable]="cell.reachable"
+          [class.wall]="(cell.view.kind === 'lit' && cell.view.content === 'wall') || (cell.view.kind === 'remembered' && cell.view.wall)"
+          [style.--glow]="cell.glow"
+          [disabled]="!cell.reachable"
+          [attr.aria-label]="cell.reachable ? 'Avancer ici' : null"
+          (click)="step(cell.index)"
+        >
+          @if (cell.here) {
+            <img class="miner" [src]="images.miner" alt="Ton mineur" width="256" height="256" />
+            <span class="flame" aria-hidden="true"></span>
+          } @else {
+            @switch (cell.view.kind) {
+              @case ('lit') {
+                @switch (cell.view.content) {
+                  @case ('wall') {
+                    <img class="thing" [src]="images.wall" alt="Rocher" width="256" height="256" />
+                  }
+                  @case ('monster') {
+                    <img class="thing monster" [src]="images.monster" alt="Monstre" width="256" height="256" />
+                  }
+                  @case ('stones') {
+                    <img class="thing" [src]="images.stones" alt="Pierre d'éveil" width="128" height="128" />
+                  }
+                  @case ('chest') {
+                    <img class="thing" [src]="images.chest" alt="Coffre" width="128" height="128" />
+                  }
+                  @case ('oil') {
+                    <img class="thing" [src]="images.oil" alt="Huile" width="128" height="128" />
+                  }
+                  @case ('treasure') {
+                    <img class="thing treasure" [src]="images.treasure" alt="Trésor" width="128" height="128" />
+                  }
+                }
+              }
+              @case ('glimpse') {
+                @if (cell.view.content === 'monster') {
+                  <span class="eyes" aria-label="Des yeux dans le noir"></span>
+                } @else {
+                  <span class="gleam" aria-label="Une lueur dorée"></span>
+                }
+              }
+            }
+          }
+        </button>
+      }
+      @if (toast(); as toast) {
+        @for (shown of [toast.key]; track shown) {
+          <span class="toast" role="status">{{ toast.text }}</span>
+        }
+      }
+    </div>
+
+    @if (torchlight.lastResult(); as result) {
+      <div class="result" role="status">
+        <span class="rays" [class.record]="result.status === 'treasure'">
+          <img class="result-icon" [src]="result.status === 'treasure' ? images.treasureOpen : images.stones" alt="" width="128" height="128" />
+        </span>
+        <h3>
+          @switch (result.status) {
+            @case ('treasure') {
+              Trésor trouvé !
+            }
+            @case ('exhausted') {
+              La torche s'est éteinte
+            }
+            @default {
+              De retour au camp
+            }
+          }
+        </h3>
+        <p class="loot-line">
+          +{{ result.stones }} pierre{{ result.stones > 1 ? 's' : '' }} d'éveil
+          @if (result.gold > 0) {
+            · +{{ compact(result.gold) }} or
+          }
+        </p>
+        @if (result.egg !== null) {
+          <p class="egg">Et un œuf, au fond du coffre !</p>
+        }
+        @if (result.status === 'exhausted') {
+          <p class="note">Tu gardes ce que tu as ramassé, mais le trésor reste dans le noir.</p>
+        }
+        <div class="actions">
+          <button type="button" class="game-button" (click)="leave()">Terminer</button>
+          @if (torchlight.runsLeft() > 0) {
+            <button type="button" class="game-button green" (click)="replay()">Repartir</button>
+          }
+        </div>
+      </div>
+    } @else {
+      <button type="button" class="game-button stone go-back" (click)="goBack()">Rentrer au camp</button>
+    }
+  } @else {
+    <!-- Accueil -->
+    <div class="lobby">
+      <img class="hero" [src]="images.card" alt="" width="128" height="128" />
+      <ul class="rules">
+        <li>La grotte est <strong>plongée dans le noir</strong> : ta torche n'éclaire que les cases autour de toi.</li>
+        <li><strong>Touche une case voisine</strong> pour avancer. Tu as <strong>30 pas</strong> pour trouver le trésor, tout en haut. Il met fin à l'expédition : ramasse d'abord ce que tu peux.</li>
+        <li>Ramasse les <strong>pierres d'éveil</strong>, les coffres et l'huile (+4 pas). Un monstre te coûte {{ torchlight.monsterCost() }} pas.</li>
+        <li>
+          @if (torchlight.radius() > 1) {
+            Ta Chance agrandit ta torche : elle éclaire <strong>2 cases</strong> autour de toi.
+          } @else {
+            Avec plus de Chance (+15 % d'or), ta torche éclairerait <strong>2 cases</strong> autour de toi.
+          }
+        </li>
+      </ul>
+      @if (torchlight.unlocked()) {
+        <button type="button" class="game-button green go" [disabled]="torchlight.runsLeft() === 0" (click)="start()">
+          {{ torchlight.runsLeft() === 0 ? 'Reviens demain' : 'Allumer la torche' }}
+        </button>
+        <p class="runs">Expéditions du jour : {{ torchlight.runsLeft() }} / {{ torchlight.dailyRuns }}</p>
+      } @else {
+        <p class="runs">L'Expédition s'ouvre quand ton mineur devient <strong>{{ torchlight.unlockLabel }}</strong>.</p>
+      }
+    </div>
+  }
+</section>

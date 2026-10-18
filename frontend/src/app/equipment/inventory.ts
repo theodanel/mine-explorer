@@ -10,7 +10,7 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { computePower, computeStats, rollItem, sellPrice } from './equipment-rules';
 import { EMPTY_SAVE, EquipmentSave, parseEquipmentSave } from './equipment-save';
-import { Item } from './equipment.model';
+import { EquippedItems, Item, MiningStats } from './equipment.model';
 
 const STORAGE_KEY = 'mine-explorer.equipment';
 
@@ -68,13 +68,16 @@ export class Inventory {
   private readonly pendingIsPrevious = signal(false);
   readonly pendingWasEquipped = this.pendingIsPrevious.asReadonly();
   /** Stats de l'équipement, avec le bonus de Frappe des évolutions du mineur. */
-  readonly stats = computed(() => {
-    const stats = computeStats(this.equipped());
-    return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
-  });
+  readonly stats = computed(() => this.statsOf(this.equipped()));
   readonly power = computed(() => computePower(this.stats()));
   readonly forgeCost = FORGE_SHARD_COST;
   readonly canForge = computed(() => this.pending() === null && !this.forging() && this.shards.amount() >= FORGE_SHARD_COST);
+
+  /** Stats d'un équipement, porté ou envisagé, avec le bonus de Frappe des évolutions du mineur. */
+  statsOf(equipped: EquippedItems): MiningStats {
+    const stats = computeStats(equipped);
+    return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
+  }
 
   /** Paye la Forge en éclats et sort un objet. Refusé si un objet attend déjà ou si les éclats manquent. */
   forge(): boolean {
@@ -88,6 +91,18 @@ export class Inventory {
     this.lastForgedState.set({ key: ++this.forgedCount, item });
     this.startForgingAnimation();
     this.missionCounters.record('itemsForged');
+    return true;
+  }
+
+  /** Un objet gagné ailleurs qu'à la forge (Forge express) : il attend comme un objet forgé. Refusé si un objet attend déjà. */
+  receive(item: Item): boolean {
+    if (this.pending() !== null) {
+      return false;
+    }
+    this.save({ ...this.state(), pending: item });
+    this.reviewClosed.set(false);
+    this.pendingIsPrevious.set(false);
+    this.lastForgedState.set({ key: ++this.forgedCount, item });
     return true;
   }
 
@@ -118,6 +133,15 @@ export class Inventory {
     this.save({ equipped: { ...this.equipped(), [item.slot]: item }, pending: replaced });
     this.pendingIsPrevious.set(replaced !== null);
     this.reviewClosed.set(false);
+  }
+
+  /** Remplace la pièce portée par sa version modifiée (reforge de l'Atelier). Même emplacement, même identifiant. */
+  replaceEquipped(item: Item): boolean {
+    if (this.equipped()[item.slot]?.id !== item.id) {
+      return false;
+    }
+    this.save({ ...this.state(), equipped: { ...this.equipped(), [item.slot]: item } });
+    return true;
   }
 
   sellPending(): void {

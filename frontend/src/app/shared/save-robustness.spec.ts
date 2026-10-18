@@ -21,6 +21,7 @@ import { Skills } from '../skills/skills';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { Workshop } from '../workshop/workshop';
+import { Reveal } from '../onboarding/reveal';
 import { Camp } from '../camp/camp';
 import { Abyss } from '../abyss/abyss';
 
@@ -34,6 +35,7 @@ const KEYS = [
   'coins',
   'companions',
   'counters',
+  'devoilement',
   'equipment',
   'evolution',
   'evolution-claims',
@@ -46,7 +48,6 @@ const KEYS = [
   'pickaxe',
   'progress',
   'skills',
-  'tutorial',
   'volume',
   'workshop',
 ].map((key) => `mine-explorer.${key}`);
@@ -97,6 +98,7 @@ const SERVICES: readonly ProviderToken<unknown>[] = [
   Sound,
   OfflineEarnings,
   Miner,
+  Reveal,
 ];
 
 describe('Sauvegarde abîmée ou trafiquée', () => {

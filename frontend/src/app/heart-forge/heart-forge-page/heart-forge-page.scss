@@ -1,0 +1,401 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 2cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.page-header .info {
+  margin-left: 2cqw;
+}
+
+.close {
+  margin-left: auto;
+}
+
+// Petit « i » entouré : ouvre la page d'aide de la Forge du Cœur
+.info {
+  display: grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  padding: 0;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 50%;
+  background: #fdebcb;
+  color: var(--ink);
+  font: italic 4.2cqw / 1 Georgia, serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+.scroll {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 2.5cqw;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// L'anneau d'obsidienne de Gemini ; emplacements et gemmes sont posés sur ses alvéoles, à 33 % du centre
+.ring {
+  --socket-radius: 24.6cqw;
+
+  position: relative;
+  width: 74cqw;
+  height: 74cqw;
+  margin: 1cqw 0;
+  background: url('/assets/ui/forge-du-coeur/anneau.webp') center / contain no-repeat;
+  filter: drop-shadow(0 1.2cqw 0 rgb(0 0 0 / 35%));
+}
+
+.portrait {
+  position: absolute;
+  inset: 27%;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(#5a3420, #1c120b);
+}
+
+.socket,
+.gem {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle)));
+}
+
+.gem {
+  width: 6cqw;
+  height: 6cqw;
+  margin: -3cqw 0 0 -3cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1.2cqw rgb(255 122 42 / 70%));
+}
+
+.socket {
+  display: grid;
+  place-items: center;
+  width: 9cqw;
+  height: 9cqw;
+  margin: -4.5cqw 0 0 -4.5cqw;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: default;
+
+  img {
+    width: 100%;
+    height: 100%;
+    opacity: 0.18;
+    filter: grayscale(0.8);
+  }
+
+  &.ready {
+    cursor: pointer;
+    animation: socket-call 1.4s ease-in-out infinite;
+
+    img {
+      opacity: 0.7;
+      filter: none;
+    }
+  }
+
+  &.filled {
+    filter: drop-shadow(0 0 1.6cqw rgb(255 196 90 / 80%));
+
+    img {
+      opacity: 1;
+      filter: none;
+    }
+  }
+}
+
+.socket-rank {
+  position: absolute;
+  right: -1cqw;
+  bottom: -1cqw;
+  display: grid;
+  place-items: center;
+  width: 4cqw;
+  height: 4cqw;
+  border: 0.3cqw solid var(--ink);
+  border-radius: 50%;
+  background: #ffd36a;
+  color: var(--ink);
+  font: 2.3cqw / 1 var(--font-display);
+}
+
+@keyframes socket-call {
+  50% {
+    transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle))) scale(1.15);
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 2.8cqw;
+  text-align: center;
+  opacity: 0.85;
+}
+
+
+
+.message {
+  margin: 0;
+  padding: 1.5cqw 3cqw;
+  border-radius: 2cqw;
+  background: rgb(79 212 122 / 25%);
+  font-weight: 700;
+
+  &.failed {
+    background: rgb(238 106 79 / 25%);
+  }
+}
+
+.runes {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0.8cqw;
+  font-size: 2.6cqw;
+  text-align: center;
+
+  thead th {
+    font-weight: 700;
+    opacity: 0.8;
+  }
+
+  tbody th {
+    display: grid;
+    justify-items: center;
+    gap: 0.6cqw;
+    width: 22cqw;
+  }
+
+  td {
+    padding: 1cqw 0.4cqw;
+    border-radius: 2cqw;
+    background: rgb(0 0 0 / 18%);
+    vertical-align: middle;
+  }
+}
+
+.rune-icon {
+  width: 10cqw;
+  height: 10cqw;
+  object-fit: contain;
+}
+
+.rune-label {
+  font-weight: 700;
+}
+
+
+.count {
+  display: block;
+  font: 4.4cqw / 1 var(--font-display);
+
+  &.zero {
+    opacity: 0.35;
+  }
+}
+
+.fuse {
+  display: grid;
+  margin: 0.8cqw auto 0;
+  padding: 0.6cqw 1cqw;
+  border: 0.35cqw solid var(--ink);
+  border-radius: 1.5cqw;
+  background: #8fd36a;
+  color: var(--ink);
+  font: 700 2.3cqw / 1.1 var(--font-body);
+  cursor: pointer;
+
+  small {
+    font-size: 1.9cqw;
+  }
+}
+
+// ─── Creuset ───
+
+.crucible,
+.book {
+  display: grid;
+  justify-items: center;
+  gap: 2cqw;
+  width: 100%;
+  padding: 3cqw;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 3cqw;
+  background: linear-gradient(#4a2f1c, #2f1e10);
+  color: #fff3d6;
+
+  h3 {
+    margin: 0;
+    color: #ffd36a;
+    font: 4.4cqw / 1 var(--font-display);
+  }
+}
+
+// Le Creuset dans son atelier, assombri pour garder les textes lisibles
+.crucible {
+  background:
+    linear-gradient(rgb(20 12 6 / 35%), rgb(20 12 6 / 80%)),
+    url('/assets/ui/forge-du-coeur/fond-creuset.webp') center / cover;
+}
+
+// La machine, posée au cœur de l'atelier ; son verre doré bouillonne doucement
+.machine {
+  width: 42cqw;
+  height: auto;
+  margin-bottom: -4cqw;
+  filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%));
+  animation: crucible-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes crucible-glow {
+  50% {
+    filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%)) drop-shadow(0 0 2.5cqw rgb(255 176 74 / 45%));
+  }
+}
+
+.funnels {
+  display: flex;
+  gap: 3cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.funnel {
+  width: 11cqw;
+  height: 11cqw;
+  border: 0.5cqw dashed #b08a3e;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 30%);
+  cursor: pointer;
+
+  &[data-essence] {
+    border-style: solid;
+    background: rgb(0 0 0 / 45%);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 1.2cqw;
+    object-fit: contain;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.preview {
+  margin: 0;
+  font: 3.6cqw / 1 var(--font-display);
+  color: #ffd36a;
+}
+
+.essences {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.5cqw;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.essence {
+  display: grid;
+  justify-items: center;
+  gap: 0.5cqw;
+  width: 100%;
+  padding: 1.5cqw 0.5cqw;
+  border: 0.4cqw solid var(--ink);
+  border-radius: 2cqw;
+  background: rgb(0 0 0 / 22%);
+  color: inherit;
+  cursor: pointer;
+
+  img {
+    width: 8cqw;
+    height: 8cqw;
+    object-fit: contain;
+    filter: drop-shadow(0 0.4cqw 0.6cqw rgb(0 0 0 / 50%));
+  }
+
+  strong {
+    font: 4cqw / 1 var(--font-display);
+  }
+
+  small {
+    font-size: 2cqw;
+    line-height: 1.1;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.pour {
+  padding: 2cqw 6cqw;
+}
+
+// ─── Livre de recettes ───
+
+.book ul {
+  display: grid;
+  gap: 1.2cqw;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 8cqw 18cqw minmax(0, 1fr);
+    gap: 2cqw;
+    align-items: center;
+    font-size: 2.6cqw;
+    opacity: 0.5;
+
+    &.known {
+      opacity: 1;
+    }
+  }
+
+  img {
+    width: 8cqw;
+    height: 8cqw;
+  }
+
+  .name {
+    font: 3.2cqw / 1 var(--font-display);
+  }
+}
+

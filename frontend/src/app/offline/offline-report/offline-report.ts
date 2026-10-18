@@ -4,12 +4,14 @@ import { Overlays } from '../../shared/overlays';
 import { Camp } from '../../camp/camp';
 import { formatDuration } from '../../shared/format-duration';
 import { OfflineEarnings } from '../offline-earnings';
+import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 
 /** Bilan affiché au retour du joueur : combien de temps compté, et ce que le mineur a rapporté. */
 @Component({
   selector: 'app-offline-report',
+  imports: [RewardFlightDirective],
   templateUrl: './offline-report.html',
   styleUrl: './offline-report.scss',
 })
@@ -34,6 +36,7 @@ export class OfflineReport {
       cap: formatDuration(this.camp.offlineCapMs()),
       gold: NUMBER_FORMAT.format(report.gold),
       shards: report.shards,
+      gains: { coins: report.gold, shards: report.shards },
     };
   });
 }

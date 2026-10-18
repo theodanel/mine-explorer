@@ -29,15 +29,15 @@ describe('camp-rules', () => {
 
   it("remplit le puits avec le temps, jusqu'à 12 h de production", () => {
     const state = { levels: { well: 10 }, wellCollectedAt: 0 };
-    expect(wellStock(state, 2 * HOUR)).toBe(6);
-    expect(wellStock(state, 100 * HOUR)).toBe(36);
+    expect(wellStock(state, 2 * HOUR)).toBe(20);
+    expect(wellStock(state, 100 * HOUR)).toBe(120);
   });
 
   it("garde les fractions d'éclat après une récolte", () => {
     const state = { levels: { well: 1 }, wellCollectedAt: 0 };
-    // 0,3 éclat par heure : 4 h donnent 1 éclat et il reste 0,2 éclat en route
-    expect(wellStock(state, 4 * HOUR)).toBe(1);
-    expect(collectedAt(state, 4 * HOUR, 1)).toBeCloseTo(HOUR / 0.3);
+    // 1 éclat par heure : 1 h 30 donne 1 éclat et il reste une demi-heure en route
+    expect(wellStock(state, 1.5 * HOUR)).toBe(1);
+    expect(collectedAt(state, 1.5 * HOUR, 1)).toBeCloseTo(HOUR);
   });
 
   it('coûte de plus en plus cher, en minerai de la dernière zone terminée', () => {

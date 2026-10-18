@@ -1,4 +1,4 @@
-<section class="page game-panel" aria-labelledby="adventures-title">
+<section class="page game-panel" data-theme="teal" aria-labelledby="adventures-title">
   <header class="page-header">
     <h2 id="adventures-title">Aventures</h2>
     <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
@@ -11,6 +11,7 @@
           type="button"
           class="card"
           [class.locked]="adventure.locked !== null"
+          [class.mystery]="adventure.mystery"
           [disabled]="adventure.locked !== null"
           [style.background-image]="adventure.scene"
           (click)="open(adventure)"
@@ -21,7 +22,7 @@
             <strong>{{ adventure.title }}</strong>
             <span class="pitch">{{ adventure.text }}</span>
             @if (adventure.locked; as locked) {
-              <span class="chip lock">Débloqué : {{ locked }}</span>
+              <span class="chip lock">{{ locked }}</span>
             } @else if (adventure.status; as status) {
               <span class="chip ready">{{ status }}</span>
             }

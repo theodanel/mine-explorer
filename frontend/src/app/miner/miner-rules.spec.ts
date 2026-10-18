@@ -33,7 +33,7 @@ describe('profil du mineur', () => {
     const profile = minerProfile(BASE_STATS, [bonuses({ strikePct: 0.2, critChance: 0.05, offlineEfficiency: 0.1 })], NO_BUFFS);
     expect(profile.stats.strikePower).toBeCloseTo(6);
     expect(profile.stats.critChance).toBeCloseTo(0.1);
-    expect(profile.offlineEfficiency).toBeCloseTo(0.6);
+    expect(profile.offlineEfficiency).toBeCloseTo(0.45);
   });
 
   it('plafonne le Critique permanent, mais un sort peut garantir les critiques', () => {

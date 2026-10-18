@@ -33,7 +33,7 @@
           @if (milestone.claimed) {
             <span class="done" aria-label="Récupéré">✓</span>
           } @else {
-            <button type="button" class="game-button green" [disabled]="!milestone.reached" (click)="claim(milestone.index)">Récupérer</button>
+            <button type="button" class="game-button green" [disabled]="!milestone.reached" appRewardFlight (click)="claim(milestone.index)">Récupérer</button>
           }
         </li>
       }

@@ -29,11 +29,240 @@ body {
 [data-tier='magma'] { --tier-color: #ff5a2e; }
 [data-tier='divine'] { --tier-color: #fff1b8; }
 
-// Couleurs de rareté des sorts et des artefacts
-[data-rarity='common'] { --rarity-color: #9aa3ad; }
-[data-rarity='rare'] { --rarity-color: #3d8bff; }
-[data-rarity='epic'] { --rarity-color: #a45cff; }
-[data-rarity='legendary'] { --rarity-color: #ff9a2e; }
+// Cadres de qualité des objets (forge, inventaire, emplacements équipés) : la couleur du matériau, la même que
+// partout ailleurs (un objet en or est doré, en mithril turquoise…). Le 14/10/2026, Théo trouvait trompeuse
+// l'ancienne échelle gris-vert-bleu-violet, où l'or apparaissait en bleu.
+[data-tier] {
+  --frame-light: color-mix(in srgb, var(--tier-color) 80%, #fff);
+  --frame-dark: color-mix(in srgb, var(--tier-color) 55%, #1a0f07);
+}
+
+[data-tier='divine'] { --frame-light: #fff4b8; --frame-dark: #7a5bd6; }
+
+/**
+ * Case d'objet colorée par sa qualité : bordure claire, fond en dégradé, reflet en haut. À poser avec data-tier.
+ * Les qualités hautes (violet et au-delà) ont en plus un reflet diagonal qui passe en boucle.
+ */
+.item-frame {
+  position: relative;
+  overflow: hidden;
+  border: 0.45cqw solid rgb(26 15 7 / 80%);
+  border-radius: 3cqw;
+  background:
+    linear-gradient(rgb(255 255 255 / 22%), transparent 45%),
+    linear-gradient(var(--frame-light, #6b4a2c), var(--frame-dark, #3d2815));
+  box-shadow:
+    inset 0 0 0 0.5cqw color-mix(in srgb, var(--frame-light, #8a5f38) 85%, #fff),
+    0 0.8cqw 0 rgb(0 0 0 / 40%);
+
+  &[data-tier='divine'] {
+    background:
+      linear-gradient(rgb(255 255 255 / 30%), transparent 45%),
+      linear-gradient(135deg, #ff9ad5, #ffe27a 30%, #8dffcf 55%, #8ab8ff 78%, #d59bff);
+  }
+
+  &[data-tier='mithril']::after,
+  &[data-tier='crystal']::after,
+  &[data-tier='magma']::after,
+  &[data-tier='divine']::after,
+  &[data-rarity='epic']::after,
+  &[data-rarity='legendary']::after {
+    content: '';
+    position: absolute;
+    inset: -20% auto -20% 0;
+    width: 35%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 55%), transparent);
+    pointer-events: none;
+    transform: translateX(-150%) skewX(-15deg);
+    animation: frame-shine 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes frame-shine {
+  60%,
+  100% {
+    transform: translateX(400%) skewX(-15deg);
+  }
+}
+
+// Niveau ou qualité écrit sur une case : gras avec contour sombre, lisible sur toutes les couleurs
+.frame-label {
+  color: #fff;
+  font-weight: bold;
+  text-shadow:
+    0.25cqw 0.25cqw 0 #1a0f07,
+    -0.25cqw 0.25cqw 0 #1a0f07,
+    0.25cqw -0.25cqw 0 #1a0f07,
+    -0.25cqw -0.25cqw 0 #1a0f07;
+}
+
+// Micro-animations partagées : uniquement transform et opacity, pour rester fluides sur téléphone
+.breathe {
+  animation: breathe 2s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  to {
+    transform: scale(1.04);
+  }
+}
+
+.halo {
+  position: relative;
+  // Le halo passe derrière l'élément sans disparaître derrière le fond de son parent
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 211 77 / 75%), transparent 70%);
+    pointer-events: none;
+    animation: halo 1.4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes halo {
+  from {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+// Pastille qui rebondit de temps en temps : un saut toutes les 3 secondes
+.bounce {
+  animation: bounce 3s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  88% {
+    transform: translateY(-1.5cqw);
+  }
+
+  94% {
+    transform: translateY(0.3cqw);
+  }
+}
+
+// Rayons de lumière qui tournent derrière une grosse récompense (coffre, artefact, compagnon, promotion) :
+// le signal « tu as gagné quelque chose » des jeux du genre. Sur un conteneur, l'image reste au premier plan.
+.rays {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -45%;
+    z-index: -1;
+    background: url('/assets/ui/refonte/rays.webp') center / contain no-repeat;
+    pointer-events: none;
+    animation: rays-spin 14s linear infinite;
+  }
+}
+
+@keyframes rays-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+// Prise en main : un élément du panneau reste grisé et bloqué jusqu'à sa présentation, puis surgit.
+// « scale » (et non transform) pour ne pas écraser le placement des éléments déjà transformés.
+.locked-ui {
+  filter: grayscale(1) brightness(0.75);
+  opacity: 0.7;
+}
+
+.reveal-pop {
+  // Sans « forwards » : une fois l'animation finie, l'élément ne garde aucun « scale ». Sinon il deviendrait le cadre
+  // de ses fenêtres en position fixed (le détail des stats s'ouvrait coincé dans le bouton Stats)
+  animation: reveal-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) backwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    scale: 0.2;
+  }
+}
+
+// Compteur du haut qui sursaute quand une récompense y arrive
+.counter-bump {
+  animation: counter-bump 0.35s ease-out;
+}
+
+@keyframes counter-bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+
+// Mouvement réduit demandé par le système : toutes les boucles décoratives s'arrêtent
+@media (prefers-reduced-motion: reduce) {
+  .breathe,
+  .bounce,
+  .halo::before,
+  .rays::before,
+  .counter-bump,
+  .item-frame::after {
+    animation: none;
+  }
+}
+
+// Thème de couleur de chaque page : un bandeau de titre en bois à peine teinté, souligné d'un filet de couleur,
+// pour qu'on reconnaisse où l'on est (Compétences en bleu, Artefacts en violet…) sans rompre avec le bois du panneau.
+[data-theme='sapphire'] { --theme-light: #5aa2ff; --theme-dark: #1d4a9e; }
+[data-theme='amethyst'] { --theme-light: #b77cff; --theme-dark: #5326a0; }
+[data-theme='emerald'] { --theme-light: #4fd47a; --theme-dark: #17703a; }
+[data-theme='ember'] { --theme-light: #ffa04a; --theme-dark: #a3420f; }
+[data-theme='teal'] { --theme-light: #3fd0c9; --theme-dark: #14706c; }
+[data-theme='gold'] { --theme-light: #ffd34d; --theme-dark: #a86a08; }
+
+.game-panel[data-theme] {
+  > .page-header {
+    margin: -4cqw -4cqw 0;
+    padding: 3cqw 4cqw 3.6cqw;
+    border-bottom: 0.6cqw solid var(--ink);
+    border-radius: 4.3cqw 4.3cqw 0 0;
+    background: var(--dots), var(--parchment);
+    box-shadow: inset 0 -1cqw 0 color-mix(in srgb, var(--theme-light) 75%, var(--parchment));
+
+    h2 {
+      color: #fff;
+      font-size: 6.6cqw;
+      line-height: 1.05;
+      -webkit-text-stroke: 0.55cqw var(--ink);
+      paint-order: stroke fill;
+      text-shadow: 0 0.6cqw 0 rgb(74 44 22 / 35%);
+    }
+  }
+}
+
+// Couleurs de rareté des sorts, des artefacts et des compagnons ; les cadres (.item-frame) reprennent l'échelle des objets
+[data-rarity='common'] { --rarity-color: #9aa3ad; --frame-light: #c3c9d1; --frame-dark: #5d636b; }
+[data-rarity='rare'] { --rarity-color: #3d8bff; --frame-light: #6fb6ff; --frame-dark: #1d4f9c; }
+[data-rarity='epic'] { --rarity-color: #a45cff; --frame-light: #c48bff; --frame-dark: #5a259e; }
+[data-rarity='legendary'] { --rarity-color: #ff9a2e; --frame-light: #ffb347; --frame-dark: #a3500c; }
 
 .visually-hidden {
   position: absolute;
@@ -50,81 +279,210 @@ body {
   height: 1.2em;
 }
 
-// ─── Boutons et panneaux façon jeu mobile ──────────────────────────────────
-// Contour sombre épais, reflet en haut, ombre portée pleine qui s'écrase à l'appui.
-// En attendant des textures peintes, tout est en CSS : changer --face suffit pour une nouvelle couleur.
+// ─── Charte de l'interface (16/10/2026) ────────────────────────────────────
+// Refonte demandée par Théo : plus propre, plus douce, dans l'esprit de Forge Master et Legends of Mushroom, puis
+// (16/10/2026) d'un jeu cartoon aux tons pastel qu'il aime beaucoup : aplats sans reflet brillant, contour brun chaud,
+// coins très arrondis, panneaux crème semés de petits points, titres blancs cerclés de brun.
+:root {
+  // Titres, chiffres et boutons : Lilita One, ronde et épaisse. Texte courant : Nunito, ronde et lisible (choix de
+  // Théo, 16/10/2026). Toutes deux libres (OFL), servies par le site via @fontsource (angular.json) : la CSP
+  // « font-src 'self' » reste stricte.
+  --font-display: 'Lilita One', ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', 'Roboto', system-ui, sans-serif;
+  --font-body: 'Nunito', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
 
+  // Encre : le contour de tout ce qui se touche, et le cerclage des titres
+  --ink: #4a2c16;
+  // Bois du cadre et parchemin des zones de lecture
+  --wood-light: #b7814a;
+  --wood: #8a5a30;
+  --wood-dark: #5a3518;
+  --parchment: #fdebcb;
+  --parchment-shade: #f7dfb2;
+  --parchment-text: #6b4423;
+  // Semis de points des panneaux crème, comme les pattes discrètes de la référence
+  --dots: radial-gradient(circle, rgb(107 68 35 / 7%) 0 1.1cqw, transparent 1.2cqw) 0 0 / 7cqw 7cqw;
+  // Accents
+  --gold: #f7c84a;
+  --gold-dark: #c08a1c;
+}
+
+// Lilita One n'existe qu'en une graisse : le navigateur ne doit pas l'épaissir lui-même quand un style demande du gras,
+// le rendu baverait. Nunito, elle, a ses vraies graisses (400, 700, 800).
+.game {
+  font-synthesis-weight: none;
+}
+
+// Texte cerclé d'encre, comme les titres et les chiffres des jeux du genre : lisible sur n'importe quel décor
+.outlined {
+  -webkit-text-stroke: 0.35cqw var(--ink);
+  paint-order: stroke fill;
+}
+
+// Titres de l'interface : la police épaisse, cerclée d'encre
+.game h1,
+.game h2,
+.game h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+// ─── Boutons et panneaux façon jeu mobile ──────────────────────────────────
+// Un aplat franc, un reflet doux en haut, un contour d'encre et une lèvre pleine qui s'écrase à l'appui.
+// Changer --face et --lip suffit pour une nouvelle couleur.
 .game-button {
-  --face-top: #8a5f38;
-  --face-bottom: #5b3b22;
-  --depth: #2f1d0e;
+  --face: #c08b55;
+  --lip: #a06d3c;
 
   position: relative;
-  border: 0.7cqw solid #1a0f07;
-  border-radius: 3cqw;
-  background:
-    linear-gradient(rgb(255 255 255 / 28%), rgb(255 255 255 / 0%) 45%),
-    linear-gradient(var(--face-top), var(--face-bottom));
+  border: 0.55cqw solid var(--ink);
+  border-radius: 3.2cqw;
+  background: var(--face);
   box-shadow:
-    inset 0 -0.8cqw 0 rgb(0 0 0 / 22%),
-    0 1cqw 0 var(--depth);
-  color: #fff8e6;
-  font: bold 4cqw / 1.1 Arial, sans-serif;
-  text-shadow: 0 0.35cqw 0 rgb(0 0 0 / 55%);
+    inset 0 -1.1cqw 0 var(--lip),
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
+  color: #fff;
+  font: 800 4cqw / 1.1 var(--font-display);
+  letter-spacing: 0.01em;
+  -webkit-text-stroke: 0.3cqw var(--ink);
+  paint-order: stroke fill;
   cursor: pointer;
   transition:
     transform 0.08s,
     box-shadow 0.08s;
 
   &:active:not(:disabled) {
-    transform: translateY(0.8cqw);
+    transform: translateY(0.5cqw);
     box-shadow:
-      inset 0 -0.4cqw 0 rgb(0 0 0 / 22%),
-      0 0.2cqw 0 var(--depth);
+      inset 0 -0.5cqw 0 var(--lip),
+      0 0.1cqw 0 rgb(74 44 22 / 35%);
   }
 
-  &:disabled {
-    filter: grayscale(0.85) brightness(0.8);
+  // Désactivé : gris pierre, quelle que soit la couleur du bouton (le double sélecteur passe devant .green, .gold…)
+  &.game-button:disabled {
+    --face: #b9ae9f;
+    --lip: #998c7c;
+
     cursor: not-allowed;
+    opacity: 0.8;
   }
 
   &:focus-visible {
-    outline: 0.8cqw solid #ffd34d;
-    outline-offset: 0.6cqw;
+    outline: 0.8cqw solid var(--gold);
+    outline-offset: 0.8cqw;
   }
 
   &.green {
-    --face-top: #5fd16a;
-    --face-bottom: #23802f;
-    --depth: #11461a;
+    --face: #7cbf6c;
+    --lip: #5f9d52;
+
+    // Une action possible brille : un reflet passe sur le bouton vert de temps en temps
+    &:not(:disabled) {
+      overflow: hidden;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: -20% auto -20% 0;
+        width: 30%;
+        background: linear-gradient(100deg, transparent, rgb(255 255 255 / 40%), transparent);
+        pointer-events: none;
+        transform: translateX(-150%) skewX(-15deg);
+        animation: frame-shine 3.6s ease-in-out infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+          animation: none;
+        }
+      }
+    }
+  }
+
+  &.gold {
+    --face: #f7c84a;
+    --lip: #d9a531;
+  }
+
+  &.blue {
+    --face: #6cb6e8;
+    --lip: #4b93c6;
   }
 
   &.red {
-    --face-top: #ee6a4f;
-    --face-bottom: #a3271a;
-    --depth: #561109;
+    --face: #ee8b84;
+    --lip: #d06a63;
+  }
+
+  &.purple {
+    --face: #b67bd8;
+    --lip: #965cb8;
   }
 
   &.stone {
-    --face-top: #9c948a;
-    --face-bottom: #615a52;
-    --depth: #2e2a26;
+    --face: #b9ae9f;
+    --lip: #998c7c;
   }
 }
 
-// Panneau de modale : planche sombre bordée de bois clair
+// Panneau de page et de fenêtre : un brun chaud et uni, semé de points clairs, cerclé de brun et très arrondi
 .game-panel {
-  border: 0.8cqw solid #1a0f07;
-  border-radius: 4cqw;
+  border: 0.7cqw solid var(--ink);
+  border-radius: 5cqw;
   background:
-    linear-gradient(rgb(255 255 255 / 6%), transparent 20%),
-    linear-gradient(#3b2716, #24170d);
+    radial-gradient(circle, rgb(255 236 200 / 6%) 0 1.1cqw, transparent 1.2cqw) 0 0 / 7cqw 7cqw,
+    #7c573a;
+  box-shadow: 0 1.2cqw 0 rgb(74 44 22 / 45%);
+  color: #fff4df;
+  font-family: var(--font-body);
+}
+
+// Parchemin : zone de lecture crème, semée de points, posée dans un panneau (listes, descriptions, réglages)
+.parchment {
+  border: 0.55cqw solid var(--ink);
+  border-radius: 3.5cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
+}
+
+// Bouton rond de fermeture : rose saumon, croix blanche cerclée de brun. Les en-têtes de page et les fenêtres le
+// prennent d'office pour leur bouton « close », et le bouton retour « back » prend la même forme en bois clair.
+.close-button,
+.game-panel[data-theme] > .page-header .close,
+.game-panel .dialog-header .close,
+.game-panel[data-theme] > .page-header .back {
+  display: grid;
+  place-items: center;
+  width: 10cqw;
+  height: 10cqw;
+  padding: 0 0 0.8cqw;
+  border: 0.55cqw solid var(--ink);
+  border-radius: 50%;
+  background: #ee8b84;
   box-shadow:
-    inset 0 0 0 0.7cqw #8a5f38,
-    inset 0 0 0 1.2cqw #1a0f07,
-    0 1.5cqw 0 rgb(0 0 0 / 45%);
-  color: #f3e6d0;
-  font-family: Arial, sans-serif;
+    inset 0 -1cqw 0 #d06a63,
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
+  color: #fff;
+  font: 800 6.5cqw / 1 var(--font-display);
+  -webkit-text-stroke: 0.35cqw var(--ink);
+  paint-order: stroke fill;
+  cursor: pointer;
+
+  &:active {
+    transform: translateY(0.5cqw);
+    box-shadow: inset 0 -0.5cqw 0 #d06a63;
+  }
+}
+
+.game-panel[data-theme] > .page-header .back {
+  flex: none;
+  background: #c08b55;
+  box-shadow:
+    inset 0 -1cqw 0 #a06d3c,
+    0 0.6cqw 0 rgb(74 44 22 / 35%);
+
+  &:active {
+    box-shadow: inset 0 -0.5cqw 0 #a06d3c;
+  }
 }
 
 // ─── Empilement des interfaces ──────────────────────────────────────────────
@@ -135,8 +493,9 @@ body {
   --z-page: 8;
   --z-footer: 9;
   --z-dialog: 10;
-  // Le tutoriel ne se montre qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
-  --z-tutorial: 30;
+  --z-flight: 20;
+  // Les bulles du dévoilement ne se montrent qu'écran libre, après le chargement : au-dessus des fenêtres, sous les infobulles
+  --z-reveal-hint: 30;
   --z-splash: 40;
   --z-tooltip: 50;
 }
@@ -154,7 +513,7 @@ body {
   background: rgb(36 23 13 / 95%);
   box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 50%);
   color: #fff3d6;
-  font: 3.2cqw / 1.35 Arial, sans-serif;
+  font: 3.2cqw / 1.35 var(--font-body);
   pointer-events: none;
 }
 

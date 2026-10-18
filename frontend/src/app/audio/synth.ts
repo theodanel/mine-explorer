@@ -9,7 +9,7 @@ const TAU = Math.PI * 2;
 const PEAK = 0.9;
 
 /** Tirages pseudo-aléatoires reproductibles : un même son est identique à chaque partie et dans les tests. */
-function seededNoise(seed: number): () => number {
+export function seededNoise(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
     state = (state * 1664525 + 1013904223) >>> 0;
@@ -17,16 +17,16 @@ function seededNoise(seed: number): () => number {
   };
 }
 
-function noteHz(midi: number): number {
+export function noteHz(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12);
 }
 
-function buffer(seconds: number, sampleRate: number): Samples {
+export function buffer(seconds: number, sampleRate: number): Samples {
   return new Float32Array(Math.ceil(seconds * sampleRate));
 }
 
 /** Ajoute une note sinusoïdale (ou triangle) qui attaque vite et s'éteint en `decay` secondes. */
-function addTone(
+export function addTone(
   out: Samples,
   sampleRate: number,
   options: { start: number; hz: number; endHz?: number; decay: number; gain: number; triangle?: boolean },
@@ -46,7 +46,7 @@ function addTone(
 }
 
 /** Ajoute un souffle filtré (passe-bas à un pôle), pour les chocs, les éboulis et les explosions. */
-function addNoise(
+export function addNoise(
   out: Samples,
   sampleRate: number,
   options: { start: number; decay: number; gain: number; brightness: number; seed: number },
@@ -80,7 +80,7 @@ function addArpeggio(out: Samples, sampleRate: number, notes: readonly number[],
   );
 }
 
-function normalize(out: Samples): Samples {
+export function normalize(out: Samples): Samples {
   let peak = 0;
   for (const sample of out) {
     peak = Math.max(peak, Math.abs(sample));
@@ -179,70 +179,4 @@ const RENDERERS: Readonly<Record<SoundId, (sampleRate: number) => Samples>> = {
 
 export function renderSound(id: SoundId, sampleRate: number): Samples {
   return normalize(RENDERERS[id](sampleRate));
-}
-
-// ─── Musique d'ambiance ──────────────────────────────────────────────────────
-
-/** Grille de la boucle : la mineur, calme, 8 accords de 4 secondes (32 secondes en tout). */
-const CHORDS: readonly (readonly number[])[] = [
-  [57, 60, 64], // la mineur
-  [53, 57, 60], // fa
-  [48, 55, 64], // do
-  [55, 59, 62], // sol
-  [57, 60, 64], // la mineur
-  [53, 57, 60], // fa
-  [50, 57, 62], // ré mineur
-  [52, 56, 59], // mi
-];
-export const MUSIC_CHORD_SECONDS = 4;
-export const MUSIC_LOOP_SECONDS = CHORDS.length * MUSIC_CHORD_SECONDS;
-/** Gamme pentatonique de la mineur pour les gouttes de mélodie. */
-const PENTATONIC = [69, 72, 74, 76, 79, 81];
-const PLUCK_STEP_SECONDS = MUSIC_CHORD_SECONDS / 8;
-const PLUCK_CHANCE = 0.3;
-/** Pas de note pincée dans la dernière seconde et demie : sa traîne serait coupée net en fin de boucle. */
-const PLUCK_TAIL_SECONDS = 1.5;
-const ECHO_SECONDS = 0.75;
-const ECHO_FEEDBACK = 0.35;
-
-/** Nappe : un accord tenu, qui monte et redescend en douceur sur la durée de l'accord. */
-function addPad(out: Samples, sampleRate: number, chord: readonly number[], start: number): void {
-  const length = Math.ceil((MUSIC_CHORD_SECONDS + 1) * sampleRate);
-  const first = Math.floor(start * sampleRate);
-  const voices = [...chord.map((midi) => noteHz(midi)), noteHz(chord[0] - 12)];
-  for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
-    // Fenêtre en cloche qui chevauche l'accord suivant d'une seconde : pas de coupure entre accords
-    const envelope = Math.sin((Math.PI * t) / (MUSIC_CHORD_SECONDS + 1)) ** 2;
-    let sample = 0;
-    for (const hz of voices) {
-      // Deux voix très légèrement désaccordées par note donnent un son plus chaud qu'une sinusoïde seule
-      sample += Math.sin(TAU * hz * t) + Math.sin(TAU * hz * 1.003 * t);
-    }
-    // La boucle se referme sur elle-même : la fin du dernier accord retombe au début
-    out[(first + i) % out.length] += sample * envelope * 0.05;
-  }
-}
-
-/** Musique d'ambiance en boucle parfaite : nappe d'accords, petites notes pincées avec écho. */
-export function renderMusic(sampleRate: number): Samples {
-  const out = buffer(MUSIC_LOOP_SECONDS, sampleRate);
-  const melody = new Float32Array(out.length);
-  const random = seededNoise(42);
-  CHORDS.forEach((chord, index) => addPad(out, sampleRate, chord, index * MUSIC_CHORD_SECONDS));
-  for (let start = 0; start < MUSIC_LOOP_SECONDS - PLUCK_TAIL_SECONDS; start += PLUCK_STEP_SECONDS) {
-    const roll = (random() + 1) / 2;
-    if (roll < PLUCK_CHANCE) {
-      const midi = PENTATONIC[Math.floor(((random() + 1) / 2) * PENTATONIC.length) % PENTATONIC.length];
-      addTone(melody, sampleRate, { start, hz: noteHz(midi), decay: 0.35, gain: 0.25, triangle: true });
-    }
-  }
-  // Écho circulaire : les répétitions de fin de boucle reviennent au début, comme si la musique ne s'arrêtait pas
-  const delay = Math.round(ECHO_SECONDS * sampleRate);
-  for (let i = 0; i < melody.length; i++) {
-    out[i] += melody[i];
-    out[(i + delay) % out.length] += melody[i] * ECHO_FEEDBACK;
-    out[(i + 2 * delay) % out.length] += melody[i] * ECHO_FEEDBACK ** 2;
-  }
-  return normalize(out);
 }

@@ -1,0 +1,16 @@
+@if (hint(); as hint) {
+  <button type="button" class="hint" [class.arrived]="hint.open" [class]="hint.key" (click)="act(hint)">
+    @if (hint.open) {
+      <img class="portrait" [src]="merchantImage" alt="" width="256" height="256" />
+    }
+    @if (hint.footprints && footprintsImage; as image) {
+      <img class="prints" [src]="image" alt="" width="128" height="128" />
+    }
+    <span class="text">{{ hint.text }}</span>
+    @if (hint.open) {
+      <span class="go" aria-hidden="true">›</span>
+    } @else {
+      <span class="close" role="button" aria-label="Fermer" (click)="dismiss(hint, $event)">×</span>
+    }
+  </button>
+}

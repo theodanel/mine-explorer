@@ -1,0 +1,18 @@
+<button
+  type="button"
+  class="lottery-link"
+  [class.ready]="lottery.available()"
+  [attr.aria-label]="lottery.available() ? 'Loterie du jour : un tirage t\'attend' : 'Loterie du jour'"
+  (click)="open.set(true)"
+>
+  <img [class.bounce]="lottery.available()" [src]="icon" alt="" width="128" height="128" />
+  @if (lottery.available()) {
+    <span class="badge" aria-hidden="true">1</span>
+  }
+</button>
+
+@if (open()) {
+  @defer (on immediate) {
+    <app-lottery-dialog (closed)="open.set(false)" />
+  }
+}

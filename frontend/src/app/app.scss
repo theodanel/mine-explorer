@@ -4,15 +4,22 @@
   height: 100dvh;
 }
 
-// Cadre portrait 9:16 qui tient entièrement dans l'écran, quelle que soit son orientation.
-// L'interface est posée en absolu par-dessus la scène : positions en % de hauteur, tailles en cqw de largeur.
+// Cadre portrait qui tient entièrement dans l'écran, quelle que soit son orientation. Il garde un cœur en 9:16 et
+// s'allonge jusqu'en 9:21 sur les téléphones hauts (19,5:9 et plus), au lieu de laisser des bandes noires : la galerie
+// gagne du ciel, les panneaux du bas restent collés en bas (16/10/2026, demande de Théo).
+// Positions : en part du cœur (--core) pour le haut et le bas, décalées de --extra pour ce qui suit la galerie.
 .game {
+  --w: min(100vw, calc(100dvh * 9 / 16));
+  --h: min(100dvh, calc(var(--w) * 21 / 9));
+  --core: calc(var(--w) * 16 / 9);
+  --extra: calc(var(--h) - var(--core));
+
   position: relative;
-  width: min(100vw, calc(100dvh * 9 / 16));
-  aspect-ratio: 9 / 16;
+  width: var(--w);
+  height: var(--h);
   overflow: hidden;
   container-type: inline-size;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 .scene {
@@ -23,14 +30,14 @@
 // Le fond remonté laisse une bande unie en bas : un dégradé la fond dans le sol sous les panneaux
 .bottom-shade {
   position: absolute;
-  inset: 70% 0 0;
+  inset: calc(var(--extra) + var(--core) * 0.7) 0 0;
   background: linear-gradient(transparent, #1a0f07 35%);
   pointer-events: none;
 }
 
 .top-bar {
   position: absolute;
-  inset: 2.5% 3cqw auto;
+  inset: calc(var(--core) * 0.025) 3cqw auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -64,7 +71,7 @@
   border-radius: 999px;
   background: linear-gradient(#5fd16a, #23802f);
   color: #fff;
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  font: bold 2.6cqw / 1 var(--font-body);
   animation: evolve-pulse 1s ease-in-out infinite alternate;
 
   @media (prefers-reduced-motion: reduce) {
@@ -84,7 +91,7 @@
   z-index: 1;
   width: 12cqw;
   height: 12cqw;
-  border: 0.8cqw solid #2a1a0d;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: radial-gradient(#e8b45c, #9a6230);
   box-shadow:
@@ -110,6 +117,13 @@
 .player-title {
   font-size: 2.4cqw;
   color: #e8c48a;
+
+  // Étoiles du Cœur du monde, sur leur propre ligne sous le titre
+  app-rank-stars {
+    display: flex;
+    margin-top: 0.3cqw;
+    font-size: 2.8cqw;
+  }
 }
 
 .resources {
@@ -130,7 +144,7 @@
   border: 0.5cqw solid #2a1a0d;
   border-radius: 999px;
   background: rgb(20 12 6 / 75%);
-  font: bold 3.2cqw / 1 Arial, sans-serif;
+  font: bold 3.2cqw / 1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 
@@ -163,13 +177,30 @@
 
 .zone {
   position: absolute;
-  inset: 15.5% 0 auto;
+  inset: calc(var(--core) * 0.155) 0 auto;
+}
+
+// Loterie du jour, à droite du bandeau de zone : en miroir des raccourcis du jeu en ligne, à gauche
+.lottery {
+  position: absolute;
+  inset: calc(var(--core) * 0.145) 3cqw auto auto;
+  // Au-dessus du bandeau de zone et de la couche des événements
+  z-index: calc(var(--z-events) + 1);
+}
+
+// Indices du Marchand nain, sous le bandeau de zone, au centre
+.merchant-hint {
+  position: absolute;
+  top: calc(var(--core) * 0.255);
+  left: 50%;
+  z-index: calc(var(--z-events) + 1);
+  transform: translateX(-50%);
 }
 
 // Rappel du Défi de la mine quand un palier attend, sous le bandeau de zone, à gauche
 .challenge-call {
   position: absolute;
-  inset: 23% auto auto 3cqw;
+  inset: calc(var(--core) * 0.23) auto auto 3cqw;
   z-index: var(--z-scene-ui);
   display: inline-flex;
   align-items: center;
@@ -186,7 +217,7 @@
 // Compagnon à côté du mineur, au sol, entre la colonne de gauche et lui
 .buddy {
   position: absolute;
-  top: 42%;
+  top: calc(var(--extra) + var(--core) * 0.42);
   left: 12cqw;
   z-index: var(--z-scene-ui);
   width: 18cqw;
@@ -195,33 +226,52 @@
 // Événements de mine : dans la galerie, entre les colonnes d'équipement, au-dessus du mineur
 .events {
   position: absolute;
-  inset: 21% 5cqw 42%;
+  inset: calc(var(--extra) + var(--core) * 0.21) 5cqw calc(var(--core) * 0.42);
   z-index: var(--z-events);
 }
 
 // Sorts équipés : à droite, juste au-dessus du panneau d'équipement
 .spells {
   position: absolute;
-  inset: 58.5% 3cqw auto auto;
+  inset: calc(var(--extra) + var(--core) * 0.565) 3cqw auto auto;
+}
+
+// Panneau crème du bas : un aplat crème semé de points, cerclé de brun, d'un bord à l'autre
+.bottom-panel {
+  position: absolute;
+  inset: calc(var(--extra) + var(--core) * 0.622) 0 calc(var(--core) * 0.095 - 2cqw);
+  border: 0.6cqw solid var(--ink);
+  border-bottom: none;
+  border-radius: 5cqw 5cqw 0 0;
+  background:
+    var(--dots),
+    var(--parchment);
+  box-shadow: 0 -0.8cqw 0 rgb(74 44 22 / 25%);
+  pointer-events: none;
 }
 
 // Panneau d'équipement en bas, à la place des anciennes colonnes et du panneau de stats
 .equipment-bar {
   position: absolute;
-  inset: 65% 3cqw auto;
+  inset: calc(var(--extra) + var(--core) * 0.65) 4.5cqw auto;
 }
 
 // Bouton rond des stats, en bas à droite de la barre de forge
 .stats-button {
   position: absolute;
-  inset: auto 2cqw 11.5% auto;
+  inset: auto 2cqw calc(var(--core) * 0.115) auto;
   z-index: var(--z-scene-ui);
+
+  // Fenêtre ouverte : le composant forme un contexte d'empilement, il doit monter avec elle au-dessus de la loterie
+  &:has(.backdrop) {
+    z-index: var(--z-dialog);
+  }
 }
 
 // Pleine largeur plutôt que translate : une transformation piégerait la fenêtre « Chances » (position fixed)
 .forge {
   position: absolute;
-  inset: auto 0 10.5%;
+  inset: auto 0 calc(var(--core) * 0.105);
 }
 
 .footer {
@@ -229,12 +279,12 @@
   inset: auto 0 0;
   // Sous les fenêtres, au-dessus des pages
   z-index: var(--z-footer);
-  height: 9.5%;
+  height: calc(var(--core) * 0.095);
 }
 
 // Pages ouvertes depuis la barre du bas : par-dessus la mine, qui continue derrière
 .page-layer {
   position: absolute;
-  inset: 0 0 9.5%;
+  inset: 0 0 calc(var(--core) * 0.095);
   z-index: var(--z-page);
 }

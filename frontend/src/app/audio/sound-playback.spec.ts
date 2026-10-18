@@ -10,17 +10,23 @@ interface FakeSource {
   playbackRate: { value: number };
   connect: (target: unknown) => unknown;
   start: () => void;
-  stop: () => void;
+  stop: (when?: number) => void;
   disconnect: () => void;
+  onended?: () => void;
 }
 
 /** Contexte audio factice : garde les sources lancées, sans haut-parleur. */
 function fakeContext() {
   const sources: FakeSource[] = [];
-  const gainNode = () => ({ gain: { value: 1 }, connect: (target: unknown) => target });
+  const gainNode = () => ({
+    gain: { value: 1, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), cancelScheduledValues: vi.fn() },
+    connect: (target: unknown) => target,
+    disconnect: vi.fn(),
+  });
   const context = {
     state: 'running',
     sampleRate: 8000,
+    currentTime: 0,
     destination: {},
     resume: vi.fn(() => Promise.resolve()),
     suspend: vi.fn(() => Promise.resolve()),
@@ -98,6 +104,20 @@ describe('Sound, lecture', () => {
     expect(music()[0].stop).toHaveBeenCalled();
     sound.setMusicVolume(0.5);
     expect(music()).toHaveLength(2);
+  });
+
+  it('change de musique avec la zone, en fondu, et ne recalcule pas une zone déjà jouée', async () => {
+    const { sound, music } = await setup();
+    sound.setMusicZone(9);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(music()).toHaveLength(2);
+    // L'ancienne musique s'éteint à la fin du fondu, pas d'un coup
+    expect(music()[0].stop).toHaveBeenCalledWith(expect.any(Number));
+    sound.setMusicZone(1);
+    expect(music()).toHaveLength(3);
+    // Même zone qu'en cours : rien ne bouge
+    sound.setMusicZone(1);
+    expect(music()).toHaveLength(3);
   });
 
   it('ne lance pas la musique quand elle est coupée dans les paramètres', async () => {

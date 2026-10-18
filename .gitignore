@@ -7,3 +7,6 @@ Thumbs.db
 
 # Rapports de couverture des tests
 frontend/coverage/
+
+# Réglages locaux du docker compose (voir .env.example)
+.env

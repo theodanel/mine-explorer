@@ -1,17 +1,20 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
-import { SLOT_IDS, SLOTS, STATS } from '../equipment.model';
+import { SLOT_IDS, SLOTS } from '../equipment.model';
 import { Artifacts } from '../../artifacts/artifacts';
 import { WORKSHOP_STEP } from '../../balance/workshop';
 import { Companions } from '../../companions/companions';
 import { Galleries } from '../../galleries/galleries';
+import { powerOf } from '../../balance/balance';
 import { describeBonuses } from '../../miner/bonus-format';
+import { Miner } from '../../miner/miner';
 import { holdUserDialog } from '../../shared/overlays';
 import { Skills } from '../../skills/skills';
 import { Workshop } from '../../workshop/workshop';
 import { StatsPanel } from '../stats-panel/stats-panel';
 
 const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+const POWER_FORMAT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 2 });
 
 /** Fenêtre « Détails des stats » : les stats du mineur, puis d'où viennent ses bonus. */
 @Component({
@@ -26,6 +29,9 @@ export class StatsDetails {
   private readonly artifacts = inject(Artifacts);
   private readonly skills = inject(Skills);
   private readonly galleries = inject(Galleries);
+  private readonly miner = inject(Miner);
+
+  protected readonly power = computed(() => POWER_FORMAT.format(powerOf(this.miner.current().stats)));
 
   constructor() {
     // Ouverte par le joueur : les fenêtres automatiques attendent sa fermeture
@@ -35,7 +41,7 @@ export class StatsDetails {
   /** Une section par source de bonus ; une source sans effet n'apparaît pas. */
   protected readonly sources = computed(() => {
     const workshopLines = SLOT_IDS.filter((slot) => this.workshop.level(slot) > 0).map(
-      (slot) => `+${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % de ${STATS[SLOTS[slot].workshopStat].label}`,
+      (slot) => `${SLOTS[slot].label} : +${PERCENT.format(this.workshop.level(slot) * WORKSHOP_STEP * 100)} % à toutes ses stats`,
     );
     const gallery = this.galleries.gallery();
     return [
@@ -54,7 +60,7 @@ export class StatsDetails {
   imports: [StatsDetails],
   template: `
     <button type="button" class="stats-button" aria-label="Détails des stats" (click)="open.set(true)">
-      <img src="assets/ui/refonte/stats-scroll.png" alt="" width="160" height="160" />
+      <img src="assets/ui/refonte/stats-scroll.webp" alt="" width="160" height="160" />
       <span>Stats</span>
     </button>
     @if (open()) {

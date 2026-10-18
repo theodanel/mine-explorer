@@ -1,5 +1,12 @@
-<section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="stats-details-title">
-  <h2 id="stats-details-title">Détails des stats</h2>
+<section class="dialog game-panel" data-theme="gold" role="dialog" aria-modal="true" aria-labelledby="stats-details-title">
+  <header class="page-header">
+    <h2 id="stats-details-title">Détails des stats</h2>
+  </header>
+  <!-- La Puissance en vedette, comme le « CP » des jeux du genre : le chiffre qu'on veut voir monter -->
+  <p class="power">
+    <span class="power-label">Puissance</span>
+    <strong class="power-value">{{ power() }}</strong>
+  </p>
   <h3>Stats de base</h3>
   <app-stats-panel />
   @if (sources().length > 0) {

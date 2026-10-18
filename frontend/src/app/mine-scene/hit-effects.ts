@@ -2,6 +2,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 
 import { TIER_LABELS } from '../equipment/equipment.model';
 import type { StrikeOutcome } from '../mining/mining';
+import type { PowerGain } from './power-gain';
 
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
@@ -10,7 +11,10 @@ const TEXT_SIZE = 52;
 const HIGHLIGHT_TEXT_SIZE = 68;
 const REWARD_TEXT_SIZE = 38;
 const DAMAGE_COLOR = 0xffffff;
-const CRITICAL_COLOR = 0xff7a2e;
+/** Critique : doré et plus gros, avec un petit coup de zoom, pour qu'on le sente passer. */
+const CRITICAL_COLOR = 0xffd34d;
+const POP_SCALE = 1.6;
+const POP_SHARE = 0.18;
 const GOLD_COLOR = 0xffd34d;
 const SHARD_COLOR = 0xc98bff;
 /** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
@@ -29,6 +33,23 @@ const BLAST_COLOR = 0xff9a2e;
 const BLAST_TEXT_SIZE = 76;
 const BLAST_TEXT_SIZE_HUGE = 96;
 const BLAST_LABEL_OFFSET_Y = -230;
+// Filon qui cède : une gerbe de gros éclats et un flash blanc, pour que chaque filon épuisé se sente
+const BREAK_CHIPS = 18;
+const BREAK_CHIP_SIZE = 1.8;
+const BREAK_FLASH_RADIUS = 120;
+const BREAK_FLASH_MS = 220;
+const FLASH_COLOR = 0xfff4dc;
+// Gain de Puissance : un anneau doré qui s'ouvre autour du mineur, des étincelles, puis ce qui a changé
+const POWER_TEXT_MS = 1800;
+const POWER_TEXT_SIZE = 64;
+const POWER_LINE_SIZE = 40;
+const POWER_LINE_GAP = 52;
+const POWER_RING_MS = 650;
+const POWER_RING_RADIUS = 210;
+const POWER_RING_WIDTH = 10;
+const POWER_SPARKS = 22;
+const SPARK_COLORS = [0xffd34d, 0xfff1b0, 0xffb02e] as const;
+const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 
 /** Un effet vit dans le temps et se retire tout seul une fois terminé. */
 interface Effect {
@@ -42,11 +63,19 @@ class FloatingText implements Effect {
   private ageMs = 0;
   private readonly startY: number;
 
-  constructor(x: number, y: number, label: string, color: number, fontSize: number) {
+  constructor(
+    x: number,
+    y: number,
+    label: string,
+    color: number,
+    fontSize: number,
+    private readonly pop = false,
+    private readonly durationMs = FLOATING_TEXT_DURATION_MS,
+  ) {
     this.view = new Text({
       text: label,
       style: {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: ['Lilita One', 'Segoe UI', 'Roboto', 'sans-serif'],
         fontSize,
         fontWeight: 'bold',
         fill: color,
@@ -60,9 +89,14 @@ class FloatingText implements Effect {
 
   update(elapsedMs: number): boolean {
     this.ageMs += elapsedMs;
-    const progress = Math.min(this.ageMs / FLOATING_TEXT_DURATION_MS, 1);
+    const progress = Math.min(this.ageMs / this.durationMs, 1);
     this.view.y = this.startY - FLOATING_TEXT_RISE_PX * progress;
-    this.view.alpha = 1 - progress;
+    // Les textes longs restent lisibles : ils ne s'effacent que sur leur dernier tiers
+    this.view.alpha = this.durationMs > FLOATING_TEXT_DURATION_MS ? Math.min(1, 3 * (1 - progress)) : 1 - progress;
+    if (this.pop) {
+      const settle = Math.min(progress / POP_SHARE, 1);
+      this.view.scale.set(POP_SCALE - (POP_SCALE - 1) * settle);
+    }
     return progress < 1;
   }
 }
@@ -73,9 +107,9 @@ class RockChip implements Effect {
   private readonly velocityX: number;
   private velocityY: number;
 
-  constructor(x: number, y: number) {
-    const radius = 4 + Math.random() * 5;
-    const color = CHIP_COLORS[Math.floor(Math.random() * CHIP_COLORS.length)];
+  constructor(x: number, y: number, size = 1, colors: readonly number[] = CHIP_COLORS) {
+    const radius = (4 + Math.random() * 5) * size;
+    const color = colors[Math.floor(Math.random() * colors.length)];
     this.view = new Graphics().circle(0, 0, radius).fill(color);
     this.view.position.set(x, y);
     // Éclats projetés vers le haut, en éventail
@@ -93,6 +127,33 @@ class RockChip implements Effect {
   }
 }
 
+/** Disque ou anneau qui s'ouvre et s'efface : flash d'un filon qui cède, onde d'un gain de Puissance. */
+class Pulse implements Effect {
+  readonly view: Graphics;
+  private ageMs = 0;
+
+  constructor(
+    x: number,
+    y: number,
+    radius: number,
+    color: number,
+    private readonly durationMs: number,
+    ring: boolean,
+  ) {
+    this.view = ring ? new Graphics().circle(0, 0, radius).stroke({ color, width: POWER_RING_WIDTH }) : new Graphics().circle(0, 0, radius).fill(color);
+    this.view.position.set(x, y);
+    this.view.blendMode = 'add';
+  }
+
+  update(elapsedMs: number): boolean {
+    this.ageMs += elapsedMs;
+    const progress = Math.min(this.ageMs / this.durationMs, 1);
+    this.view.scale.set(0.3 + 0.7 * progress);
+    this.view.alpha = 1 - progress;
+    return progress < 1;
+  }
+}
+
 /** Effets visuels d'un coup de pioche : éclats de roche, dégâts infligés et butin quand le rocher casse. */
 export class HitEffects {
   private readonly effects: Effect[] = [];
@@ -106,7 +167,7 @@ export class HitEffects {
     const damageLabel = outcome.critical ? `${outcome.damage} !` : String(outcome.damage);
     const damageColor = outcome.critical ? CRITICAL_COLOR : DAMAGE_COLOR;
     const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
-    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize));
+    this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
 
     // L'or tombe à chaque coup : texte discret pour ne pas noyer les dégâts
     this.add(new FloatingText(x, y + REWARD_TEXT_OFFSET_Y, `+${outcome.reward.gold}`, GOLD_COLOR, REWARD_TEXT_SIZE));
@@ -134,6 +195,27 @@ export class HitEffects {
     }
     this.add(new FloatingText(x, y + BLAST_LABEL_OFFSET_Y, huge ? 'GRISOU !' : 'BOUM !', BLAST_COLOR, huge ? BLAST_TEXT_SIZE_HUGE : BLAST_TEXT_SIZE));
     this.spawn(x, y, outcome);
+  }
+
+  /** Le filon cède : gros éclats en gerbe et flash blanc, en plus des effets du coup. */
+  spawnRockBreak(x: number, y: number): void {
+    this.add(new Pulse(x, y, BREAK_FLASH_RADIUS, FLASH_COLOR, BREAK_FLASH_MS, false));
+    for (let i = 0; i < BREAK_CHIPS; i++) {
+      this.add(new RockChip(x, y, BREAK_CHIP_SIZE));
+    }
+  }
+
+  /** Le mineur vient de gagner en Puissance : onde dorée, étincelles, puis le gain et ce qui a changé. */
+  spawnPowerGain(x: number, y: number, gain: PowerGain): void {
+    this.add(new Pulse(x, y, POWER_RING_RADIUS, GOLD_COLOR, POWER_RING_MS, true));
+    for (let i = 0; i < POWER_SPARKS; i++) {
+      this.add(new RockChip(x, y, 1, SPARK_COLORS));
+    }
+    const label = `Puissance +${NUMBER_FORMAT.format(gain.to - gain.from)}`;
+    this.add(new FloatingText(x, y, label, GOLD_COLOR, POWER_TEXT_SIZE, true, POWER_TEXT_MS));
+    gain.lines.forEach((line, index) => {
+      this.add(new FloatingText(x, y + POWER_LINE_GAP * (index + 1), line, DAMAGE_COLOR, POWER_LINE_SIZE, false, POWER_TEXT_MS));
+    });
   }
 
   update(elapsedMs: number): void {

@@ -1,0 +1,23 @@
+<article class="heart" [class.revealing]="revealing()" [class.awake]="stars() > 0">
+  <!-- Transformation : la Légende s'efface dans un éclat de lave, le Cœur du monde apparaît -->
+  @if (revealing()) {
+    <span class="burst" aria-hidden="true"></span>
+    <img class="legend-ghost" [src]="legendPortraitUrl" alt="" width="160" height="160" />
+  }
+  <p class="kicker">Dernière transformation</p>
+  <h3 class="title">Légende du Cœur du monde</h3>
+
+  <span class="ring" [class.ready]="ready()">
+    <img class="portrait" [src]="portraitUrl" alt="" width="160" height="160" />
+  </span>
+
+  <ol class="stars" role="img" [attr.aria-label]="label()">
+    @for (slot of slots(); track slot.zone; let index = $index) {
+      <li class="star" [class.lit]="slot.lit" [class.next]="slot.next" [style.--order]="index">
+        <img [src]="slot.lit ? 'assets/ui/etoile-pleine.webp' : 'assets/ui/etoile-vide.webp'" alt="" width="128" height="122" />
+        <span class="zone">Zone {{ slot.zone }}</span>
+      </li>
+    }
+  </ol>
+  <p class="bonus">Chaque étoile : <strong>+100 % de Frappe</strong></p>
+</article>

@@ -1,5 +1,8 @@
 <main class="game">
-  <app-mine-scene class="scene" />
+  <!-- PixiJS (0,6 Mo) arrive dans son propre fichier, en parallèle de l'écran de chargement -->
+  @defer (on immediate) {
+    <app-mine-scene class="scene" />
+  }
   <div class="bottom-shade" aria-hidden="true"></div>
 
   <header class="top-bar">
@@ -12,7 +15,12 @@
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
         <span class="player-name">Petit mineur</span>
-        <span class="player-title">{{ evolution.form().label }}</span>
+        <span class="player-title">
+          {{ evolution.form().label }}
+          @if (evolution.form().stars > 0) {
+            <app-rank-stars [count]="evolution.form().stars" />
+          }
+        </span>
       </span>
       @if (evolution.ready()) {
         <span class="evolve-badge">Évoluer !</span>
@@ -26,16 +34,16 @@
         aria-label="Pièces"
         tabindex="0"
       >
-        <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />
-        <span class="coin-count">{{ wallet.coins() }}</span>
+        <img class="resource-icon" data-flight-target="coins" src="assets/ui/coin.webp" alt="" width="128" height="128" />
+        <span class="coin-count" [attr.title]="wallet.coins()">{{ coinsLabel() }}</span>
       </li>
       <li
         class="resource shards"
         aria-label="Éclats de géode"
         tabindex="0"
       >
-        <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />
-        <span class="shard-count">{{ shards.amount() }}</span>
+        <img class="resource-icon" data-flight-target="shards" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />
+        <span class="shard-count">{{ shardsLabel() }}</span>
       </li>
       @if (zoneOre(); as ore) {
         <li
@@ -53,9 +61,11 @@
   </header>
 
   <app-zone-banner class="zone" />
+  <app-lottery-button class="lottery" />
+  <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
-      <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi : récompense !
+      <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.webp" alt="" width="160" height="160" />Défi : récompense !
     </button>
   }
   <app-companion-buddy class="buddy" />
@@ -63,9 +73,11 @@
 
 
   <app-spell-bar class="spells" />
+  <!-- Panneau crème du bas, sous l'équipement et la forge, comme celui de Legends of Mushroom -->
+  <div class="bottom-panel" aria-hidden="true"></div>
   <!-- Équipements en bas, comme Legend of Mushroom ; les stats derrière le bouton rond -->
-  <app-equipment-column class="equipment-bar" [slots]="equipmentSlots" [row]="true" />
-  <app-stats-button class="stats-button" />
+  <app-equipment-column class="equipment-bar" appReveal="equipment" [slots]="equipmentSlots" [row]="true" />
+  <app-stats-button class="stats-button" appReveal="stats" />
   <app-forge-button class="forge" />
 
   <!-- Les pages se chargent à la première ouverture : le jeu démarre plus vite -->
@@ -95,6 +107,11 @@
         <app-evolution-page class="page-layer" />
       }
     }
+    @case ('heart-forge') {
+      @defer (on immediate) {
+        <app-heart-forge-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />
@@ -108,6 +125,31 @@
     @case ('abyss') {
       @defer (on immediate) {
         <app-abyss-page class="page-layer" />
+      }
+    }
+    @case ('zones') {
+      @defer (on immediate) {
+        <app-zone-map class="page-layer" />
+      }
+    }
+    @case ('forge-express') {
+      @defer (on immediate) {
+        <app-forge-express-page class="page-layer" />
+      }
+    }
+    @case ('torchlight') {
+      @defer (on immediate) {
+        <app-torchlight-page class="page-layer" />
+      }
+    }
+    @case ('merchant') {
+      @defer (on immediate) {
+        <app-merchant-page class="page-layer" />
+      }
+    }
+    @case ('minehunt') {
+      @defer (on immediate) {
+        <app-minehunt-page class="page-layer" />
       }
     }
     @case ('camp') {
@@ -131,9 +173,11 @@
     <app-companion-hatched />
     <app-offline-report />
   }
-  <!-- Tutoriel du premier lancement : il attend la fin du chargement, rien ne presse -->
+  <!-- Bulles de la prise en main : elles attendent la fin du chargement, rien ne presse -->
   @defer (on idle) {
-    <app-tutorial-overlay />
+    <app-reveal-hint />
   }
+  <!-- Pièces et éclats gagnés qui volent jusqu'aux compteurs, par-dessus les fenêtres -->
+  <app-reward-flight-layer />
   <app-splash-screen />
 </main>

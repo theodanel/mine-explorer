@@ -4,6 +4,7 @@ import { sellPrice } from '../equipment/equipment-rules';
 import { Inventory } from '../equipment/inventory';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { ForgeFilters, hasFilters, isValidFilters, NO_FILTERS, passesFilters } from './auto-forge-rules';
+import { Workshop } from '../workshop/workshop';
 
 const STORAGE_KEY = 'mine-explorer.auto-forge';
 /**
@@ -27,6 +28,7 @@ const DEFAULT_SETTINGS: AutoForgeSettings = { enabled: false, filters: NO_FILTER
 @Injectable({ providedIn: 'root' })
 export class AutoForge {
   private readonly inventory = inject(Inventory);
+  private readonly workshop = inject(Workshop);
   private readonly document = inject(DOCUMENT);
   private readonly settings = signal<AutoForgeSettings>(loadSettings());
   private readonly soldCount = signal(0);
@@ -65,7 +67,7 @@ export class AutoForge {
       return;
     }
     const item = this.inventory.pending();
-    if (item !== null && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped())) {
+    if (item !== null && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped(), this.workshop.levels())) {
       const price = sellPrice(item);
       this.inventory.sellPending();
       this.soldCount.update((count) => count + 1);
@@ -90,7 +92,8 @@ function loadSettings(): AutoForgeSettings {
     if (typeof value === 'object' && value !== null) {
       const { enabled, filters } = value as Record<string, unknown>;
       if (typeof enabled === 'boolean' && isValidFilters(filters)) {
-        return { enabled, filters };
+        // Réglages d'avant l'option « toujours montrer » : elle part désactivée
+        return { enabled, filters: { ...filters, keepFromTier: filters.keepFromTier ?? null } };
       }
     }
   } catch {

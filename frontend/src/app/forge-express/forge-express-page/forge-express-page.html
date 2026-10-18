@@ -1,0 +1,68 @@
+<section class="page game-panel" data-theme="ember" [style.background-image]="scene" aria-labelledby="forge-express-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir aux aventures" [disabled]="smithing() !== null && !result()" (click)="back()">‹</button>
+    <h2 id="forge-express-title">Forge express</h2>
+    <span class="chip">{{ forgeExpress.runsLeft() }} / {{ forgeExpress.dailyRuns }}</span>
+  </header>
+
+  @if (smithing(); as smithing) {
+    <!-- En partie : la jauge, les frappes, l'enclume -->
+    <div class="strikes" aria-label="Frappes">
+      @for (grade of strikes(); track $index) {
+        <span class="dot" [class]="grade ?? 'empty'"></span>
+      }
+    </div>
+
+    <div class="gauge" role="meter" aria-label="Chaleur du lingot" [attr.aria-valuenow]="needle()" aria-valuemin="0" aria-valuemax="100">
+      <span class="zone fair" [style.left.%]="zones.fair.left" [style.width.%]="zones.fair.width"></span>
+      <span class="zone good" [style.left.%]="zones.good.left" [style.width.%]="zones.good.width"></span>
+      <span class="zone perfect" [style.left.%]="zones.perfect.left" [style.width.%]="zones.perfect.width"></span>
+      <span class="needle" [style.left.%]="needle()"></span>
+    </div>
+
+    <button type="button" class="anvil-area" [class.swing]="swing()" aria-label="Frapper" (pointerdown)="strike()">
+      <img class="ingot" [src]="images.ingot" [style.--glow]="glow()" alt="" width="256" height="256" />
+      <img class="anvil" [src]="images.anvil" alt="" width="512" height="512" />
+      <img class="hammer" [src]="images.hammer" alt="" width="128" height="128" />
+      @if (pop(); as pop) {
+        <span class="pop" [class]="pop.grade">{{ pop.text }} @if (pop.combo > 1) { <small>×{{ pop.combo }}</small> }</span>
+      }
+      @if (swing()) {
+        <span class="sparks" aria-hidden="true"></span>
+      }
+    </button>
+    <p class="tip">Frappe quand l'aiguille passe dans la zone dorée. Score : <strong>{{ smithing.score }}</strong></p>
+
+    @if (result(); as result) {
+      <div class="result" role="status">
+        <span class="rays" [class.record]="result.boosted !== null">
+          <img class="item item-frame" [attr.data-tier]="result.item.tier" [src]="result.icon" alt="" width="128" height="128" />
+        </span>
+        <h3>{{ result.label }}</h3>
+        <p>Score {{ result.score }} · {{ result.boosted === 'bonus' ? 'une qualité au-dessus de ta forge !' : result.boosted === 'best' ? 'la meilleure qualité de ta forge' : 'un tirage de forge' }}</p>
+        <button type="button" class="game-button green" (click)="seeItem()">Voir l'objet</button>
+      </div>
+    }
+  } @else {
+    <!-- Accueil -->
+    <div class="lobby">
+      <img class="hero" [src]="images.anvil" alt="" width="512" height="512" />
+      <ul class="rules">
+        <li><strong>10 frappes</strong> : frappe quand l'aiguille de chaleur est dans la zone dorée.</li>
+        <li>Les <strong>frappes parfaites</strong> d'affilée font un combo ; la chaleur bat de plus en plus vite.</li>
+        <li>Un <strong>bon score</strong> forge la meilleure qualité de ta forge, un excellent une qualité au-dessus.</li>
+      </ul>
+      @if (forgeExpress.unlocked()) {
+        @if (forgeExpress.blocked()) {
+          <p class="runs">Un objet attend déjà sur ta mine : équipe-le ou vends-le d'abord.</p>
+        }
+        <button type="button" class="game-button green go" [disabled]="forgeExpress.runsLeft() === 0 || forgeExpress.blocked()" (click)="start()">
+          {{ forgeExpress.runsLeft() === 0 ? 'Reviens demain' : 'Allumer la forge' }}
+        </button>
+        <p class="runs">Parties du jour : {{ forgeExpress.runsLeft() }} / {{ forgeExpress.dailyRuns }}</p>
+      } @else {
+        <p class="runs">La Forge express s'ouvre quand ton mineur devient <strong>{{ forgeExpress.unlockLabel }}</strong>.</p>
+      }
+    </div>
+  }
+</section>

@@ -1,6 +1,6 @@
 # Intégration et déploiement continus de Mine Explorer.
 # Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend ;
-# construction et démarrage des images du docker compose.
+# construction et démarrage de l'image du jeu, et du serveur avec sa base tel qu'il tourne sur le Raspberry Pi.
 # Sur une PR verte de Théo, ou de Dependabot en version mineure ou corrective : fusion automatique.
 # Sur main uniquement, quand tout est vert : déploiement du frontend sur Cloudflare Pages.
 name: CI
@@ -85,14 +85,12 @@ jobs:
           persist-credentials: false
       - name: Construire les images
         run: docker compose build
-      # Démarrage réel : le jeu répond, le serveur démarre, puis tout s'arrête
+      # Démarrage réel : le jeu répond, puis tout s'arrête
       - name: Démarrer et vérifier
         run: |
           docker compose up -d
           for i in $(seq 1 30); do curl -fsS http://localhost:8080/ > /dev/null && break; sleep 2; done
           curl -fsS http://localhost:8080/ | grep -q "<app-root"
-          for i in $(seq 1 45); do docker compose logs backend | grep -q "Started BackendApplication" && break; sleep 2; done
-          docker compose logs backend | grep -q "Started BackendApplication"
           for i in $(seq 1 30); do [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q frontend)")" = healthy ] && break; sleep 2; done
           [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q frontend)")" = healthy ]
       - name: Journaux en cas d'échec
@@ -101,6 +99,40 @@ jobs:
       - name: Arrêter
         if: always()
         run: docker compose down
+      # Le serveur du Raspberry Pi (deploiement/raspberry-pi), ici en amd64 : même image Ubuntu + OpenJDK 21, même
+      # base PostgreSQL et même compte limité. Il démarre en profil prod (migrations Flyway, schéma validé par Hibernate)
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Serveur du Pi · jar
+        working-directory: backend
+        run: sh ./mvnw -B -ntp package -DskipTests && cp target/backend-*.jar ../deploiement/raspberry-pi/backend/app.jar
+      - name: Serveur du Pi · démarrer et vérifier
+        working-directory: deploiement/raspberry-pi
+        run: |
+          docker network create --subnet 172.30.0.0/24 proxy
+          # Secrets jetables, seulement pour ce test : Google n'est pas appelé au démarrage
+          {
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)"
+            echo "MINE_APP_PASSWORD=$(openssl rand -hex 16)"
+            echo "GOOGLE_CLIENT_ID=ci"
+            echo "GOOGLE_CLIENT_SECRET=ci"
+          } > .env
+          docker compose up -d --build
+          for i in $(seq 1 60); do docker compose logs backend | grep -q "Started BackendApplication" && break; sleep 3; done
+          docker compose logs backend | grep -q "Started BackendApplication"
+          # Le compte de l'appli ne peut pas toucher au schéma
+          ! docker compose exec -T db psql -U mine_app -d mine -c 'CREATE TABLE intrus (id int)' 2>/dev/null
+      - name: Serveur du Pi · journaux en cas d'échec
+        if: failure()
+        working-directory: deploiement/raspberry-pi
+        run: docker compose logs
+      - name: Serveur du Pi · arrêter
+        if: always()
+        working-directory: deploiement/raspberry-pi
+        run: docker compose down -v || true
 
   automerge:
     name: Fusion automatique

@@ -11,6 +11,7 @@ Documentation de référence de Mine Explorer, tenue à jour à chaque changemen
 | [[ci-cd]] | Intégration continue, analyse de sécurité, mises à jour de dépendances |
 | [[deploiement]] | Mise en ligne sur Cloudflare Pages, secrets, restriction d'accès |
 | [[securite]] | Modèle de menace, protections en place, limites assumées |
+| [[audit-securite-backend]] | Audit de sécurité du backend du 14/10/2026 : constats par gravité, corrections, points à décider |
 | [[choix-techniques]] | Décisions techniques et leurs justifications |
 
 ## État du projet (13/10/2026)

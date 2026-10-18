@@ -31,6 +31,7 @@ public class CloudSave {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	/** Valeurs classées : plafonnées depuis la première connexion du joueur, pas forcément celles de la partie. */
 	@Column(name = "stages_reached", nullable = false)
 	private int stagesReached;
 
@@ -55,19 +56,20 @@ public class CloudSave {
 	}
 
 	/**
-	 * Remplace la partie. La date d'une valeur classée ne change que si la valeur change : à égalité dans le
-	 * classement, le premier à l'avoir atteinte reste devant.
+	 * Remplace la partie. {@code ranked} : valeurs affichées au classement, plafonnées depuis la première connexion
+	 * (voir {@link PlausibilityRules#ranked}), recalculées à chaque envoi. La date d'une valeur classée ne change que
+	 * si la valeur change : à égalité dans le classement, le premier à l'avoir atteinte reste devant.
 	 */
-	void replace(String newData, SaveMetrics metrics, Instant origin, Instant now) {
-		if (stagesReachedAt == null || metrics.stagesReached() != stagesReached) {
+	void replace(String newData, SaveMetrics ranked, Instant origin, Instant now) {
+		if (stagesReachedAt == null || ranked.stagesReached() != stagesReached) {
 			stagesReachedAt = now;
 		}
-		if (abyssRecordAt == null || metrics.abyssRecord() != abyssRecord) {
+		if (abyssRecordAt == null || ranked.abyssRecord() != abyssRecord) {
 			abyssRecordAt = now;
 		}
 		this.data = newData;
-		this.stagesReached = metrics.stagesReached();
-		this.abyssRecord = metrics.abyssRecord();
+		this.stagesReached = ranked.stagesReached();
+		this.abyssRecord = ranked.abyssRecord();
 		this.playOrigin = origin;
 		this.updatedAt = now;
 	}

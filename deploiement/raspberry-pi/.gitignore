@@ -1,0 +1,4 @@
+# Secrets du Pi et fichiers produits par preparer.ps1 : jamais dans git
+.env
+backend/app.jar
+mine-explorer-api.tar.gz

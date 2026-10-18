@@ -42,11 +42,11 @@ Pour y arriver : PixiJS est importé dans sa variante sans `eval` (`pixi.js/unsa
 
 ## Backend
 
-Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`.
+Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `GoogleLoginFlowTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`, `ProductionProfileTests`. Audit complet du 14/10/2026 : [[audit-securite-backend]].
 
 ## Limites assumées
 
-- **Triche locale** : la partie vit dans le navigateur du joueur. Il peut modifier sa sauvegarde ou le code JavaScript et se donner de l'or. Pour le classement, le backend refuse une progression impossible dans le temps écoulé (anti-triche de plausibilité, voir [[backend]]) ; l'or et l'équipement ne sont pas vérifiés. La seule parade complète reste un **serveur autoritaire** qui calcule les gains, à envisager s'il y a un jour des échanges ou des achats.
+- **Triche locale** : la partie vit dans le navigateur du joueur. Il peut modifier sa sauvegarde ou le code JavaScript et se donner de l'or. Pour le classement, le backend refuse une progression impossible dans le temps écoulé et n'affiche que ce qui a pu être atteint depuis la première connexion (anti-triche de plausibilité, voir [[backend]]) ; l'or et l'équipement ne sont pas vérifiés. La seule parade complète reste un **serveur autoritaire** qui calcule les gains, à envisager s'il y a un jour des échanges ou des achats.
 - **`style-src 'unsafe-inline'`** : Angular injecte les styles de ses composants dans des balises `<style>`. Sur un site statique, on ne peut pas générer de *nonce* par requête. Le risque résiduel (injection de CSS) est faible, car aucun contenu n'est construit à partir de données externes.
 - **Adresse publique** : sans Cloudflare Access, toute personne qui a l'adresse peut jouer (voir [[deploiement]]).
 
@@ -55,6 +55,6 @@ Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protection
 | Contrôle | Où |
 |---|---|
 | Dépendances npm | `npm audit --audit-level=high` à chaque CI, Dependabot chaque semaine |
-| Dépendances Maven et actions GitHub | Dependabot chaque semaine |
+| Dépendances Maven et actions GitHub | Dependabot chaque semaine (mises à jour de versions). **Pas d'alerte de faille** : alertes Dependabot désactivées sur le dépôt et aucun audit Maven en CI, voir [[audit-securite-backend]] |
 | Code | CodeQL à chaque PR et chaque lundi (résultats en artefact, voir [[ci-cd]]) |
 | En-têtes | Après tout changement de `_headers` ou d'une bibliothèque de rendu : `npm run build` puis `node tools/serve-dist.mjs`, console du navigateur sans violation |

@@ -9,10 +9,12 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.theodanel.backend.account.AccountService;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
 
@@ -31,12 +33,15 @@ public class SaveService {
 	static final int MAX_DATA_CHARS = 256 * 1024;
 
 	private final CloudSaveRepository saves;
+	private final AccountService accounts;
 	private final PlausibilityRules plausibility;
 	private final JsonMapper json;
 	private final Clock clock;
 
-	public SaveService(CloudSaveRepository saves, MineProperties properties, JsonMapper json, Clock clock) {
+	public SaveService(CloudSaveRepository saves, AccountService accounts, MineProperties properties, JsonMapper json,
+			Clock clock) {
 		this.saves = saves;
+		this.accounts = accounts;
 		this.plausibility = new PlausibilityRules(properties.antiCheat());
 		this.json = json;
 		this.clock = clock;
@@ -61,6 +66,8 @@ public class SaveService {
 		Instant now = clock.instant();
 		Optional<CloudSave> existing = saves.findById(playerId);
 		existing.ifPresent(save -> requireVersion(save, expectedVersion));
+		// Compte supprimé depuis un autre appareil : 401 « reconnecte-toi » plutôt qu'une erreur de clé étrangère
+		Instant accountCreatedAt = accounts.get(playerId).getCreatedAt();
 
 		SaveMetrics metrics = SaveMetrics.read(data, json);
 		Instant origin = existing.map(CloudSave::getPlayOrigin).orElseGet(plausibility::firstOrigin);
@@ -68,10 +75,24 @@ public class SaveService {
 
 		CloudSave save = existing.orElseGet(() -> new CloudSave(playerId));
 		TreeMap<String, String> sorted = new TreeMap<>(data);
-		save.replace(json.writeValueAsString(sorted), metrics,
+		// L'anti-triche suit la vraie progression ; le classement, celle qui a pu se faire depuis la première connexion
+		save.replace(json.writeValueAsString(sorted), plausibility.ranked(metrics, accountCreatedAt, now),
 				plausibility.nextOrigin(origin, metrics.stagesReached(), now), now);
-		CloudSave saved = saves.saveAndFlush(save);
+		CloudSave saved = saveFirstWins(save);
 		return new StoredSave(saved.getVersion(), saved.getUpdatedAt(), sorted);
+	}
+
+	/**
+	 * Deux appareils qui envoient chacun la toute première sauvegarde au même instant : le second bute sur la clé
+	 * primaire. Même réponse qu'un conflit de version, pour que le front relise la partie du cloud.
+	 */
+	private CloudSave saveFirstWins(CloudSave save) {
+		try {
+			return saves.saveAndFlush(save);
+		}
+		catch (DataIntegrityViolationException concurrentFirstSave) {
+			throw new ApiException(HttpStatus.CONFLICT, "save-conflict", "La sauvegarde a changé sur un autre appareil");
+		}
 	}
 
 	private static void requireReasonableSize(Map<String, String> data) {

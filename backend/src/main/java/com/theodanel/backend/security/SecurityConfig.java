@@ -1,6 +1,7 @@
 package com.theodanel.backend.security;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -78,7 +79,7 @@ public class SecurityConfig {
 				.authorizationEndpoint(endpoint -> endpoint
 					.authorizationRequestResolver(pkceResolver(registrations)))
 				.userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService))
-				.successHandler(redirectTo(frontUrl))
+				.successHandler(onLogin(frontUrl, properties.session().idleTimeout()))
 				.failureHandler(failureRedirect(frontUrl)))
 			.logout(logout -> logout
 				.logoutUrl("/api/logout")
@@ -171,9 +172,17 @@ public class SecurityConfig {
 		return resolver;
 	}
 
-	/** Retour au jeu après connexion. Adresse fixe, tirée de la configuration : aucune redirection ouverte. */
-	private static AuthenticationSuccessHandler redirectTo(String frontUrl) {
-		return (request, response, authentication) -> response.sendRedirect(frontUrl);
+	/**
+	 * Après connexion : la session passe de la durée courte des visiteurs anonymes (jeton CSRF, flux Google en
+	 * cours) à celle d'un joueur connecté, puis retour au jeu. Adresse fixe, tirée de la configuration : aucune
+	 * redirection ouverte.
+	 */
+	private static AuthenticationSuccessHandler onLogin(String frontUrl, Duration idleTimeout) {
+		int idleSeconds = Math.toIntExact(idleTimeout.toSeconds());
+		return (request, response, authentication) -> {
+			request.getSession().setMaxInactiveInterval(idleSeconds);
+			response.sendRedirect(frontUrl);
+		};
 	}
 
 	private static AuthenticationFailureHandler failureRedirect(String frontUrl) {

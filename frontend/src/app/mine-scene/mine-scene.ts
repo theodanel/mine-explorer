@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, OnDestroy, signal, untracked, viewChild } from '@angular/core';
 import { AnimatedSprite, Application, Assets, Container, Sprite, Spritesheet, Texture, Ticker } from 'pixi.js';
 // Version de PixiJS sans « eval » : le site interdit l'évaluation de code (CSP sans 'unsafe-eval')
 import 'pixi.js/unsafe-eval';
@@ -19,6 +19,8 @@ import { HitEffects } from './hit-effects';
 import { MineRock, RockTop } from './mine-rock';
 import { AmbienceLayer } from './ambience-layer';
 import { auraLook, MinerAura } from './miner-aura';
+import { PowerGain, powerGain } from './power-gain';
+import { MiningStats } from '../equipment/equipment.model';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -56,6 +58,12 @@ const ECHO_TINT = 0xb0786a;
 const NO_TINT = 0xffffff;
 /** Sous un menu, la mine ne se voit presque plus : 30 images par seconde suffisent et ménagent la batterie. */
 const COVERED_MAX_FPS = 30;
+/** Un filon qui cède secoue un peu la galerie : une part de la secousse du grisou. */
+const ROCK_BREAK_SHAKE_SHARE = 0.2;
+/** Gain de Puissance : le texte part de la tête du mineur, et le mineur brille d'or un instant. */
+const POWER_GAIN_ABOVE_FEET = 330;
+const POWER_GLOW_MS = 600;
+const POWER_GLOW_TINT = 0xffe08a;
 
 @Component({
   selector: 'app-mine-scene',
@@ -106,6 +114,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
   protected readonly guardianSeconds = computed(() => Math.ceil(this.progression.guardianTimeLeft() / MS_PER_SECOND));
   protected readonly guardianTimePercent = computed(() => (this.progression.guardianTimeLeft() / (GUARDIAN_SECONDS * MS_PER_SECOND)) * PERCENT);
   private destroyed = false;
+  /** Stats permanentes vues en dernier : un gain se mesure par rapport à elles. */
+  private lastStats: MiningStats | null = null;
+  /** Gain pas encore montré : il attend que le joueur revienne sur la mine (équipé depuis une page, par exemple). */
+  private readonly pendingGain = signal<PowerGain | null>(null);
+  private glowMs = 0;
 
   constructor() {
     // Changer de bottes ou lancer Frénésie accélère le mineur tout de suite, sans recréer la scène
@@ -126,6 +139,25 @@ export class MineScene implements AfterViewInit, OnDestroy {
         this.shakeMs = isFiredamp ? SHAKE_MS : SHAKE_MS * DYNAMITE_SHAKE_SHARE;
         this.sound.play('blast');
       }
+    });
+    // Le mineur devient plus fort (objet, compétence, artefact…) : on le note, et on le montre dès qu'il est à l'écran
+    effect(() => {
+      const stats = this.minerStats.permanent().stats;
+      const previous = this.lastStats;
+      this.lastStats = stats;
+      const gain = previous === null ? null : powerGain(previous, stats);
+      if (gain !== null) {
+        const pending = untracked(() => this.pendingGain());
+        // Plusieurs gains d'affilée (trois compétences apprises) : un seul, du premier « avant » au dernier « après »
+        this.pendingGain.set(pending === null ? gain : { ...gain, from: pending.from });
+      }
+    });
+    effect(() => {
+      const gain = this.pendingGain();
+      if (gain === null || this.navigation.page() !== 'mine' || !this.effects || !this.miner) {
+        return;
+      }
+      untracked(() => this.showPowerGain(gain));
     });
     // Nouvelle forme, nouveau visuel, sans recréer la scène
     effect(() => {
@@ -267,6 +299,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
         effects.spawn(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale, outcome);
         this.playStrikeSounds(outcome);
         this.rock.hit(outcome.rockBroken);
+        if (outcome.rockBroken) {
+          effects.spawnRockBreak(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale);
+          this.shakeMs = Math.max(this.shakeMs, SHAKE_MS * ROCK_BREAK_SHAKE_SHARE);
+        }
         this.squashMs = STRIKE_SQUASH_MS;
       }
       previousFrame = currentFrame;
@@ -278,6 +314,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);
+      this.updateGlow(ticker.deltaMS);
     });
     miner.play();
   }
@@ -351,6 +388,28 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     if (outcome.rockBroken) {
       this.sound.play('rockBreak');
+    }
+  }
+
+  private showPowerGain(gain: PowerGain): void {
+    this.pendingGain.set(null);
+    this.effects?.spawnPowerGain(SCENE_WIDTH / 2, MINER_FEET_Y - POWER_GAIN_ABOVE_FEET, gain);
+    this.glowMs = POWER_GLOW_MS;
+    this.sound.play('upgrade');
+  }
+
+  /** Le mineur (ou sa forme fixe) brille d'or puis reprend ses couleurs. */
+  private updateGlow(elapsedMs: number): void {
+    if (this.glowMs <= 0) {
+      return;
+    }
+    this.glowMs = Math.max(this.glowMs - elapsedMs, 0);
+    const tint = this.glowMs > 0 ? POWER_GLOW_TINT : NO_TINT;
+    if (this.miner) {
+      this.miner.tint = tint;
+    }
+    if (this.staticBody) {
+      this.staticBody.tint = tint;
     }
   }
 

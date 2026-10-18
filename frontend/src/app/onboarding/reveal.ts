@@ -1,19 +1,34 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 
+import { Artifacts } from '../artifacts/artifacts';
+import { Camp } from '../camp/camp';
+import { Companions } from '../companions/companions';
 import { Inventory } from '../equipment/inventory';
 import { Forge } from '../forge/forge';
 import { MissionCounters } from '../missions/mission-counters';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { hintDone, isNewGame, newlyRevealed, parseRevealed, REVEAL_IDS, RevealFacts, RevealId, revealHint } from './reveal-rules';
+import { Skills } from '../skills/skills';
+import { Workshop } from '../workshop/workshop';
+import {
+  hiddenUntilRevealed,
+  hintDone,
+  isNewGame,
+  newlyRevealed,
+  parseRevealed,
+  REVEAL_IDS,
+  RevealFacts,
+  RevealId,
+  revealHint,
+} from './reveal-rules';
 
 const STORAGE_KEY = 'mine-explorer.devoilement';
-/** Avant le dévoilement, ce drapeau marquait un joueur ayant vu l'ancien tutoriel : il garde toute l'interface. */
+/** Avant cette prise en main, ce drapeau marquait un joueur ayant vu l'ancien tutoriel : on ne lui présente rien. */
 const LEGACY_TUTORIAL_KEY = 'mine-explorer.tutorial';
 
 /**
- * Dévoilement progressif : l'interface d'une partie neuve se limite au mineur et à son filon, puis chaque élément
- * apparaît quand le jeu en a besoin. Les éléments dévoilés le restent, même si la condition retombe (l'or dépensé).
+ * Prise en main : une bulle présente chaque élément du panneau du bas quand il sert, et les onglets du menu du bas
+ * apparaissent à leur ouverture. Ce qui est présenté le reste, même si la condition retombe (l'or dépensé).
  */
 @Injectable({ providedIn: 'root' })
 export class Reveal {
@@ -21,21 +36,29 @@ export class Reveal {
   private readonly inventory = inject(Inventory);
   private readonly forge = inject(Forge);
   private readonly progression = inject(Progression);
+  private readonly skills = inject(Skills);
+  private readonly companions = inject(Companions);
+  private readonly artifacts = inject(Artifacts);
+  private readonly workshop = inject(Workshop);
+  private readonly camp = inject(Camp);
   private readonly revealed = signal<ReadonlySet<RevealId>>(this.load());
-  /** Dévoilés pendant cette session : ils entrent à l'écran avec une animation. */
+  /** Présentés pendant cette session : ceux qui étaient cachés entrent à l'écran avec une animation. */
   private readonly fresh = signal<ReadonlySet<RevealId>>(new Set());
   private readonly hints = signal<readonly RevealId[]>([]);
 
   private readonly facts = computed<RevealFacts>(() => {
     const counters = this.counters.counters();
     return {
-      rocksBroken: counters.rocksBroken,
       itemsForged: counters.itemsForged,
       segmentsPaid: counters.segmentsPaid,
       pickaxeLevel: this.forge.level(),
       canForge: this.inventory.canForge(),
       canPaySegment: this.forge.canPaySegment(),
-      zone: this.progression.zone(),
+      skillsOpen: this.skills.unlocked(),
+      companionsOpen: this.companions.unlocked(),
+      artifactsOpen: this.artifacts.unlocked(),
+      workshopOpen: this.workshop.unlocked(),
+      adventuresOpen: this.camp.unlocked(),
     };
   });
 
@@ -55,12 +78,14 @@ export class Reveal {
     });
   }
 
+  /** À l'écran : présenté, ou visible dès le début (seuls les onglets du menu du bas attendent). */
   isRevealed(id: RevealId): boolean {
-    return this.revealed().has(id);
+    return !hiddenUntilRevealed(id) || this.revealed().has(id);
   }
 
+  /** Vient d'apparaître pendant cette session : il entre avec une animation. */
   isFresh(id: RevealId): boolean {
-    return this.fresh().has(id);
+    return hiddenUntilRevealed(id) && this.fresh().has(id);
   }
 
   /** Ferme la bulle affichée, et oublie au passage celles devenues inutiles avant elle. */
@@ -88,7 +113,7 @@ export class Reveal {
       } catch {
         // JSON illisible : traité comme une sauvegarde invalide juste en dessous
       }
-      console.warn('Sauvegarde du dévoilement invalide : toute l’interface est affichée');
+      console.warn('Sauvegarde de la prise en main invalide : plus aucune bulle ne sera montrée');
       return new Set(REVEAL_IDS);
     }
     const { zone, stage } = this.progression.progress();

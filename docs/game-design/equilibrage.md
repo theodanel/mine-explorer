@@ -31,7 +31,7 @@ Depuis `frontend/` :
      - touche 3 événements ;
      - renforce 3 fois à l'Atelier (dès le Mineur) ;
      - joue une aventure (dès le Contremaître) ;
-     - envoie un compagnon en expédition (dès la zone 3).
+     - envoie un compagnon en expédition (dès la zone 2).
 
      Soit jusqu'à 60 éclats par jour.
 3. **Forger.** 2 éclats = 1 tirage. Le palier de l'objet dépend uniquement du niveau de la pioche.

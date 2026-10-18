@@ -1,3 +1,4 @@
+import { SKILLS_UNLOCK_ZONE } from '../balance/skill-tree';
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { MAX_PICKAXE_LEVEL, segmentCost } from '../balance/balance';
@@ -31,6 +32,8 @@ export class Skills {
   readonly ranks = computed(() => this.state().ranks);
   readonly equipped = computed(() => this.state().equipped);
   readonly auto = computed(() => this.state().auto);
+  /** L'onglet s'ouvre à la zone 2, avec les points de la zone 1 terminée. */
+  readonly unlocked = computed(() => this.progression.zone() >= SKILLS_UNLOCK_ZONE);
   readonly earned = computed(() => pointsEarned(this.progression.zone()));
   readonly spent = computed(() => pointsSpent(this.ranks()));
   readonly available = computed(() => Math.max(this.earned() - this.spent(), 0));

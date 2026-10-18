@@ -23,8 +23,8 @@ describe('Companions', () => {
     return companions;
   }
 
-  it('reste fermé avant la zone 3, sans œuf', () => {
-    const companions = setup(2);
+  it('reste fermé avant la zone 2, sans œuf', () => {
+    const companions = setup(1);
     expect(companions.unlocked()).toBe(false);
     expect(companions.incubating()).toBeNull();
   });
@@ -41,14 +41,14 @@ describe('Companions', () => {
   it('rattrape les œufs des zones déjà terminées, une seule fois', () => {
     const companions = setup(7);
     const total = () => companions.eggs().length + (companions.incubating() === null ? 0 : 1);
-    // Œuf offert + zones 3, 4, 5 et 6
-    expect(total()).toBe(5);
+    // Œuf offert + zones 2, 3, 4, 5 et 6
+    expect(total()).toBe(6);
     expect(localStorage.getItem('mine-explorer.zone-eggs')).toBe('6');
 
     companions.grantZoneEggs(6);
-    expect(total()).toBe(5);
-    companions.grantZoneEggs(7);
     expect(total()).toBe(6);
+    companions.grantZoneEggs(7);
+    expect(total()).toBe(7);
   });
 
   it('montre et dépense les pierres d\'éveil pour monter une étoile', () => {

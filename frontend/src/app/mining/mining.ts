@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 
-import { ARTIFACT_FIND_CHANCE } from '../balance/artifacts';
+import { ARTIFACT_FIND_CHANCE, ARTIFACTS_UNLOCK_ZONE } from '../balance/artifacts';
 import { ORE_FIND_CHANCE, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
 import { SpellId } from '../balance/skill-tree';
 import { Artifacts } from '../artifacts/artifacts';
@@ -63,7 +63,7 @@ export class Mining {
     const hit = resolveHit(profile.stats, this.random);
     const foundShard = this.random() < profile.shardChance * this.galleries.modifiers().shards;
     const foundOre = this.random() < ORE_FIND_CHANCE * this.galleries.modifiers().ores;
-    if (this.random() < ARTIFACT_FIND_CHANCE) {
+    if (this.artifacts.unlocked() && this.random() < ARTIFACT_FIND_CHANCE) {
       this.artifacts.discover();
     }
     return this.dealDamage(hit, foundShard, foundOre);
@@ -102,8 +102,10 @@ export class Mining {
       this.ores.add(tier, amount);
     }
     if (clearedZone !== null) {
-      // Chaque zone terminée livre un artefact : la découverte récompense le cap franchi
-      this.artifacts.discover();
+      // Chaque zone terminée livre un artefact, dès celle qui ouvre l'onglet : la découverte récompense le cap franchi
+      if (clearedZone + 1 >= ARTIFACTS_UNLOCK_ZONE) {
+        this.artifacts.discover();
+      }
       this.galleries.offerFor(clearedZone + 1);
       this.companions.grantZoneEggs(clearedZone);
     }

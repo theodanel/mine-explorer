@@ -19,7 +19,7 @@ Demande de Théo (14/10/2026) : une loterie quotidienne qui donne une ressource 
 | Légendaire | or de 50 filons, 120 éclats, un œuf épique ou mieux |
 
 - L'or se compte en filons du filon actuel du joueur (ce que rapporte un filon épuisé) : le lot reste utile du début à la fin.
-- Œufs et pierres d'éveil n'apparaissent qu'une fois l'onglet Compagnons ouvert (zone 3) ; avant, les cases tirent de l'or ou des éclats.
+- Œufs et pierres d'éveil n'apparaissent qu'une fois l'onglet Compagnons ouvert (zone 2) ; avant, les cases tirent de l'or ou des éclats.
 - Repères : les missions du jour donnent une vingtaine d'éclats, le Défi environ 2 œufs en 3 jours. Calcul : un œuf sort environ 1 jour sur 10 (rare 7,5 %, épique 2 %, légendaire 0,7 %), soit 3 par mois, à côté des 20 du Défi.
 
 ## Présentation

@@ -114,6 +114,29 @@ import {
   setActive,
   type CompanionState,
 } from '../src/app/companions/companion-rules.ts';
+import {
+  HEART_SHARD_ABYSS_FLOORS,
+  HEART_SHARD_FIRST_ZONE,
+  HEART_SHARD_ROCK_CHANCE,
+  HEART_SHARDS_PER_GUARDIAN,
+  RING_SOCKETS,
+  RUNE_FORGE_ORE,
+  RUNE_FORGE_ORES,
+} from '../src/app/balance/heart-forge.ts';
+import {
+  addHeartShards,
+  canForgeRune,
+  canFuse,
+  canSocket,
+  EMPTY_HEART_FORGE,
+  forgeRune,
+  fuseRunes,
+  runeCount,
+  socketRune,
+  socketRuneIn,
+  starRunesSet,
+  type HeartForgeState,
+} from '../src/app/heart-forge/heart-forge-rules.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -358,6 +381,15 @@ let goldOffline = 0;
 let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
+let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
+let heartShardsEarned = 0;
+let runesForged = 0;
+let fusionsFailed = 0;
+const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
+function earnHeartShards(amount: number): void {
+  heartForge = addHeartShards(heartForge, amount);
+  heartShardsEarned += amount;
+}
 let artifactReforges = 0;
 let artifactReforgesKept = 0;
 const milestones: string[] = [];
@@ -471,6 +503,7 @@ function tryEvolve(now: number): void {
   const progressNow = { zone: progress.zone, zoneCleared: progress.zone - 1, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
+  if (next.id === 'heart' && !starRunesSet(heartForge, next.stars)) return;
   const reward = unclaimedShards(objectives);
   shards += reward;
   shardSources.evolution += reward;
@@ -569,6 +602,9 @@ function playAbyss(): void {
       }
     }
     const reward = runReward(game.floorsCleared, game.shards, abyssRecord);
+    if (formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) {
+      earnHeartShards(Math.floor(game.floorsCleared / HEART_SHARD_ABYSS_FLOORS));
+    }
     abyssRecord = Math.max(abyssRecord, game.floorsCleared);
     abyssBest = Math.max(abyssBest, game.floorsCleared);
     abyssFloorsTotal += game.floorsCleared;
@@ -664,6 +700,46 @@ function equipBestArtifact(now: number): void {
   refresh(now);
 }
 
+/**
+ * Une fois par jour, prépare les runes de la prochaine étoile du Cœur du monde : sertit ce qui est prêt, fusionne,
+ * puis forge des runes de rang 1 de l'élément qui en manque le plus, tant que les éclats et les minerais suivent.
+ */
+function craftRunes(): void {
+  const socketsFree = Array.from({ length: RING_SOCKETS }, (_, index) => index).filter((index) => !heartForge.sockets[index]);
+  if (socketsFree.length === 0) return;
+  const star = Math.floor(socketsFree[0] / 2);
+  const targets = [star * 2, star * 2 + 1].filter((index) => !heartForge.sockets[index]);
+  for (let guard = 0; guard < 2000; guard++) {
+    let progressMade = false;
+    for (const socket of targets) {
+      if (canSocket(heartForge, socket)) {
+        heartForge = socketRuneIn(heartForge, socket);
+        progressMade = true;
+      }
+    }
+    for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
+      const target = socketRune(socket);
+      for (let rank = 1; rank < target.rank; rank++) {
+        const rune = { element: target.element, rank };
+        if (canFuse(heartForge, rune)) {
+          const fused = fuseRunes(heartForge, rune, heartRandom);
+          heartForge = fused.state;
+          if (!fused.success) fusionsFailed++;
+          progressMade = true;
+        }
+      }
+      const tier = RUNE_FORGE_ORE;
+      if (canForgeRune(heartForge) && ores[tier] >= RUNE_FORGE_ORES && runeCount(heartForge, target) === 0) {
+        ores[tier] -= RUNE_FORGE_ORES;
+        heartForge = forgeRune(heartForge, target.element);
+        runesForged++;
+        progressMade = true;
+      }
+    }
+    if (!progressMade) break;
+  }
+}
+
 /** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
 function reforgeArtifacts(now: number): void {
   if (!withNewSystems) return;
@@ -742,6 +818,8 @@ function dealDamage(now: number, damage: number): void {
   goldMined += earned;
   if (result.rockBroken) {
     record('rocksBroken');
+    if (progress.zone >= HEART_SHARD_FIRST_ZONE && heartRandom() < HEART_SHARD_ROCK_CHANCE) earnHeartShards(1);
+    if (result.clearedZone !== null && result.clearedZone >= HEART_SHARD_FIRST_ZONE) earnHeartShards(HEART_SHARDS_PER_GUARDIAN);
     filonsInZone++;
     const stageShards = shardsForStage(zone, stage);
     shards += stageShards;
@@ -920,6 +998,7 @@ for (let day = 0; day < days; day++) {
     lastSeen = end;
   }
   reforgeArtifacts(lastSeen);
+  craftRunes();
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -953,6 +1032,8 @@ if (withNewSystems) {
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
       `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
+      `éclats de cœur ${heartShardsEarned} gagnés (${heartForge.shards} en réserve), ${runesForged} runes forgées, ${fusionsFailed} fusions ratées, ` +
+      `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );
 }

@@ -107,6 +107,11 @@
         <app-evolution-page class="page-layer" />
       }
     }
+    @case ('heart-forge') {
+      @defer (on immediate) {
+        <app-heart-forge-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />

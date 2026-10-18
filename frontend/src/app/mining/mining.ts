@@ -16,6 +16,7 @@ import { Progression } from '../progression/progression';
 import { RANDOM } from '../shared/random';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
+import { HeartForge } from '../heart-forge/heart-forge';
 import { StrikeReward, strikeReward } from './mining-rules';
 
 export interface StrikeOutcome extends HitResult {
@@ -51,6 +52,7 @@ export class Mining {
   private readonly artifacts = inject(Artifacts);
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
+  private readonly heartForge = inject(HeartForge);
   private readonly lastBlast = signal<BlastEvent | null>(null);
   private blastCount = 0;
 
@@ -85,6 +87,7 @@ export class Mining {
     // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
     if (rockBroken && !farming) {
       this.missionCounters.record('rocksBroken');
+      this.heartForge.onRockBroken(frontier);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
     // parfois un au coup de pioche, plus le lot de fin de zone
@@ -100,6 +103,7 @@ export class Mining {
       this.artifacts.discover();
       this.galleries.offerFor(clearedZone + 1);
       this.companions.grantZoneEggs(clearedZone);
+      this.heartForge.onGuardianBeaten(clearedZone);
     }
     // En zone passée, seuls les PV vraiment minés rapportent de l'or, et un filon épuisé ne donne pas d'éclats
     const baseReward = strikeReward(farming ? struck.mined : hit.damage, this.miner.current().stats.goldBonus, {

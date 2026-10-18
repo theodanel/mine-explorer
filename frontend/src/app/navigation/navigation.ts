@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 /** Pages ouvertes depuis la barre du bas. La mine reste affichée et continue de tourner derrière les autres. */
-export type PageId = 'mine' | 'profile' | 'evolution' | 'skills' | 'artifacts' | 'companions' | 'challenge' | 'workshop' | 'adventures' | 'camp' | 'abyss' | 'minehunt' | 'merchant' | 'forge-express' | 'torchlight' | 'zones';
+export type PageId = 'mine' | 'profile' | 'evolution' | 'skills' | 'artifacts' | 'companions' | 'challenge' | 'workshop' | 'adventures' | 'camp' | 'abyss' | 'minehunt' | 'merchant' | 'forge-express' | 'torchlight' | 'zones' | 'heart-forge';
 
 @Injectable({ providedIn: 'root' })
 export class Navigation {

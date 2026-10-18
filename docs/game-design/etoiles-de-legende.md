@@ -24,6 +24,8 @@ Demande de Théo : dès la Légende de la mine, l'écran d'évolution ne montre 
 
 La première fois que le joueur voit cet écran en Légende (en l'ouvrant, ou juste après sa promotion), l'interface se transforme : la carte tremble, le portrait doré de la Légende s'illumine et s'efface dans un éclat de lave, l'anneau apparaît en tournant, puis les étoiles surgissent une à une. Animation jouée une seule fois (`mine-explorer.coeur-revele`), coupée si le téléphone demande moins d'animations.
 
+- **Runes** (18/10/2026) : chaque étoile demande aussi 2 runes serties dans l'anneau du Cœur du monde, fabriquées à la Forge du Cœur. Voir [[forge-du-coeur]].
+
 ## Objectifs (dernier palier)
 
 | Rang | Zone atteinte | Zone terminée | Pioche | Objets forgés | Filons épuisés | Frappe |

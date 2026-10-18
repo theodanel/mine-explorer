@@ -40,6 +40,9 @@ export class EvolutionPage {
   /** Légende ou au-delà : l'écran se transforme pour le Cœur du monde. */
   protected readonly heartMode = computed(() => this.evolution.index() >= LEGEND_INDEX);
   protected readonly revealing = signal(false);
+  protected readonly runesText = computed(() =>
+    this.evolution.runesSet() ? "✓ Runes de l'étoile serties" : 'Sertis les 2 runes de cette étoile à la Forge du Cœur',
+  );
 
   constructor() {
     // Première fois en Légende devant cet écran (en l'ouvrant, ou juste après la promotion) : l'interface se transforme
@@ -133,6 +136,10 @@ export class EvolutionPage {
       this.chosenTier.set(null);
       this.sound.play('upgrade');
     }
+  }
+
+  protected openForge(): void {
+    this.navigation.open('heart-forge');
   }
 
   protected close(): void {

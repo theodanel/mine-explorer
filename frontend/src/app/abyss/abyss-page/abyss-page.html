@@ -96,7 +96,7 @@
           @if (result.newRecord) {
             <p class="record-banner">Nouveau record !</p>
           }
-          <p class="loot">+{{ result.shards }} éclats @if (result.stones > 0) { · +{{ result.stones }} pierres d'éveil }</p>
+          <p class="loot">+{{ result.shards }} éclats @if (result.stones > 0) { · +{{ result.stones }} pierres d'éveil } @if (result.heartShards > 0) { · +{{ result.heartShards }} éclats de cœur }</p>
         </div>
       } @else {
         <img class="hero" [src]="images.abyssCard" alt="" width="183" height="171" />

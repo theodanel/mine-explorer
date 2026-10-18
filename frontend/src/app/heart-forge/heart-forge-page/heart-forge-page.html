@@ -1,0 +1,78 @@
+<section class="page game-panel" data-theme="ember" aria-labelledby="heart-forge-title">
+  <header class="page-header">
+    <h2 id="heart-forge-title">Forge du Cœur</h2>
+    <button type="button" class="close" aria-label="Revenir à l'évolution" (click)="close()">×</button>
+  </header>
+
+  <div class="scroll">
+    <!-- L'anneau : 10 emplacements, 2 par étoile, à sertir avec la rune qu'ils attendent -->
+    <div class="ring" role="group" aria-label="Anneau du Cœur du monde">
+      <img class="portrait" [src]="portraitUrl" alt="" width="160" height="160" />
+      @for (socket of sockets(); track socket.index) {
+        <button
+          type="button"
+          class="socket"
+          [class.filled]="socket.filled"
+          [class.ready]="socket.ready"
+          [style.--angle.deg]="socket.angle"
+          [disabled]="!socket.ready"
+          [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À forger : ') + socket.label + ', étoile ' + socket.star"
+          (click)="setRune(socket.index)"
+        >
+          <img [src]="socket.icon" alt="" width="128" height="128" />
+          <span class="socket-rank">{{ socket.rune.rank }}</span>
+        </button>
+      }
+    </div>
+    <p class="hint">Chaque étoile demande 2 runes serties. Une rune qui brille peut être sertie : touche-la.</p>
+
+    <div class="purse">
+      <span class="heart-shard" aria-hidden="true"></span>
+      <strong>{{ forge.shards() }}</strong> éclats de cœur
+    </div>
+
+    @if (message(); as note) {
+      <p class="message" [class.failed]="!note.success" role="status">{{ note.text }}</p>
+    }
+
+    <!-- Atelier des runes : forger au rang 1, puis fusionner 3 runes en une du rang suivant -->
+    <table class="runes">
+      <thead>
+        <tr>
+          <th scope="col">Rune</th>
+          @for (rank of ranks; track rank) {
+            <th scope="col">Rang {{ rank }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.element) {
+          <tr>
+            <th scope="row">
+              <img class="rune-icon" [src]="row.icon" alt="" width="128" height="128" />
+              <span class="rune-label">{{ row.label }}</span>
+              <button type="button" class="game-button gold forge" [disabled]="!row.canForge" (click)="forgeRune(row.element)">
+                Forger
+                <small>{{ forgeShards }} éclats · <img [src]="row.ore.icon" alt="" width="128" height="128" />{{ forgeOres }}/{{ row.ore.stock }}</small>
+              </button>
+            </th>
+            @for (cell of row.cells; track cell.rank) {
+              <td>
+                <span class="count" [class.zero]="cell.count === 0">{{ cell.count }}</span>
+                @if (cell.canFuse) {
+                  <button type="button" class="fuse" (click)="fuse(row.element, cell.rank)" [attr.aria-label]="'Fusionner ' + fusionCount + ' runes ' + row.label + ' de rang ' + cell.rank">
+                    Fusion
+                    @if (cell.failPercent > 0) {
+                      <small>{{ cell.failPercent }} % d'échec</small>
+                    }
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+    <p class="hint">Fusionner {{ fusionCount }} runes du même élément et du même rang en donne une du rang suivant. À partir du rang 3, une fusion peut rater : il ne reste alors qu'une rune.</p>
+  </div>
+</section>

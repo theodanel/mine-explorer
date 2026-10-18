@@ -18,6 +18,7 @@ import { zoneMaterial } from './balance/balance';
 import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
+import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
@@ -85,6 +86,7 @@ function resourceLabel(amount: number): string {
     ArtifactFound,
     OfflineReport,
     EvolutionPage,
+    HeartForgePage,
     ProfilePage,
     SplashScreen,
     TutorialOverlay,

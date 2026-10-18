@@ -343,3 +343,22 @@
   font-weight: bold;
   text-align: center;
 }
+
+.forge-link {
+  justify-self: center;
+  padding: 1.6cqw 5cqw;
+}
+
+.runes-line {
+  margin: 0;
+  padding: 2cqw 3cqw;
+  border-radius: 2.5cqw;
+  background: rgb(0 0 0 / 22%);
+  color: #ffb36b;
+  font-weight: 700;
+  text-align: center;
+
+  &.done {
+    color: #8fd36a;
+  }
+}

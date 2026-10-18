@@ -138,10 +138,20 @@ export interface Farm {
   readonly zone: number;
   /** PV déjà minés sur le filon en cours. */
   readonly damage: number;
+  /**
+   * PV de chaque filon d'un Écho (zone passée devenue plus dure, dès la Légende), fixés à l'entrée selon la Puissance
+   * du joueur ; absent pour une zone passée ordinaire.
+   */
+  readonly echoHp?: number;
 }
 
 export function farmRockHp(zone: number): number {
   return rockHp(zone, STAGES_PER_ZONE);
+}
+
+/** PV d'un filon de la zone passée : ceux de l'Écho s'il y en a un. */
+export function farmHp(farm: Farm): number {
+  return farm.echoHp ?? farmRockHp(farm.zone);
 }
 
 /** On ne revient que dans une zone déjà terminée. */
@@ -157,7 +167,7 @@ export interface FarmHit {
 }
 
 export function applyFarmDamage(farm: Farm, damage: number): FarmHit {
-  const hp = farmRockHp(farm.zone);
+  const hp = farmHp(farm);
   const mined = Math.min(damage, hp - farm.damage);
   const total = farm.damage + damage;
   return total < hp
@@ -169,12 +179,14 @@ export function isValidFarm(value: unknown, progress: Progress): value is Farm {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  const { zone, damage } = value as Record<string, unknown>;
+  const { zone, damage, echoHp } = value as Record<string, unknown>;
+  const echoValid = echoHp === undefined || (typeof echoHp === 'number' && Number.isFinite(echoHp) && echoHp > 0);
   return (
     isPositiveInteger(zone) &&
     canFarm(progress, zone) &&
+    echoValid &&
     Number.isSafeInteger(damage) &&
     (damage as number) >= 0 &&
-    (damage as number) < farmRockHp(zone)
+    (damage as number) < ((echoHp as number | undefined) ?? farmRockHp(zone))
   );
 }

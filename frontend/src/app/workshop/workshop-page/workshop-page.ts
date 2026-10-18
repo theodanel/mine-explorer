@@ -13,6 +13,7 @@ import { Ores } from '../../ores/ores';
 import { Progression } from '../../progression/progression';
 import { Wallet } from '../../wallet/wallet';
 import { UpgradeCheck, Workshop } from '../workshop';
+import { Echoes } from '../../heart-forge/echoes';
 
 const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
@@ -37,6 +38,7 @@ export class WorkshopPage {
   private readonly wallet = inject(Wallet);
   private readonly ores = inject(Ores);
   private readonly progression = inject(Progression);
+  protected readonly echoes = inject(Echoes);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   private readonly inventory = inject(Inventory);
@@ -109,7 +111,7 @@ export class WorkshopPage {
 
   /** Revient miner le minerai qui manque, dans sa zone. */
   protected farm(zone: number): void {
-    if (this.progression.startFarm(zone)) {
+    if (this.echoes.enter(zone)) {
       this.navigation.open('mine');
     }
   }

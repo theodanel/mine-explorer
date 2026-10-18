@@ -115,21 +115,21 @@ import {
   type CompanionState,
 } from '../src/app/companions/companion-rules.ts';
 import {
-  HEART_SHARD_ABYSS_FLOORS,
-  HEART_SHARD_FIRST_ZONE,
-  HEART_SHARD_ROCK_CHANCE,
-  HEART_SHARDS_PER_GUARDIAN,
+  ABYSS_FLOORS_PER_ESSENCES,
+  ALLIANCE_RECIPES,
+  ESSENCE_ELEMENTS,
+  ESSENCES,
   RING_SOCKETS,
-  RUNE_FORGE_ORE,
-  RUNE_FORGE_ORES,
+  type EssenceId,
+  type RuneType,
 } from '../src/app/balance/heart-forge.ts';
 import {
-  addHeartShards,
-  canForgeRune,
+  addEssences,
+  brew,
+  canBrew,
   canFuse,
   canSocket,
   EMPTY_HEART_FORGE,
-  forgeRune,
   fuseRunes,
   runeCount,
   socketRune,
@@ -382,13 +382,16 @@ let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
 let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
-let heartShardsEarned = 0;
-let runesForged = 0;
+let essencesEarned = 0;
+let runesBrewed = 0;
 let fusionsFailed = 0;
 const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
-function earnHeartShards(amount: number): void {
-  heartForge = addHeartShards(heartForge, amount);
-  heartShardsEarned += amount;
+/** Minutes passées chaque jour dans les Échos, dès la Légende (le reste du temps actif va à la zone en cours). */
+const ECHO_MINUTES_PER_DAY = Number(process.env.ECHO_MINUTES ?? 20);
+const ECHO_ROCK_SECONDS = 120;
+function earnEssences(gains: Partial<Record<EssenceId, number>>): void {
+  heartForge = addEssences(heartForge, gains);
+  essencesEarned += Object.values(gains).reduce((sum, amount) => sum + (amount ?? 0), 0);
 }
 let artifactReforges = 0;
 let artifactReforgesKept = 0;
@@ -603,7 +606,8 @@ function playAbyss(): void {
     }
     const reward = runReward(game.floorsCleared, game.shards, abyssRecord);
     if (formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) {
-      earnHeartShards(Math.floor(game.floorsCleared / HEART_SHARD_ABYSS_FLOORS));
+      const each = Math.floor(game.floorsCleared / ABYSS_FLOORS_PER_ESSENCES);
+      earnEssences(Object.fromEntries(ESSENCES.map((id) => [id, each])));
     }
     abyssRecord = Math.max(abyssRecord, game.floorsCleared);
     abyssBest = Math.max(abyssBest, game.floorsCleared);
@@ -700,16 +704,32 @@ function equipBestArtifact(now: number): void {
   refresh(now);
 }
 
+/** Recette d'une rune de rang 1 : 3 ressources de son élément, ou la recette de l'alliance. */
+function recipeOf(type: RuneType): readonly EssenceId[] {
+  if (type in ALLIANCE_RECIPES) return ALLIANCE_RECIPES[type as keyof typeof ALLIANCE_RECIPES];
+  const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
+  return [essence, essence, essence];
+}
+
 /**
- * Une fois par jour, prépare les runes de la prochaine étoile du Cœur du monde : sertit ce qui est prêt, fusionne,
- * puis forge des runes de rang 1 de l'élément qui en manque le plus, tant que les éclats et les minerais suivent.
+ * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos à récolter ce qui manque, puis
+ * verse au Creuset, fusionne et sertit les runes de la prochaine étoile.
  */
 function craftRunes(): void {
+  if (formIndex < EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) return;
   const socketsFree = Array.from({ length: RING_SOCKETS }, (_, index) => index).filter((index) => !heartForge.sockets[index]);
   if (socketsFree.length === 0) return;
   const star = Math.floor(socketsFree[0] / 2);
   const targets = [star * 2, star * 2 + 1].filter((index) => !heartForge.sockets[index]);
-  for (let guard = 0; guard < 2000; guard++) {
+  // Récolte du jour : un filon d'Écho toutes les 2 minutes, dans l'Écho de la ressource qui manque le plus
+  let rocks = Math.round((ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
+  while (rocks > 0) {
+    const needs = targets.flatMap((socket) => recipeOf(socketRune(socket).type));
+    const lacking = [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
+    earnEssences({ [lacking]: 1 });
+    rocks--;
+  }
+  for (let guard = 0; guard < 5000; guard++) {
     let progressMade = false;
     for (const socket of targets) {
       if (canSocket(heartForge, socket)) {
@@ -720,7 +740,7 @@ function craftRunes(): void {
     for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
       const target = socketRune(socket);
       for (let rank = 1; rank < target.rank; rank++) {
-        const rune = { element: target.element, rank };
+        const rune = { type: target.type, rank };
         if (canFuse(heartForge, rune)) {
           const fused = fuseRunes(heartForge, rune, heartRandom);
           heartForge = fused.state;
@@ -728,11 +748,10 @@ function craftRunes(): void {
           progressMade = true;
         }
       }
-      const tier = RUNE_FORGE_ORE;
-      if (canForgeRune(heartForge) && ores[tier] >= RUNE_FORGE_ORES && runeCount(heartForge, target) === 0) {
-        ores[tier] -= RUNE_FORGE_ORES;
-        heartForge = forgeRune(heartForge, target.element);
-        runesForged++;
+      const recipe = recipeOf(target.type);
+      if (runeCount(heartForge, target) === 0 && canBrew(heartForge, recipe)) {
+        heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
+        runesBrewed++;
         progressMade = true;
       }
     }
@@ -818,8 +837,6 @@ function dealDamage(now: number, damage: number): void {
   goldMined += earned;
   if (result.rockBroken) {
     record('rocksBroken');
-    if (progress.zone >= HEART_SHARD_FIRST_ZONE && heartRandom() < HEART_SHARD_ROCK_CHANCE) earnHeartShards(1);
-    if (result.clearedZone !== null && result.clearedZone >= HEART_SHARD_FIRST_ZONE) earnHeartShards(HEART_SHARDS_PER_GUARDIAN);
     filonsInZone++;
     const stageShards = shardsForStage(zone, stage);
     shards += stageShards;
@@ -1032,7 +1049,7 @@ if (withNewSystems) {
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
       `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
-      `éclats de cœur ${heartShardsEarned} gagnés (${heartForge.shards} en réserve), ${runesForged} runes forgées, ${fusionsFailed} fusions ratées, ` +
+      `ressources du Cœur ${essencesEarned} récoltées, ${runesBrewed} runes du Creuset, ${fusionsFailed} fusions ratées, ` +
       `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );

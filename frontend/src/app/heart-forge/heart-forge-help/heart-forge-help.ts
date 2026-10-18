@@ -1,18 +1,8 @@
 import { Component, output } from '@angular/core';
 
-import {
-  HEART_SHARD_ABYSS_FLOORS,
-  HEART_SHARD_FIRST_ZONE,
-  HEART_SHARD_ROCK_CHANCE,
-  HEART_SHARDS_PER_GUARDIAN,
-  RUNE_FORGE_ORES,
-  RUNE_FORGE_SHARDS,
-  RUNE_FUSION_COUNT,
-  RUNE_FUSION_FAIL,
-} from '../../balance/heart-forge';
+import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES, RUNE_FUSION_COUNT, RUNE_FUSION_FAIL } from '../../balance/heart-forge';
 
 const PERCENT = 100;
-const ROCK_ODDS = Math.round(1 / HEART_SHARD_ROCK_CHANCE);
 const FAIL_TEXT = Object.entries(RUNE_FUSION_FAIL)
   .filter(([, chance]) => chance > 0)
   .map(([rank, chance]) => `${Math.round(chance * PERCENT)} % au rang ${rank}`)
@@ -21,23 +11,23 @@ const FAIL_TEXT = Object.entries(RUNE_FUSION_FAIL)
 /** Étapes de la page d'aide, tirées de l'équilibrage pour rester justes quand les chiffres bougent. */
 const STEPS: readonly { readonly title: string; readonly text: string; readonly icon: string }[] = [
   {
-    title: 'Gagner des éclats de cœur',
-    text: `À partir de la zone ${HEART_SHARD_FIRST_ZONE} : ${HEART_SHARDS_PER_GUARDIAN} par gardien battu, 1 chance sur ${ROCK_ODDS} par filon épuisé, et 1 tous les ${HEART_SHARD_ABYSS_FLOORS} étages du Puits sans fond.`,
+    title: 'Récolter dans les Échos',
+    text: `Le monde a changé : les zones 1 à ${ECHO_ESSENCES.length} sont devenues leurs Échos, plus durs. Chaque filon d'Écho donne à coup sûr la ressource de la zone. Le Puits sans fond en donne aussi une de chaque sorte tous les ${ABYSS_FLOORS_PER_ESSENCES} étages.`,
     icon: 'assets/ui/forge-du-coeur/eclat-coeur.webp',
   },
   {
-    title: 'Forger une rune',
-    text: `${RUNE_FORGE_SHARDS} éclats de cœur et ${RUNE_FORGE_ORES} minerais divins donnent une rune de rang 1, de l'élément de ton choix.`,
+    title: 'Verser au Creuset',
+    text: "3 ressources donnent une rune de rang 1. Trois identiques donnent la rune de leur élément ; certains mélanges donnent des runes d'alliance. Chaque recette trouvée s'inscrit au livre.",
     icon: 'assets/ui/forge-du-coeur/rune-fire.webp',
   },
   {
     title: 'Fusionner',
-    text: `${RUNE_FUSION_COUNT} runes du même élément et du même rang en donnent une du rang suivant. À partir du rang 3, une fusion peut rater (${FAIL_TEXT}) : il ne reste alors qu'une rune.`,
+    text: `${RUNE_FUSION_COUNT} runes du même type et du même rang en donnent une du rang suivant. À partir du rang 3, une fusion peut rater (${FAIL_TEXT}) : il ne reste alors qu'une rune.`,
     icon: 'assets/ui/forge-du-coeur/rune-ice.webp',
   },
   {
     title: 'Sertir',
-    text: "Dans l'anneau, l'emplacement qui attend une rune que tu possèdes brille : touche-le pour l'y sertir. Chaque étoile demande 2 runes serties, en plus de ses missions.",
+    text: "Dans l'anneau, l'emplacement qui attend une rune que tu possèdes brille : touche-le pour l'y sertir. Chaque étoile demande 2 runes serties, en plus de ses missions, et chacune est plus complexe que la précédente.",
     icon: 'assets/ui/forge-du-coeur/rune-light.webp',
   },
 ];

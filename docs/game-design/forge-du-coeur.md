@@ -1,5 +1,7 @@
 # Forge du Cœur : des runes pour éveiller les étoiles
 
+> **Remplacé en partie le 18/10/2026** : les éclats de cœur (et leur hasard) et la forge des runes contre des minerais divins ont laissé la place aux Échos et au Creuset du Cœur. Voir [[echos-et-creuset]]. L'anneau, la fusion et la règle « 2 runes par étoile » restent valables.
+
 Demande de Théo (18/10/2026) : les étoiles de la Légende du Cœur du monde doivent être dures à obtenir. Le joueur doit fabriquer des objets en fusionnant des ressources. Inspiration : un anneau de runes serties autour d'un orbe (capture envoyée par Théo). **Validée par Théo le 18/10/2026** (anneau de 10 runes, fusions qui peuvent rater, éclats des gardiens, filons et Puits sans fond) et codée : `heart-forge/`, page « Forge du Cœur » ouverte depuis l'écran d'évolution. Chiffres calés au simulateur, voir plus bas.
 
 ## L'idée en une phrase

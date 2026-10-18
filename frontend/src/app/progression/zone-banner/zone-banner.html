@@ -4,7 +4,7 @@
     <button type="button" class="label" aria-label="Ouvrir la carte des zones" (click)="openMap()">
       @if (progression.farmZone(); as farm) {
         Zone {{ farm }}
-        <span class="stage">Filons sans fin</span>
+        <span class="stage">{{ progression.inEcho() ? 'Écho' : 'Filons sans fin' }}</span>
       } @else {
         Zone {{ progression.zone() }}
         @if (progression.progress().stage === stagesPerZone) {

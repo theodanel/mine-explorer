@@ -18,9 +18,10 @@
           class="socket"
           [class.filled]="socket.filled"
           [class.ready]="socket.ready"
+          [class.alliance]="socket.alliance"
           [style.--angle.deg]="socket.angle"
           [disabled]="!socket.ready"
-          [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À forger : ') + socket.label + ', étoile ' + socket.star"
+          [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
           (click)="setRune(socket.index)"
         >
           <img [src]="socket.icon" alt="" width="128" height="128" />
@@ -30,54 +31,96 @@
     </div>
     <p class="hint">Chaque étoile demande 2 runes serties. Une rune qui brille peut être sertie : touche-la.</p>
 
-    <div class="purse">
-      <img class="heart-shard" src="assets/ui/forge-du-coeur/eclat-coeur.webp" alt="" width="128" height="128" />
-      <strong>{{ forge.shards() }}</strong> éclats de cœur
-    </div>
-
     @if (message(); as note) {
       <p class="message" [class.failed]="!note.success" role="status">{{ note.text }}</p>
     }
 
-    <!-- Atelier des runes : forger au rang 1, puis fusionner 3 runes en une du rang suivant -->
-    <table class="runes">
-      <thead>
-        <tr>
-          <th scope="col">Rune</th>
-          @for (rank of ranks; track rank) {
-            <th scope="col">Rang {{ rank }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows(); track row.element) {
+    <!-- Le Creuset : 3 ressources des Échos donnent une rune, selon la recette -->
+    <article class="crucible">
+      <h3>Creuset du Cœur</h3>
+      <div class="machine" aria-hidden="true">
+        <span class="core"></span>
+      </div>
+      <ol class="funnels" aria-label="Ressources versées">
+        @for (slot of slots(); track slot.index) {
+          <li>
+            <button
+              type="button"
+              class="funnel"
+              [attr.data-essence]="slot.essence"
+              [disabled]="slot.essence === null"
+              [attr.aria-label]="slot.essence ? 'Retirer cette ressource' : 'Emplacement vide'"
+              (click)="removeEssence(slot.index)"
+            ></button>
+          </li>
+        }
+      </ol>
+      <p class="preview">{{ preview() ?? 'Verse 3 ressources' }}</p>
+      <ul class="essences" aria-label="Ressources des Échos">
+        @for (essence of essences(); track essence.id) {
+          <li>
+            <button type="button" class="essence" [attr.data-essence]="essence.id" [disabled]="essence.left <= 0" (click)="addEssence(essence.id, essence.left)">
+              <span class="drop" aria-hidden="true"></span>
+              <strong>{{ essence.left }}</strong>
+              <small>{{ essence.label }}</small>
+            </button>
+          </li>
+        }
+      </ul>
+      <button type="button" class="game-button gold pour" [disabled]="preview() === null" (click)="pour()">Verser au Creuset</button>
+      <p class="hint">Les ressources se récoltent dans les Échos des zones 1 à 11, depuis la carte des zones.</p>
+    </article>
+
+    <!-- Livre de recettes : les runes trouvées montrent leur recette, les autres restent cachées -->
+    <article class="book">
+      <h3>Livre de recettes</h3>
+      <ul>
+        @for (entry of book(); track entry.type) {
+          <li [class.known]="entry.known">
+            <img [class.alliance]="entry.alliance" [src]="entry.icon" alt="" width="128" height="128" />
+            <span class="name">{{ entry.known ? entry.label : '???' }}</span>
+            <span class="recipe">{{ entry.known ? entry.recipe : 'Recette à découvrir' }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <!-- Réserve : fusionner 3 runes d'un type et d'un rang en une du rang suivant -->
+    @if (rows().length > 0) {
+      <table class="runes">
+        <thead>
           <tr>
-            <th scope="row">
-              <img class="rune-icon" [src]="row.icon" alt="" width="128" height="128" />
-              <span class="rune-label">{{ row.label }}</span>
-              <button type="button" class="game-button gold forge" [disabled]="!row.canForge" (click)="forgeRune(row.element)">
-                Forger
-                <small>{{ forgeShards }} éclats · <img [src]="row.ore.icon" alt="" width="128" height="128" />{{ forgeOres }}/{{ row.ore.stock }}</small>
-              </button>
-            </th>
-            @for (cell of row.cells; track cell.rank) {
-              <td>
-                <span class="count" [class.zero]="cell.count === 0">{{ cell.count }}</span>
-                @if (cell.canFuse) {
-                  <button type="button" class="fuse" (click)="fuse(row.element, cell.rank)" [attr.aria-label]="'Fusionner ' + fusionCount + ' runes ' + row.label + ' de rang ' + cell.rank">
-                    Fusion
-                    @if (cell.failPercent > 0) {
-                      <small>{{ cell.failPercent }} % d'échec</small>
-                    }
-                  </button>
-                }
-              </td>
+            <th scope="col">Rune</th>
+            @for (rank of ranks; track rank) {
+              <th scope="col">Rang {{ rank }}</th>
             }
           </tr>
-        }
-      </tbody>
-    </table>
-    <p class="hint">Fusionner {{ fusionCount }} runes du même élément et du même rang en donne une du rang suivant. À partir du rang 3, une fusion peut rater : il ne reste alors qu'une rune.</p>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.type) {
+            <tr>
+              <th scope="row">
+                <img class="rune-icon" [class.alliance]="row.alliance" [src]="row.icon" alt="" width="128" height="128" />
+                <span class="rune-label">{{ row.label }}</span>
+              </th>
+              @for (cell of row.cells; track cell.rank) {
+                <td>
+                  <span class="count" [class.zero]="cell.count === 0">{{ cell.count }}</span>
+                  @if (cell.canFuse) {
+                    <button type="button" class="fuse" (click)="fuse(row.type, cell.rank)" [attr.aria-label]="'Fusionner ' + fusionCount + ' runes ' + row.label + ' de rang ' + cell.rank">
+                      Fusion
+                      @if (cell.failPercent > 0) {
+                        <small>{{ cell.failPercent }} % d'échec</small>
+                      }
+                    </button>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
   </div>
 
   @if (helpOpen()) {

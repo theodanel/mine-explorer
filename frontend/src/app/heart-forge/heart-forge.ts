@@ -1,24 +1,16 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
-import {
-  HEART_SHARD_ABYSS_FLOORS,
-  HEART_SHARD_FIRST_ZONE,
-  HEART_SHARD_ROCK_CHANCE,
-  HEART_SHARDS_PER_GUARDIAN,
-  RUNE_FORGE_ORE,
-  RUNE_FORGE_ORES,
-  RuneElement,
-} from '../balance/heart-forge';
-import { Ores } from '../ores/ores';
+import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES_PER_ROCK, ESSENCES, EssenceId } from '../balance/heart-forge';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import {
-  addHeartShards,
-  canForgeRune,
+  addEssences,
+  brew,
+  canBrew,
   canFuse,
   canSocket,
+  echoEssence,
   EMPTY_HEART_FORGE,
-  forgeRune,
   fuseRunes,
   HeartForgeState,
   parseHeartForgeState,
@@ -29,62 +21,67 @@ import {
 
 const STORAGE_KEY = 'mine-explorer.forge-du-coeur';
 
-/** Ce que la dernière fusion a donné, pour l'afficher au joueur. */
-export interface FusionResult {
+/** Ce que le Creuset ou la dernière fusion a donné, pour l'afficher au joueur. */
+export interface ForgeEvent {
   readonly id: number;
+  readonly kind: 'brew' | 'fusion';
   readonly rune: Rune;
   readonly success: boolean;
+  /** Une recette trouvée pour la première fois. */
+  readonly discovery: boolean;
 }
 
 /**
- * Forge du Cœur : éclats de cœur gagnés dès la zone 12, runes forgées et fusionnées, puis serties dans l'anneau du
- * Cœur du monde. Les deux runes d'une étoile doivent être serties pour l'éveiller.
+ * Forge du Cœur : ressources récoltées dans les Échos, versées au Creuset pour faire des runes, runes fusionnées puis
+ * serties dans l'anneau du Cœur du monde. Les deux runes d'une étoile doivent être serties pour l'éveiller.
  */
 @Injectable({ providedIn: 'root' })
 export class HeartForge {
-  private readonly ores = inject(Ores);
   private readonly random = inject(RANDOM);
   private readonly state = signal<HeartForgeState>(loadState());
-  private readonly fusionResult = signal<FusionResult | null>(null);
-  private fusionCount = 0;
+  private readonly lastEvent = signal<ForgeEvent | null>(null);
+  private eventCount = 0;
 
-  readonly shards = computed(() => this.state().shards);
+  readonly essences = computed(() => this.state().essences);
   readonly runes = computed(() => this.state().runes);
   readonly sockets = computed(() => this.state().sockets);
-  readonly lastFusion = this.fusionResult.asReadonly();
+  readonly recipes = computed(() => this.state().recipes);
+  readonly event = this.lastEvent.asReadonly();
+  /** État complet, pour les écrans qui calculent avec les règles. */
+  readonly snapshot = this.state.asReadonly();
 
-  /** Un filon épuisé en zone 12 ou plus : une chance sur 4 d'un éclat de cœur. */
-  onRockBroken(zone: number): void {
-    if (zone >= HEART_SHARD_FIRST_ZONE && this.random() < HEART_SHARD_ROCK_CHANCE) {
-      this.add(1);
+  /** Un filon d'Écho épuisé : sa ressource, garantie. */
+  onEchoRock(zone: number): void {
+    const essence = echoEssence(zone);
+    if (essence !== null) {
+      this.save(addEssences(this.state(), { [essence]: ECHO_ESSENCES_PER_ROCK }));
     }
   }
 
-  /** Un gardien battu en zone 12 ou plus. */
-  onGuardianBeaten(zone: number): void {
-    if (zone >= HEART_SHARD_FIRST_ZONE) {
-      this.add(HEART_SHARDS_PER_GUARDIAN);
-    }
-  }
-
-  /** Une descente du Puits sans fond, dès la Légende : un éclat de cœur tous les 10 étages. */
+  /** Une descente du Puits sans fond, dès la Légende : une ressource de chaque sorte tous les 25 étages. */
   onAbyssRun(floors: number): number {
-    const amount = Math.floor(floors / HEART_SHARD_ABYSS_FLOORS);
-    this.add(amount);
-    return amount;
-  }
-
-  /** Assez d'éclats de cœur et de minerais divins pour forger une rune, quel que soit son élément. */
-  canForge(): boolean {
-    return canForgeRune(this.state()) && this.ores.stock()[RUNE_FORGE_ORE] >= RUNE_FORGE_ORES;
-  }
-
-  forge(element: RuneElement): boolean {
-    if (!this.canForge() || !this.ores.spend({ [RUNE_FORGE_ORE]: RUNE_FORGE_ORES })) {
-      return false;
+    const each = Math.floor(floors / ABYSS_FLOORS_PER_ESSENCES);
+    if (each > 0) {
+      this.save(addEssences(this.state(), Object.fromEntries(ESSENCES.map((id) => [id, each]))));
     }
-    this.save(forgeRune(this.state(), element));
-    return true;
+    return each;
+  }
+
+  canBrew(mix: readonly EssenceId[]): boolean {
+    return canBrew(this.state(), mix);
+  }
+
+  /** Verse 3 ressources au Creuset ; rend la rune obtenue, ou null si les ressources manquent. */
+  brew(mix: readonly [EssenceId, EssenceId, EssenceId]): Rune | null {
+    if (!this.canBrew(mix)) {
+      return null;
+    }
+    const known = this.state().recipes;
+    const result = brew(this.state(), mix);
+    this.save(result.state);
+    const rune = { type: result.rune, rank: 1 };
+    this.lastEvent.set({ id: ++this.eventCount, kind: 'brew', rune, success: true, discovery: !known.includes(result.rune) });
+    return rune;
   }
 
   canFuse(rune: Rune): boolean {
@@ -97,7 +94,8 @@ export class HeartForge {
     }
     const { state, success } = fuseRunes(this.state(), rune, this.random);
     this.save(state);
-    this.fusionResult.set({ id: ++this.fusionCount, rune: { element: rune.element, rank: rune.rank + 1 }, success });
+    const result = { type: rune.type, rank: rune.rank + 1 };
+    this.lastEvent.set({ id: ++this.eventCount, kind: 'fusion', rune: result, success, discovery: false });
     return success;
   }
 
@@ -116,12 +114,6 @@ export class HeartForge {
   /** Les deux runes de cette étoile (1 à 5) sont serties. */
   starReady(star: number): boolean {
     return starRunesSet(this.state(), star);
-  }
-
-  private add(amount: number): void {
-    if (amount > 0) {
-      this.save(addHeartShards(this.state(), amount));
-    }
   }
 
   private save(next: HeartForgeState): void {

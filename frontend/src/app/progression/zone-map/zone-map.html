@@ -71,8 +71,13 @@
         <p class="note">Tu mines ici, sans fin.</p>
         <button type="button" class="game-button green" (click)="resume()">Reprendre la zone {{ progression.zone() }}</button>
       } @else {
-        <p class="note">Filons sans fin, faciles à casser. Moins d'or, pas d'éclats de filon, et ils ne comptent pas pour les missions.</p>
-        <button type="button" class="game-button green" (click)="farm(zone.zone)">Miner ici</button>
+        @if (echoes.isEcho(zone.zone)) {
+          <p class="note">Le monde a changé : cette zone est devenue son Écho. Ses filons sont durs, mais chacun donne une ressource du Cœur pour le Creuset : <strong>{{ echoes.essenceLabel(zone.zone) }}</strong>.</p>
+          <button type="button" class="game-button gold" (click)="farm(zone.zone)">Entrer dans l'Écho</button>
+        } @else {
+          <p class="note">Filons sans fin, faciles à casser. Moins d'or, pas d'éclats de filon, et ils ne comptent pas pour les missions.</p>
+          <button type="button" class="game-button green" (click)="farm(zone.zone)">Miner ici</button>
+        }
       }
     </aside>
   }

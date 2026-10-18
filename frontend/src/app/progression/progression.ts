@@ -12,7 +12,7 @@ import {
   challengeGuardian,
   failGuardian,
   Farm,
-  farmRockHp,
+  farmHp,
   guardianTimeLeft,
   isGuardian,
   isValidFarm,
@@ -40,6 +40,8 @@ export interface HitResult {
   readonly mined: number;
   /** Vrai si le coup a été porté dans une zone passée. */
   readonly farming: boolean;
+  /** Zone de l'Écho miné, ou null hors Écho. */
+  readonly echoZone: number | null;
 }
 
 /**
@@ -65,14 +67,16 @@ export class Progression {
   readonly farmZone = computed(() => this.farmState()?.zone ?? null);
   /** Zone affichée et minée en ce moment. */
   readonly playingZone = computed(() => this.farmZone() ?? this.zone());
+  /** Le joueur mine un Écho : une zone passée devenue plus dure, qui donne sa ressource à chaque filon. */
+  readonly inEcho = computed(() => this.farmState()?.echoHp !== undefined);
   readonly label = computed(() => stageLabel(this.state()));
   readonly health = computed(() => {
     const farm = this.farmState();
-    return farm === null ? rockHealth(this.state()) : 1 - farm.damage / farmRockHp(farm.zone);
+    return farm === null ? rockHealth(this.state()) : 1 - farm.damage / farmHp(farm);
   });
   readonly remainingHp = computed(() => {
     const farm = this.farmState();
-    return farm === null ? remainingHp(this.state()) : farmRockHp(farm.zone) - farm.damage;
+    return farm === null ? remainingHp(this.state()) : farmHp(farm) - farm.damage;
   });
   readonly stagesReached = computed(() => stagesReached(this.state()));
   /** Combat en cours contre le gardien de la zone (pas en zone passée). */
@@ -100,7 +104,7 @@ export class Progression {
     if (farm !== null) {
       const result = applyFarmDamage(farm, damage);
       this.saveFarm(result.farm);
-      return { rockBroken: result.rockBroken, clearedZone: null, mined: result.mined, farming: true };
+      return { rockBroken: result.rockBroken, clearedZone: null, mined: result.mined, farming: true, echoZone: farm.echoHp !== undefined ? farm.zone : null };
     }
     this.checkGuardianTimeout();
     const before = this.state();
@@ -111,7 +115,7 @@ export class Progression {
     } else if (result.clearedZone !== null) {
       this.endGuardianFight();
     }
-    return { rockBroken: result.rockBroken, clearedZone: result.clearedZone, mined: damage, farming: false };
+    return { rockBroken: result.rockBroken, clearedZone: result.clearedZone, mined: damage, farming: false, echoZone: null };
   }
 
   /** Défie à nouveau le gardien raté, avec tous ses PV et un chrono neuf. */
@@ -168,12 +172,15 @@ export class Progression {
     writeStorage(BLOCKED_KEY, JSON.stringify(blocked));
   }
 
-  /** Revient miner dans une zone déjà terminée. Refusé pour la zone en cours ou une zone pas encore atteinte. */
-  startFarm(zone: number): boolean {
+  /**
+   * Revient miner dans une zone déjà terminée, ou dans son Écho quand `echoHp` est donné. Refusé pour la zone en cours
+   * ou une zone pas encore atteinte.
+   */
+  startFarm(zone: number, echoHp?: number): boolean {
     if (!canFarm(this.state(), zone)) {
       return false;
     }
-    this.saveFarm({ zone, damage: 0 });
+    this.saveFarm(echoHp === undefined ? { zone, damage: 0 } : { zone, damage: 0, echoHp });
     return true;
   }
 

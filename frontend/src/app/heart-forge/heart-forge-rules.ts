@@ -1,42 +1,52 @@
-// Règles pures de la Forge du Cœur : forger des runes, les fusionner, les sertir dans l'anneau du Cœur du monde.
+// Règles pures de la Forge du Cœur : ressources des Échos, recettes du Creuset, fusion des runes et anneau du Cœur.
 import {
+  ALLIANCE_RECIPES,
+  ALLIANCE_RUNES,
+  ECHO_ESSENCES,
+  ESSENCE_ELEMENTS,
+  ESSENCES,
+  EssenceId,
   MAX_RUNE_RANK,
   RING_SOCKETS,
-  RUNE_ELEMENTS,
-  RUNE_FORGE_SHARDS,
   RUNE_FUSION_COUNT,
   RUNE_FUSION_FAIL,
-  RuneElement,
+  RUNE_TYPES,
+  RuneType,
   STAR_RUNES,
 } from '../balance/heart-forge';
 import type { Random } from '../shared/random';
 
-/** Une rune : son élément et son rang (1 à 5). */
+/** Une rune : son type (élément ou alliance) et son rang (1 à 5). */
 export interface Rune {
-  readonly element: RuneElement;
+  readonly type: RuneType;
   readonly rank: number;
 }
 
-/** Clé d'une pile de runes dans l'inventaire : « fire:2 ». */
-export type RuneKey = `${RuneElement}:${number}`;
+/** Clé d'une pile de runes dans la réserve : « fire:2 ». */
+export type RuneKey = `${RuneType}:${number}`;
 
 export interface HeartForgeState {
-  /** Éclats de cœur en réserve. */
-  readonly shards: number;
-  /** Runes en réserve, par élément et rang. */
+  /** Ressources récoltées dans les Échos. */
+  readonly essences: Readonly<Record<EssenceId, number>>;
+  /** Runes en réserve, par type et rang. */
   readonly runes: Readonly<Partial<Record<RuneKey, number>>>;
   /** Emplacements de l'anneau déjà sertis (10 : 2 par étoile). */
   readonly sockets: readonly boolean[];
+  /** Recettes déjà trouvées au Creuset, pour le livre de recettes. */
+  readonly recipes: readonly RuneType[];
 }
 
+const NO_ESSENCES = Object.fromEntries(ESSENCES.map((id) => [id, 0])) as Record<EssenceId, number>;
+
 export const EMPTY_HEART_FORGE: HeartForgeState = {
-  shards: 0,
+  essences: NO_ESSENCES,
   runes: {},
   sockets: Array.from({ length: RING_SOCKETS }, () => false),
+  recipes: [],
 };
 
-export function runeKey({ element, rank }: Rune): RuneKey {
-  return `${element}:${rank}`;
+export function runeKey({ type, rank }: Rune): RuneKey {
+  return `${type}:${rank}`;
 }
 
 export function runeCount(state: HeartForgeState, rune: Rune): number {
@@ -47,20 +57,54 @@ function withRunes(state: HeartForgeState, rune: Rune, delta: number): HeartForg
   return { ...state, runes: { ...state.runes, [runeKey(rune)]: runeCount(state, rune) + delta } };
 }
 
-export function addHeartShards(state: HeartForgeState, amount: number): HeartForgeState {
-  return amount > 0 ? { ...state, shards: state.shards + amount } : state;
+/** Ressource de l'Écho d'une zone (1 à 11), ou null pour une zone sans Écho. */
+export function echoEssence(zone: number): EssenceId | null {
+  return ECHO_ESSENCES[zone - 1] ?? null;
 }
 
-export function canForgeRune(state: HeartForgeState): boolean {
-  return state.shards >= RUNE_FORGE_SHARDS;
-}
-
-/** Forge une rune de rang 1 ; ses minerais sont payés par l'appelant. */
-export function forgeRune(state: HeartForgeState, element: RuneElement): HeartForgeState {
-  if (!canForgeRune(state)) {
-    return state;
+export function addEssences(state: HeartForgeState, gains: Partial<Record<EssenceId, number>>): HeartForgeState {
+  const essences = { ...state.essences };
+  for (const id of ESSENCES) {
+    essences[id] += Math.max(0, gains[id] ?? 0);
   }
-  return withRunes({ ...state, shards: state.shards - RUNE_FORGE_SHARDS }, { element, rank: 1 }, 1);
+  return { ...state, essences };
+}
+
+function sameEssences(a: readonly EssenceId[], b: readonly EssenceId[]): boolean {
+  const sorted = (list: readonly EssenceId[]) => [...list].sort().join(',');
+  return sorted(a) === sorted(b);
+}
+
+/**
+ * Rune que donne un mélange de 3 ressources : une alliance si c'est sa recette, sinon l'élément le plus présent (ou
+ * celui de la 1re ressource si les trois diffèrent).
+ */
+export function recipeResult(mix: readonly [EssenceId, EssenceId, EssenceId]): RuneType {
+  const alliance = ALLIANCE_RUNES.find((type) => sameEssences(ALLIANCE_RECIPES[type], mix));
+  if (alliance !== undefined) {
+    return alliance;
+  }
+  const counts = mix.map((id) => mix.filter((other) => other === id).length);
+  const best = Math.max(...counts);
+  return ESSENCE_ELEMENTS[mix[best > 1 ? counts.indexOf(best) : 0]];
+}
+
+export function canBrew(state: HeartForgeState, mix: readonly EssenceId[]): boolean {
+  return mix.length === 3 && ESSENCES.every((id) => state.essences[id] >= mix.filter((other) => other === id).length);
+}
+
+/** Verse 3 ressources au Creuset : elles donnent une rune de rang 1, et la recette s'inscrit au livre. */
+export function brew(state: HeartForgeState, mix: readonly [EssenceId, EssenceId, EssenceId]): { state: HeartForgeState; rune: RuneType } {
+  if (!canBrew(state, mix)) {
+    throw new RangeError('Ressources insuffisantes pour ce mélange');
+  }
+  const essences = { ...state.essences };
+  for (const id of mix) {
+    essences[id] -= 1;
+  }
+  const rune = recipeResult(mix);
+  const recipes = state.recipes.includes(rune) ? state.recipes : [...state.recipes, rune];
+  return { state: withRunes({ ...state, essences, recipes }, { type: rune, rank: 1 }, 1), rune };
 }
 
 export function canFuse(state: HeartForgeState, rune: Rune): boolean {
@@ -80,13 +124,12 @@ export function fuseRunes(state: HeartForgeState, rune: Rune, random: Random): {
   if (random() < fusionFailChance(rune.rank + 1)) {
     return { state: withRunes(spent, rune, 1), success: false };
   }
-  return { state: withRunes(spent, { element: rune.element, rank: rune.rank + 1 }, 1), success: true };
+  return { state: withRunes(spent, { type: rune.type, rank: rune.rank + 1 }, 1), success: true };
 }
 
 /** Rune qu'attend un emplacement de l'anneau : les emplacements 0 et 1 sont ceux de la 1re étoile, etc. */
 export function socketRune(socket: number): Rune {
-  const star = STAR_RUNES[Math.floor(socket / 2)];
-  return { element: star.elements[socket % 2], rank: star.rank };
+  return STAR_RUNES[Math.floor(socket / 2)][socket % 2];
 }
 
 export function canSocket(state: HeartForgeState, socket: number): boolean {
@@ -108,32 +151,38 @@ export function starRunesSet(state: HeartForgeState, star: number): boolean {
   return star >= 1 && star <= STAR_RUNES.length && state.sockets[first] && state.sockets[first + 1];
 }
 
-/** Runes de rang 1 que demande une rune d'un rang donné, sans fusion ratée. */
-export function baseRunesFor(rank: number): number {
-  return RUNE_FUSION_COUNT ** (rank - 1);
+/** Ressources que demande une rune d'un rang donné, sans fusion ratée (3 par rune de rang 1). */
+export function essencesFor(rank: number): number {
+  return 3 * RUNE_FUSION_COUNT ** (rank - 1);
+}
+
+function isCount(value: unknown): boolean {
+  return Number.isSafeInteger(value) && (value as number) >= 0;
 }
 
 export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   if (typeof value !== 'object' || value === null) {
     return null;
   }
-  const { shards, runes, sockets } = value as Record<string, unknown>;
+  const { essences, runes, sockets, recipes } = value as Record<string, unknown>;
+  const essencesValid =
+    typeof essences === 'object' && essences !== null && ESSENCES.every((id) => isCount((essences as Record<string, unknown>)[id]));
   const runesValid =
     typeof runes === 'object' &&
     runes !== null &&
     Object.entries(runes).every(([key, count]) => {
-      const [element, rank] = key.split(':');
-      return (
-        (RUNE_ELEMENTS as readonly string[]).includes(element) &&
-        Number(rank) >= 1 &&
-        Number(rank) <= MAX_RUNE_RANK &&
-        Number.isSafeInteger(count) &&
-        (count as number) >= 0
-      );
+      const [type, rank] = key.split(':');
+      return (RUNE_TYPES as readonly string[]).includes(type) && Number(rank) >= 1 && Number(rank) <= MAX_RUNE_RANK && isCount(count);
     });
   const socketsValid = Array.isArray(sockets) && sockets.length === RING_SOCKETS && sockets.every((filled) => typeof filled === 'boolean');
-  if (!Number.isSafeInteger(shards) || (shards as number) < 0 || !runesValid || !socketsValid) {
+  const recipesValid = Array.isArray(recipes) && recipes.every((type) => (RUNE_TYPES as readonly unknown[]).includes(type));
+  if (!essencesValid || !runesValid || !socketsValid || !recipesValid) {
     return null;
   }
-  return { shards: shards as number, runes: runes as HeartForgeState['runes'], sockets: sockets as boolean[] };
+  return {
+    essences: essences as HeartForgeState['essences'],
+    runes: runes as HeartForgeState['runes'],
+    sockets: sockets as boolean[],
+    recipes: recipes as RuneType[],
+  };
 }

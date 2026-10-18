@@ -27,8 +27,8 @@ export const ABYSS_UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id ==
 export interface RunResult extends RunReward {
   readonly floors: number;
   readonly newRecord: boolean;
-  /** Éclats de cœur gagnés dès la Légende, pour la Forge du Cœur. */
-  readonly heartShards: number;
+  /** Ressources des Échos gagnées dès la Légende (autant de chaque sorte), pour le Creuset du Cœur. */
+  readonly essencesEach: number;
 }
 
 const LEGEND_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === 'legend');
@@ -158,8 +158,8 @@ export class Abyss {
     this.save({ ...current, record: Math.max(current.record, floors) });
     this.gameState.set(null);
     this.fighter = null;
-    const heartShards = this.evolution.index() >= LEGEND_INDEX ? this.heartForge.onAbyssRun(floors) : 0;
-    this.lastResult.set({ ...reward, floors, newRecord: floors > current.record, heartShards });
+    const essencesEach = this.evolution.index() >= LEGEND_INDEX ? this.heartForge.onAbyssRun(floors) : 0;
+    this.lastResult.set({ ...reward, floors, newRecord: floors > current.record, essencesEach });
   }
 
   private stopLoop(): void {

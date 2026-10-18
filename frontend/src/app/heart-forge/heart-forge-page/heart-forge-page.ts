@@ -2,22 +2,25 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 
 import { Sound } from '../../audio/sound';
 import {
+  ALLIANCE_RECIPES,
+  ALLIANCE_RUNES,
+  ESSENCE_ELEMENTS,
+  ESSENCE_LABELS,
+  ESSENCES,
+  EssenceId,
   MAX_RUNE_RANK,
   RUNE_ELEMENTS,
-  RUNE_FORGE_ORES,
-  RUNE_FORGE_SHARDS,
   RUNE_FUSION_COUNT,
-  RUNE_FORGE_ORE,
   RUNE_LABELS,
-  RuneElement,
+  RUNE_TYPES,
+  RuneType,
 } from '../../balance/heart-forge';
-import { EVOLUTION_VISUALS, materialIconUrl } from '../../loading/game-assets';
+import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
-import { Ores } from '../../ores/ores';
+import { readStorage, writeStorage } from '../../shared/local-storage';
 import { HeartForge } from '../heart-forge';
 import { HeartForgeHelp } from '../heart-forge-help/heart-forge-help';
-import { readStorage, writeStorage } from '../../shared/local-storage';
-import { fusionFailChance, runeCount, socketRune } from '../heart-forge-rules';
+import { fusionFailChance, recipeResult, runeCount, socketRune } from '../heart-forge-rules';
 
 const PERCENT = 100;
 /**
@@ -31,16 +34,31 @@ const RUNE_SOCKET_ANGLES = Array.from({ length: 360 / RING_STEP }, (_, index) =>
 );
 /** L'aide s'ouvre d'elle-même à la première visite de la Forge ; ce drapeau s'en souvient. */
 const HELP_SEEN_KEY = 'mine-explorer.forge-du-coeur-aide';
-/** Durée d'affichage du résultat d'une fusion. */
-const FUSION_MESSAGE_MS = 2500;
+/** Durée d'affichage du résultat du Creuset ou d'une fusion. */
+const MESSAGE_MS = 2500;
+const CRUCIBLE_SLOTS = 3;
 
-export function runeIconUrl(element: RuneElement): string {
+/** Icône d'une rune : celle de son élément ; une alliance prend celle d'un élément proche en attendant son image. */
+const ALLIANCE_STAND_IN: Readonly<Record<(typeof ALLIANCE_RUNES)[number], (typeof RUNE_ELEMENTS)[number]>> = {
+  magma: 'fire',
+  storm: 'ice',
+  grove: 'earth',
+  eclipse: 'shadow',
+  heart: 'light',
+};
+
+export function runeIconUrl(type: RuneType): string {
+  const element = (RUNE_ELEMENTS as readonly string[]).includes(type) ? type : ALLIANCE_STAND_IN[type as keyof typeof ALLIANCE_STAND_IN];
   return `assets/ui/forge-du-coeur/rune-${element}.webp`;
 }
 
+export function isAlliance(type: RuneType): boolean {
+  return (ALLIANCE_RUNES as readonly string[]).includes(type);
+}
+
 /**
- * Forge du Cœur : l'anneau du Cœur du monde et ses 10 emplacements (2 par étoile), la forge des runes de rang 1 et
- * la fusion de 3 runes en une du rang suivant.
+ * Forge du Cœur : l'anneau du Cœur du monde (10 emplacements, 2 par étoile), le Creuset où l'on verse 3 ressources
+ * des Échos pour faire une rune, le livre des recettes trouvées, et la réserve de runes à fusionner.
  */
 @Component({
   selector: 'app-heart-forge-page',
@@ -50,20 +68,19 @@ export function runeIconUrl(element: RuneElement): string {
 })
 export class HeartForgePage {
   protected readonly forge = inject(HeartForge);
-  private readonly ores = inject(Ores);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   protected readonly portraitUrl = EVOLUTION_VISUALS.heart.portraitUrl;
   protected readonly gemAngles = GEM_ANGLES;
   protected readonly ranks = Array.from({ length: MAX_RUNE_RANK }, (_, index) => index + 1);
-  protected readonly forgeShards = RUNE_FORGE_SHARDS;
-  protected readonly forgeOres = RUNE_FORGE_ORES;
   protected readonly fusionCount = RUNE_FUSION_COUNT;
   protected readonly message = signal<{ text: string; success: boolean } | null>(null);
   protected readonly helpOpen = signal(readStorage(HELP_SEEN_KEY) === null);
+  /** Ressources posées dans le Creuset, dans l'ordre. */
+  protected readonly mix = signal<readonly EssenceId[]>([]);
 
   protected readonly sockets = computed(() => {
-    const state = { shards: this.forge.shards(), runes: this.forge.runes(), sockets: this.forge.sockets() };
+    const state = this.forge.snapshot();
     return state.sockets.map((filled, index) => {
       const rune = socketRune(index);
       return {
@@ -71,25 +88,71 @@ export class HeartForgePage {
         star: Math.floor(index / 2) + 1,
         filled,
         rune,
-        icon: runeIconUrl(rune.element),
-        label: `${RUNE_LABELS[rune.element]} rang ${rune.rank}`,
+        icon: runeIconUrl(rune.type),
+        alliance: isAlliance(rune.type),
+        label: `${RUNE_LABELS[rune.type]} rang ${rune.rank}`,
         ready: !filled && runeCount(state, rune) > 0,
         angle: RUNE_SOCKET_ANGLES[index],
       };
     });
   });
 
+  /** Les 5 ressources, avec leur réserve moins ce qui est déjà posé dans le Creuset. */
+  protected readonly essences = computed(() => {
+    const stock = this.forge.essences();
+    const mix = this.mix();
+    return ESSENCES.map((id) => ({
+      id,
+      label: ESSENCE_LABELS[id],
+      left: stock[id] - mix.filter((other) => other === id).length,
+    }));
+  });
+
+  protected readonly slots = computed(() => {
+    const mix = this.mix();
+    return Array.from({ length: CRUCIBLE_SLOTS }, (_, index) => ({ index, essence: mix[index] ?? null }));
+  });
+
+  /** Ce que donnera le mélange : connu si la recette a déjà été trouvée, sinon « ? ». */
+  protected readonly preview = computed(() => {
+    const mix = this.mix();
+    if (mix.length < CRUCIBLE_SLOTS) {
+      return null;
+    }
+    const result = recipeResult(mix as [EssenceId, EssenceId, EssenceId]);
+    return this.forge.recipes().includes(result) ? `Rune ${RUNE_LABELS[result]}` : 'Rune inconnue';
+  });
+
+  /** Livre de recettes : chaque rune avec sa recette si elle a été trouvée. */
+  protected readonly book = computed(() => {
+    const known = this.forge.recipes();
+    return RUNE_TYPES.map((type) => {
+      const recipe = isAlliance(type)
+        ? ALLIANCE_RECIPES[type as keyof typeof ALLIANCE_RECIPES]
+        : (() => {
+            const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
+            return [essence, essence, essence] as const;
+          })();
+      return {
+        type,
+        label: RUNE_LABELS[type],
+        icon: runeIconUrl(type),
+        alliance: isAlliance(type),
+        known: known.includes(type),
+        recipe: recipe.map((id) => ESSENCE_LABELS[id]).join(' + '),
+      };
+    });
+  });
+
   protected readonly rows = computed(() => {
-    const state = { shards: this.forge.shards(), runes: this.forge.runes(), sockets: this.forge.sockets() };
-    const stock = this.ores.stock();
-    return RUNE_ELEMENTS.map((element) => ({
-      element,
-      label: RUNE_LABELS[element],
-      icon: runeIconUrl(element),
-      ore: { icon: materialIconUrl(RUNE_FORGE_ORE), stock: stock[RUNE_FORGE_ORE] },
-      canForge: this.forge.canForge(),
+    const state = this.forge.snapshot();
+    return RUNE_TYPES.map((type) => ({
+      type,
+      label: RUNE_LABELS[type],
+      icon: runeIconUrl(type),
+      alliance: isAlliance(type),
       cells: this.ranks.map((rank) => {
-        const rune = { element, rank };
+        const rune = { type, rank };
         return {
           rank,
           count: runeCount(state, rune),
@@ -97,40 +160,56 @@ export class HeartForgePage {
           failPercent: Math.round(fusionFailChance(rank + 1) * PERCENT),
         };
       }),
-    }));
+    })).filter((row) => row.cells.some((cell) => cell.count > 0) || this.forge.recipes().includes(row.type));
   });
 
   constructor() {
     writeStorage(HELP_SEEN_KEY, '1');
-    // Résultat de la dernière fusion : un petit message, puis il s'efface
+    // Résultat du Creuset ou d'une fusion : un petit message, puis il s'efface
     let timer: ReturnType<typeof setTimeout> | null = null;
     effect(() => {
-      const result = this.forge.lastFusion();
-      if (result === null) {
+      const event = this.forge.event();
+      if (event === null) {
         return;
       }
-      const label = `${RUNE_LABELS[result.rune.element]} rang ${result.rune.rank}`;
+      const label = `${RUNE_LABELS[event.rune.type]} rang ${event.rune.rank}`;
       untracked(() => {
-        this.message.set(
-          result.success ? { text: `Fusion réussie : rune ${label} !`, success: true } : { text: 'La fusion a raté : il ne reste qu’une rune.', success: false },
-        );
-        this.sound.play(result.success ? 'forgeEpic' : 'rockBreak');
+        if (event.kind === 'brew') {
+          this.message.set({ text: event.discovery ? `Nouvelle recette : rune ${label} !` : `Rune ${label}`, success: true });
+          this.sound.play(event.discovery ? 'forgeLegendary' : 'forgeRare');
+        } else {
+          this.message.set(
+            event.success ? { text: `Fusion réussie : rune ${label} !`, success: true } : { text: "La fusion a raté : il ne reste qu'une rune.", success: false },
+          );
+          this.sound.play(event.success ? 'forgeEpic' : 'rockBreak');
+        }
       });
       if (timer !== null) {
         clearTimeout(timer);
       }
-      timer = setTimeout(() => this.message.set(null), FUSION_MESSAGE_MS);
+      timer = setTimeout(() => this.message.set(null), MESSAGE_MS);
     });
   }
 
-  protected forgeRune(element: RuneElement): void {
-    if (this.forge.forge(element)) {
-      this.sound.play('forgeRare');
+  protected addEssence(id: EssenceId, left: number): void {
+    if (left > 0 && this.mix().length < CRUCIBLE_SLOTS) {
+      this.mix.update((mix) => [...mix, id]);
     }
   }
 
-  protected fuse(element: RuneElement, rank: number): void {
-    this.forge.fuse({ element, rank });
+  protected removeEssence(index: number): void {
+    this.mix.update((mix) => mix.filter((_, position) => position !== index));
+  }
+
+  protected pour(): void {
+    const mix = this.mix();
+    if (mix.length === CRUCIBLE_SLOTS && this.forge.brew(mix as [EssenceId, EssenceId, EssenceId]) !== null) {
+      this.mix.set([]);
+    }
+  }
+
+  protected fuse(type: RuneType, rank: number): void {
+    this.forge.fuse({ type, rank });
   }
 
   protected setRune(index: number): void {

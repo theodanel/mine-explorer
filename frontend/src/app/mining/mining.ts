@@ -87,7 +87,10 @@ export class Mining {
     // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
     if (rockBroken && !farming) {
       this.missionCounters.record('rocksBroken');
-      this.heartForge.onRockBroken(frontier);
+    }
+    // Un filon d'Écho donne sa ressource, sans tirage
+    if (rockBroken && struck.echoZone !== null) {
+      this.heartForge.onEchoRock(struck.echoZone);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
     // parfois un au coup de pioche, plus le lot de fin de zone
@@ -103,7 +106,6 @@ export class Mining {
       this.artifacts.discover();
       this.galleries.offerFor(clearedZone + 1);
       this.companions.grantZoneEggs(clearedZone);
-      this.heartForge.onGuardianBeaten(clearedZone);
     }
     // En zone passée, seuls les PV vraiment minés rapportent de l'or, et un filon épuisé ne donne pas d'éclats
     const baseReward = strikeReward(farming ? struck.mined : hit.damage, this.miner.current().stats.goldBonus, {

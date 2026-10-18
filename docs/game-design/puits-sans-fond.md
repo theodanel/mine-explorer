@@ -2,30 +2,32 @@
 
 Retour à [[Accueil]]. Décidé le 13/10/2026 par Théo (son préféré) : « une zone à part, 3 essais par jour, où tu descends le plus loin possible en un temps limité. Récompenses par étage atteint et record personnel. C'est là que ton build compte vraiment. »
 
-## Règle
+## Règle (mini-jeu, depuis le 14/10/2026)
 
-- **Ouverture** : quand le mineur devient Contremaître (vers le jour 4,5 d'un joueur régulier), dans l'onglet **Aventures**.
-- **3 descentes par jour**, remises à minuit (heure du joueur). Un essai compte dès le départ : quitter en pleine descente ne le rend pas, mais la descente continue et est payée (même après un rechargement de la page).
-- **30 secondes** par descente. Le mineur casse les étages avec ses **dégâts par seconde permanents** (équipement, arbre, artefact, compagnon, Atelier ; sans les sorts). C'est donc le build qui décide de la profondeur : les builds libres ([[builds-libres]]) prennent tout leur sens ici.
-- **Étages** : chaque étage est un filon de la mine, deux filons plus profond que le précédent. L'étage 1 vaut le 5-1, l'étage 30 le 8-14, et les PV grimpent d'environ 15 % par étage. Tous les 10 étages, un **gardien** trois fois plus dur marque le palier.
-- **Récompenses** :
-  - 1 éclat par étage franchi, à chaque descente ;
-  - chaque palier de 5 étages atteint **pour la première fois** (le record personnel) : 20 éclats et 2 pierres d'éveil, une fois pour toutes.
+La première version (un chrono qui défilait seul, étages calés sur les filons de la mine) était illisible et trop dure : « c'est super nul, je pige pas le truc ». Le Puits est devenu un mini-jeu à part, joué au doigt.
 
-## Pourquoi ces chiffres
+- **Ouverture** : quand le mineur devient Contremaître, dans l'onglet **Aventures**. **3 descentes par jour**, remises à minuit ; un essai compte dès le départ.
+- **30 secondes**. Le mineur (sa vraie animation) frappe seul à sa vitesse ; le joueur **tape le rocher** pour frapper en plus. Enchaîner les touchers à moins de 0,6 s monte un **combo** jusqu'à ×1,9.
+- **Étages variés** (tirés au hasard) :
+  - **normal** (50 %) ;
+  - **rocher à cristal** (30 %, PV ×1,3) : un point faible lumineux bouge toutes les 1,2 s, le toucher fait ×3 ;
+  - **rocher piégé** (20 %, dès l'étage 3, PV ×0,8) : une mèche de 3 s ; s'il n'est pas cassé, il explose, l'étage est passé sans éclat et coûte 3 s ;
+  - **gardien** tous les 10 étages : PV ×4.
+- **Cristal de temps** : il tombe toutes les 6 à 10 s et reste 2,5 s ; l'attraper donne +2 s.
+- **Sorts** équipés, une fois chacun par descente : Dynamite et Coup de grisou frappent fort, Frénésie double les dégâts, Œil du géologue rend tout critique, Filon doré et Écho de géode donnent un éclat de plus par étage pendant leur durée.
+- **PV des étages** : l'étage 1 vaut 2 s d'une Puissance de référence, puis +15 % par étage. La référence est la moyenne géométrique de la Puissance attendue dans la zone du joueur et de sa Puissance réelle : un joueur en retard sur sa zone descend quand même, un build en avance descend plus bas sans écraser les autres.
+- **Récompenses** : 2 éclats par étage cassé (4 sous bonus) ; chaque palier de 5 étages battu pour la première fois donne 30 éclats et 2 pierres d'éveil. Relevé le 14/10/2026 (1 éclat et 20 avant), Théo trouvait le Puits trop pauvre.
 
-- Les PV suivent la courbe de la mine : un étage profond coûte ce que coûte un filon profond, sans réglage à part, et le record avance avec la Puissance du joueur.
-- 30 secondes : assez pour voir les étages défiler, assez court pour ne pas lasser trois fois par jour.
-- Avec 2 éclats par étage, le Puits avançait la pioche 30 d'un jour et demi (jour 47,3 au lieu de 48,7) : la récompense par étage est passée à 1.
+## Réglage
 
-Simulé (joueur 1 h par jour, 5 tirages, Campement compris) :
-- record : 5 étages au jour 7, 15 au jour 14, 28 au jour 21, 30 au jour 28, puis 34 vers le jour 56 (les gardiens des étages 30 et 40 freinent) ;
-- environ 5 500 éclats et 12 pierres d'éveil sur 70 jours ;
-- pioche 30 au jour 48,0 en moyenne (48,7 avec le seul Campement).
+Le simulateur joue le mini-jeu avec un joueur moyen (5 touchers par seconde, point faible visé une fois sur deux, un cristal de temps sur deux attrapé, sans sort). Joueur régulier, 70 jours :
+- 18,7 étages par descente en moyenne, record 24 ;
+- en tapant 2 fois par seconde : 15,7 étages ; 8 fois par seconde : 24,1 (l'adresse compte, sans tout décider) ;
+- environ 3 900 éclats et 8 pierres d'éveil sur la partie ; pioche 30 au jour 47,6 en moyenne sur 5 tirages.
 
 ## Visuels
 
-Planche 11 et fond du Puits livrés le 14/10/2026 (sources dans `art-source/aventures/`) : carte des Aventures, tablette du record, sablier des essais et décor de la page.
+Planche 11 et fond du Puits livrés le 14/10/2026 (sources dans `art-source/aventures/`). Le mini-jeu réutilise les rochers des zones, le cristal qui tombe et le coffre des événements, et l'animation de frappe de la forme du mineur. Le **rocher piégé** et le **gardien** ont leurs images depuis le 14/10/2026 (`art-source/aventures/`).
 
 ## Pistes
 

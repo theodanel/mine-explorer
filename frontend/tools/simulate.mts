@@ -19,19 +19,19 @@ import {
   FORGE_SHARD_COST,
   MAX_PICKAXE_LEVEL,
   offlineGains,
-  ORE_PER_ROCK,
+  ORE_FIND_CHANCE,
   SEGMENTS_PER_LEVEL,
   segmentCost,
   shardsForStage,
   upgradeDurationMs,
   ZONE_CLEAR_ORES,
-  ZONE_CLEAR_SHARDS,
+  zoneClearShards,
   zoneMaterial,
   hitsPerSecond,
   powerOf,
-  goldForDamage,
+  minedGold,
 } from '../src/app/balance/balance.ts';
-import { ARTIFACT_FIND_CHANCE, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
+import { ARTIFACT_FIND_CHANCE, ARTIFACT_SLOT_FORMS, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
 import {
   blastStrikeMultiplier,
   NO_BONUSES,
@@ -46,32 +46,50 @@ import {
 import { computeStats, powerDelta, resolveHit, rollItem, sellPrice } from '../src/app/equipment/equipment-rules.ts';
 import type { EquippedItems, Item, MiningStats, TierId } from '../src/app/equipment/equipment.model.ts';
 import { TIER_IDS } from '../src/app/equipment/equipment.model.ts';
-import { applyDamage, START_PROGRESS, stagesReached, type Progress } from '../src/app/progression/progression-rules.ts';
+import {
+  applyDamage,
+  BEFORE_GUARDIAN_STAGE,
+  challengeGuardian,
+  failGuardian,
+  isGuardian,
+  START_PROGRESS,
+  stagesReached,
+  type Progress,
+} from '../src/app/progression/progression-rules.ts';
+import { GUARDIAN_SECONDS } from '../src/app/balance/balance.ts';
 import { learn, learnCheck, passiveBonuses, pointsEarned, pointsSpent, spellRank, type SkillRanks } from '../src/app/skills/skill-rules.ts';
 import {
   addArtifact,
+  canReforge,
   EMPTY_ARTIFACTS,
+  equipArtifact,
   equippedArtifactBonuses,
+  openSlotCount,
+  reforge,
+  reforgeOreCost,
+  reforgeOresEach,
+  resolveReforge,
   rollArtifact,
   type ArtifactState,
 } from '../src/app/artifacts/artifact-rules.ts';
 import { minerProfile, NO_BUFFS, type MinerProfile, type SpellBuffs } from '../src/app/miner/miner-rules.ts';
 import { WORKSHOP_UNLOCK_FORM, type WorkshopLevels } from '../src/app/balance/workshop.ts';
-import { reinforce, slotLevel, upgradeCost } from '../src/app/workshop/workshop-rules.ts';
+import { pieceLevel, reinforce, upgradeCost, withLevel } from '../src/app/workshop/workshop-rules.ts';
 import { canEvolve, objectivesFor, unclaimedShards } from '../src/app/evolution/evolution-rules.ts';
 import { SLOT_IDS, type SlotId } from '../src/app/equipment/equipment.model.ts';
 import { CRYSTAL_RAIN_COUNT, EVENT_TOUCH_RATE } from '../src/app/balance/mine-events.ts';
 import { eventGain, nextEventDelayMs, rollEventId } from '../src/app/mine-events/mine-event-rules.ts';
 import { GALLERIES, type GalleryId } from '../src/app/balance/galleries.ts';
 import { rollOffer, scaleAmount } from '../src/app/galleries/gallery-rules.ts';
-import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId } from '../src/app/balance/companions.ts';
+import { COMPANION_IDS, COMPANIONS, COMPANIONS_UNLOCK_ZONE, type CompanionId, zoneClearGivesEgg } from '../src/app/balance/companions.ts';
+import { abilityBlastMultiplier, abilityBuffs, abilityCooldownMs, abilityDurationMs, combineBuffs } from '../src/app/companions/companion-ability-rules.ts';
 import { CHALLENGE_MILESTONES } from '../src/app/balance/challenge.ts';
 import { challengePoints } from '../src/app/challenge/challenge-rules.ts';
 import { CHALLENGE_DAYS } from '../src/app/balance/challenge.ts';
-import { workshopMaterial } from '../src/app/balance/workshop.ts';
 import { BUILDING_IDS, CAMP_UNLOCK_ZONE, type BuildingId } from '../src/app/balance/camp.ts';
 import { ABYSS_DAILY_RUNS, ABYSS_RUN_MS, ABYSS_UNLOCK_FORM } from '../src/app/balance/abyss.ts';
-import { descend, runReward } from '../src/app/abyss/abyss-rules.ts';
+import { runReward } from '../src/app/abyss/abyss-rules.ts';
+import { isOver, startGame, tap as abyssTap, tick as abyssTick, type Fighter } from '../src/app/abyss/abyss-game.ts';
 import {
   buildingCost,
   buildingLevel,
@@ -96,6 +114,29 @@ import {
   setActive,
   type CompanionState,
 } from '../src/app/companions/companion-rules.ts';
+import {
+  ABYSS_FLOORS_PER_ESSENCES,
+  ALLIANCE_RECIPES,
+  ESSENCE_ELEMENTS,
+  ESSENCES,
+  RING_SOCKETS,
+  type EssenceId,
+  type RuneType,
+} from '../src/app/balance/heart-forge.ts';
+import {
+  addEssences,
+  brew,
+  canBrew,
+  canFuse,
+  canSocket,
+  EMPTY_HEART_FORGE,
+  fuseRunes,
+  runeCount,
+  socketRune,
+  socketRuneIn,
+  starRunesSet,
+  type HeartForgeState,
+} from '../src/app/heart-forge/heart-forge-rules.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -284,6 +325,17 @@ const createId = (): string => `sim-${++nextId}`;
 
 // ─── État du joueur ─────────────────────────────────────────────────────────
 let progress: Progress = START_PROGRESS;
+/** Gardien de fin de zone : début du combat (s), blocage après un échec, et Puissance au moment de l'échec. */
+let guardianStart: number | null = null;
+let guardianBlocked = false;
+let guardianFailedAt = 0;
+let guardianFailPower = 0;
+let guardianFails = 0;
+const guardianFailsByZone: Record<number, number> = {};
+const guardianKills: string[] = [];
+/** Le joueur retente le gardien quand sa Puissance a gagné 5 %, ou au bout de 30 minutes de jeu. */
+const GUARDIAN_RETRY_POWER = 1.05;
+const GUARDIAN_RETRY_SECONDS = 30 * 60;
 let equipped: EquippedItems = {};
 let gold = 0;
 let shards = 0;
@@ -302,6 +354,9 @@ let workshop: WorkshopLevels = {};
 let goldWorkshop = 0;
 /** Sorts équipés et leurs minuteurs, en secondes de simulation. */
 let spellSlots: { spell: SpellId; readyAt: number; activeUntil: number }[] = [];
+/** Compétence du familier actif, lancée en automatique comme les sorts. */
+const companionAbilityTimer = { readyAt: 0, activeUntil: 0 };
+let abilityDamage = 0;
 let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
@@ -309,6 +364,9 @@ let profileNow: MinerProfile = profileAt(0);
 const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
 let camp: CampState = EMPTY_CAMP;
 let abyssRecord = 0;
+let abyssBest = 0;
+let abyssFloorsTotal = 0;
+const abyssRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 7);
 let abyssRuns = 0;
 let abyssStones = 0;
 let abyssShards = 0;
@@ -323,6 +381,20 @@ let goldOffline = 0;
 let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
+let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
+let essencesEarned = 0;
+let runesBrewed = 0;
+let fusionsFailed = 0;
+const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
+/** Minutes passées chaque jour dans les Échos, dès la Légende (le reste du temps actif va à la zone en cours). */
+const ECHO_MINUTES_PER_DAY = Number(process.env.ECHO_MINUTES ?? 20);
+const ECHO_ROCK_SECONDS = 120;
+function earnEssences(gains: Partial<Record<EssenceId, number>>): void {
+  heartForge = addEssences(heartForge, gains);
+  essencesEarned += Object.values(gains).reduce((sum, amount) => sum + (amount ?? 0), 0);
+}
+let artifactReforges = 0;
+let artifactReforgesKept = 0;
 const milestones: string[] = [];
 const daily: string[] = [];
 let lastZone = 1;
@@ -331,11 +403,11 @@ let filonsInZone = 0;
 
 function gearStats(): MiningStats {
   const base = computeStats(equipped);
-  return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop);
+  return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
 function families() {
-  return withNewSystems ? [passiveBonuses(ranks), equippedArtifactBonuses(artifacts), activeCompanionBonuses(companions)] : [NO_BONUSES];
+  return withNewSystems ? [passiveBonuses(ranks), equippedArtifactBonuses(artifacts, artifactSlots()), activeCompanionBonuses(companions)] : [NO_BONUSES];
 }
 
 function buffsAt(now: number): SpellBuffs {
@@ -347,6 +419,10 @@ function buffsAt(now: number): SpellBuffs {
     if (effect.kind === 'crit') buffs = { ...buffs, guaranteedCrit: true };
     if (effect.kind === 'gold') buffs = { ...buffs, goldMultiplier: buffs.goldMultiplier * effect.multiplier };
     if (effect.kind === 'shard') buffs = { ...buffs, shardChance: buffs.shardChance + shardEchoChance(SPELLS[slot.spell], spellRank(ranks, slot.spell)) };
+  }
+  const active = companions.active;
+  if (withCompanions && active !== null && now < companionAbilityTimer.activeUntil) {
+    buffs = combineBuffs(buffs, abilityBuffs(COMPANIONS[active].ability));
   }
   return buffs;
 }
@@ -389,7 +465,7 @@ function forgeAll(now: number): void {
     forges++;
     record('itemsForged');
     const item: Item = rollItem(random, createId, pickaxe.level);
-    if (powerDelta(equipped, item) > 0) {
+    if (powerDelta(equipped, item, workshop) > 0) {
       const replaced = equipped[item.slot];
       if (replaced) {
         gold += sellPrice(replaced);
@@ -427,9 +503,10 @@ function payPickaxe(now: number): void {
 function tryEvolve(now: number): void {
   const next = EVOLUTION_FORMS[formIndex + 1];
   if (!next) return;
-  const progressNow = { zone: progress.zone, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
+  const progressNow = { zone: progress.zone, zoneCleared: progress.zone - 1, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
+  if (next.id === 'heart' && !starRunesSet(heartForge, next.stars)) return;
   const reward = unclaimedShards(objectives);
   shards += reward;
   shardSources.evolution += reward;
@@ -444,7 +521,7 @@ function payWorkshop(now: number): void {
   if (!withWorkshop || formIndex < unlockIndex) return;
   const pickaxeDone = pickaxe.level >= MAX_PICKAXE_LEVEL;
   const budget = pickaxeDone ? Infinity : (segmentCost(pickaxe.level) ?? 0) * WORKSHOP_SHARE_OF_SEGMENT;
-  for (let guard = 0; guard < 50; guard++) {
+  for (let guard = 0; guard < 200; guard++) {
     const value = (levels: WorkshopLevels): number => {
       const saved = workshop;
       workshop = levels;
@@ -453,20 +530,23 @@ function payWorkshop(now: number): void {
       return powerOf(candidate.stats) * (1 + candidate.stats.goldBonus * 0.2);
     };
     const current = value(workshop);
-    let best: { slot: SlotId; gain: number } | null = null;
+    let best: { slot: SlotId; tier: TierId; level: number; gain: number } | null = null;
     for (const slot of SLOT_IDS) {
-      const cost = upgradeCost(slotLevel(workshop, slot), progress.zone);
-      const [[tier, need]] = Object.entries(cost.ores) as [TierId, number][];
-      if (cost.gold > gold || cost.gold > budget || ores[tier] < need) continue;
-      const gain = (value({ ...workshop, [slot]: slotLevel(workshop, slot) + 1 }) - current) / cost.gold;
-      if (best === null || gain > best.gain) best = { slot, gain };
+      const tier = equipped[slot]?.tier;
+      if (tier === undefined) continue;
+      const level = pieceLevel(workshop, slot, tier);
+      const cost = upgradeCost(tier, level);
+      if (cost === null || cost.gold > gold || cost.gold > budget) continue;
+      if (Object.entries(cost.ores).some(([ore, need]) => ores[ore as TierId] < (need ?? 0))) continue;
+      const gain = (value(withLevel(workshop, slot, tier, level + 1)) - current) / cost.gold;
+      if (best === null || gain > best.gain) best = { slot, tier, level, gain };
     }
     if (best === null) break;
-    const cost = upgradeCost(slotLevel(workshop, best.slot), progress.zone);
+    const cost = upgradeCost(best.tier, best.level)!;
     for (const [tier, need] of Object.entries(cost.ores)) ores[tier as TierId] -= need ?? 0;
     gold -= cost.gold;
     goldWorkshop += cost.gold;
-    workshop = { ...workshop, [best.slot]: slotLevel(workshop, best.slot) + 1 };
+    workshop = withLevel(workshop, best.slot, best.tier, best.level + 1);
   }
   refresh(now);
 }
@@ -494,15 +574,44 @@ function payCamp(now: number): void {
   }
 }
 
-/** Descentes du Puits sans fond : le joueur joue ses essais dès la première session du jour. */
+/**
+ * Descentes du Puits sans fond, jouées par un joueur moyen : 5 touchers par seconde (combo entretenu), le point
+ * faible visé une fois sur deux, un cristal de temps sur deux attrapé, pas de sort. Joué dès la première session du jour.
+ */
+const ABYSS_TAPS_PER_SECOND = Number(process.env.ABYSS_TAPS ?? 5);
 function playAbyss(): void {
   const unlockIndex = EVOLUTION_FORMS.findIndex((form) => form.id === ABYSS_UNLOCK_FORM);
   if (!withAbyss || formIndex < unlockIndex) return;
-  const dps = damagePerSecond(permanentProfile().stats);
+  const stats = permanentProfile().stats;
+  const fighter: Fighter = {
+    strike: stats.strikePower,
+    critChance: stats.critChance,
+    critDamage: stats.critDamage,
+    hitsPerSecond: hitsPerSecond(stats),
+    zone: progress.zone,
+  };
+  const step = 50;
   for (let run = 0; run < ABYSS_DAILY_RUNS; run++) {
-    const { floors } = descend(dps * (ABYSS_RUN_MS / 1000));
-    const reward = runReward(floors, abyssRecord);
-    abyssRecord = Math.max(abyssRecord, floors);
+    let game = startGame(fighter, abyssRandom);
+    let tapDebt = 0;
+    while (!isOver(game)) {
+      game = abyssTick(game, step, fighter, abyssRandom);
+      if (game.crystal !== null && game.crystal.ageMs < step && abyssRandom() < 0.5) game = abyssTap(game, 'crystal', fighter, abyssRandom);
+      tapDebt += (ABYSS_TAPS_PER_SECOND * step) / 1000;
+      while (tapDebt >= 1) {
+        tapDebt -= 1;
+        const weak = game.floor.weakPoint !== null && abyssRandom() < 0.5;
+        game = abyssTap(game, weak ? 'weak' : 'rock', fighter, abyssRandom);
+      }
+    }
+    const reward = runReward(game.floorsCleared, game.shards, abyssRecord);
+    if (formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) {
+      const each = Math.floor(game.floorsCleared / ABYSS_FLOORS_PER_ESSENCES);
+      earnEssences(Object.fromEntries(ESSENCES.map((id) => [id, each])));
+    }
+    abyssRecord = Math.max(abyssRecord, game.floorsCleared);
+    abyssBest = Math.max(abyssBest, game.floorsCleared);
+    abyssFloorsTotal += game.floorsCleared;
     shards += reward.shards;
     abyssShards += reward.shards;
     abyssStones += reward.stones;
@@ -518,6 +627,14 @@ function collectWell(now: number): void {
   shards += stock;
   shardSources.puits += stock;
   camp = { ...camp, wellCollectedAt: collectedAt(camp, now * 1000, stock) };
+}
+
+/** Niveau d'Atelier de chaque pièce portée, avec sa qualité (« steel 24 »). */
+function workshopSummary(): string {
+  return SLOT_IDS.map((slot) => {
+    const tier = equipped[slot]?.tier;
+    return tier === undefined ? '-' : `${tier} ${pieceLevel(workshop, slot, tier)}`;
+  }).join('/');
 }
 
 /** Ce que l'Atelier ajoute à la Puissance permanente. */
@@ -554,19 +671,113 @@ function spendPoints(now: number): void {
   refresh(now);
 }
 
+/** Emplacements d'artefact ouverts selon la forme (1, puis 2 au Contremaître et 3 à la Légende). */
+function artifactSlots(): number {
+  return openSlotCount(formIndex, ARTIFACT_SLOT_FORMS.map((id) => EVOLUTION_FORMS.findIndex((form) => form.id === id)));
+}
+
+function artifactPower(): number {
+  const profile = minerProfile(gear, families(), NO_BUFFS);
+  return powerOf(profile.stats) * (1 + profile.stats.goldBonus * 0.2);
+}
+
+/** Remplit les emplacements ouverts un par un avec l'artefact qui rapporte le plus de Puissance. */
 function equipBestArtifact(now: number): void {
-  let best: ArtifactId | null = artifacts.equipped;
-  let bestPower = -1;
-  for (const id of Object.keys(artifacts.owned) as ArtifactId[]) {
-    artifacts = { ...artifacts, equipped: id };
-    const candidate = minerProfile(gear, families(), NO_BUFFS);
-    const power = powerOf(candidate.stats) * (1 + candidate.stats.goldBonus * 0.2);
-    if (power > bestPower) {
-      bestPower = power;
-      best = id;
+  const open = artifactSlots();
+  artifacts = { ...artifacts, slots: artifacts.slots.map(() => null) };
+  for (let slot = 0; slot < open; slot++) {
+    let best: ArtifactId | null = null;
+    let bestPower = -1;
+    for (const id of Object.keys(artifacts.owned) as ArtifactId[]) {
+      if (artifacts.slots.includes(id)) continue;
+      const before = artifacts;
+      artifacts = equipArtifact(artifacts, id, slot, open);
+      const power = artifactPower();
+      artifacts = before;
+      if (power > bestPower) {
+        bestPower = power;
+        best = id;
+      }
     }
+    if (best !== null) artifacts = equipArtifact(artifacts, best, slot, open);
   }
-  artifacts = { ...artifacts, equipped: best };
+  refresh(now);
+}
+
+/** Recette d'une rune de rang 1 : 3 ressources de son élément, ou la recette de l'alliance. */
+function recipeOf(type: RuneType): readonly EssenceId[] {
+  if (type in ALLIANCE_RECIPES) return ALLIANCE_RECIPES[type as keyof typeof ALLIANCE_RECIPES];
+  const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
+  return [essence, essence, essence];
+}
+
+/**
+ * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos à récolter ce qui manque, puis
+ * verse au Creuset, fusionne et sertit les runes de la prochaine étoile.
+ */
+function craftRunes(): void {
+  if (formIndex < EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) return;
+  const socketsFree = Array.from({ length: RING_SOCKETS }, (_, index) => index).filter((index) => !heartForge.sockets[index]);
+  if (socketsFree.length === 0) return;
+  const star = Math.floor(socketsFree[0] / 2);
+  const targets = [star * 2, star * 2 + 1].filter((index) => !heartForge.sockets[index]);
+  // Récolte du jour : un filon d'Écho toutes les 2 minutes, dans l'Écho de la ressource qui manque le plus
+  let rocks = Math.round((ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
+  while (rocks > 0) {
+    const needs = targets.flatMap((socket) => recipeOf(socketRune(socket).type));
+    const lacking = [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
+    earnEssences({ [lacking]: 1 });
+    rocks--;
+  }
+  for (let guard = 0; guard < 5000; guard++) {
+    let progressMade = false;
+    for (const socket of targets) {
+      if (canSocket(heartForge, socket)) {
+        heartForge = socketRuneIn(heartForge, socket);
+        progressMade = true;
+      }
+    }
+    for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
+      const target = socketRune(socket);
+      for (let rank = 1; rank < target.rank; rank++) {
+        const rune = { type: target.type, rank };
+        if (canFuse(heartForge, rune)) {
+          const fused = fuseRunes(heartForge, rune, heartRandom);
+          heartForge = fused.state;
+          if (!fused.success) fusionsFailed++;
+          progressMade = true;
+        }
+      }
+      const recipe = recipeOf(target.type);
+      if (runeCount(heartForge, target) === 0 && canBrew(heartForge, recipe)) {
+        heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
+        runesBrewed++;
+        progressMade = true;
+      }
+    }
+    if (!progressMade) break;
+  }
+}
+
+/** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
+function reforgeArtifacts(now: number): void {
+  if (!withNewSystems) return;
+  for (const id of artifacts.slots.slice(0, artifactSlots())) {
+    if (id === null || !canReforge(artifacts, id)) continue;
+    const token = (artifacts.tokens[id] ?? 0) > 0;
+    const cost = reforgeOreCost(ores, reforgeOresEach(artifacts, id));
+    if (!token && cost === null) continue;
+    if (!token && cost !== null) for (const [tier, need] of Object.entries(cost)) ores[tier as TierId] -= need ?? 0;
+    const before = artifactPower();
+    artifacts = reforge(artifacts, id, artifactRandom, token);
+    const kept = resolveReforge(artifacts, true);
+    const previous = artifacts;
+    artifacts = kept;
+    const keep = artifactPower() > before;
+    artifacts = resolveReforge(previous, keep);
+    if (keep) artifactReforgesKept++;
+    artifactReforges++;
+  }
   refresh(now);
 }
 
@@ -575,8 +786,6 @@ function findArtifact(now: number): void {
   const { state, find } = addArtifact(artifacts, rollArtifact(artifactRandom));
   artifacts = state;
   artifactsFound++;
-  shards += find.shards;
-  shardSources.artefacts += find.shards;
   if (find.kind === 'new' && ARTIFACTS[find.id].rarity === 'legendary') {
     milestones.push(`${fmt(now)} : artefact légendaire ${ARTIFACTS[find.id].label}`);
   }
@@ -610,12 +819,20 @@ function claimMissions(): void {
 
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */
 function dealDamage(now: number, damage: number): void {
+  updateGuardian(now);
   const { zone, stage } = progress;
   const mods = GALLERIES[gallery].modifiers;
-  const result = applyDamage(progress, scaleAmount(damage, 1 / mods.hardness, galleryRandom));
+  const result = applyDamage(progress, scaleAmount(damage, 1 / mods.hardness, galleryRandom), guardianBlocked);
   progress = result.progress;
+  if (isGuardian(progress) && stage === BEFORE_GUARDIAN_STAGE) {
+    guardianStart = now;
+  }
+  if (result.clearedZone !== null && guardianStart !== null) {
+    guardianKills.push(`z${zone} ${(now - guardianStart).toFixed(0)} s`);
+    guardianStart = null;
+  }
   totalDamage += damage;
-  const earned = Math.round(goldForDamage(damage, profileNow.stats.goldBonus) * mods.gold);
+  const earned = Math.round(minedGold(damage, profileNow.stats.goldBonus) * mods.gold);
   gold += earned;
   goldMined += earned;
   if (result.rockBroken) {
@@ -625,11 +842,12 @@ function dealDamage(now: number, damage: number): void {
     shards += stageShards;
     shardSources.filons += stageShards;
     const tier = zoneMaterial(zone);
-    if (tier !== null) ores[tier] += scaleAmount(ORE_PER_ROCK + (result.clearedZone !== null ? ZONE_CLEAR_ORES : 0), mods.ores, galleryRandom);
+    if (tier !== null && result.clearedZone !== null) ores[tier] += scaleAmount(ZONE_CLEAR_ORES, mods.ores, galleryRandom);
     if (result.clearedZone !== null) {
-      shards += ZONE_CLEAR_SHARDS;
-      shardSources.zones += ZONE_CLEAR_SHARDS;
+      shards += zoneClearShards(zone);
+      shardSources.zones += zoneClearShards(zone);
       findArtifact(now);
+      if (zoneClearGivesEgg(result.clearedZone)) findEgg(now);
       spendPoints(now);
       chooseGallery();
     }
@@ -642,6 +860,26 @@ function dealDamage(now: number, damage: number): void {
     lastZone = progress.zone;
     filonSecondsInZone = 0;
     filonsInZone = 0;
+  }
+}
+
+/** Gardien raté au bout de 30 s ; une fois bloqué, le joueur le retente quand il s'est renforcé. */
+function updateGuardian(now: number): void {
+  if (isGuardian(progress) && guardianStart !== null && now - guardianStart > GUARDIAN_SECONDS) {
+    progress = failGuardian(progress);
+    guardianStart = null;
+    guardianBlocked = true;
+    guardianFailedAt = now;
+    guardianFailPower = powerOf(permanentProfile().stats);
+    guardianFails++;
+    guardianFailsByZone[progress.zone] = (guardianFailsByZone[progress.zone] ?? 0) + 1;
+    return;
+  }
+  const stronger = powerOf(permanentProfile().stats) >= guardianFailPower * GUARDIAN_RETRY_POWER;
+  if (guardianBlocked && (stronger || now - guardianFailedAt > GUARDIAN_RETRY_SECONDS)) {
+    progress = challengeGuardian(progress);
+    guardianBlocked = false;
+    guardianStart = now;
   }
 }
 
@@ -659,7 +897,23 @@ function castReadySpells(now: number): void {
       slot.activeUntil = now + spellDurationMs(spell, rank, profileNow.durationPct) / 1000;
     }
   }
+  castCompanionAbility(now);
   profileNow = profileAt(now);
+}
+
+function castCompanionAbility(now: number): void {
+  const active = companions.active;
+  if (!withCompanions || active === null || now < companionAbilityTimer.readyAt) return;
+  const ability = COMPANIONS[active].ability;
+  const stars = companions.owned[active]?.stars ?? 1;
+  companionAbilityTimer.readyAt = now + abilityCooldownMs(ability, profileNow.cooldownPct) / 1000;
+  if (ability.effect.kind === 'blast') {
+    const damage = Math.round(gear.strikePower * (1 + passiveBonuses(ranks).strikePct) * abilityBlastMultiplier(ability, stars, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
+    abilityDamage += damage;
+    dealDamage(now, damage);
+  } else {
+    companionAbilityTimer.activeUntil = now + abilityDurationMs(ability, stars, profileNow.durationPct) / 1000;
+  }
 }
 
 function strike(now: number, interval: number): void {
@@ -671,6 +925,9 @@ function strike(now: number, interval: number): void {
     shardSources.coups++;
   }
   if (withNewSystems && random() < ARTIFACT_FIND_CHANCE) findArtifact(now);
+  // Minerai déterré au coup de pioche, dans la zone frappée
+  const oreTier = zoneMaterial(progress.zone);
+  if (oreTier !== null && random() < ORE_FIND_CHANCE * GALLERIES[gallery].modifiers.ores) ores[oreTier]++;
   dealDamage(now, hit.damage);
 }
 
@@ -727,6 +984,8 @@ for (let day = 0; day < days; day++) {
       slot.readyAt = Math.min(slot.readyAt, start);
       slot.activeUntil = 0;
     }
+    companionAbilityTimer.readyAt = Math.min(companionAbilityTimer.readyAt, start);
+    companionAbilityTimer.activeUntil = 0;
     let now = start;
     let nextDecision = now;
     // Le compte à rebours des événements ne tourne qu'en jeu : il repart à chaque session
@@ -743,6 +1002,7 @@ for (let day = 0; day < days; day++) {
         claimMissions();
         forgeAll(now);
         tryEvolve(now);
+        if (artifactSlots() !== artifacts.slots.filter((id) => id !== null).length && Object.keys(artifacts.owned).length > artifacts.slots.filter((id) => id !== null).length) equipBestArtifact(now);
         payPickaxe(now);
         runChallenge(now);
         tendCompanions(now);
@@ -754,6 +1014,8 @@ for (let day = 0; day < days; day++) {
     }
     lastSeen = end;
   }
+  reforgeArtifacts(lastSeen);
+  craftRunes();
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -761,7 +1023,7 @@ for (let day = 0; day < days; day++) {
         `Puissance ${big(powerOf(permanentProfile().stats))}, ${forges - forgesBefore} forges (éclats : coups ${got('coups')}, filons ${got('filons')}, ` +
         `zones ${got('zones')}, missions ${got('missions')}, absence ${got('absence')}, événements ${got('evenements')}), or en stock ${big(gold)}, ` +
         `points ${pointsSpent(ranks)}/${pointsEarned(progress.zone)}, artefacts ${Object.keys(artifacts.owned).length}, ` +
-        `atelier ${SLOT_IDS.map((slot) => slotLevel(workshop, slot)).join('/')} (×${workshopPower().toFixed(2)}), ` +
+        `atelier ${workshopSummary()} (×${workshopPower().toFixed(2)}), ` +
         `campement ${BUILDING_IDS.map((id) => buildingLevel(camp.levels, id)).join('/')}, puits record ${abyssRecord}`,
     );
   }
@@ -784,19 +1046,25 @@ if (withNewSystems) {
   const gearOnly = minerProfile(gear, [NO_BONUSES], NO_BUFFS);
   console.log(
     `Apport final : arbre + artefact ×${(powerOf(finalStats) / powerOf(gearOnly.stats)).toFixed(2)} de Puissance, ` +
-      `explosions ${pct(blastDamage / totalDamage)} des dégâts, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
-      `artefact porté ${artifacts.equipped ?? 'aucun'} (niv. ${artifacts.equipped ? artifacts.owned[artifacts.equipped] : 0}), ` +
+      `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
+      `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
+      `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
+      `ressources du Cœur ${essencesEarned} récoltées, ${runesBrewed} runes du Creuset, ${fusionsFailed} fusions ratées, ` +
+      `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );
 }
 if (withWorkshop) {
   console.log(
-    `Atelier : niveaux ${SLOT_IDS.map((slot) => `${slot} ${slotLevel(workshop, slot)}`).join(', ')}, ` +
+    `Atelier : pièces portées ${workshopSummary()}, ` +
       `×${workshopPower().toFixed(2)} de Puissance, ${big(goldWorkshop)} d'or dépensé`,
   );
 }
 if (withAbyss) {
-  console.log(`Puits sans fond : record ${abyssRecord} étages, ${abyssRuns} descentes, ${abyssShards} éclats, ${abyssStones} pierres d'éveil`);
+  console.log(
+    `Puits sans fond : record ${abyssRecord} étages, ${(abyssFloorsTotal / Math.max(abyssRuns, 1)).toFixed(1)} étages par descente en moyenne, ` +
+      `${abyssRuns} descentes, ${abyssShards} éclats, ${abyssStones} pierres d'éveil`,
+  );
 }
 if (withCamp) {
   console.log(
@@ -813,4 +1081,20 @@ if (withCompanions) {
       `premier légendaire ${legendaryAt || 'jamais'}, ${challengesPlayed} défis, ${(challengeMilestonesReached / Math.max(challengesPlayed, 1)).toFixed(1)} paliers par défi, ${companions.stones} pierres en stock`,
   );
 }
+console.log(
+  `Gardiens : ${guardianFails} échecs (${Object.entries(guardianFailsByZone).map(([zone, fails]) => `z${zone}×${fails}`).join(', ') || 'aucun'}), ` +
+    `réussis en ${guardianKills.join(', ')}`,
+);
 console.log(`Minerais en stock : ${TIER_IDS.filter((t) => ores[t] > 0).map((t) => `${t} ${ores[t]}`).join(', ')}`);
+
+/** Tirages du Puits séparés de ceux de la mine : ajouter le mini-jeu ne change pas le reste de la partie simulée. */
+function mulberryForAbyss(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}

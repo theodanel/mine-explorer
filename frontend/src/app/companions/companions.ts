@@ -1,6 +1,6 @@
 import { computed, DestroyRef, effect, inject, Injectable, signal } from '@angular/core';
 
-import { COMPANION_IDS, CompanionId, COMPANIONS_UNLOCK_ZONE } from '../balance/companions';
+import { COMPANION_IDS, CompanionId, COMPANIONS_UNLOCK_ZONE, zoneClearGivesEgg } from '../balance/companions';
 import { Rarity } from '../balance/skill-tree';
 import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
@@ -26,15 +26,18 @@ import {
   sendOnExpedition,
   setActive,
 } from './companion-rules';
+import { MissionCounters } from '../missions/mission-counters';
 
 const STORAGE_KEY = 'mine-explorer.companions';
+/** Dernière zone terminée dont l'œuf a été donné. Absente des sauvegardes d'avant les œufs de zone. */
+const ZONE_EGGS_KEY = 'mine-explorer.zone-eggs';
 /** Les minuteurs d'éclosion et d'expédition s'affichent à la seconde. */
 const TICK_MS = 1000;
 
 /**
  * Compagnons : œufs gagnés au Défi de la mine, éclosion par minuteur (qui continue jeu fermé), un compagnon
  * qui accompagne le mineur et donne son bonus, les autres en expédition. Les pierres d'éveil font monter les étoiles.
- * L'onglet s'ouvre à la zone 3 avec un œuf commun offert.
+ * L'onglet s'ouvre à la zone 2 avec un œuf commun offert.
  */
 @Injectable({ providedIn: 'root' })
 export class Companions {
@@ -42,9 +45,11 @@ export class Companions {
   private readonly shards = inject(GeodeShards);
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
+  private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<CompanionState>(loadState());
   private readonly nowState = signal(this.clock());
   private readonly lastHatching = signal<Hatching | null>(null);
+  private zoneEggsUpTo = loadZoneEggs();
 
   readonly now = this.nowState.asReadonly();
   readonly owned = computed(() => this.state().owned);
@@ -79,6 +84,23 @@ export class Companions {
         this.save({ ...addEgg(this.state(), 'common', this.clock()), gifted: true });
       }
     });
+    // Rattrapage : un joueur déjà loin reçoit les œufs des zones terminées avant leur arrivée
+    this.grantZoneEggs(this.progression.zone() - 1);
+  }
+
+  /** Un œuf commun par zone terminée (à partir de la zone 2), chacune une seule fois, même rejouée. */
+  grantZoneEggs(lastClearedZone: number): void {
+    const alreadyPaid = this.zoneEggsUpTo ?? 0;
+    if (lastClearedZone <= alreadyPaid) {
+      return;
+    }
+    for (let zone = alreadyPaid + 1; zone <= lastClearedZone; zone++) {
+      if (zoneClearGivesEgg(zone)) {
+        this.addEgg();
+      }
+    }
+    this.zoneEggsUpTo = lastClearedZone;
+    writeStorage(ZONE_EGGS_KEY, String(lastClearedZone));
   }
 
   /** Un œuf gagné (Défi de la mine), jamais sous la rareté donnée. */
@@ -137,6 +159,7 @@ export class Companions {
 
   send(id: CompanionId, hours: number): void {
     this.save(sendOnExpedition(this.state(), id, hours, this.clock()));
+    this.missionCounters.record('expeditionsSent');
   }
 
   collect(id: CompanionId): ExpeditionLoot | null {
@@ -172,4 +195,17 @@ function loadState(): CompanionState {
   }
   console.warn('Sauvegarde des compagnons invalide ignorée');
   return EMPTY_COMPANIONS;
+}
+
+function loadZoneEggs(): number | null {
+  const raw = readStorage(ZONE_EGGS_KEY);
+  if (raw === null) {
+    return null;
+  }
+  const zone = Number(raw);
+  if (Number.isSafeInteger(zone) && zone >= 0) {
+    return zone;
+  }
+  console.warn('Sauvegarde des œufs de zone invalide ignorée');
+  return null;
 }

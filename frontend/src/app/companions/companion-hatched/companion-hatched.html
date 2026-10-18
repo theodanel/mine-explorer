@@ -9,7 +9,7 @@
       (click)="$event.stopPropagation()"
     >
       <p class="headline">{{ view.headline }}</p>
-      <img class="hatched-icon" [src]="view.icon" alt="" width="200" height="200" />
+      <span class="rays"><img class="hatched-icon" [src]="view.icon" alt="" width="200" height="200" /></span>
       <h2 id="companion-hatched-title">{{ view.label }}</h2>
       <p class="rarity">{{ view.rarityLabel }} · {{ view.stars }} ★</p>
       @if (view.kind === 'duplicate') {

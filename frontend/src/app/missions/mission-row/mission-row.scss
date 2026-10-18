@@ -7,11 +7,19 @@
   align-items: center;
   gap: 3cqw;
   padding: 2cqw 2.5cqw;
+  // Fiche de parchemin, comme les listes de Legends of Mushroom ; la mission principale est cerclée d'or
+  border: 0.5cqw solid var(--ink);
   border-radius: 2.5cqw;
-  background: rgb(0 0 0 / 30%);
+  background:
+    var(--dots),
+    var(--parchment);
+  box-shadow: 0 0.5cqw 0 rgb(0 0 0 / 30%);
+  color: var(--parchment-text);
 
   &.main {
-    border: 0.5cqw solid #c48a4a;
+    box-shadow:
+      inset 0 0 0 0.6cqw var(--gold),
+      0 0.5cqw 0 rgb(0 0 0 / 30%);
   }
 }
 
@@ -32,7 +40,7 @@
   overflow: hidden;
   border: 0.4cqw solid #1a0f07;
   border-radius: 999px;
-  background: #3a2a1c;
+  background: rgb(91 58 28 / 25%);
 }
 
 .mission-fill {
@@ -45,9 +53,11 @@
   inset: 0;
   display: grid;
   place-items: center;
+  color: #fff;
   font-size: 2.6cqw;
   font-weight: bold;
-  text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
+  -webkit-text-stroke: 0.25cqw var(--ink);
+  paint-order: stroke fill;
 }
 
 .claim {

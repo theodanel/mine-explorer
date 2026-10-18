@@ -53,7 +53,7 @@ export class ArtifactFound {
       rarityLabel: RARITY_LABELS[def.rarity],
       lore: def.lore,
       effects: describeBonuses(artifactEffects(find.id, find.level)),
-      canEquip: find.kind !== 'maxed' && this.artifacts.equipped() !== find.id,
+      canEquip: find.kind !== 'maxed' && !this.artifacts.isWorn(find.id),
     };
   });
 

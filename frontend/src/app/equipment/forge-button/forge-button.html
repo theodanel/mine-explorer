@@ -2,7 +2,7 @@
   <button
     type="button"
     class="game-button wood side-button"
-    data-tuto="pickaxe"
+    appReveal="pickaxe"
     (click)="upgradeOpen.set(true)"
   >
     <span class="side-title">Pioche</span>
@@ -12,39 +12,40 @@
     }
   </button>
 
-  <span
-    class="forge-wrapper"
-  >
+  <span class="forge-wrapper" appReveal="forge">
     <button
       type="button"
       class="forge"
-      data-tuto="forge"
       [attr.aria-label]="forgeLabel()"
       (click)="onForgeClick()"
       [disabled]="!inventory.canForge() && !inventory.pending()"
     >
-      <img class="forge-icon" [class.striking]="inventory.forging()" src="assets/ui/forge-icon.png" alt="" width="128" height="128" />
+      <!-- L'enclume, pièce maîtresse : elle respire quand on peut forger, ses braises rougeoient, et elle encaisse le coup -->
+      <span class="anvil" [class.ready]="inventory.canForge()" [class.striking]="inventory.forging()">
+        <span class="embers" aria-hidden="true"></span>
+        <img class="anvil-img" src="assets/ui/forge-anvil.webp" alt="" width="320" height="314" />
+      </span>
       <span class="forge-cost" aria-hidden="true"
-        ><img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
+        ><img class="resource-icon" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />{{
           inventory.forgeCost
         }}</span
       >
       @if (inventory.pending()) {
-        <span class="badge" aria-hidden="true">!</span>
+        <span class="badge bounce" aria-hidden="true">!</span>
       }
     </button>
     <!-- Animation de forge : étincelles et objet qui monte, rejouées à chaque tirage -->
     @for (pop of forgedPop(); track pop.key) {
       <span class="forge-burst" [attr.data-tier]="pop.tier" aria-hidden="true"></span>
       <span class="forged-pop" [attr.data-tier]="pop.tier" aria-hidden="true">
-        <img [src]="pop.icon" alt="" width="128" height="128" />
+        <img class="item-frame" [attr.data-tier]="pop.tier" [src]="pop.icon" alt="" width="128" height="128" />
         @if (pop.sold !== null) {
           <span class="sold-tag">Vendu +{{ pop.sold }}</span>
         }
       </span>
     }
     <!-- Forge automatique : l'interrupteur et ses filtres, collés à la forge -->
-    <span class="forge-tools">
+    <span class="forge-tools" appReveal="forgeTools">
       <button
         type="button"
         class="tool auto"
@@ -68,14 +69,14 @@
   <button
     type="button"
     class="game-button wood side-button missions-button"
-    data-tuto="missions"
+    appReveal="missions"
     [attr.aria-label]="'Missions, ' + missions.claimableCount() + ' récompense(s) à récupérer'"
     (click)="missionsOpen.set(true)"
   >
     <span class="side-title">Missions</span>
     <span class="side-level">{{ missions.main().progress }} / {{ missions.main().mission.target }}</span>
     @if (missions.claimableCount() > 0) {
-      <span class="badge" aria-hidden="true">{{ missions.claimableCount() }}</span>
+      <span class="badge bounce" aria-hidden="true">{{ missions.claimableCount() }}</span>
     }
   </button>
 </div>
@@ -108,10 +109,10 @@
 
       <ul class="dialog-resources">
         <li aria-label="Pièces">
-          <img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ wallet.coins() }}
+          <img class="resource-icon" src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ compact(wallet.coins()) }}
         </li>
         <li aria-label="Éclats de géode">
-          <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />{{
+          <img class="resource-icon" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />{{
             shards.amount()
           }}
         </li>
@@ -171,7 +172,7 @@
         >
           Niveau supérieur
           <span class="upgrade-cost"
-            ><img class="resource-icon" src="assets/ui/coin.png" alt="" width="128" height="128" />{{ cost }}</span
+            ><img class="resource-icon" src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ compact(cost) }}</span
           >
         </button>
       } @else {

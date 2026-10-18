@@ -1,13 +1,25 @@
 // Règles pures des missions, inspirées de Legends of Mushroom : une mission principale à la fois,
 // qui s'enchaîne sans fin, et trois missions du jour avec un coffre. Elles complètent les éclats gagnés en minant.
-import { MAX_PICKAXE_LEVEL, STAGES_PER_ZONE } from '../balance/balance';
+import { ABYSS_UNLOCK_FORM } from '../balance/abyss';
+import { EVOLUTION_FORMS, type EvolutionId, MAX_PICKAXE_LEVEL, STAGES_PER_ZONE } from '../balance/balance';
+import { COMPANIONS_UNLOCK_ZONE } from '../balance/companions';
+import { WORKSHOP_UNLOCK_FORM } from '../balance/workshop';
 
 /**
  * Compteurs cumulés depuis le début de la partie, alimentés par les actions du joueur.
  * « rocksBroken » compte les filons épuisés (un filon = un rocher). L'identifiant reste celui-ci
  * pour ne pas invalider les sauvegardes existantes ; seuls les libellés parlent de filons.
  */
-export const COUNTER_IDS = ['rocksBroken', 'itemsForged', 'itemsSold', 'segmentsPaid', 'eventsTouched'] as const;
+export const COUNTER_IDS = [
+  'rocksBroken',
+  'itemsForged',
+  'itemsSold',
+  'segmentsPaid',
+  'eventsTouched',
+  'workshopUpgrades',
+  'adventureRuns',
+  'expeditionsSent',
+] as const;
 export type CounterId = (typeof COUNTER_IDS)[number];
 export type Counters = Readonly<Record<CounterId, number>>;
 
@@ -15,7 +27,16 @@ export type Counters = Readonly<Record<CounterId, number>>;
 export type GaugeId = 'stagesReached' | 'pickaxeLevel';
 export type Gauges = Readonly<Record<GaugeId, number>>;
 
-export const EMPTY_COUNTERS: Counters = { rocksBroken: 0, itemsForged: 0, itemsSold: 0, segmentsPaid: 0, eventsTouched: 0 };
+export const EMPTY_COUNTERS: Counters = {
+  rocksBroken: 0,
+  itemsForged: 0,
+  itemsSold: 0,
+  segmentsPaid: 0,
+  eventsTouched: 0,
+  workshopUpgrades: 0,
+  adventureRuns: 0,
+  expeditionsSent: 0,
+};
 
 export interface MissionReward {
   readonly shards: number;
@@ -28,6 +49,8 @@ export interface MissionDef {
   /** Un compteur se mesure depuis le début de la mission ; une jauge se lit telle quelle. */
   readonly metric: { readonly kind: 'counter'; readonly id: CounterId } | { readonly kind: 'gauge'; readonly id: GaugeId };
   readonly target: number;
+  /** Mission du jour liée à un menu : elle n'apparaît qu'une fois ce menu ouvert. */
+  readonly unlock?: { readonly form: EvolutionId } | { readonly zone: number };
   readonly reward: MissionReward;
 }
 
@@ -78,10 +101,26 @@ export const DAILY_MISSIONS: readonly MissionDef[] = [
   { id: 'daily-rocks', ...counterMission('rocksBroken', 1, () => 'Épuise un filon', 6) },
   { id: 'daily-forge', ...counterMission('itemsForged', 10, (n) => `Forge ${n} objets`, 6) },
   { id: 'daily-sell', ...counterMission('itemsSold', 5, (n) => `Vends ${n} objets`, 5) },
+  // Plus de missions, chacune liée à un pan du jeu (demande de Théo, 14/10/2026) : la forge manquait d'éclats
+  { id: 'daily-events', ...counterMission('eventsTouched', 3, (n) => `Touche ${n} événements de mine`, 6) },
+  { id: 'daily-workshop', ...counterMission('workshopUpgrades', 3, (n) => `Renforce ${n} fois à l'Atelier`, 8), unlock: { form: WORKSHOP_UNLOCK_FORM } },
+  { id: 'daily-adventure', ...counterMission('adventureRuns', 1, () => 'Joue une aventure (Puits ou Chasse au filon)', 8), unlock: { form: ABYSS_UNLOCK_FORM } },
+  { id: 'daily-expedition', ...counterMission('expeditionsSent', 1, () => 'Envoie un compagnon en expédition', 6), unlock: { zone: COMPANIONS_UNLOCK_ZONE } },
 ];
 
 /** Coffre offert quand toutes les missions du jour sont récupérées. */
-export const DAILY_CHEST_REWARD: MissionReward = { shards: 10, gold: 0 };
+export const DAILY_CHEST_REWARD: MissionReward = { shards: 15, gold: 0 };
+
+/** Missions du jour ouvertes à ce joueur, selon sa forme et sa zone. */
+export function availableDailyMissions(formIndex: number, zone: number): readonly MissionDef[] {
+  return DAILY_MISSIONS.filter((mission) => {
+    const unlock = mission.unlock;
+    if (unlock === undefined) {
+      return true;
+    }
+    return 'zone' in unlock ? zone >= unlock.zone : formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === unlock.form);
+  });
+}
 
 // ─── Avancement ────────────────────────────────────────────────────────────
 

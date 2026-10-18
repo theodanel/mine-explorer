@@ -1,0 +1,279 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 3cqw;
+  height: 100%;
+  padding: 4cqw;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.back {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  border: 0.4cqw solid rgb(26 15 7 / 70%);
+  border-radius: 50%;
+  background: linear-gradient(#8a5a33, #4e2f17);
+  color: #f3e6d0;
+  font: bold 6.5cqw / 1 var(--font-display);
+  cursor: pointer;
+}
+
+.stall {
+  display: grid;
+  align-content: start;
+  gap: 3cqw;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Le marchand et sa bulle
+.trader {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
+
+.portrait {
+  width: 30cqw;
+  height: 30cqw;
+  flex: none;
+  object-fit: contain;
+  filter: drop-shadow(0 1.2cqw 1cqw rgb(0 0 0 / 55%));
+  animation: idle 2.2s ease-in-out infinite alternate;
+
+  &.pleased {
+    animation: hop 0.45s ease-out;
+  }
+
+  &.annoyed {
+    animation: huff 0.45s ease-in-out;
+  }
+}
+
+@keyframes idle {
+  to {
+    transform: translateY(-1cqw) rotate(-1deg);
+  }
+}
+
+@keyframes hop {
+  50% {
+    transform: translateY(-3cqw) scale(1.05);
+  }
+}
+
+@keyframes huff {
+  25%,
+  75% {
+    transform: translateX(-1.5cqw) rotate(-3deg);
+  }
+
+  50% {
+    transform: translateX(1.5cqw) rotate(3deg);
+  }
+}
+
+.speech {
+  position: relative;
+  margin: 0;
+  padding: 3cqw 3.5cqw;
+  border-radius: 3cqw;
+  background: #fff3d6;
+  color: #3a2405;
+  font: 3.4cqw / 1.35 var(--font-body);
+  box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 35%);
+  animation: pop 0.3s ease-out;
+
+  // La pointe de la bulle, vers le marchand
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -2cqw;
+    border: 1.5cqw solid transparent;
+    border-right: 2cqw solid #fff3d6;
+    border-left: 0;
+    transform: translateY(-50%);
+  }
+
+  &.angry {
+    background: #ffd9cf;
+
+    &::before {
+      border-right-color: #ffd9cf;
+    }
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+.mood {
+  display: grid;
+  gap: 1cqw;
+  padding: 0 1cqw;
+  font-size: 3.2cqw;
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.mood-bar {
+  height: 2.4cqw;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.mood-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e86a3c, #ffd34d 50%, #7ee08a);
+  background-size: 100cqw 100%;
+  transition: width 0.4s ease-out;
+}
+
+.offers {
+  display: grid;
+  gap: 2.5cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.offer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.5cqw 3cqw;
+  padding: 3cqw;
+  border-radius: 3.5cqw;
+  background: rgb(36 23 13 / 82%);
+  box-shadow: inset 0 0 0 0.35cqw rgb(138 95 56 / 55%);
+
+  &.done {
+    opacity: 0.55;
+  }
+}
+
+.offer-icon {
+  width: 13cqw;
+  height: 13cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0.6cqw 0.6cqw rgb(0 0 0 / 50%));
+}
+
+.offer-text {
+  display: grid;
+  gap: 1cqw;
+
+  strong {
+    font-size: 3.8cqw;
+  }
+}
+
+.price {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+  color: #ffd34d;
+  font: bold 3.6cqw / 1 var(--font-body);
+
+  img {
+    width: 4.5cqw;
+    height: 4.5cqw;
+  }
+}
+
+.tag {
+  justify-self: start;
+  padding: 0.6cqw 2cqw;
+  border-radius: 999px;
+  font: bold 2.8cqw / 1 var(--font-body);
+
+  &.sold {
+    background: rgb(126 224 138 / 25%);
+    color: #b8f0b0;
+  }
+
+  &.gone {
+    background: rgb(232 106 60 / 25%);
+    color: #ffb8a0;
+  }
+}
+
+.offer-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 2cqw;
+
+  .game-button {
+    flex: 1;
+    padding: 1.8cqw 1cqw;
+    font-size: 3.2cqw;
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 2.9cqw;
+  line-height: 1.4;
+  opacity: 0.75;
+}
+
+// Absent : sa silhouette, et combien de jours avant son retour
+.away {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3cqw;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 3.6cqw;
+    line-height: 1.4;
+  }
+
+  strong {
+    color: #ffd34d;
+  }
+}
+
+.silhouette {
+  width: 40cqw;
+  height: 40cqw;
+  object-fit: contain;
+  filter: brightness(0) opacity(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait,
+  .speech {
+    animation: none;
+  }
+}

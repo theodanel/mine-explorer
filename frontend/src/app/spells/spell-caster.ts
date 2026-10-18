@@ -1,6 +1,7 @@
 import { DestroyRef, DOCUMENT, inject, Injectable } from '@angular/core';
 
 import { blastStrikeMultiplier } from '../balance/skill-tree';
+import { abilityBlastMultiplier } from '../companions/companion-ability-rules';
 import { Mining } from '../mining/mining';
 import { Skills } from '../skills/skills';
 import { Spells } from './spells';
@@ -36,6 +37,19 @@ export class SpellCaster {
     return true;
   }
 
+  /** Lance la compétence du familier : une explosion frappe tout de suite, un effet dure quelques secondes. */
+  castCompanion(): boolean {
+    const launched = this.spells.triggerCompanion();
+    if (launched === null) {
+      return false;
+    }
+    if (launched.ability.effect.kind === 'blast') {
+      // La scène montre l'explosion de la dynamite : la compétence n'a pas encore d'effet visuel à elle
+      this.mining.blast('dynamite', abilityBlastMultiplier(launched.ability, launched.stars, this.spells.modifiers().blastPct));
+    }
+    return true;
+  }
+
   private autoCast(): void {
     // Onglet caché : la mine est arrêtée et l'absence prend le relais, les sorts ne doivent pas tourner en double
     if (!this.skills.auto() || this.document.hidden) {
@@ -46,5 +60,8 @@ export class SpellCaster {
         this.cast(index);
       }
     });
+    if (this.spells.companionSlot()?.ready) {
+      this.castCompanion();
+    }
   }
 }

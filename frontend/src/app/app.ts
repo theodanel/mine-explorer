@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -6,12 +6,19 @@ import { WorkshopPage } from './workshop/workshop-page/workshop-page';
 import { AdventuresPage } from './adventures/adventures-page/adventures-page';
 import { CampPage } from './camp/camp-page/camp-page';
 import { AbyssPage } from './abyss/abyss-page/abyss-page';
+import { MinehuntPage } from './minehunt/minehunt-page/minehunt-page';
+import { MerchantPage } from './merchant/merchant-page/merchant-page';
+import { ForgeExpressPage } from './forge-express/forge-express-page/forge-express-page';
+import { TorchlightPage } from './torchlight/torchlight-page/torchlight-page';
+import { MerchantHint } from './merchant/merchant-hint/merchant-hint';
+import { ZoneMap } from './progression/zone-map/zone-map';
 import { ColumnSlot, EquipmentColumn } from './equipment/equipment-column/equipment-column';
 import { ForgeButton } from './equipment/forge-button/forge-button';
 import { zoneMaterial } from './balance/balance';
 import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
+import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
@@ -24,24 +31,40 @@ import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
-import { TutorialOverlay } from './tutorial/tutorial-overlay/tutorial-overlay';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
+import { RevealDirective } from './onboarding/reveal.directive';
+import { RevealHint } from './onboarding/reveal-hint/reveal-hint';
 import { Ores } from './ores/ores';
 import { FooterMenu } from './navigation/footer-menu/footer-menu';
 import { Navigation } from './navigation/navigation';
 import { Progression } from './progression/progression';
+import { Sound } from './audio/sound';
 import { SkillsPage } from './skills/skills-page/skills-page';
 import { SpellBar } from './spells/spell-bar/spell-bar';
 import { SpellCaster } from './spells/spell-caster';
 import { ZoneBanner } from './progression/zone-banner/zone-banner';
+import { LotteryButton } from './lottery/lottery-button/lottery-button';
+import { RewardFlightLayer } from './reward-flight/reward-flight-layer';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
+import { RankStars } from './evolution/rank-stars/rank-stars';
+
+/** En dessous de 100 000, le nombre exact ; au-delà, la forme courte. */
+const COMPACT_FROM = 100_000;
+const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+
+function resourceLabel(amount: number): string {
+  return amount < COMPACT_FROM ? String(amount) : COMPACT.format(amount);
+}
 
 @Component({
   selector: 'app-root',
   imports: [
     MineScene,
+    RankStars,
+    RewardFlightLayer,
+    LotteryButton,
     ZoneBanner,
     EquipmentColumn,
     SpellBar,
@@ -53,14 +76,22 @@ import { Wallet } from './wallet/wallet';
     AdventuresPage,
     CampPage,
     AbyssPage,
+    MinehuntPage,
+    MerchantPage,
+    ForgeExpressPage,
+    TorchlightPage,
+    MerchantHint,
+    ZoneMap,
     FooterMenu,
     ItemCompare,
     ArtifactFound,
     OfflineReport,
     EvolutionPage,
+    HeartForgePage,
     ProfilePage,
     SplashScreen,
-    TutorialOverlay,
+    RevealHint,
+    RevealDirective,
     MineEventLayer,
     GalleryChoice,
     CompanionsPage,
@@ -84,10 +115,13 @@ export class App {
 
   /** Minerai que donne la zone en cours, affiché en haut pour voir la récolte avancer (aucun en zone 1). */
   protected readonly zoneOre = computed(() => {
-    const tier = zoneMaterial(this.progression.zone());
+    const tier = zoneMaterial(this.progression.playingZone());
     return tier === null ? null : { tier, label: TIER_LABELS[tier], amount: this.ores.stock()[tier] };
   });
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
+  /** Grands nombres abrégés (« 45,2 M ») : le compteur reste lisible en haut d'un écran de téléphone. */
+  protected readonly coinsLabel = computed(() => resourceLabel(this.wallet.coins()));
+  protected readonly shardsLabel = computed(() => resourceLabel(this.shards.amount()));
 
   // Panneau du bas : les 5 emplacements, puis l'artefact et le compagnon
   protected readonly equipmentSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag', 'gloves', 'boots', 'artifact', 'companion'];
@@ -95,5 +129,8 @@ export class App {
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page
     inject(SpellCaster);
+    // Chaque zone a sa musique : elle suit la zone affichée, y compris un retour dans une zone passée
+    const sound = inject(Sound);
+    effect(() => sound.setMusicZone(this.progression.playingZone()));
   }
 }

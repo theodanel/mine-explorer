@@ -26,11 +26,11 @@
   margin-left: auto;
   width: 9cqw;
   height: 9cqw;
-  border: 0.6cqw solid #1a0f07;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: linear-gradient(#ee6a4f, #a3271a);
   color: #fff;
-  font: bold 6cqw / 1 Arial, sans-serif;
+  font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -61,7 +61,7 @@
     padding: 0.8cqw 2.5cqw 0.8cqw 1cqw;
     border-radius: 999px;
     background: rgb(0 0 0 / 35%);
-    font: bold 3.6cqw / 1 Arial, sans-serif;
+    font: bold 3.6cqw / 1 var(--font-body);
   }
 
   img {
@@ -107,22 +107,24 @@
   align-items: center;
   gap: 3cqw;
   padding: 2cqw 2.5cqw;
-  border: 0.6cqw solid #1a0f07;
+  // Fiche de parchemin : texte brun sur fond crème, comme les listes de Legends of Mushroom
+  border: 0.5cqw solid var(--ink);
   border-radius: 3cqw;
-  background: linear-gradient(#4a3019, #2a1a0d);
-  box-shadow: inset 0 0.4cqw 0 rgb(255 255 255 / 8%);
+  background:
+    var(--dots),
+    var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
 }
 
-// Cadre de l'emplacement, comme dans les colonnes d'équipement, avec son niveau en médaille
+// Cadre de la pièce, aux couleurs de sa qualité (cadre partagé .item-frame), avec son niveau en médaille
 .frame {
   position: relative;
   display: grid;
   place-items: center;
   width: 15cqw;
   height: 15cqw;
-  border: 0.6cqw solid #1a0f07;
-  border-radius: 2.5cqw;
-  background: linear-gradient(#6e4a2c, #4a3019);
+  overflow: visible;
 
   img {
     width: 80%;
@@ -144,7 +146,7 @@
   border-radius: 999px;
   background: linear-gradient(#ffe27a, #e09a12);
   color: #3a2405;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  font: bold 3cqw / 1 var(--font-body);
 }
 
 .text {
@@ -158,17 +160,24 @@
   }
 
   h3 {
-    font-size: 4cqw;
+    color: #4a2a10;
+    font-size: 4.2cqw;
   }
 }
 
+.hint {
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
 .effect {
-  color: #9dffa4;
+  color: #2e8b3a;
+  font-weight: 800;
   font-size: 3.1cqw;
 }
 
 .next {
-  color: #f3e6d0;
+  color: var(--parchment-text);
   white-space: nowrap;
   opacity: 0.7;
 }
@@ -185,21 +194,110 @@
   gap: 0.6cqw;
   padding: 0.4cqw 1.6cqw 0.4cqw 0.6cqw;
   border-radius: 999px;
-  background: rgb(0 0 0 / 30%);
-  color: #ffd34d;
-  font: bold 3cqw / 1 Arial, sans-serif;
+  background: rgb(91 58 28 / 14%);
+  color: #8a5300;
+  font: bold 3cqw / 1 var(--font-body);
 
   img {
     width: 4.5cqw;
     height: 4.5cqw;
   }
 
+  small {
+    font-size: 2.4cqw;
+    opacity: 0.7;
+  }
+
   &.short {
-    color: #ff6b5e;
+    color: #c0392b;
   }
 }
 
 .upgrade {
   padding: 2.2cqw 3cqw;
   font-size: 3.4cqw;
+}
+
+// Raccourci vers la zone où se mine le minerai qui manque
+.farm-link {
+  justify-self: start;
+  padding: 0.8cqw 2.5cqw;
+  border: 0.4cqw solid #1a0f07;
+  border-radius: 999px;
+  background: linear-gradient(#7fe8ff, #2a9bc4);
+  color: #082a36;
+  font: bold 2.8cqw / 1.2 var(--font-body);
+  cursor: pointer;
+}
+
+// ─── Affinités et reforge ────────────────────────────────────────────────
+
+.affinities {
+  margin: 0;
+  font-size: 2.6cqw;
+  opacity: 0.7;
+}
+
+.reforge {
+  display: grid;
+  gap: 1cqw;
+  margin-top: 1.2cqw;
+  padding-top: 1.2cqw;
+  border-top: 0.3cqw dashed rgb(91 58 28 / 35%);
+}
+
+.reforge-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  font-size: 2.7cqw;
+  opacity: 0.85;
+
+  img {
+    width: 3.6cqw;
+    height: 3.6cqw;
+    object-fit: contain;
+  }
+}
+
+.affixes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1cqw;
+}
+
+.affix {
+  padding: 0.8cqw 2cqw;
+  border: none;
+  border-radius: 999px;
+  background: #fff7e2;
+  box-shadow:
+    inset 0 0 0 0.35cqw var(--gold-dark),
+    0 0.35cqw 0 rgb(91 58 28 / 30%);
+  color: #4a2a10;
+  font: bold 2.7cqw / 1 var(--font-body);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  // L'affixe qu'on vient d'obtenir brille un instant
+  &.fresh {
+    animation: fresh 0.9s ease-out;
+  }
+}
+
+@keyframes fresh {
+  from {
+    background: rgb(255 211 77 / 70%);
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .affix.fresh {
+    animation: none;
+  }
 }

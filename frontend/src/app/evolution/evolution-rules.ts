@@ -24,10 +24,16 @@ const NUMBER = new Intl.NumberFormat('fr-FR');
 
 const LABELS: Readonly<Record<EvolutionMetric, (target: number) => string>> = {
   zone: (target) => `Atteindre la zone ${target}`,
+  zoneCleared: (target) => `Terminer la zone ${target}`,
   pickaxeLevel: (target) => `Pioche niveau ${target}`,
   itemsForged: (target) => `Forger ${NUMBER.format(target)} objets`,
   rocksBroken: (target) => `Épuiser ${target} filons`,
 };
+
+/** Nom affiché d'une forme, avec ses étoiles de Légende : « Légende de la mine ★★ ». */
+export function formTitle(form: EvolutionForm): string {
+  return form.stars > 0 ? `${form.label} ${'★'.repeat(form.stars)}` : form.label;
+}
 
 /** Forme suivante, ou null si le mineur est déjà à sa dernière forme. */
 export function nextForm(formIndex: number): EvolutionForm | null {

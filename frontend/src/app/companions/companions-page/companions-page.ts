@@ -12,27 +12,34 @@ import {
   MAX_STARS,
 } from '../../balance/companions';
 import { RARITY_IDS, RARITY_LABELS } from '../../balance/skill-tree';
-import { companionIconUrl, eggIconUrl } from '../../loading/game-assets';
+import { Challenge } from '../../challenge/challenge';
+import { companionIconUrl, eggIconUrl, LOTTERY_ICON, REFONTE_IMAGES } from '../../loading/game-assets';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
 import { companionEffects, expeditionLoot } from '../companion-rules';
 import { Companions } from '../companions';
+import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
 /** Collection de compagnons : couveuse, vitrine, et pour chacun son bonus, sa nourriture et ses expéditions. */
 @Component({
   selector: 'app-companions-page',
+  imports: [RewardFlightDirective],
   templateUrl: './companions-page.html',
   styleUrl: './companions-page.scss',
 })
 export class CompanionsPage {
   protected readonly companions = inject(Companions);
   private readonly navigation = inject(Navigation);
+  private readonly challenge = inject(Challenge);
   private readonly sound = inject(Sound);
   private readonly selectedId = signal<CompanionId | null>(null);
 
   protected readonly total = COMPANION_IDS.length;
   protected readonly unlockZone = COMPANIONS_UNLOCK_ZONE;
+  protected readonly sourceIcons = { zone: eggIconUrl('common'), challenge: REFONTE_IMAGES.challengeTrophy, lottery: LOTTERY_ICON };
+  /** Paliers du Défi atteints et pas encore récupérés. */
+  protected readonly challengeReady = computed(() => this.challenge.claimable().length);
   protected readonly maxStars = Array.from({ length: MAX_STARS }, (_, index) => index);
 
   /** Chances affichées telles quelles, et le compte à rebours de la garantie. */

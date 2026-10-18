@@ -53,3 +53,76 @@
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0.3cqw 0.3cqw rgb(0 0 0 / 80%);
 }
+
+// ─── Gardien de fin de zone ──────────────────────────────────────────────
+
+.health.guardian {
+  width: 30cqw;
+  height: 4cqw;
+  box-shadow: 0 0 2cqw rgb(200 60 255 / 45%);
+
+  .health-fill {
+    background:
+      linear-gradient(rgb(255 255 255 / 30%), transparent 50%),
+      linear-gradient(#c45cff, #6b1fa8);
+  }
+}
+
+// Chrono du gardien, posé au-dessus de sa barre de vie
+.guardian-timer {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.2cqw;
+  width: 40cqw;
+  padding: 0.8cqw 1.8cqw;
+  border-radius: 999px;
+  background: rgb(20 10 25 / 80%);
+  color: #f3e6ff;
+  font: bold 2.6cqw / 1 var(--font-body);
+  transform: translate(-50%, calc(-100% - 5.5cqw));
+  pointer-events: none;
+
+  &.urgent {
+    color: #ff9a8a;
+    animation: urgent 0.5s ease-in-out infinite alternate;
+
+    .timer-fill {
+      background: linear-gradient(90deg, #ff6a4a, #ffb04a);
+    }
+  }
+}
+
+.timer-bar {
+  height: 1.6cqw;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 15%);
+}
+
+.timer-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd34d, #fff1a8);
+  transition: width 0.1s linear;
+}
+
+.timer-value {
+  min-width: 5cqw;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes urgent {
+  to {
+    transform: translate(-50%, calc(-100% - 5.5cqw)) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guardian-timer.urgent {
+    animation: none;
+  }
+}

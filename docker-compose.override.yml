@@ -1,0 +1,12 @@
+# Local uniquement : docker compose charge ce fichier tout seul et publie les ports sur la machine.
+# Coolify ne le lit pas (il ne prend que docker-compose.yml) : en ligne, c'est son proxy qui expose le jeu.
+#   Le jeu : http://localhost:8080 · le serveur : http://localhost:8081 (réglables dans .env)
+
+services:
+  frontend:
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+
+  backend:
+    ports:
+      - "${BACKEND_PORT:-8081}:8080"

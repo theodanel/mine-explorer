@@ -29,12 +29,12 @@
 .close {
   width: 8cqw;
   height: 8cqw;
-  border: 0.6cqw solid #2a1a0d;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #e86a50, #a02a14);
   box-shadow: 0 0.6cqw 0 #5a170b;
   color: #fff;
-  font: bold 5cqw / 1 Arial, sans-serif;
+  font: bold 5cqw / 1 var(--font-display);
   cursor: pointer;
 }
 
@@ -56,7 +56,7 @@ h3 {
 
 .done {
   min-width: 17cqw;
-  color: #b8f0b0;
+  color: #9dffa4;
   font-size: 3.2cqw;
   font-weight: bold;
   text-align: center;

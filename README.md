@@ -18,6 +18,8 @@ npm start                 # http://localhost:4200
 
 Backend (facultatif, aucune route pour l'instant) : `cd backend && ./mvnw spring-boot:run`.
 
+Ou tout le projet dans Docker, depuis la racine : `docker compose up --build` (jeu sur http://localhost:8080, serveur sur http://localhost:8081). Le même compose se déploie tel quel sur Coolify. Voir [docs/technique/docker.md](docs/technique/docker.md).
+
 ## Vérifier
 
 ```bash

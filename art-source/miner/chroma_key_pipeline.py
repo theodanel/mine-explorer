@@ -63,7 +63,8 @@ for i, im in enumerate(small):
         "sourceSize": {"w": fw, "h": fh},
         "duration": round(1000 / FPS),
     }
-image_name = f"spritesheet_{NAME}_v2.png"
+# WebP : 4,6 Mo en PNG, 0,6 Mo en WebP pour la même netteté à l'écran
+image_name = f"spritesheet_{NAME}_v2.webp"
 atlas = {
     "frames": atlas_frames,
     "animations": {NAME: list(atlas_frames)},
@@ -77,6 +78,6 @@ atlas = {
         "frameTags": [{"name": NAME, "from": 0, "to": len(small) - 1, "direction": "forward"}],
     },
 }
-sheet.save(OUT / image_name, optimize=True)
+sheet.save(OUT / image_name, "WEBP", quality=90, method=6)
 (OUT / f"atlas_{NAME}_v2.json").write_text(json.dumps(atlas, indent=2), encoding="utf-8")
 print(f"crop=({x0},{y0})-({x1},{y1}) frame={fw}x{fh} n={len(small)} sheet={sheet_w}x{sheet_h}")

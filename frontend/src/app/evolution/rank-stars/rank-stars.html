@@ -1,0 +1,10 @@
+<span class="stars" role="img" [attr.aria-label]="label()">
+  @for (filled of slots(); track $index) {
+    <img
+      [src]="filled ? 'assets/ui/etoile-pleine.webp' : 'assets/ui/etoile-vide.webp'"
+      alt=""
+      width="128"
+      height="122"
+    />
+  }
+</span>

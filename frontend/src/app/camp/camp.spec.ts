@@ -47,8 +47,8 @@ describe('Camp', () => {
     const camp = setup(5, cost.gold, 10);
     camp.build('well');
     now += 10 * HOUR;
-    expect(camp.collectWell()).toBe(3);
-    expect(TestBed.inject(GeodeShards).amount()).toBe(3);
+    expect(camp.collectWell()).toBe(10);
+    expect(TestBed.inject(GeodeShards).amount()).toBe(10);
     expect(camp.collectWell()).toBe(0);
   });
 

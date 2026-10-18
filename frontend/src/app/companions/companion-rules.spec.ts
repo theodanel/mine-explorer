@@ -68,8 +68,8 @@ describe('companion-rules', () => {
     expect(canSend(away, 'bat', 4)).toBe(false);
     expect(collectExpedition(away, 'canary', 1000)).toBeNull();
     const back = collectExpedition(away, 'canary', 8 * 3600 * 1000);
-    expect(back?.loot).toEqual({ shards: 4, stones: 1 });
-    expect(back?.state.stones).toBe(1);
+    expect(back?.loot).toEqual({ shards: 12, stones: 2 });
+    expect(back?.state.stones).toBe(2);
     expect(back?.state.expeditions.canary).toBeUndefined();
   });
 

@@ -10,7 +10,7 @@ import { MissionCounters } from './mission-counters';
 import {
   Counters,
   DAILY_CHEST_REWARD,
-  DAILY_MISSIONS,
+  availableDailyMissions,
   dayKey,
   Gauges,
   isComplete,
@@ -21,6 +21,7 @@ import {
   MissionReward,
   completeCounters,
 } from './mission-rules';
+import { Evolution } from '../evolution/evolution';
 
 const STORAGE_KEY = 'mine-explorer.missions';
 /** Vérifie le passage à minuit pendant que le jeu reste ouvert. */
@@ -50,6 +51,7 @@ export class Missions {
   private readonly counters = inject(MissionCounters).counters;
   private readonly progression = inject(Progression);
   private readonly forge = inject(Forge);
+  private readonly evolution = inject(Evolution);
   private readonly wallet = inject(Wallet);
   private readonly shards = inject(GeodeShards);
   private readonly clock = inject(CLOCK);
@@ -67,7 +69,9 @@ export class Missions {
 
   readonly daily = computed<readonly MissionView[]>(() => {
     const { dayBaseline, dailyClaimed } = this.state();
-    return DAILY_MISSIONS.map((mission) => this.view(mission, dayBaseline, dailyClaimed.includes(mission.id)));
+    return availableDailyMissions(this.evolution.index(), this.progression.zone()).map((mission) =>
+      this.view(mission, dayBaseline, dailyClaimed.includes(mission.id)),
+    );
   });
 
   readonly chestReady = computed(

@@ -32,7 +32,13 @@
           </span>
         </article>
       }
-      @if (board.top.length === 0) {
+      @if (pending(); as value) {
+        <p class="pending">
+          Ta progression se valide : le classement la compte petit à petit depuis ta première connexion, pour écarter
+          les parties trafiquées. <strong>{{ value }}</strong> y apparaîtra en entier d'ici quelques heures.
+        </p>
+      }
+            @if (board.top.length === 0) {
         <p class="hint">Personne n'est encore classé.</p>
       }
       <ol class="rows">

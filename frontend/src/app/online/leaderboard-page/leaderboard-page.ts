@@ -1,4 +1,8 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
+
+import { Abyss } from '../../abyss/abyss';
+import { Progression } from '../../progression/progression';
+import { OnlineAccount } from '../online-account';
 
 import { OnlineApi } from '../online-api';
 import { isLeaderboard, Leaderboard, LeaderboardType } from '../online-rules';
@@ -28,6 +32,9 @@ const PODIUM = 3;
 })
 export class LeaderboardPage {
   private readonly api = inject(OnlineApi);
+  private readonly account = inject(OnlineAccount);
+  private readonly progression = inject(Progression);
+  private readonly abyss = inject(Abyss);
   /** Retour au profil, qui affiche ce classement à la place de son contenu. */
   readonly closed = output();
 
@@ -36,6 +43,20 @@ export class LeaderboardPage {
   protected readonly type = signal<LeaderboardType>('depth');
   protected readonly board = signal<Leaderboard | null>(null);
   protected readonly failed = signal(false);
+
+  /**
+   * Progression de l'appareil plus haute que celle classée : le serveur la valide petit à petit depuis la première
+   * connexion (anti-triche, voir PlausibilityRules.ranked). On l'annonce pour que le joueur ne croie pas à un bug.
+   */
+  protected readonly pending = computed(() => {
+    const board = this.board();
+    if (board === null || !this.account.signedIn()) {
+      return null;
+    }
+    const local = this.type() === 'depth' ? this.localDepth() : this.abyss.record();
+    const ranked = board.me?.value ?? 0;
+    return local > ranked ? this.format(local) : null;
+  });
 
   constructor() {
     void this.load('depth');
@@ -61,6 +82,11 @@ export class LeaderboardPage {
     const zone = Math.floor((value - 1) / STAGES_PER_ZONE) + 1;
     const stage = ((value - 1) % STAGES_PER_ZONE) + 1;
     return `Zone ${zone} · filon ${stage}`;
+  }
+
+  private localDepth(): number {
+    const { zone, stage } = this.progression.progress();
+    return (zone - 1) * STAGES_PER_ZONE + stage;
   }
 
   protected close(): void {

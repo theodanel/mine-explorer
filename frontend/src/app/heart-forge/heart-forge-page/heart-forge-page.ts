@@ -38,18 +38,12 @@ const HELP_SEEN_KEY = 'mine-explorer.forge-du-coeur-aide';
 const MESSAGE_MS = 2500;
 const CRUCIBLE_SLOTS = 3;
 
-/** Icône d'une rune : celle de son élément ; une alliance prend celle d'un élément proche en attendant son image. */
-const ALLIANCE_STAND_IN: Readonly<Record<(typeof ALLIANCE_RUNES)[number], (typeof RUNE_ELEMENTS)[number]>> = {
-  magma: 'fire',
-  storm: 'ice',
-  grove: 'earth',
-  eclipse: 'shadow',
-  heart: 'light',
-};
-
 export function runeIconUrl(type: RuneType): string {
-  const element = (RUNE_ELEMENTS as readonly string[]).includes(type) ? type : ALLIANCE_STAND_IN[type as keyof typeof ALLIANCE_STAND_IN];
-  return `assets/ui/forge-du-coeur/rune-${element}.webp`;
+  return `assets/ui/forge-du-coeur/rune-${type}.webp`;
+}
+
+export function essenceIconUrl(id: EssenceId): string {
+  return `assets/ui/forge-du-coeur/essence-${id}.webp`;
 }
 
 export function isAlliance(type: RuneType): boolean {
@@ -89,7 +83,6 @@ export class HeartForgePage {
         filled,
         rune,
         icon: runeIconUrl(rune.type),
-        alliance: isAlliance(rune.type),
         label: `${RUNE_LABELS[rune.type]} rang ${rune.rank}`,
         ready: !filled && runeCount(state, rune) > 0,
         angle: RUNE_SOCKET_ANGLES[index],
@@ -104,13 +97,17 @@ export class HeartForgePage {
     return ESSENCES.map((id) => ({
       id,
       label: ESSENCE_LABELS[id],
+      icon: essenceIconUrl(id),
       left: stock[id] - mix.filter((other) => other === id).length,
     }));
   });
 
   protected readonly slots = computed(() => {
     const mix = this.mix();
-    return Array.from({ length: CRUCIBLE_SLOTS }, (_, index) => ({ index, essence: mix[index] ?? null }));
+    return Array.from({ length: CRUCIBLE_SLOTS }, (_, index) => {
+      const essence = mix[index] ?? null;
+      return { index, essence, icon: essence === null ? null : essenceIconUrl(essence) };
+    });
   });
 
   /** Ce que donnera le mélange : connu si la recette a déjà été trouvée, sinon « ? ». */
@@ -137,7 +134,6 @@ export class HeartForgePage {
         type,
         label: RUNE_LABELS[type],
         icon: runeIconUrl(type),
-        alliance: isAlliance(type),
         known: known.includes(type),
         recipe: recipe.map((id) => ESSENCE_LABELS[id]).join(' + '),
       };
@@ -150,7 +146,6 @@ export class HeartForgePage {
       type,
       label: RUNE_LABELS[type],
       icon: runeIconUrl(type),
-      alliance: isAlliance(type),
       cells: this.ranks.map((rank) => {
         const rune = { type, rank };
         return {

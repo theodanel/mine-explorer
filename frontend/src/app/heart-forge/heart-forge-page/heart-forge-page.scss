@@ -236,13 +236,6 @@
   }
 }
 
-// Rune d'alliance : l'icône d'un élément, cerclée d'or, en attendant sa propre image
-.alliance {
-  border-radius: 50%;
-  box-shadow: 0 0 0 0.5cqw #ffd36a;
-  filter: hue-rotate(35deg) saturate(1.3);
-}
-
 // ─── Creuset ───
 
 .crucible,
@@ -264,31 +257,25 @@
   }
 }
 
-// La machine, dessinée en attendant son image : un chaudron d'obsidienne au cœur d'or fondu
+// Le Creuset dans son atelier, assombri pour garder les textes lisibles
+.crucible {
+  background:
+    linear-gradient(rgb(20 12 6 / 35%), rgb(20 12 6 / 80%)),
+    url('/assets/ui/forge-du-coeur/fond-creuset.webp') center / cover;
+}
+
+// La machine, posée au cœur de l'atelier ; son verre doré bouillonne doucement
 .machine {
-  display: grid;
-  place-items: center;
-  width: 30cqw;
-  height: 24cqw;
-  border: 0.6cqw solid var(--ink);
-  border-radius: 40% 40% 48% 48%;
-  background: linear-gradient(#3b2a20, #1d140f);
-  box-shadow: inset 0 0 0 0.6cqw #b08a3e;
+  width: 42cqw;
+  height: auto;
+  margin-bottom: -4cqw;
+  filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%));
+  animation: crucible-glow 2.4s ease-in-out infinite;
 }
 
-.core {
-  width: 11cqw;
-  height: 11cqw;
-  border: 0.5cqw solid #b08a3e;
-  border-radius: 50%;
-  background: radial-gradient(#fff3d6, #ffb04a 45%, #c2410f);
-  animation: lava-bubble 1.8s ease-in-out infinite;
-}
-
-@keyframes lava-bubble {
+@keyframes crucible-glow {
   50% {
-    transform: scale(1.08);
-    filter: brightness(1.15);
+    filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%)) drop-shadow(0 0 2.5cqw rgb(255 176 74 / 45%));
   }
 }
 
@@ -310,7 +297,14 @@
 
   &[data-essence] {
     border-style: solid;
-    background: var(--essence);
+    background: rgb(0 0 0 / 45%);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 1.2cqw;
+    object-fit: contain;
   }
 
   &:disabled {
@@ -346,6 +340,13 @@
   color: inherit;
   cursor: pointer;
 
+  img {
+    width: 8cqw;
+    height: 8cqw;
+    object-fit: contain;
+    filter: drop-shadow(0 0.4cqw 0.6cqw rgb(0 0 0 / 50%));
+  }
+
   strong {
     font: 4cqw / 1 var(--font-display);
   }
@@ -359,34 +360,6 @@
     opacity: 0.45;
     cursor: default;
   }
-}
-
-.drop {
-  width: 7cqw;
-  height: 7cqw;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: var(--essence);
-  box-shadow: 0 0 2cqw var(--essence);
-}
-
-[data-essence='sap'] {
-  --essence: radial-gradient(#d8e08a, #6f8a3a);
-}
-
-[data-essence='ember'] {
-  --essence: radial-gradient(#ffd36a, #e2521b);
-}
-
-[data-essence='dawn'] {
-  --essence: radial-gradient(#fffbe6, #e8c060);
-}
-
-[data-essence='mist'] {
-  --essence: radial-gradient(#b98cff, #4a2a7a);
-}
-
-[data-essence='frost'] {
-  --essence: radial-gradient(#e6f8ff, #6fb6e0);
 }
 
 .pour {

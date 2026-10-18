@@ -13,7 +13,7 @@ const STEPS: readonly { readonly title: string; readonly text: string; readonly 
   {
     title: 'Récolter dans les Échos',
     text: `Le monde a changé : les zones 1 à ${ECHO_ESSENCES.length} sont devenues leurs Échos, plus durs. Chaque filon d'Écho donne à coup sûr la ressource de la zone. Le Puits sans fond en donne aussi une de chaque sorte tous les ${ABYSS_FLOORS_PER_ESSENCES} étages.`,
-    icon: 'assets/ui/forge-du-coeur/eclat-coeur.webp',
+    icon: 'assets/ui/forge-du-coeur/essence-ember.webp',
   },
   {
     title: 'Verser au Creuset',

@@ -18,7 +18,6 @@
           class="socket"
           [class.filled]="socket.filled"
           [class.ready]="socket.ready"
-          [class.alliance]="socket.alliance"
           [style.--angle.deg]="socket.angle"
           [disabled]="!socket.ready"
           [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
@@ -38,9 +37,7 @@
     <!-- Le Creuset : 3 ressources des Échos donnent une rune, selon la recette -->
     <article class="crucible">
       <h3>Creuset du Cœur</h3>
-      <div class="machine" aria-hidden="true">
-        <span class="core"></span>
-      </div>
+      <img class="machine" src="assets/ui/forge-du-coeur/creuset.webp" alt="" width="400" height="373" />
       <ol class="funnels" aria-label="Ressources versées">
         @for (slot of slots(); track slot.index) {
           <li>
@@ -51,7 +48,11 @@
               [disabled]="slot.essence === null"
               [attr.aria-label]="slot.essence ? 'Retirer cette ressource' : 'Emplacement vide'"
               (click)="removeEssence(slot.index)"
-            ></button>
+            >
+              @if (slot.icon; as icon) {
+                <img [src]="icon" alt="" width="128" height="128" />
+              }
+            </button>
           </li>
         }
       </ol>
@@ -59,8 +60,8 @@
       <ul class="essences" aria-label="Ressources des Échos">
         @for (essence of essences(); track essence.id) {
           <li>
-            <button type="button" class="essence" [attr.data-essence]="essence.id" [disabled]="essence.left <= 0" (click)="addEssence(essence.id, essence.left)">
-              <span class="drop" aria-hidden="true"></span>
+            <button type="button" class="essence" [disabled]="essence.left <= 0" (click)="addEssence(essence.id, essence.left)">
+              <img [src]="essence.icon" alt="" width="128" height="128" />
               <strong>{{ essence.left }}</strong>
               <small>{{ essence.label }}</small>
             </button>
@@ -77,7 +78,7 @@
       <ul>
         @for (entry of book(); track entry.type) {
           <li [class.known]="entry.known">
-            <img [class.alliance]="entry.alliance" [src]="entry.icon" alt="" width="128" height="128" />
+            <img [src]="entry.icon" alt="" width="128" height="128" />
             <span class="name">{{ entry.known ? entry.label : '???' }}</span>
             <span class="recipe">{{ entry.known ? entry.recipe : 'Recette à découvrir' }}</span>
           </li>
@@ -100,7 +101,7 @@
           @for (row of rows(); track row.type) {
             <tr>
               <th scope="row">
-                <img class="rune-icon" [class.alliance]="row.alliance" [src]="row.icon" alt="" width="128" height="128" />
+                <img class="rune-icon" [src]="row.icon" alt="" width="128" height="128" />
                 <span class="rune-label">{{ row.label }}</span>
               </th>
               @for (cell of row.cells; track cell.rank) {

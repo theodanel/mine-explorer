@@ -3,6 +3,10 @@
   forge-du-coeur/runes.png       -> frontend/public/assets/ui/forge-du-coeur/rune-<élément>.webp (5 runes, 128 px)
   forge-du-coeur/anneau.png      -> frontend/public/assets/ui/forge-du-coeur/anneau.webp (600 px, centre transparent)
   forge-du-coeur/eclat-coeur.png -> frontend/public/assets/ui/forge-du-coeur/eclat-coeur.webp (128 px)
+  forge-du-coeur/runes-alliance.png -> .../rune-<alliance>.webp (5 runes d'alliance, 128 px)
+  forge-du-coeur/ressources.png  -> .../essence-<ressource>.webp (5 ressources des Échos, 128 px)
+  forge-du-coeur/creuset.png     -> .../creuset.webp (machine du Creuset, 400 px)
+  forge-du-coeur/fond-creuset.png -> .../fond-creuset.webp (fond opaque, taille d'origine)
 
 Lancer depuis la racine du dépôt : python art-source/forge-du-coeur/preparer-forge.py
 """
@@ -13,11 +17,15 @@ from PIL import Image
 SOURCE = Path(__file__).parent
 TARGET = Path(__file__).parents[2] / "frontend" / "public" / "assets" / "ui" / "forge-du-coeur"
 ELEMENTS = ("fire", "ice", "earth", "shadow", "light")
+# Dans l'ordre de gauche à droite des planches Gemini
+ALLIANCES = ("magma", "storm", "grove", "eclipse", "heart")
+ESSENCES = ("ember", "frost", "sap", "mist", "dawn")
 # Écart entre le vert et la plus forte des deux autres couches : au-delà, fond ; entre les deux, bord adouci
 GREEN_OPAQUE = 40
 GREEN_TRANSPARENT = 110
 ICON_SIZE = 128
 RING_SIZE = 600
+CRUCIBLE_SIZE = 400
 QUALITY = 90
 
 
@@ -55,16 +63,27 @@ def column_spans(image: Image.Image) -> list[tuple[int, int]]:
     return spans
 
 
-def prepare_runes() -> None:
-    sheet = key_out_green(Image.open(SOURCE / "runes.png"))
+def split_sheet(source: str, names: tuple[str, ...], prefix: str) -> None:
+    """Une planche d'icônes alignées sur fond vert : une icône par bloc de colonnes occupées."""
+    sheet = key_out_green(Image.open(SOURCE / source))
     spans = column_spans(sheet)
-    if len(spans) != len(ELEMENTS):
-        raise SystemExit(f"{len(spans)} blocs trouvés au lieu de {len(ELEMENTS)} runes")
-    for (left, right), element in zip(spans, ELEMENTS):
-        rune = trim(sheet.crop((left, 0, right, sheet.height)))
-        rune.thumbnail((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
-        rune.save(TARGET / f"rune-{element}.webp", quality=QUALITY)
-        print(element, rune.size)
+    if len(spans) != len(names):
+        raise SystemExit(f"{source} : {len(spans)} blocs trouvés au lieu de {len(names)}")
+    for (left, right), name in zip(spans, names):
+        icon = trim(sheet.crop((left, 0, right, sheet.height)))
+        icon.thumbnail((ICON_SIZE, ICON_SIZE), Image.LANCZOS)
+        icon.save(TARGET / f"{prefix}-{name}.webp", quality=QUALITY)
+        print(prefix, name, icon.size)
+
+
+def prepare_crucible() -> None:
+    crucible = trim(key_out_green(Image.open(SOURCE / "creuset.png")))
+    crucible.thumbnail((CRUCIBLE_SIZE, CRUCIBLE_SIZE), Image.LANCZOS)
+    crucible.save(TARGET / "creuset.webp", quality=QUALITY)
+
+
+def prepare_crucible_background() -> None:
+    Image.open(SOURCE / "fond-creuset.png").convert("RGB").save(TARGET / "fond-creuset.webp", quality=QUALITY)
 
 
 def prepare_ring() -> None:
@@ -81,6 +100,10 @@ def prepare_heart_shard() -> None:
 
 if __name__ == "__main__":
     TARGET.mkdir(parents=True, exist_ok=True)
-    prepare_runes()
+    split_sheet("runes.png", ELEMENTS, "rune")
+    split_sheet("runes-alliance.png", ALLIANCES, "rune")
+    split_sheet("ressources.png", ESSENCES, "essence")
     prepare_ring()
     prepare_heart_shard()
+    prepare_crucible()
+    prepare_crucible_background()

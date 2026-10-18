@@ -1,8 +1,8 @@
 // Classement dans le style cartoon des autres pages : bandeau doré (thème « gold »), onglets en boutons de jeu,
 // lignes en parchemin, podium or, argent et bronze, et la ligne du joueur cerclée d'or.
 :host {
+  // Pas de « height: 100% » : la page s'arrête au-dessus du menu du bas (.page-layer, dans app.scss)
   display: block;
-  height: 100%;
 }
 
 .page {

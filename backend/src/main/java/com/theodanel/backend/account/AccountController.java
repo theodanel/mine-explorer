@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.theodanel.backend.chat.ChatService;
 import com.theodanel.backend.save.SaveService;
 import com.theodanel.backend.security.PlayerOidcUser;
 
@@ -34,12 +35,14 @@ public class AccountController {
 
 	private final AccountService accounts;
 	private final SaveService saves;
+	private final ChatService chat;
 	private final FindByIndexNameSessionRepository<? extends Session> sessions;
 
-	public AccountController(AccountService accounts, SaveService saves,
+	public AccountController(AccountService accounts, SaveService saves, ChatService chat,
 			FindByIndexNameSessionRepository<? extends Session> sessions) {
 		this.accounts = accounts;
 		this.saves = saves;
+		this.chat = chat;
 		this.sessions = sessions;
 	}
 
@@ -55,9 +58,12 @@ public class AccountController {
 	public record SaveExport(long version, Instant updatedAt, Map<String, String> data) {
 	}
 
+	public record ChatExport(String text, Instant sentAt) {
+	}
+
 	/** Toutes les données gardées sur le joueur (droit d'accès et de portabilité, RGPD). */
 	public record AccountExport(UUID id, String pseudo, Instant createdAt, List<IdentityExport> identities,
-			SaveExport save) {
+			SaveExport save, List<ChatExport> chatMessages) {
 	}
 
 	@GetMapping
@@ -86,7 +92,12 @@ public class AccountController {
 		SaveExport save = saves.find(player.getId())
 			.map(stored -> new SaveExport(stored.version(), stored.updatedAt(), stored.data()))
 			.orElse(null);
-		return new AccountExport(player.getId(), player.getPseudo(), player.getCreatedAt(), identities, save);
+		List<ChatExport> chatMessages = chat.sentBy(player.getId())
+			.stream()
+			.map(message -> new ChatExport(message.getText(), message.getSentAt()))
+			.toList();
+		return new AccountExport(player.getId(), player.getPseudo(), player.getCreatedAt(), identities, save,
+				chatMessages);
 	}
 
 	/** Supprime le compte, sa partie et toutes ses sessions, sur tous les appareils. */

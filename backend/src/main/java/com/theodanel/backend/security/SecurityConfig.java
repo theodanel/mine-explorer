@@ -68,7 +68,7 @@ public class SecurityConfig {
 				// Jeton masqué différemment à chaque réponse (protection BREACH)
 				.csrfTokenRequestHandler(new XorCsrfTokenRequestAttributeHandler()))
 			.authorizeHttpRequests(requests -> requests
-				.requestMatchers(HttpMethod.GET, "/api/csrf", "/api/leaderboard/*").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/csrf", "/api/leaderboard/*", "/api/chat").permitAll()
 				.requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/api/**").authenticated()

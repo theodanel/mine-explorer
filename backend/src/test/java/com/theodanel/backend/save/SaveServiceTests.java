@@ -49,6 +49,6 @@ class SaveServiceTests {
 
 	private static MineProperties properties() {
 		return new MineProperties(null, null, null, null,
-				new MineProperties.AntiCheat(Instant.parse("2026-10-11T00:00:00Z"), 2, Duration.ofMinutes(15)));
+				new MineProperties.AntiCheat(Instant.parse("2026-10-11T00:00:00Z"), 2, Duration.ofMinutes(15)), null);
 	}
 }

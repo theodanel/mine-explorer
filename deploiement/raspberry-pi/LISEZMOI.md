@@ -86,7 +86,7 @@ chmod 600 .env
 sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 32)|" .env
 sed -i "s|^MINE_APP_PASSWORD=.*|MINE_APP_PASSWORD=$(openssl rand -hex 32)|" .env
 nano .env                                  # coller GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET, puis Ctrl+O, Ctrl+X
-grep -c '^[A-Z_]*=.\+' .env                # doit afficher 6
+grep -c '^[A-Z_]*=.\+' .env                # doit afficher 6 (7 avec un modérateur)
 ```
 
 Les mots de passe sont générés sur le Pi et n'en sortent jamais. Ne recopier aucune ligne de `.env` dans un message ni dans git.
@@ -115,6 +115,12 @@ docker compose ps
 | SSL | nouveau certificat Let's Encrypt, **Force SSL**, **HTTP/2**, **HSTS** cochés |
 
 Vérification depuis n'importe où : `https://api.bouncylab.ovh/actuator/health` répond `{"status":"UP"}`.
+
+## Devenir modérateur de la discussion
+
+1. Dans le jeu, Profil → Compte → Gérer mon compte → **Télécharger mes données** : le fichier commence par ton `id` (par exemple `3f2a…-…`).
+2. Sur le Pi, dans `~/mine-explorer-api/.env`, mets-le après `MINE_MODERATORS=`, puis `docker compose up -d`.
+3. Dans la Discussion, chaque message des autres a alors 🗑️ (retirer le message) et 🔇 (couper son auteur, qui ne peut plus écrire, et retirer tous ses messages).
 
 ## Mettre à jour
 

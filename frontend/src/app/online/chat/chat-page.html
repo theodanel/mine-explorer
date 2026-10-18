@@ -1,0 +1,93 @@
+<section class="page game-panel" data-theme="sapphire" aria-labelledby="chat-title">
+  <header class="page-header">
+    <h2 id="chat-title">Discussion</h2>
+    <button type="button" class="close" aria-label="Fermer la discussion" (click)="close()">×</button>
+  </header>
+
+  <div class="list" #list aria-live="polite">
+    @if (messages(); as messages) {
+      @if (messages.length === 0) {
+        <p class="hint">Personne n'a encore rien dit. Lance la conversation !</p>
+      }
+      @for (message of messages; track message.id) {
+        <article class="message" [class.mine]="message.mine">
+          <header>
+            <strong>{{ message.mine ? 'Toi' : message.pseudo }}</strong>
+            <time>{{ message.time }}</time>
+            @if (!message.mine && account.signedIn()) {
+              <span class="actions">
+                @if (reported().has(message.id)) {
+                  <span class="done">Signalé</span>
+                } @else {
+                  <button type="button" class="action" [attr.aria-label]="'Signaler le message de ' + message.pseudo" (click)="report(message.id)">⚑</button>
+                }
+                @if (moderator()) {
+                  <button type="button" class="action" aria-label="Retirer ce message" (click)="remove(message.id)">🗑️</button>
+                  <button type="button" class="action" [attr.aria-label]="'Couper ' + message.pseudo + ' de la discussion'" (click)="muteAuthor(message.id)">🔇</button>
+                }
+              </span>
+            }
+          </header>
+          <p>{{ message.text }}</p>
+        </article>
+      }
+    } @else if (failed()) {
+      <p class="hint">Discussion indisponible pour l'instant.</p>
+    } @else {
+      <p class="hint">Chargement…</p>
+    }
+  </div>
+
+  <footer class="composer">
+    @if (canWrite()) {
+      @if (notice(); as text) {
+        <p class="notice" role="status">{{ text }}</p>
+      }
+      @if (emojisOpen()) {
+        <ul class="emojis" aria-label="Emojis">
+          @for (emoji of emojis; track emoji) {
+            <li><button type="button" class="emoji" (click)="addEmoji(emoji)">{{ emoji }}</button></li>
+          }
+        </ul>
+      }
+      <form class="write" (submit)="$event.preventDefault(); send()">
+        <button
+          type="button"
+          class="emoji-toggle"
+          [class.on]="emojisOpen()"
+          [attr.aria-expanded]="emojisOpen()"
+          aria-label="Emojis"
+          (click)="emojisOpen.set(!emojisOpen())"
+        >
+          😀
+        </button>
+        <label class="visually-hidden" for="chat-input">Ton message</label>
+        <input
+          #input
+          id="chat-input"
+          type="text"
+          autocomplete="off"
+          enterkeyhint="send"
+          placeholder="Écris aux autres mineurs…"
+          [attr.maxlength]="maxLength * 2"
+          [value]="draft()"
+          (input)="draft.set(input.value)"
+        />
+        <button type="submit" class="game-button green send" [disabled]="!canSend()">Envoyer</button>
+      </form>
+      <p class="rules">
+        @if (remaining() < 30) {
+          <span [class.over]="remaining() < 0">{{ remaining() }} caractères restants · </span>
+        }
+        Sois sympa : pas d'insultes, de liens ni de coordonnées. ⚑ pour signaler.
+      </p>
+    } @else if (account.signedIn()) {
+      <p class="muted-note">Un modérateur t'a retiré la parole dans la discussion. Tu peux toujours la lire.</p>
+    } @else {
+      <div class="sign-in">
+        <p>Relie ton compte pour écrire aux autres mineurs.</p>
+        <app-google-button (pressed)="account.signIn()" />
+      </div>
+    }
+  </footer>
+</section>

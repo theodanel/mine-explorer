@@ -101,6 +101,22 @@
   }
 }
 
+// Progression en cours de validation : bandeau doré discret sous la place du joueur
+.pending {
+  margin: 0;
+  padding: 2.4cqw 3cqw;
+  border: 0.45cqw dashed var(--gold-dark);
+  border-radius: 2.6cqw;
+  background: rgb(255 232 168 / 90%);
+  color: var(--parchment-text);
+  font-size: 3cqw;
+  line-height: 1.35;
+
+  strong {
+    color: var(--ink);
+  }
+}
+
 .rows {
   display: grid;
   gap: 1.6cqw;

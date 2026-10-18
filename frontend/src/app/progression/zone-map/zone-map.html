@@ -4,7 +4,11 @@
     <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
   </header>
 
-  <p class="intro">Reviens dans une zone terminée pour y miner son minerai sans fin : c'est plus facile, mais l'or est plus maigre.</p>
+  @if (echoes.open()) {
+    <p class="intro">Le monde a changé : les zones 1 à 11 sont devenues leurs Échos, plus dures, et chaque filon y donne une ressource du Cœur.</p>
+  } @else {
+    <p class="intro">Reviens dans une zone terminée pour y miner son minerai sans fin : c'est plus facile, mais l'or est plus maigre.</p>
+  }
 
   <div class="scroll">
     <div class="map" [style.height]="nodes().length * stepCqw + 'cqw'">

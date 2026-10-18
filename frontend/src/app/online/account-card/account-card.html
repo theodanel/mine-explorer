@@ -1,0 +1,92 @@
+<h3 class="section-title">Compte</h3>
+<article class="card">
+  @switch (account.state().kind) {
+    @case ('loading') {
+      <p class="muted">Connexion au serveur…</p>
+    }
+    @case ('offline') {
+      <p class="muted">Serveur injoignable. Ta partie continue sur cet appareil.</p>
+      <button type="button" class="game-button action" (click)="account.refresh()">Réessayer</button>
+    }
+    @case ('signed-out') {
+      <div class="heading">
+        <img class="heading-icon" src="assets/ui/leaderboard.webp" alt="" width="128" height="128" />
+        <div>
+          <p class="lead">Sauvegarde en ligne</p>
+          <p class="muted">Retrouve ta partie sur tous tes appareils et entre au classement.</p>
+        </div>
+      </div>
+      <app-google-button (pressed)="account.signIn()" />
+      <p class="privacy">
+        Aucun mot de passe. Google confirme seulement que c'est toi : ni ton e-mail ni ton nom ne nous sont transmis.
+        <a href="/confidentialite.html" target="_blank" rel="noopener">Règles de confidentialité</a>
+      </p>
+      <button type="button" class="row" (click)="leaderboard.emit()">Voir le classement<span class="chevron" aria-hidden="true">›</span></button>
+    }
+    @case ('signed-in') {
+      @if (profile(); as me) {
+        <div class="identity">
+          <span class="avatar" aria-hidden="true">{{ me.pseudo.charAt(0).toUpperCase() }}</span>
+          @if (editing()) {
+            <form class="pseudo-form" (submit)="$event.preventDefault(); rename(pseudoInput.value)">
+              <label class="visually-hidden" for="pseudo">Pseudo</label>
+              <input #pseudoInput id="pseudo" [value]="me.pseudo" maxlength="20" autocomplete="nickname" />
+              <button type="submit" class="game-button green small">OK</button>
+            </form>
+          } @else {
+            <span class="who">
+              <strong>{{ me.pseudo }}</strong>
+              <span class="muted">Connecté avec Google</span>
+            </span>
+            <button type="button" class="game-button small" (click)="editing.set(true)">Modifier</button>
+          }
+        </div>
+        @if (pseudoError(); as error) {
+          <p class="error" role="alert">{{ error }}</p>
+        }
+      }
+
+      @switch (sync.state().kind) {
+        @case ('syncing') {
+          <p class="status pending">Sauvegarde en cours…</p>
+        }
+        @case ('synced') {
+          <p class="status ok">Sauvegarde automatique · dernière à {{ lastSave() }}</p>
+        }
+        @case ('refused') {
+          <p class="status ko">Sauvegarde refusée : progression jugée trop rapide. Ta partie reste sur cet appareil.</p>
+        }
+        @case ('error') {
+          <p class="status ko">Sauvegarde en ligne indisponible. Nouvel essai dans quelques minutes.</p>
+        }
+      }
+      @if (sync.state(); as state) {
+        @if (state.kind === 'conflict') {
+          <div class="conflict" role="alert">
+            <p>Une autre partie est enregistrée sur ton compte. Laquelle veux-tu garder ?</p>
+            <button type="button" class="game-button green action" (click)="sync.keepCloud()">Celle du compte (zone {{ state.cloudLabel }})</button>
+            <button type="button" class="game-button action" (click)="sync.keepLocal()">Celle de cet appareil (zone {{ state.localLabel }})</button>
+          </div>
+        }
+      }
+
+      <button type="button" class="row" (click)="leaderboard.emit()">Classement<span class="chevron" aria-hidden="true">›</span></button>
+
+      <details class="manage">
+        <summary>Gérer mon compte</summary>
+        <button type="button" class="row" (click)="signOut(false)">Se déconnecter</button>
+        <button type="button" class="row" (click)="signOut(true)">Se déconnecter de tous les appareils</button>
+        <button type="button" class="row" (click)="exportData()">Télécharger mes données</button>
+        @if (confirmingDelete()) {
+          <div class="danger-zone" role="alert">
+            <p>Ton compte et la partie enregistrée en ligne seront effacés définitivement. La partie de cet appareil est conservée.</p>
+            <button type="button" class="game-button red action" (click)="deleteAccount()">Supprimer définitivement</button>
+            <button type="button" class="game-button action" (click)="confirmingDelete.set(false)">Annuler</button>
+          </div>
+        } @else {
+          <button type="button" class="row danger-text" (click)="confirmingDelete.set(true)">Supprimer mon compte</button>
+        }
+      </details>
+    }
+  }
+</article>

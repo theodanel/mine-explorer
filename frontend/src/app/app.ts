@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -20,6 +20,10 @@ import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
+import { OnlineLayer } from './online/online-layer';
+import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
+import { ONLINE_CONFIG } from './online/online-config';
+import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
 import { EVOLUTION_VISUALS, materialIconUrl } from './loading/game-assets';
@@ -58,6 +62,9 @@ function resourceLabel(amount: number): string {
   return amount < COMPACT_FROM ? String(amount) : COMPACT.format(amount);
 }
 
+/** Durée d'affichage du message « discussion bientôt disponible ». */
+const CHAT_NOTE_MS = 2500;
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -89,6 +96,8 @@ function resourceLabel(amount: number): string {
     EvolutionPage,
     HeartForgePage,
     ProfilePage,
+    OnlineLayer,
+    LeaderboardPage,
     SplashScreen,
     RevealHint,
     RevealDirective,
@@ -108,6 +117,11 @@ export class App {
   protected readonly shards = inject(GeodeShards);
   protected readonly evolution = inject(Evolution);
   protected readonly navigation = inject(Navigation);
+  protected readonly playerName = inject(PlayerName);
+  protected readonly online = inject(ONLINE_CONFIG).enabled;
+  /** Discussion entre joueurs pas encore ouverte : l'icône annonce seulement qu'elle arrive. */
+  protected readonly chatNote = signal(false);
+  private chatNoteTimer: ReturnType<typeof setTimeout> | undefined;
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);
@@ -125,6 +139,13 @@ export class App {
 
   // Panneau du bas : les 5 emplacements, puis l'artefact et le compagnon
   protected readonly equipmentSlots: readonly ColumnSlot[] = ['helmet', 'pickaxe', 'bag', 'gloves', 'boots', 'artifact', 'companion'];
+
+  /** Le message disparaît seul après quelques secondes. */
+  protected showChatNote(): void {
+    this.chatNote.set(true);
+    clearTimeout(this.chatNoteTimer);
+    this.chatNoteTimer = setTimeout(() => this.chatNote.set(false), CHAT_NOTE_MS);
+  }
 
   constructor() {
     // Le lanceur de sorts tourne pendant toute la partie, même quand la barre de sorts est cachée par une page

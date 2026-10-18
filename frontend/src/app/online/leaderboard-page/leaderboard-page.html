@@ -1,0 +1,51 @@
+<section class="page game-panel" data-theme="gold" aria-labelledby="leaderboard-title">
+  <header class="page-header">
+    <h2 id="leaderboard-title">Classement</h2>
+    <button type="button" class="close" aria-label="Fermer le classement" (click)="close()">×</button>
+  </header>
+
+  <div class="tabs" role="tablist">
+    @for (tab of tabs; track tab.type) {
+      <button
+        type="button"
+        role="tab"
+        class="game-button"
+        [class.gold]="type() === tab.type"
+        [attr.aria-selected]="type() === tab.type"
+        (click)="load(tab.type)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <div class="scroll">
+    @if (failed()) {
+      <p class="hint">Classement indisponible pour l'instant.</p>
+    } @else if (board(); as board) {
+      @if (board.me; as me) {
+        <article class="me">
+          <span class="me-rank">{{ me.rank }}<sup>{{ me.rank === 1 ? 'er' : 'e' }}</sup></span>
+          <span class="me-text">
+            <strong>Ta place</strong>
+            <span>{{ format(me.value) }}</span>
+          </span>
+        </article>
+      }
+      @if (board.top.length === 0) {
+        <p class="hint">Personne n'est encore classé.</p>
+      }
+      <ol class="rows">
+        @for (entry of board.top; track entry.rank) {
+          <li [class.mine]="board.me?.rank === entry.rank" [attr.data-podium]="entry.rank <= podium ? entry.rank : null">
+            <span class="rank">{{ entry.rank }}</span>
+            <span class="pseudo">{{ entry.pseudo }}</span>
+            <span class="value">{{ format(entry.value) }}</span>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="hint">Chargement…</p>
+    }
+  </div>
+</section>

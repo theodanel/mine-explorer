@@ -1,0 +1,8 @@
+@if (visible()) {
+  <aside class="bubble" role="dialog" aria-labelledby="account-prompt-title">
+    <p id="account-prompt-title" class="title">Ne perds pas ta partie</p>
+    <p class="text">Relie un compte Google pour la retrouver sur tous tes appareils et entrer au classement.</p>
+    <app-google-button (pressed)="signIn()" />
+    <button type="button" class="later" (click)="later()">Plus tard</button>
+  </aside>
+}

@@ -1,71 +1,79 @@
-<section class="page game-panel" data-theme="teal" aria-labelledby="profile-title">
-  <header class="page-header">
-    <h2 id="profile-title">Profil</h2>
-    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
-  </header>
+@if (leaderboardOpen()) {
+  <app-leaderboard-page (closed)="leaderboardOpen.set(false)" />
+} @else {
+  <section class="page game-panel" data-theme="teal" aria-labelledby="profile-title">
+    <header class="page-header">
+      <h2 id="profile-title">Profil</h2>
+      <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+    </header>
 
-  <div class="scroll">
-    <article class="card miner">
-      <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
-      <div class="miner-text">
-        <h3>Petit mineur</h3>
-        <p class="form">{{ evolution.title() }}</p>
-        <p class="zone">Zone {{ progression.zone() }}</p>
-      </div>
-    </article>
+    <div class="scroll">
+      <article class="card miner">
+        <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
+        <div class="miner-text">
+          <h3>{{ playerName.label() }}</h3>
+          <p class="form">{{ evolution.title() }}</p>
+          <p class="zone">Zone {{ progression.zone() }}</p>
+        </div>
+      </article>
 
-    <button type="button" class="card evolution" (click)="openEvolution()">
-      <span class="evolution-text">
-        <strong>Évolution</strong>
-        @if (evolution.nextTitle(); as next) {
-          <span>Vers {{ next }} · palier {{ evolution.tier() }} sur 3</span>
-        } @else {
-          <span>Forme ultime atteinte</span>
+      <button type="button" class="card evolution" (click)="openEvolution()">
+        <span class="evolution-text">
+          <strong>Évolution</strong>
+          @if (evolution.nextTitle(); as next) {
+            <span>Vers {{ next }} · palier {{ evolution.tier() }} sur 3</span>
+          } @else {
+            <span>Forme ultime atteinte</span>
+          }
+        </span>
+        @if (evolution.ready()) {
+          <span class="pill ready">Promotion !</span>
+        } @else if (evolution.claimable() > 0) {
+          <span class="pill">{{ evolution.claimable() }} récompense{{ evolution.claimable() > 1 ? 's' : '' }}</span>
         }
-      </span>
-      @if (evolution.ready()) {
-        <span class="pill ready">Promotion !</span>
-      } @else if (evolution.claimable() > 0) {
-        <span class="pill">{{ evolution.claimable() }} récompense{{ evolution.claimable() > 1 ? 's' : '' }}</span>
-      }
-      <span class="chevron" aria-hidden="true">›</span>
-    </button>
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
 
-    <h3 class="section-title">Paramètres</h3>
-    <article class="card settings">
-      <div class="setting">
-        <span class="setting-label" id="sound-label">Bruitages</span>
-        <div class="segmented" role="radiogroup" aria-labelledby="sound-label">
-          @for (option of volumes; track option.value) {
-            <button
-              type="button"
-              role="radio"
-              [class.on]="sound.volume() === option.value"
-              [attr.aria-checked]="sound.volume() === option.value"
-              (click)="sound.setVolume(option.value)"
-            >
-              {{ option.label }}
-            </button>
-          }
+      @if (online) {
+        <app-account-card (leaderboard)="leaderboardOpen.set(true)" />
+      }
+
+      <h3 class="section-title">Paramètres</h3>
+      <article class="card settings">
+        <div class="setting">
+          <span class="setting-label" id="sound-label">Bruitages</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="sound-label">
+            @for (option of volumes; track option.value) {
+              <button
+                type="button"
+                role="radio"
+                [class.on]="sound.volume() === option.value"
+                [attr.aria-checked]="sound.volume() === option.value"
+                (click)="sound.setVolume(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
         </div>
-      </div>
-      <div class="setting">
-        <span class="setting-label" id="music-label">Musique</span>
-        <div class="segmented" role="radiogroup" aria-labelledby="music-label">
-          @for (option of volumes; track option.value) {
-            <button
-              type="button"
-              role="radio"
-              [class.on]="sound.musicVolume() === option.value"
-              [attr.aria-checked]="sound.musicVolume() === option.value"
-              (click)="sound.setMusicVolume(option.value)"
-            >
-              {{ option.label }}
-            </button>
-          }
+        <div class="setting">
+          <span class="setting-label" id="music-label">Musique</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="music-label">
+            @for (option of volumes; track option.value) {
+              <button
+                type="button"
+                role="radio"
+                [class.on]="sound.musicVolume() === option.value"
+                [attr.aria-checked]="sound.musicVolume() === option.value"
+                (click)="sound.setMusicVolume(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
         </div>
-      </div>
-      <p class="hint">Les réglages sont gardés d'une partie à l'autre.</p>
-    </article>
-  </div>
-</section>
+        <p class="hint">Les réglages sont gardés d'une partie à l'autre.</p>
+      </article>
+    </div>
+  </section>
+}

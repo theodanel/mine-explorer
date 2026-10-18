@@ -14,7 +14,7 @@
     >
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
       <span class="player-card">
-        <span class="player-name">Petit mineur</span>
+        <span class="player-name">{{ playerName.label() }}</span>
         <span class="player-title">
           {{ evolution.form().label }}
           @if (evolution.form().stars > 0) {
@@ -60,6 +60,19 @@
     </ul>
   </header>
 
+  @if (online) {
+    <nav class="side-links" aria-label="Jeu en ligne">
+      <button type="button" class="side-link" aria-label="Classement" (click)="navigation.open('leaderboard')">
+        <img src="assets/ui/leaderboard.webp" alt="" width="128" height="128" />
+      </button>
+      <button type="button" class="side-link" aria-label="Discussion" (click)="showChatNote()">
+        <img src="assets/ui/chat.webp" alt="" width="128" height="128" />
+      </button>
+      @if (chatNote()) {
+        <p class="side-note" role="status">La discussion entre joueurs arrive bientôt.</p>
+      }
+    </nav>
+  }
   <app-zone-banner class="zone" />
   <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
@@ -157,6 +170,11 @@
         <app-camp-page class="page-layer" />
       }
     }
+    @case ('leaderboard') {
+      @defer (on immediate) {
+        <app-leaderboard-page class="page-layer" (closed)="navigation.open('mine')" />
+      }
+    }
     @case ('workshop') {
       @defer (on immediate) {
         <app-workshop-page class="page-layer" />
@@ -172,6 +190,8 @@
     <app-artifact-found />
     <app-companion-hatched />
     <app-offline-report />
+    <!-- Synchronisation de la partie et bulle pour relier un compte : inactives quand le jeu en ligne est éteint -->
+    <app-online-layer />
   }
   <!-- Bulles de la prise en main : elles attendent la fin du chargement, rien ne presse -->
   @defer (on idle) {

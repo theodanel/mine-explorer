@@ -1,0 +1,234 @@
+// Carte Compte, dans le style cartoon des autres cartes du Profil : parchemin semé de points, cerclé de brun,
+// boutons « jeu ». Seul le bouton Google garde son aspect officiel, que le joueur reconnaît.
+:host {
+  display: grid;
+  gap: 2.5cqw;
+}
+
+.section-title {
+  margin: 1.5cqw 0 0;
+  font-size: 3.2cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.2cqw;
+  opacity: 0.8;
+}
+
+.card {
+  display: grid;
+  gap: 2.4cqw;
+  padding: 3.5cqw;
+  border: 0.5cqw solid var(--ink);
+  border-radius: 3cqw;
+  background: var(--dots), var(--parchment);
+  box-shadow: 0 0.6cqw 0 rgb(74 44 22 / 30%);
+  color: var(--parchment-text);
+  font-family: var(--font-body);
+}
+
+p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+}
+
+.heading-icon {
+  flex: none;
+  width: 13cqw;
+  height: 13cqw;
+  object-fit: contain;
+  filter: drop-shadow(0 0.5cqw 0.4cqw rgb(74 44 22 / 35%));
+}
+
+.lead {
+  color: var(--ink);
+  font: 4.8cqw / 1.1 var(--font-display);
+}
+
+.muted {
+  font-size: 3.1cqw;
+  opacity: 0.8;
+}
+
+.privacy {
+  font-size: 2.6cqw;
+  opacity: 0.75;
+
+  a {
+    color: var(--ink);
+    font-weight: 700;
+  }
+}
+
+.error {
+  color: #b5321f;
+  font-size: 3cqw;
+  font-weight: 700;
+}
+
+.action {
+  padding: 2.2cqw 3.5cqw;
+  font-size: 3.6cqw;
+}
+
+.small {
+  flex: none;
+  padding: 1.4cqw 3cqw;
+  font-size: 3.2cqw;
+}
+
+// Lignes qui mènent ailleurs (classement, gestion du compte) : tuiles crème plus foncées avec un chevron
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2.4cqw 3cqw;
+  border: 0.4cqw solid color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius: 2.4cqw;
+  background: var(--parchment-shade);
+  color: var(--ink);
+  font: 700 3.4cqw / 1.2 var(--font-body);
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 0.5cqw solid var(--gold-dark);
+    outline-offset: 0.4cqw;
+  }
+}
+
+.chevron {
+  font: 5cqw / 1 var(--font-display);
+}
+
+.danger-text {
+  color: #b5321f;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+}
+
+// Initiale du pseudo dans une pastille dorée, comme une médaille
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 11cqw;
+  height: 11cqw;
+  border: 0.5cqw solid var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe9a3, var(--gold) 55%, var(--gold-dark));
+  color: #fff;
+  font: 5.6cqw / 1 var(--font-display);
+  -webkit-text-stroke: 0.3cqw var(--ink);
+  paint-order: stroke fill;
+}
+
+.who {
+  display: grid;
+  flex: 1;
+  gap: 0.4cqw;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    color: var(--ink);
+    font: 4.6cqw / 1.1 var(--font-display);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.pseudo-form {
+  display: flex;
+  flex: 1;
+  gap: 2cqw;
+  min-width: 0;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 1.6cqw 2.4cqw;
+    border: 0.45cqw solid var(--ink);
+    border-radius: 2cqw;
+    background: #fff8ea;
+    color: var(--ink);
+    font: 700 3.6cqw var(--font-body);
+
+    &:focus-visible {
+      outline: 0.5cqw solid var(--gold-dark);
+    }
+  }
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+  font-size: 3cqw;
+  font-weight: 700;
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 2.4cqw;
+    height: 2.4cqw;
+    border: 0.3cqw solid var(--ink);
+    border-radius: 50%;
+  }
+
+  &.ok::before {
+    background: #5fbf4a;
+  }
+
+  &.pending::before {
+    background: var(--gold);
+  }
+
+  &.ko {
+    color: #b5321f;
+
+    &::before {
+      background: #e0402a;
+    }
+  }
+}
+
+.conflict,
+.danger-zone {
+  display: grid;
+  gap: 2cqw;
+  padding: 3cqw;
+  border: 0.45cqw dashed color-mix(in srgb, var(--ink) 50%, transparent);
+  border-radius: 2.4cqw;
+  background: #fff3dc;
+  font-size: 3.1cqw;
+}
+
+.manage {
+  display: grid;
+  gap: 2cqw;
+
+  summary {
+    justify-self: start;
+    color: var(--ink);
+    font: 3.4cqw / 1.2 var(--font-display);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 0.5cqw solid var(--gold-dark);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 0.5cqw;
+  }
+}

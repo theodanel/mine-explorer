@@ -64,11 +64,12 @@ Les explosions ne font pas de critique et n'épuisent qu'un filon à la fois (co
 
 ## Les artefacts
 
-Des objets rares de la mine, porteurs de son histoire. Un seul se porte à la fois, dans la case vide de l'équipement (en bas à droite). Le premier trouvé s'équipe tout seul.
+Des objets rares de la mine, porteurs de son histoire. Jusqu'à trois se portent à la fois (le 2e emplacement s'ouvre au Contremaître, le 3e à la Légende) ; le 1er s'affiche dans la case d'artefact de l'équipement. Le premier trouvé s'équipe tout seul.
 
 - **Découverte** : un artefact garanti à chaque zone terminée, plus une chance sur 30 000 à chaque coup. Joueur régulier : 3 le premier jour, 6 vers le jour 7, 26 en 90 jours, dont 11 différents sur 13.
 - **Rareté** : Commun 55 %, Rare 30 %, Épique 12 %, Légendaire 3 %.
-- **Doublons** : chaque doublon fait monter l'artefact d'un niveau (+25 % d'effet), jusqu'au niveau 5 (effet ×2). Au-delà, il se change en 10 éclats.
+- **Doublons** : chaque doublon fait monter l'artefact d'un niveau (+25 % d'effet), jusqu'au niveau 5 (effet ×2). Au-delà, il donne une réforge gratuite de cet artefact (10 éclats avant le 18/10/2026).
+- **Emplacements et réforge** (18/10/2026) : 3 artefacts portés, et une réforge à l'Atelier au niveau 5. Voir [[reliques]].
 - Chaque découverte ouvre une fenêtre avec le nom, la rareté, l'histoire et l'effet : c'est le moment « butin rare » qui donne envie de continuer.
 
 | Artefact | Rareté | Effet au niveau 1 | Au niveau 5 | Histoire |

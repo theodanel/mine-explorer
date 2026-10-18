@@ -4,7 +4,7 @@
 
 .page {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   gap: 3cqw;
   height: 100%;
   padding: 4cqw 4cqw 3cqw;
@@ -37,6 +37,61 @@
   color: #fff;
   font: bold 6cqw / 1 var(--font-display);
   cursor: pointer;
+}
+
+// Les 3 emplacements portés, comme les cases d'équipement
+.slots {
+  display: flex;
+  justify-content: center;
+  gap: 3cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  width: 17cqw;
+  height: 17cqw;
+  padding: 1cqw;
+  border: 0.5cqw dashed rgb(26 15 7 / 55%);
+  border-radius: 3cqw;
+  background: rgb(26 15 7 / 25%);
+  color: #e8c48a;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &.filled {
+    border-style: solid;
+    border-color: #b77cff;
+    background: radial-gradient(rgb(183 124 255 / 35%), rgb(26 15 7 / 35%));
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.slot-label {
+  font: 700 2.3cqw / 1.1 var(--font-body);
+  text-align: center;
+}
+
+.lock {
+  font-size: 4cqw;
+}
+
+.affix {
+  margin: 0;
+  color: #ffd36a;
+  font-weight: 700;
 }
 
 // Vitrine : des niches creusées dans la roche

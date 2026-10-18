@@ -5,6 +5,32 @@
     <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
   </header>
 
+  <!-- Les 3 emplacements : le 2e s'ouvre au Contremaître, le 3e à la Légende de la mine -->
+  <ol class="slots" aria-label="Artefacts portés">
+    @for (slot of slotViews(); track slot.index) {
+      <li>
+        <button
+          type="button"
+          class="slot"
+          [class.open]="slot.open"
+          [class.filled]="slot.id !== null && slot.open"
+          [disabled]="!slot.open"
+          [attr.aria-label]="slot.open ? 'Emplacement ' + (slot.index + 1) + ' : ' + slot.label : 'Emplacement fermé, ouvert au rang ' + slot.unlockLabel"
+          (click)="chooseSlot(slot.index, slot.open)"
+        >
+          @if (!slot.open) {
+            <span class="lock" aria-hidden="true">🔒</span>
+            <span class="slot-label">{{ slot.unlockLabel }}</span>
+          } @else if (slot.icon) {
+            <img [src]="slot.icon" alt="" width="160" height="160" />
+          } @else {
+            <span class="slot-label">Vide</span>
+          }
+        </button>
+      </li>
+    }
+  </ol>
+
   <ul class="grid">
     @for (cell of cells(); track cell.id) {
       <li>
@@ -47,13 +73,16 @@
           <li>{{ effect }}</li>
         }
       </ul>
+      @if (artifact.affix; as affix) {
+        <p class="affix">Réforge : {{ affix }}</p>
+      }
       @if (artifact.nextEffects; as next) {
         <p class="next">Au niveau {{ artifact.level + 1 }} (un doublon de plus) : {{ next.join(', ') }}</p>
       } @else {
-        <p class="next">Niveau maximum : un doublon se change en 10 éclats.</p>
+        <p class="next">Niveau maximum : réforgeable à l'Atelier, et un doublon donne une réforge gratuite.</p>
       }
-      @if (artifact.equipped) {
-        <p class="worn-note">Porté dans la case d'artefact.</p>
+      @if (artifact.wornSlot !== null) {
+        <p class="worn-note">Porté dans l'emplacement {{ artifact.wornSlot + 1 }}. Touche-le en haut pour le retirer.</p>
       } @else {
         <button type="button" class="game-button green" (click)="artifacts.equip(artifact.id)">Équiper</button>
       }

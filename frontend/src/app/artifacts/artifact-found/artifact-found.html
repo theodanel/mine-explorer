@@ -19,7 +19,7 @@
       </p>
       <p class="lore">« {{ view.lore }} »</p>
       @if (view.find.kind === 'maxed') {
-        <p class="effects">Déjà au niveau maximum : changé en {{ view.find.shards }} éclats.</p>
+        <p class="effects">Déjà au niveau maximum : changé en une réforge gratuite de cet artefact, à l'Atelier.</p>
       } @else {
         <ul class="effects">
           @for (effect of view.effects; track effect) {

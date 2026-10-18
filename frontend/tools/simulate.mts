@@ -31,7 +31,7 @@ import {
   powerOf,
   minedGold,
 } from '../src/app/balance/balance.ts';
-import { ARTIFACT_FIND_CHANCE, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
+import { ARTIFACT_FIND_CHANCE, ARTIFACT_SLOT_FORMS, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
 import {
   blastStrikeMultiplier,
   NO_BONUSES,
@@ -60,8 +60,15 @@ import { GUARDIAN_SECONDS } from '../src/app/balance/balance.ts';
 import { learn, learnCheck, passiveBonuses, pointsEarned, pointsSpent, spellRank, type SkillRanks } from '../src/app/skills/skill-rules.ts';
 import {
   addArtifact,
+  canReforge,
   EMPTY_ARTIFACTS,
+  equipArtifact,
   equippedArtifactBonuses,
+  openSlotCount,
+  reforge,
+  reforgeOreCost,
+  reforgeOresEach,
+  resolveReforge,
   rollArtifact,
   type ArtifactState,
 } from '../src/app/artifacts/artifact-rules.ts';
@@ -351,6 +358,8 @@ let goldOffline = 0;
 let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
+let artifactReforges = 0;
+let artifactReforgesKept = 0;
 const milestones: string[] = [];
 const daily: string[] = [];
 let lastZone = 1;
@@ -363,7 +372,7 @@ function gearStats(): MiningStats {
 }
 
 function families() {
-  return withNewSystems ? [passiveBonuses(ranks), equippedArtifactBonuses(artifacts), activeCompanionBonuses(companions)] : [NO_BONUSES];
+  return withNewSystems ? [passiveBonuses(ranks), equippedArtifactBonuses(artifacts, artifactSlots()), activeCompanionBonuses(companions)] : [NO_BONUSES];
 }
 
 function buffsAt(now: number): SpellBuffs {
@@ -622,19 +631,58 @@ function spendPoints(now: number): void {
   refresh(now);
 }
 
+/** Emplacements d'artefact ouverts selon la forme (1, puis 2 au Contremaître et 3 à la Légende). */
+function artifactSlots(): number {
+  return openSlotCount(formIndex, ARTIFACT_SLOT_FORMS.map((id) => EVOLUTION_FORMS.findIndex((form) => form.id === id)));
+}
+
+function artifactPower(): number {
+  const profile = minerProfile(gear, families(), NO_BUFFS);
+  return powerOf(profile.stats) * (1 + profile.stats.goldBonus * 0.2);
+}
+
+/** Remplit les emplacements ouverts un par un avec l'artefact qui rapporte le plus de Puissance. */
 function equipBestArtifact(now: number): void {
-  let best: ArtifactId | null = artifacts.equipped;
-  let bestPower = -1;
-  for (const id of Object.keys(artifacts.owned) as ArtifactId[]) {
-    artifacts = { ...artifacts, equipped: id };
-    const candidate = minerProfile(gear, families(), NO_BUFFS);
-    const power = powerOf(candidate.stats) * (1 + candidate.stats.goldBonus * 0.2);
-    if (power > bestPower) {
-      bestPower = power;
-      best = id;
+  const open = artifactSlots();
+  artifacts = { ...artifacts, slots: artifacts.slots.map(() => null) };
+  for (let slot = 0; slot < open; slot++) {
+    let best: ArtifactId | null = null;
+    let bestPower = -1;
+    for (const id of Object.keys(artifacts.owned) as ArtifactId[]) {
+      if (artifacts.slots.includes(id)) continue;
+      const before = artifacts;
+      artifacts = equipArtifact(artifacts, id, slot, open);
+      const power = artifactPower();
+      artifacts = before;
+      if (power > bestPower) {
+        bestPower = power;
+        best = id;
+      }
     }
+    if (best !== null) artifacts = equipArtifact(artifacts, best, slot, open);
   }
-  artifacts = { ...artifacts, equipped: best };
+  refresh(now);
+}
+
+/** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
+function reforgeArtifacts(now: number): void {
+  if (!withNewSystems) return;
+  for (const id of artifacts.slots.slice(0, artifactSlots())) {
+    if (id === null || !canReforge(artifacts, id)) continue;
+    const token = (artifacts.tokens[id] ?? 0) > 0;
+    const cost = reforgeOreCost(ores, reforgeOresEach(artifacts, id));
+    if (!token && cost === null) continue;
+    if (!token && cost !== null) for (const [tier, need] of Object.entries(cost)) ores[tier as TierId] -= need ?? 0;
+    const before = artifactPower();
+    artifacts = reforge(artifacts, id, artifactRandom, token);
+    const kept = resolveReforge(artifacts, true);
+    const previous = artifacts;
+    artifacts = kept;
+    const keep = artifactPower() > before;
+    artifacts = resolveReforge(previous, keep);
+    if (keep) artifactReforgesKept++;
+    artifactReforges++;
+  }
   refresh(now);
 }
 
@@ -643,8 +691,6 @@ function findArtifact(now: number): void {
   const { state, find } = addArtifact(artifacts, rollArtifact(artifactRandom));
   artifacts = state;
   artifactsFound++;
-  shards += find.shards;
-  shardSources.artefacts += find.shards;
   if (find.kind === 'new' && ARTIFACTS[find.id].rarity === 'legendary') {
     milestones.push(`${fmt(now)} : artefact légendaire ${ARTIFACTS[find.id].label}`);
   }
@@ -861,6 +907,7 @@ for (let day = 0; day < days; day++) {
         claimMissions();
         forgeAll(now);
         tryEvolve(now);
+        if (artifactSlots() !== artifacts.slots.filter((id) => id !== null).length && Object.keys(artifacts.owned).length > artifacts.slots.filter((id) => id !== null).length) equipBestArtifact(now);
         payPickaxe(now);
         runChallenge(now);
         tendCompanions(now);
@@ -872,6 +919,7 @@ for (let day = 0; day < days; day++) {
     }
     lastSeen = end;
   }
+  reforgeArtifacts(lastSeen);
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -903,7 +951,8 @@ if (withNewSystems) {
   console.log(
     `Apport final : arbre + artefact ×${(powerOf(finalStats) / powerOf(gearOnly.stats)).toFixed(2)} de Puissance, ` +
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
-      `artefact porté ${artifacts.equipped ?? 'aucun'} (niv. ${artifacts.equipped ? artifacts.owned[artifacts.equipped] : 0}), ` +
+      `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
+      `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );
 }

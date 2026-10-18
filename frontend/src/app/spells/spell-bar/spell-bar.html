@@ -1,29 +1,48 @@
 <div class="bar">
-  @if (hasSpells()) {
-    @for (slot of slots(); track slot.index) {
-      @if (slot.empty) {
-        <span
-          class="slot empty"
-          tabindex="0"
-        ></span>
-      } @else {
-        <span class="slot-wrapper" [appTooltip]="slot.tooltip">
-          <button
-            type="button"
-            class="slot"
-            [attr.data-rarity]="slot.rarity"
-            [class.ready]="slot.ready"
-            [class.active]="slot.active"
-            [style.--cooldown]="slot.cooldownLeft"
-            [attr.aria-label]="slot.label + (slot.ready ? ', prêt' : ', en recharge')"
-            (click)="cast(slot.index)"
-          >
-            <img class="icon" [src]="slot.icon" alt="" width="160" height="160" />
-            @if (!slot.ready) {
-              <span class="cooldown" aria-hidden="true">{{ slot.secondsLeft }}</span>
-            }
-          </button>
-        </span>
+  @if (companion(); as pet) {
+    <!-- Compétence du familier : une pastille à part, avant les sorts -->
+    <span class="slot-wrapper" [appTooltip]="pet.tooltip">
+      <button
+        type="button"
+        class="slot companion"
+        [attr.data-rarity]="pet.rarity"
+        [class.ready]="pet.ready"
+        [class.active]="pet.active"
+        [style.--cooldown]="pet.cooldownLeft"
+        [attr.aria-label]="pet.label + (pet.ready ? ', prête' : ', en recharge')"
+        (click)="castCompanion()"
+      >
+        <img class="icon" [src]="pet.icon" alt="" width="160" height="160" />
+        @if (!pet.ready) {
+          <span class="cooldown" aria-hidden="true">{{ pet.secondsLeft }}</span>
+        }
+      </button>
+    </span>
+  }
+  @if (hasSpells() || companion() !== null) {
+    @if (hasSpells()) {
+      @for (slot of slots(); track slot.index) {
+        @if (slot.empty) {
+          <span class="slot empty" tabindex="0"></span>
+        } @else {
+          <span class="slot-wrapper" [appTooltip]="slot.tooltip">
+            <button
+              type="button"
+              class="slot"
+              [attr.data-rarity]="slot.rarity"
+              [class.ready]="slot.ready"
+              [class.active]="slot.active"
+              [style.--cooldown]="slot.cooldownLeft"
+              [attr.aria-label]="slot.label + (slot.ready ? ', prêt' : ', en recharge')"
+              (click)="cast(slot.index)"
+            >
+              <img class="icon" [src]="slot.icon" alt="" width="160" height="160" />
+              @if (!slot.ready) {
+                <span class="cooldown" aria-hidden="true">{{ slot.secondsLeft }}</span>
+              }
+            </button>
+          </span>
+        }
       }
     }
     <button

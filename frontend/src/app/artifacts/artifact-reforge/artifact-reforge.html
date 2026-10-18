@@ -1,0 +1,37 @@
+<section class="reforge" aria-labelledby="artifact-reforge-title">
+  <h3 id="artifact-reforge-title">Réforge des artefacts</h3>
+  <p class="intro">Un artefact au niveau {{ maxLevel }} gagne un effet secondaire tiré au hasard. Tu gardes le nouveau, ou tu reviens à l'ancien.</p>
+
+  @for (row of rows(); track row.id) {
+    <article class="artifact" [attr.data-rarity]="row.rarity">
+      <img class="icon" [src]="row.icon" alt="" width="160" height="160" />
+      <div class="text">
+        <h4>{{ row.label }}</h4>
+        <p class="current">{{ row.current ?? 'Pas encore réforgé' }}</p>
+
+        @if (row.offer; as offer) {
+          <p class="offer">Nouvel effet : <strong>{{ offer }}</strong></p>
+          <div class="choice">
+            <button type="button" class="game-button green" (click)="resolve(true)">Garder</button>
+            <button type="button" class="game-button stone" (click)="resolve(false)">{{ row.current ? 'Revenir' : 'Renoncer' }}</button>
+          </div>
+        } @else {
+          <p class="cost">
+            @if (row.tokens > 0) {
+              <span class="token">Réforge gratuite ×{{ row.tokens }}</span>
+            } @else if (row.ores; as ores) {
+              @for (ore of ores; track ore.tier) {
+                <span class="price"><img [src]="ore.icon" alt="" width="128" height="128" />{{ ore.amount }}</span>
+              }
+            } @else {
+              <span class="short">Il faut {{ row.each }} minerais de 3 matériaux différents</span>
+            }
+          </p>
+          <button type="button" class="game-button gold" [disabled]="!row.affordable || row.blocked" (click)="reforge(row.id)">Réforger</button>
+        }
+      </div>
+    </article>
+  } @empty {
+    <p class="hint">Aucun artefact au niveau {{ maxLevel }} pour l'instant : chaque doublon le fait monter d'un niveau.</p>
+  }
+</section>

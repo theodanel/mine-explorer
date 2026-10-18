@@ -10,7 +10,7 @@
   list-style: none;
 }
 
-// Case d'équipement : bois sombre, bord épais, fond teinté par la rareté
+// Case d'équipement : le cadre de qualité (.item-frame, styles.scss) colore bord et fond selon le palier
 .slot {
   position: relative;
   display: grid;
@@ -18,18 +18,31 @@
   width: 17cqw;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 0.9cqw solid #2a1a0d;
   border-radius: 3cqw;
-  background:
-    linear-gradient(color-mix(in srgb, var(--tier-color, transparent) 55%, transparent), transparent),
-    linear-gradient(#5b3d24, #3d2815);
-  box-shadow:
-    inset 0 0 0 0.5cqw color-mix(in srgb, var(--tier-color, #7a5636) 80%, transparent),
-    0 0.8cqw 0 rgb(0 0 0 / 35%);
 
-  &[data-tier='empty'] .slot-icon {
-    filter: grayscale(1) brightness(0.55);
-    opacity: 0.4;
+  // Artefact, compagnon et case verrouillée gardent le bois ; les objets prennent leur cadre de qualité
+  &:not(.item-frame) {
+    border: 0.45cqw solid rgb(26 15 7 / 75%);
+    background: linear-gradient(#5b3d24, #3d2815);
+    box-shadow: 0 0.8cqw 0 rgb(0 0 0 / 35%);
+  }
+
+  // Case vide : creusée dans le parchemin, avec la silhouette de la pièce en relief
+  &[data-tier='empty'] {
+    border-color: color-mix(in srgb, var(--parchment-text) 70%, transparent);
+    background: linear-gradient(#e2c896, #d4b67e);
+    box-shadow:
+      inset 0 0.7cqw 0.8cqw rgb(91 58 28 / 30%),
+      0 0.4cqw 0 rgb(255 255 255 / 50%);
+
+    &::after {
+      display: none;
+    }
+
+    .slot-icon {
+      filter: sepia(1) saturate(0.6) brightness(0.75) drop-shadow(0 0.3cqw 0 rgb(255 255 255 / 45%));
+      opacity: 0.45;
+    }
   }
 }
 
@@ -50,9 +63,9 @@
   position: absolute;
   inset: auto 0 0;
   padding: 0.4cqw 0;
-  background: rgb(0 0 0 / 55%);
+  background: rgb(0 0 0 / 35%);
   color: #fff3d6;
-  font: bold 2.8cqw / 1 Arial, sans-serif;
+  font: bold 2.8cqw / 1 var(--font-body);
   text-align: center;
 }
 
@@ -80,13 +93,21 @@
   }
 
   .artifact-hint {
-    font-size: 1.9cqw;
+    // « Compagnon » doit tenir dans la case, même sur un petit écran
+    font-size: 1.7cqw;
   }
 
   .artifact-cell {
     padding-left: 1.4cqw;
-    border-left: 0.5cqw dashed rgb(243 230 208 / 35%);
+    border-left: 0.5cqw dashed color-mix(in srgb, var(--parchment-text) 40%, transparent);
   }
+}
+
+// Artefact ou compagnon absent : la même case creusée que les emplacements vides
+.empty-artifact {
+  border-color: color-mix(in srgb, var(--parchment-text) 70%, transparent) !important;
+  background: linear-gradient(#e2c896, #d4b67e) !important;
+  box-shadow: inset 0 0.7cqw 0.8cqw rgb(91 58 28 / 30%) !important;
 }
 
 // Cases d'artefact et de compagnon : même cadre que les objets, bordées de la couleur de rareté
@@ -95,9 +116,6 @@
   padding: 0;
   font: inherit;
   cursor: pointer;
-  box-shadow:
-    inset 0 0 0 0.5cqw var(--rarity-color, #7a5636),
-    0 0.8cqw 0 rgb(0 0 0 / 35%);
 
   &:focus-visible {
     outline: 0.7cqw solid #ffd34d;
@@ -105,12 +123,9 @@
   }
 }
 
-.empty-artifact {
-  background: repeating-linear-gradient(135deg, #3a3532 0 2cqw, #2f2a27 2cqw 4cqw);
-}
 
 
 .artifact-hint {
-  color: rgb(255 243 214 / 55%);
-  font: bold 2.6cqw / 1 Arial, sans-serif;
+  color: color-mix(in srgb, var(--parchment-text) 70%, transparent);
+  font: bold 2.6cqw / 1 var(--font-body);
 }

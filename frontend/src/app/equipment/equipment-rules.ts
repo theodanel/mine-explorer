@@ -1,6 +1,7 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
 import {
+  AFFINITY_WEIGHT,
   AFFIX_SHARE,
   affixCount,
   BASE_STATS,
@@ -19,6 +20,7 @@ import {
   EquippedItems,
   Item,
   MiningStats,
+  SLOT_AFFINITIES,
   SLOT_IDS,
   SlotId,
   STAT_IDS,
@@ -27,6 +29,8 @@ import {
   TIER_IDS,
   TierId,
 } from './equipment.model';
+import type { WorkshopLevels } from '../balance/workshop';
+import { reinforce } from '../workshop/workshop-rules';
 
 const PERCENT_PRECISION = 1000;
 
@@ -43,23 +47,31 @@ export interface StatComparison {
 
 /**
  * Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche.
- * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon : n'importe quel
- * emplacement peut porter n'importe quelle stat. Un affixe de Frappe s'ajoute à la Frappe de base.
+ * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon. N'importe quel
+ * emplacement peut porter n'importe quelle stat, mais ses deux affinités sortent 3 fois plus souvent. Un affixe de
+ * Frappe s'ajoute à la Frappe de base.
  */
-export function rollItem(random: Random, createId: () => string, pickaxeLevel: number): Item {
+export function rollItem(random: Random, createId: () => string, pickaxeLevel: number, forcedTier?: TierId): Item {
   const slot = pickOne(SLOT_IDS, random);
   const chances = tierChances(pickaxeLevel);
-  const tier = pickWeighted(TIER_IDS, (t) => chances[t], random);
+  // Qualité imposée : la Forge express récompense une bonne partie par une meilleure qualité
+  const tier = forcedTier ?? pickWeighted(TIER_IDS, (t) => chances[t], random);
   const level = pickaxeLevel;
 
   const stats: Partial<MiningStats> = { strikePower: rollStat('strikePower', tier, level, ITEM_BASE_STRIKE_SHARE, random) };
   const candidates = [...STAT_IDS];
   for (let i = 0; i < affixCount(tier); i++) {
-    const [stat] = candidates.splice(Math.floor(random() * candidates.length), 1);
+    const stat = pickWeighted(candidates, (candidate) => affinityWeight(slot, candidate), random);
+    candidates.splice(candidates.indexOf(stat), 1);
     const ratio = AFFIX_SHARE[stat] * (i === 0 ? 1 : NEXT_AFFIX_RATIO);
     stats[stat] = (stats[stat] ?? 0) + rollStat(stat, tier, level, ratio, random);
   }
   return { id: createId(), slot, tier, level, stats };
+}
+
+/** Poids d'une stat dans les tirages d'affixes de cet emplacement. */
+export function affinityWeight(slot: SlotId, stat: StatId): number {
+  return SLOT_AFFINITIES[slot].includes(stat) ? AFFINITY_WEIGHT : 1;
 }
 
 /**
@@ -107,10 +119,17 @@ export function computePower(stats: MiningStats): number {
   return powerOf(stats);
 }
 
-/** Gain (ou perte) de Puissance si l'on équipe cet objet à la place de celui porté. */
-export function powerDelta(equipped: EquippedItems, candidate: Item): number {
-  const swapped: Partial<Record<SlotId, Item>> = { ...equipped, [candidate.slot]: candidate };
-  return computePower(computeStats(swapped)) - computePower(computeStats(equipped));
+/**
+ * Gain (ou perte) de Puissance si l'on équipe cet objet à la place de celui porté. Les niveaux d'Atelier comptent :
+ * ils dépendent de la qualité de la pièce, donc changer de qualité change aussi le bonus d'Atelier.
+ */
+export function powerDelta(equipped: EquippedItems, candidate: Item, levels: WorkshopLevels = {}): number {
+  const swapped: EquippedItems = { ...equipped, [candidate.slot]: candidate };
+  return gearPower(swapped, levels) - gearPower(equipped, levels);
+}
+
+function gearPower(equipped: EquippedItems, levels: WorkshopLevels): number {
+  return computePower(reinforce(computeStats(equipped), levels, equipped));
 }
 
 /** Multiplicateur appliqué à la vitesse d'animation du mineur. */

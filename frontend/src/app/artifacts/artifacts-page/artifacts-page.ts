@@ -1,11 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
 import { ARTIFACT_IDS, ARTIFACT_MAX_LEVEL, ArtifactId, ARTIFACTS } from '../../balance/artifacts';
-import { RARITY_LABELS } from '../../balance/skill-tree';
+import { NO_BONUSES, RARITY_LABELS } from '../../balance/skill-tree';
 import { artifactIconUrl } from '../../loading/game-assets';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
-import { artifactEffects } from '../artifact-rules';
+import { affixValue, artifactEffects } from '../artifact-rules';
 import { Artifacts } from '../artifacts';
 
 /** Vitrine des artefacts : ceux trouvés avec leur histoire, ceux qui restent à découvrir en silhouette. */
@@ -32,7 +32,7 @@ export class ArtifactsPage implements OnInit {
         icon: artifactIconUrl(id),
         rarity: def.rarity,
         level: level ?? 0,
-        equipped: this.artifacts.equipped() === id,
+        equipped: this.artifacts.isWorn(id),
         selected: this.selected()?.id === id,
       };
     });
@@ -57,9 +57,19 @@ export class ArtifactsPage implements OnInit {
       maxLevel: ARTIFACT_MAX_LEVEL,
       effects: describeBonuses(artifactEffects(id, level)),
       nextEffects: level < ARTIFACT_MAX_LEVEL ? describeBonuses(artifactEffects(id, level + 1)) : null,
-      equipped: this.artifacts.equipped() === id,
+      affix: this.describeAffix(id),
+      wornSlot: this.artifacts.slots().find((slot) => slot.open && slot.id === id)?.index ?? null,
     };
   });
+
+  /** Les 3 emplacements d'artefact, en haut de la page : toucher un emplacement y porte l'artefact sélectionné. */
+  protected readonly slotViews = computed(() =>
+    this.artifacts.slots().map((slot) => ({
+      ...slot,
+      icon: slot.id === null ? null : artifactIconUrl(slot.id),
+      label: slot.id === null ? 'Vide' : ARTIFACTS[slot.id].label,
+    })),
+  );
 
   ngOnInit(): void {
     this.artifacts.markSeen();
@@ -69,6 +79,28 @@ export class ArtifactsPage implements OnInit {
     if (found) {
       this.selectedId.set(id);
     }
+  }
+
+  /** Toucher un emplacement ouvert y porte l'artefact sélectionné ; le retoucher l'en retire. */
+  protected chooseSlot(index: number, open: boolean): void {
+    const selected = this.selected();
+    if (!open || selected === null) {
+      return;
+    }
+    if (selected.wornSlot === index) {
+      this.artifacts.unequip(index);
+    } else {
+      this.artifacts.equip(selected.id, index);
+    }
+  }
+
+  private describeAffix(id: ArtifactId): string | null {
+    const affix = this.artifacts.affixes()[id];
+    if (affix === undefined) {
+      return null;
+    }
+    const [line] = describeBonuses({ ...NO_BONUSES, [affix.bonus]: affixValue(affix) });
+    return `${line} (${RARITY_LABELS[affix.rarity]})`;
   }
 
   protected close(): void {

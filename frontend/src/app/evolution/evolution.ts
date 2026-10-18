@@ -6,7 +6,8 @@ import { MissionCounters } from '../missions/mission-counters';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
-import { canEvolve, currentTier, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
+import { HeartForge } from '../heart-forge/heart-forge';
+import { canEvolve, currentTier, formTitle, EvolutionProgress, isClaimable, nextForm, objectivesFor, unclaimedShards } from './evolution-rules';
 
 const STORAGE_KEY = 'mine-explorer.evolution';
 /** Récompenses déjà touchées pour la forme suivante (index des objectifs). */
@@ -22,12 +23,20 @@ export class Evolution {
   private readonly forge = inject(Forge);
   private readonly counters = inject(MissionCounters).counters;
   private readonly shards = inject(GeodeShards);
+  private readonly heartForge = inject(HeartForge);
   private readonly formIndex = signal(loadFormIndex());
   private readonly claimed = signal<readonly number[]>(loadClaims());
 
   readonly index = this.formIndex.asReadonly();
   readonly form = computed(() => EVOLUTION_FORMS[this.formIndex()]);
   readonly next = computed(() => nextForm(this.formIndex()));
+  /** Nom de la forme actuelle, étoiles comprises. */
+  readonly title = computed(() => formTitle(this.form()));
+  /** Nom de la forme suivante, étoiles comprises (null à la forme ultime). */
+  readonly nextTitle = computed(() => {
+    const form = this.next();
+    return form === null ? null : formTitle(form);
+  });
   /** Multiplicateur de Frappe cumulé de toutes les formes atteintes. */
   readonly strikeMultiplier = computed(() => evolutionStrikeMultiplier(this.formIndex()));
 
@@ -36,13 +45,20 @@ export class Evolution {
     pickaxeLevel: this.forge.level(),
     itemsForged: this.counters().itemsForged,
     rocksBroken: this.counters().rocksBroken,
+    // Une zone est terminée quand son gardien est battu : on est alors dans la suivante
+    zoneCleared: this.progression.zone() - 1,
   }));
 
   readonly objectives = computed(() => {
     const form = this.next();
     return form === null ? [] : objectivesFor(form, this.progress(), this.claimed());
   });
-  readonly ready = computed(() => canEvolve(this.objectives()));
+  /** Runes de l'étoile suivante serties dans l'anneau (toujours vrai hors Cœur du monde). */
+  readonly runesSet = computed(() => {
+    const next = this.next();
+    return next === null || next.id !== 'heart' || this.heartForge.starReady(next.stars);
+  });
+  readonly ready = computed(() => canEvolve(this.objectives()) && this.runesSet());
   /** Palier en cours de la forme suivante. */
   readonly tier = computed(() => {
     const form = this.next();
@@ -89,7 +105,11 @@ function loadFormIndex(): number {
     return 0;
   }
   const index = Number(raw);
-  if (!Number.isSafeInteger(index) || index < 0 || index >= EVOLUTION_FORMS.length) {
+  // Une sauvegarde au-delà du dernier rang (avant le 17/10/2026, il y en avait 11) garde le rang le plus haut
+  if (Number.isSafeInteger(index) && index >= EVOLUTION_FORMS.length) {
+    return EVOLUTION_FORMS.length - 1;
+  }
+  if (!Number.isSafeInteger(index) || index < 0) {
     console.warn(`Forme d'évolution invalide ignorée : "${raw}"`);
     return 0;
   }

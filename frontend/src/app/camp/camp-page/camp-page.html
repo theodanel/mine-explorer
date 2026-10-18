@@ -1,9 +1,9 @@
-<section class="page game-panel" aria-labelledby="camp-title">
+<section class="page game-panel" data-theme="ember" aria-labelledby="camp-title">
   <header class="page-header">
     <button type="button" class="back" aria-label="Revenir aux aventures" (click)="back()">‹</button>
     <h2 id="camp-title">Campement</h2>
     <ul class="purse" aria-label="Ce que tu peux dépenser">
-      <li><img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ coins() }}</li>
+      <li><img src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ coins() }}</li>
       <li><img [src]="material().icon" alt="" width="128" height="128" />{{ camp.spendableOres() }}</li>
     </ul>
   </header>
@@ -68,7 +68,7 @@
     @if (row.next !== null) {
       <div class="buy">
         <span class="price" [class.short]="row.check === 'gold'">
-          <img src="assets/ui/coin.png" alt="" width="128" height="128" />{{ row.gold }}
+          <img src="assets/ui/coin.webp" alt="" width="128" height="128" />{{ row.gold }}
         </span>
         <span class="price" [class.short]="row.check === 'ores'">
           <img [src]="material().icon" alt="" width="128" height="128" />{{ row.ores }} {{ material().label }}

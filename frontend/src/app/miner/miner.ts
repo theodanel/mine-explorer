@@ -26,7 +26,7 @@ export class Miner {
 
   private readonly families = computed(() => [this.skills.bonuses(), this.artifacts.bonuses(), this.companions.bonuses()]);
   /** Équipement et évolution, renforcés par l'Atelier. */
-  private readonly gear = computed(() => reinforce(this.inventory.stats(), this.workshop.levels()));
+  private readonly gear = computed(() => reinforce(this.inventory.stats(), this.workshop.levels(), this.inventory.equipped()));
   readonly permanent = computed(() => minerProfile(this.gear(), this.families(), NO_BUFFS));
   /** La galerie de la zone ne compte qu'en jeu : elle s'ajoute aux sorts, comme un effet temporaire. */
   readonly current = computed(() => {

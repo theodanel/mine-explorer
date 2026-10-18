@@ -1,0 +1,14 @@
+@if (shown()) {
+  @let spot = ring()!;
+  <div class="reveal-hint" aria-live="polite">
+    <div
+      class="ring"
+      aria-hidden="true"
+      [style.left.px]="spot.left"
+      [style.top.px]="spot.top"
+      [style.width.px]="spot.width"
+      [style.height.px]="spot.height"
+    ></div>
+    <p class="bubble game-panel" [class.below]="below()" [style.top.px]="bubbleTop()">{{ reveal.hint()!.text }}</p>
+  </div>
+}

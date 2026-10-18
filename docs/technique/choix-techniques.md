@@ -45,4 +45,9 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 ## Pages chargées à la demande
 
 - **Décision** : pages du menu et fenêtres qui arrivent après le démarrage chargées avec `@defer`.
-- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget de 1 Mo fixé dans `angular.json`, important sur mobile.
+- **Raison** : PixiJS pèse lourd ; le premier chargement reste sous le budget fixé dans `angular.json`, important sur mobile.
+- **Budget** : 1 Mo bruts jusqu'au 14/10/2026, relevé à 1,2 Mo quand le jeu l'a atteint (Campement, Puits sans fond). Ce qui transite vraiment est compressé : environ 285 Ko. PixiJS en fait près de la moitié ; le reste des nouveautés est chargé à la demande.
+
+## Polices (16/10/2026)
+
+Lilita One (titres, chiffres, boutons) et Nunito (texte), choisies par Théo pour le style cartoon. Toutes deux sous licence OFL, installées par les paquets npm `@fontsource/lilita-one` et `@fontsource/nunito` (versions figées), et déclarées dans `angular.json` (sous-ensemble latin, accents et œ compris). Le build les copie avec le site : aucune requête vers Google Fonts, et la CSP garde `font-src 'self'`. Lilita One n'a qu'une graisse : `font-synthesis-weight: none` empêche le navigateur de l'épaissir.

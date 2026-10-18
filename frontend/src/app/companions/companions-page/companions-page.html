@@ -1,4 +1,4 @@
-<section class="page game-panel" aria-labelledby="companions-title">
+<section class="page game-panel" data-theme="emerald" aria-labelledby="companions-title">
   <header class="page-header">
     <h2 id="companions-title">Compagnons</h2>
     <span class="count">{{ companions.foundCount() }} / {{ total }}</span>
@@ -10,14 +10,38 @@
       <p class="intro">L'onglet s'ouvre à la zone {{ unlockZone }}, avec un premier œuf offert.</p>
     }
 
-    <!-- Ressources des compagnons : les pierres d'éveil font monter les étoiles, le défi donne les œufs -->
+    <!-- Pierres d'éveil : elles font monter les étoiles -->
     <div class="purse">
       <span class="stones" aria-label="Pierres d'éveil">
-        <img class="stone-icon" src="assets/ui/refonte/awakening-stone.png" alt="" width="160" height="160" />
+        <img class="stone-icon" src="assets/ui/refonte/awakening-stone.webp" alt="" width="160" height="160" />
         <strong>{{ companions.stones() }}</strong> pierres d'éveil
       </span>
-      <button type="button" class="game-button green challenge" (click)="openChallenge()"><img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.png" alt="" width="160" height="160" />Défi de la mine</button>
     </div>
+
+    <!-- Toutes les façons d'avoir un œuf, en clair : sans ça, le joueur ne savait pas d'où ils venaient -->
+    <section class="sources" aria-labelledby="sources-title">
+      <h3 id="sources-title">Gagner des œufs</h3>
+      <ul>
+        <li>
+          <img [src]="sourceIcons.zone" alt="" width="180" height="225" />
+          <span><strong>Termine une zone</strong> : un œuf à chaque nouvelle zone.</span>
+        </li>
+        <li>
+          <img [src]="sourceIcons.challenge" alt="" width="160" height="160" />
+          <span><strong>Défi de la mine</strong> : 3 œufs tous les 3 jours, en cassant des filons.</span>
+          <button type="button" class="game-button green challenge" (click)="openChallenge()">
+            Voir
+            @if (challengeReady() > 0) {
+              <span class="ready-badge" [attr.aria-label]="challengeReady() + ' récompense(s) à récupérer'">{{ challengeReady() }}</span>
+            }
+          </button>
+        </li>
+        <li>
+          <img [src]="sourceIcons.lottery" alt="" width="128" height="128" />
+          <span><strong>Loterie du jour</strong> : parfois un œuf, sur la mine en haut à droite.</span>
+        </li>
+      </ul>
+    </section>
 
     <!-- Couveuse : un œuf à la fois, le minuteur continue jeu fermé -->
     <article class="incubator">
@@ -32,7 +56,7 @@
           }
         </div>
       } @else {
-        <p class="empty">Aucun œuf à couver. Chaque zone terminée en donne un, et parfois un coffre.</p>
+        <p class="empty">Aucun œuf à couver pour l'instant : la prochaine zone terminée en donne un.</p>
       }
       @if (queue().length > 0) {
         <div class="queue" aria-label="Œufs en attente">
@@ -60,6 +84,7 @@
             [class.found]="cell.found"
             [class.selected]="cell.selected"
             [attr.data-rarity]="cell.found ? cell.rarity : null"
+          [class.item-frame]="cell.found"
             [disabled]="!cell.found"
             [attr.aria-label]="cell.found ? cell.label + ', ' + cell.stars + ' étoiles' : 'Compagnon pas encore trouvé'"
             (click)="select(cell.id, cell.found)"
@@ -113,7 +138,7 @@
           @if (pet.starCost !== null) {
             <button type="button" class="game-button feed" [disabled]="!pet.canRaise" (click)="raiseStar(pet.id)">
               +1 ★
-              <span class="price"><img class="stone-icon" src="assets/ui/refonte/awakening-stone.png" alt="" width="160" height="160" />{{ pet.starCost }} pierres</span>
+              <span class="price"><img class="stone-icon" src="assets/ui/refonte/awakening-stone.webp" alt="" width="160" height="160" />{{ pet.starCost }} pierres</span>
             </button>
           } @else {
             <p class="note">5 étoiles : ton compagnon est au maximum.</p>
@@ -124,7 +149,7 @@
           <h4>Expédition</h4>
           @if (pet.expedition; as trip) {
             @if (trip.back) {
-              <button type="button" class="game-button green" (click)="collect(pet.id)">Récupérer le butin</button>
+              <button type="button" class="game-button green" appRewardFlight (click)="collect(pet.id)">Récupérer le butin</button>
             } @else {
               <p class="note">En expédition, retour dans <strong>{{ trip.timeLeft }}</strong>.</p>
             }

@@ -32,9 +32,10 @@
           type="button"
           class="game-button green claim"
           [disabled]="!missions.chestReady()"
+          appRewardFlight
           (click)="missions.claimChest()"
         >
-          <img class="resource-icon" src="assets/ui/geode-shard.png" alt="" width="128" height="128" />+{{
+          <img class="resource-icon" src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />+{{
             missions.chestReward.shards
           }}
         </button>

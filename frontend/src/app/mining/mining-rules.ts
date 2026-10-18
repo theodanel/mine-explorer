@@ -1,4 +1,4 @@
-import { goldForDamage, shardsForStage, ZONE_CLEAR_SHARDS } from '../balance/balance';
+import { minedGold, shardsForStage, zoneClearShards } from '../balance/balance';
 
 export interface StrikeReward {
   readonly gold: number;
@@ -22,6 +22,6 @@ export interface StrikeContext {
 export function strikeReward(damage: number, goldBonus: number, context: StrikeContext): StrikeReward {
   const foundShards = context.foundShard ? 1 : 0;
   const stageShards = context.stageCleared ? shardsForStage(context.zone, context.stage) : 0;
-  const zoneShards = context.zoneCleared ? ZONE_CLEAR_SHARDS : 0;
-  return { gold: goldForDamage(damage, goldBonus), shards: foundShards + stageShards + zoneShards };
+  const zoneShards = context.zoneCleared ? zoneClearShards(context.zone) : 0;
+  return { gold: minedGold(damage, goldBonus), shards: foundShards + stageShards + zoneShards };
 }

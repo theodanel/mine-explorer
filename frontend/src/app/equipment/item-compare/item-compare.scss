@@ -27,22 +27,34 @@ h2 {
   height: 9cqw;
 }
 
+.title-icon.item-frame {
+  width: 11cqw;
+  height: 11cqw;
+  padding: 0.8cqw;
+}
+
+// Qualité de l'objet : pastille aux couleurs de son cadre, texte gras cerné de sombre
 .tier {
   display: inline-block;
   padding: 0.5cqw 2cqw;
+  border: 0.4cqw solid #1a0f07;
   border-radius: 1.5cqw;
-  background: var(--tier-color, #5a4636);
-  color: #1a0f07;
+  background: linear-gradient(var(--frame-light, #6b4a2c), var(--frame-dark, #3d2815));
+  color: #fff;
   font-size: 3cqw;
   font-weight: bold;
+  text-shadow:
+    0.25cqw 0.25cqw 0 #1a0f07,
+    -0.25cqw 0.25cqw 0 #1a0f07,
+    0.25cqw -0.25cqw 0 #1a0f07,
+    -0.25cqw -0.25cqw 0 #1a0f07;
 }
 
 // Gain ou perte de Puissance si l'on équipe l'objet : c'est le chiffre qui décide
 .power {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 2cqw;
+  display: grid;
+  justify-items: center;
+  gap: 0.8cqw;
   margin: 0 0 3cqw;
   padding: 1.5cqw;
   border-radius: 2.5cqw;
@@ -51,25 +63,40 @@ h2 {
   &[data-trend='better'] { --trend-color: #6fdc6f; }
   &[data-trend='worse'] { --trend-color: #ff6b5e; }
   &[data-trend='same'] { --trend-color: #c9b89a; }
+
+  p {
+    margin: 0;
+  }
+}
+
+.power-gain {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5cqw;
+  color: var(--trend-color);
+  font-weight: bold;
+}
+
+.power-arrow {
+  font-size: 4.5cqw;
+}
+
+.power-delta {
+  font-size: 6.5cqw;
 }
 
 .power-label {
   font-size: 3.4cqw;
   text-transform: uppercase;
-  opacity: 0.8;
+}
+
+.power-total {
+  font-size: 3.2cqw;
+  opacity: 0.85;
 }
 
 .power-value {
-  font-size: 6cqw;
-  font-weight: bold;
   color: #ffd34d;
-}
-
-.power-arrow,
-.power-delta {
-  color: var(--trend-color);
-  font-size: 4.5cqw;
-  font-weight: bold;
 }
 
 .compare {

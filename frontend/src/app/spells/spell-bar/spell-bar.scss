@@ -22,12 +22,14 @@
   height: 8.5cqw;
   padding: 0;
   overflow: hidden;
-  border: 0.45cqw solid var(--rarity-color, #7a5636);
+  border: 0.7cqw solid var(--rarity-color, var(--gold));
   border-radius: 50%;
-  background: rgb(20 12 6 / 70%);
-  box-shadow: 0 0.3cqw 0.6cqw rgb(0 0 0 / 50%);
+  background: radial-gradient(circle at 50% 35%, #5a3c22, #2a1a0d 75%);
+  box-shadow:
+    0 0 0 0.45cqw var(--ink),
+    0 0.8cqw 0 0.45cqw rgb(0 0 0 / 35%);
   color: #fff3d6;
-  font: bold 2.7cqw / 1.1 Arial, sans-serif;
+  font: bold 2.7cqw / 1.1 var(--font-body);
   text-align: center;
   cursor: pointer;
 
@@ -92,7 +94,7 @@
   border-radius: 999px;
   background: rgb(20 12 6 / 70%);
   color: #f3e6d0;
-  font: bold 2.4cqw / 1 Arial, sans-serif;
+  font: bold 2.4cqw / 1 var(--font-body);
   cursor: pointer;
 }
 
@@ -104,5 +106,16 @@
 @keyframes ready-pulse {
   to {
     transform: scale(1.08);
+  }
+}
+
+// Compétence du familier : un carré arrondi plutôt qu'un rond, pour la distinguer des sorts
+.companion {
+  border-radius: 28%;
+
+  .icon {
+    width: 92%;
+    height: 92%;
+    object-fit: contain;
   }
 }

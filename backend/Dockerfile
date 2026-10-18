@@ -1,27 +1,23 @@
-# Image du serveur Mine Explorer, construite depuis le dossier backend/ :
-#   docker build -t mine-explorer-api .
-# Étape 1 : compilation avec le JDK (tests lancés par la CI, pas ici)
-FROM eclipse-temurin:21-jdk-noble AS build
-WORKDIR /build
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN sh ./mvnw -B -ntp dependency:go-offline
-COPY src/ src/
-RUN sh ./mvnw -B -ntp package -DskipTests \
-    && java -Djarmode=tools -jar target/backend-*.jar extract --layers --launcher --destination extracted
+# Image du serveur Spring Boot, sans root. Construite par le docker-compose.yml à la racine du dépôt.
 
-# Étape 2 : exécution avec le seul JRE, sans outils de compilation ni sources
-FROM eclipse-temurin:21-jre-noble
-# Utilisateur sans privilèges : une faille dans l'appli ne donne pas la main sur le conteneur
-RUN groupadd --system mine && useradd --system --gid mine --no-create-home mine
+# ─── Build ──────────────────────────────────────────────────────────────────
+# Même version de Java que la CI (.github/workflows/ci.yml)
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
-# Couches de Spring Boot : les dépendances, qui changent rarement, restent en cache d'un déploiement à l'autre
-COPY --from=build /build/extracted/dependencies/ ./
-COPY --from=build /build/extracted/spring-boot-loader/ ./
-COPY --from=build /build/extracted/snapshot-dependencies/ ./
-COPY --from=build /build/extracted/application/ ./
+# Wrapper Maven et pom d'abord : les dépendances restent en cache tant que le pom ne change pas
+COPY mvnw pom.xml ./
+COPY .mvn .mvn
+RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline
+COPY src src
+# Les tests tournent en CI ; l'image se contente de construire le jar
+RUN ./mvnw -B -ntp package -DskipTests
+
+# ─── Exécution ──────────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+# Utilisateur sans droits : le serveur ne tourne jamais en root
+RUN addgroup -S mine && adduser -S mine -G mine
+COPY --from=build --chown=mine:mine /app/target/*.jar app.jar
 USER mine
 EXPOSE 8080
-ENV SPRING_PROFILES_ACTIVE=prod
-# Mémoire de la JVM calée sur celle de la machine plutôt que sur une valeur fixe
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

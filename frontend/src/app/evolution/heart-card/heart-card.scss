@@ -1,0 +1,261 @@
+:host {
+  display: block;
+}
+
+// Obsidienne veinée de lave, dans le cadre brun des autres cartes
+.heart {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1.6cqw;
+  padding: 3cqw 2cqw 3.2cqw;
+  overflow: hidden;
+  border: 0.45cqw solid rgb(26 15 7 / 75%);
+  border-radius: 3.5cqw;
+  background:
+    radial-gradient(circle at 50% 42%, rgb(255 122 42 / 38%), transparent 48%),
+    linear-gradient(#3a2418, #1c120b);
+  box-shadow:
+    inset 0 0 0 0.5cqw #8a4a24,
+    inset 0 -3cqw 5cqw rgb(255 106 42 / 18%);
+  color: #fff3d6;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  color: #ffb36b;
+  font: 700 2.8cqw / 1 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #ffe2a8;
+  font: 5.2cqw / 1.05 var(--font-display);
+  -webkit-text-stroke: 0.2cqw var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 0.5cqw 0 var(--ink);
+}
+
+// Le portrait dans un anneau de lave qui respire ; terne tant qu'aucune étoile n'est éveillée
+.ring {
+  display: grid;
+  place-items: center;
+  width: 30cqw;
+  height: 30cqw;
+  margin: 1cqw 0;
+  border-radius: 50%;
+  background: conic-gradient(#ff6a2a, #ffd36a, #ff8a3c, #c2410f, #ff6a2a);
+  box-shadow:
+    0 0 5cqw 1cqw rgb(255 122 42 / 45%),
+    0 1cqw 0 rgb(0 0 0 / 45%);
+  animation: lava-breath 3s ease-in-out infinite;
+
+  &.ready {
+    box-shadow:
+      0 0 8cqw 2cqw rgb(255 196 90 / 70%),
+      0 1cqw 0 rgb(0 0 0 / 45%);
+  }
+}
+
+.portrait {
+  width: 26cqw;
+  height: 26cqw;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(#5a3420, #1c120b);
+  filter: grayscale(0.7) brightness(0.75);
+  transition: filter 0.6s;
+
+  .awake & {
+    filter: none;
+  }
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 1.6cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.star {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+
+  img {
+    width: 10.5cqw;
+    height: auto;
+    filter: drop-shadow(0 0.5cqw 0 rgb(0 0 0 / 45%));
+  }
+
+  &.lit img {
+    filter: drop-shadow(0 0 1.6cqw rgb(255 196 90 / 80%)) drop-shadow(0 0.5cqw 0 rgb(0 0 0 / 45%));
+  }
+
+  // L'étoile visée palpite doucement
+  &.next img {
+    animation: next-star 1.6s ease-in-out infinite;
+  }
+}
+
+.zone {
+  color: #e8c48a;
+  font: 700 2.4cqw / 1 var(--font-body);
+}
+
+.star.lit .zone {
+  color: #ffd36a;
+}
+
+.bonus {
+  margin: 0.4cqw 0 0;
+  color: #e8c48a;
+  font: 2.8cqw / 1.2 var(--font-body);
+
+  strong {
+    color: #ffd36a;
+  }
+}
+
+@keyframes lava-breath {
+  50% {
+    filter: brightness(1.15) saturate(1.15);
+  }
+}
+
+@keyframes next-star {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+// ─── Transformation : jouée une fois, la première fois que le joueur voit cet écran en Légende ───
+
+.revealing {
+  animation: card-quake 0.6s ease-in-out;
+
+  .kicker,
+  .title,
+  .bonus {
+    animation: rise-in 0.6s 1.2s ease-out backwards;
+  }
+
+  .ring {
+    animation:
+      ring-awaken 1s 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) backwards,
+      lava-breath 3s 1.5s ease-in-out infinite;
+  }
+
+  .star {
+    animation: star-pop 0.45s calc(1.6s + var(--order) * 0.15s) cubic-bezier(0.2, 1.6, 0.4, 1) backwards;
+  }
+}
+
+// La Légende dorée s'illumine et s'efface
+.legend-ghost {
+  position: absolute;
+  top: 17cqw;
+  left: 50%;
+  z-index: 2;
+  width: 26cqw;
+  height: 26cqw;
+  border: 0.45cqw solid #ffd34d;
+  border-radius: 50%;
+  translate: -50% 0;
+  animation: ghost-out 0.9s ease-in forwards;
+  pointer-events: none;
+}
+
+// Éclat de lave qui envahit la carte
+.burst {
+  position: absolute;
+  top: 30cqw;
+  left: 50%;
+  z-index: 1;
+  width: 10cqw;
+  height: 10cqw;
+  border-radius: 50%;
+  background: radial-gradient(#fff3d6, #ffb36b 35%, rgb(255 106 42 / 0%) 70%);
+  translate: -50% -50%;
+  opacity: 0;
+  animation: burst 1.2s 0.4s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes card-quake {
+  20%,
+  60% {
+    transform: translateX(-0.8cqw) rotate(-0.6deg);
+  }
+
+  40%,
+  80% {
+    transform: translateX(0.8cqw) rotate(0.6deg);
+  }
+}
+
+@keyframes ghost-out {
+  50% {
+    filter: brightness(2.2);
+    transform: scale(1.06);
+  }
+
+  100% {
+    filter: brightness(3);
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes burst {
+  0% {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(14);
+  }
+}
+
+@keyframes ring-awaken {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-90deg);
+  }
+}
+
+@keyframes star-pop {
+  from {
+    opacity: 0;
+    transform: translateY(3cqw) scale(0.3);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(2cqw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revealing,
+  .revealing *,
+  .ring,
+  .star.next img {
+    animation: none !important;
+  }
+
+  .legend-ghost,
+  .burst {
+    display: none;
+  }
+}

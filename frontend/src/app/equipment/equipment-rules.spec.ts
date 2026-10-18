@@ -31,8 +31,9 @@ function item(overrides: Partial<Item>): Item {
 describe('rollItem', () => {
   // Ordre des tirages : emplacement, palier, variation de la Frappe de base, puis pour chaque affixe sa stat et sa variation
   it('forge un objet en Bois de niveau 1 : une Frappe de base et un affixe', () => {
-    // pioche (2e emplacement), Bois, Frappe de base sans variation, affixe Vitesse (2e des 5 stats) sans variation
-    expect(rollItem(sequence(0.2, 0, 0.5, 0.2, 0.5), createId, 1)).toEqual({
+    // pioche (2e emplacement), Bois, Frappe de base sans variation, affixe Vitesse sans variation. Poids de la pioche :
+    // Frappe 3, Vitesse 1, Critique 1, Dégâts crit. 3, Or 1 (affinités Frappe et Dégâts crit.) : 0,39 tombe dans la Vitesse
+    expect(rollItem(sequence(0.2, 0, 0.5, 0.39, 0.5), createId, 1)).toEqual({
       id: 'item-1',
       slot: 'pickaxe',
       tier: 'wood',
@@ -42,15 +43,15 @@ describe('rollItem', () => {
   });
 
   it("porte n'importe quelle stat, quel que soit l'emplacement", () => {
-    // des bottes (dernier emplacement) avec un affixe de Dégâts crit. (4e des 5 stats)
-    const result = rollItem(sequence(0.99, 0, 0.5, 0.7, 0.5), createId, 1);
+    // des bottes (dernier emplacement) avec un affixe de Dégâts crit., hors de leurs affinités (Vitesse et Or)
+    const result = rollItem(sequence(0.99, 0, 0.5, 0.6, 0.5), createId, 1);
     expect(result.slot).toBe('boots');
     expect(Object.keys(result.stats)).toEqual(['strikePower', 'critDamage']);
   });
 
   it("ajoute un affixe de Frappe à la Frappe de base", () => {
     const result = rollItem(sequence(0.2, 0, 0.5, 0, 0.5), createId, 10);
-    expect(result.stats.strikePower).toBeGreaterThan(rollItem(sequence(0.2, 0, 0.5, 0.2, 0.5), createId, 10).stats.strikePower ?? 0);
+    expect(result.stats.strikePower).toBeGreaterThan(rollItem(sequence(0.2, 0, 0.5, 0.39, 0.5), createId, 10).stats.strikePower ?? 0);
   });
 
   it("donne à l'objet le niveau de la pioche et le palier de sa fenêtre", () => {

@@ -351,7 +351,7 @@ export type EvolutionId = 'apprentice' | 'miner' | 'foreman' | 'master' | 'legen
  * Ce qu'un objectif d'évolution mesure : une jauge de progression ou un compteur de toute la partie.
  * Que des mesures qui dépendent du joueur, pas du hasard : les événements de mine en ont été retirés le 13/10/2026.
  */
-export type EvolutionMetric = 'zone' | 'pickaxeLevel' | 'itemsForged' | 'rocksBroken';
+export type EvolutionMetric = 'zone' | 'zoneCleared' | 'pickaxeLevel' | 'itemsForged' | 'rocksBroken';
 
 export interface EvolutionObjective {
   /** Palier de la mission, à partir de 1 : un palier s'ouvre quand le précédent est rempli. */
@@ -387,24 +387,29 @@ export interface EvolutionForm {
  * le battre. Les objets forgés, qui montent même quand le joueur piétine, espacent les étoiles dans le temps.
  */
 const HEART_STAR_BONUS = 1;
-/** Zone à atteindre, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la zone atteinte). */
-const HEART_STAR_GOALS: readonly (readonly [zone: number, pickaxe: number, items: number, rocks: number])[] = [
-  [12, 25, 9000, 185],
-  [14, 26, 13000, 200],
-  [16, 28, 18000, 230],
-  [18, 30, 25000, 255],
-  [20, 30, 34000, 285],
+/**
+ * Zone à atteindre, zone à terminer, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la
+ * zone atteinte). La 5e étoile ne demande pas de terminer la zone 20 : c'est elle qui donne la Frappe pour son gardien ;
+ * à la place, il faut y épuiser quelques filons.
+ */
+const HEART_STAR_GOALS: readonly (readonly [zone: number, cleared: number, pickaxe: number, items: number, rocks: number])[] = [
+  [12, 12, 25, 11500, 190],
+  [14, 14, 26, 17000, 215],
+  [16, 16, 28, 23500, 245],
+  [18, 18, 30, 32500, 275],
+  [20, 19, 30, 44000, 292],
 ];
 
-const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, pickaxe, items, rocks], index) => ({
+const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, cleared, pickaxe, items, rocks], index) => ({
   id: 'heart',
   label: 'Légende du Cœur du monde',
   stars: index + 1,
-  // Palier 1 : la zone ; palier 2 : le chemin ; palier 3 : tout en entier
+  // Palier 1 : atteindre la zone ; palier 2 : le chemin ; palier 3 : la terminer (battre son gardien), et tout le reste.
+  // Plus exigeant qu'atteindre la zone (demande de Théo, 18/10/2026) ; le gardien reste battable sans l'étoile.
   objectives: tiered(12 + 2 * index, [
-    [['zone', zone], ['itemsForged', Math.round(items * 0.8)]],
-    [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.9)], ['rocksBroken', rocks - 5]],
-    [['itemsForged', items], ['rocksBroken', rocks]],
+    [['zone', zone], ['itemsForged', Math.round(items * 0.75)]],
+    [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.85)], ['rocksBroken', rocks - 10]],
+    [['zoneCleared', cleared], ['itemsForged', items], ['rocksBroken', rocks]],
   ]),
   strikeBonus: HEART_STAR_BONUS,
 }));

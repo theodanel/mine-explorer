@@ -43,6 +43,8 @@ export class Evolution {
     pickaxeLevel: this.forge.level(),
     itemsForged: this.counters().itemsForged,
     rocksBroken: this.counters().rocksBroken,
+    // Une zone est terminée quand son gardien est battu : on est alors dans la suivante
+    zoneCleared: this.progression.zone() - 1,
   }));
 
   readonly objectives = computed(() => {

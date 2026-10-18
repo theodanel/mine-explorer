@@ -22,7 +22,15 @@ class ProductionProfileTests {
 		assertThat(prod.getProperty("spring.h2.console.enabled")).isEqualTo("false");
 		assertThat(prod.getProperty("server.error.include-stacktrace")).isEqualTo("never");
 		assertThat(prod.getProperty("management.endpoints.web.exposure.include")).isEqualTo("health");
-		assertThat(prod.getProperty("mine.rate-limit.client-ip-header")).isEqualTo("Fly-Client-IP");
+		// En-têtes X-Forwarded-* crus seulement depuis le réseau Docker du proxy, jamais depuis n'importe où
+		assertThat(prod.getProperty("server.forward-headers-strategy")).isEqualTo("native");
+		String trustedProxies = prod.getProperty("server.tomcat.remoteip.internal-proxies");
+		assertThat("172.30.0.7").matches(trustedProxies);
+		// Ni le réseau local (un joueur de la maison), ni un autre réseau Docker, ni Internet
+		assertThat("192.168.1.20").doesNotMatch(trustedProxies);
+		assertThat("172.30.1.7").doesNotMatch(trustedProxies);
+		assertThat("172.30.0.7.1").doesNotMatch(trustedProxies);
+		assertThat("203.0.113.5").doesNotMatch(trustedProxies);
 		assertThat(prod.getProperty("mine.front.allowed-origins")).startsWith("https://").doesNotContain("*");
 		assertThat(prod.getProperty("spring.security.oauth2.client.registration.google.redirect-uri"))
 			.startsWith("https://");

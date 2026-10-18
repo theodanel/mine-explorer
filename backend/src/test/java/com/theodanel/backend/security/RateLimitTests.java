@@ -82,13 +82,13 @@ class RateLimitTests extends ApiTestSupport {
 	}
 
 	@Test
-	void enTeteDAdresseInventeIgnoreSansProxyConfigure() throws Exception {
-		// Sans « client-ip-header » configuré (hors production), un client ne peut pas changer d'adresse par en-tête
+	void enTeteDAdresseInventeIgnore() throws Exception {
+		// Le filtre ne lit que l'adresse de la connexion : un client ne peut pas en changer par en-tête
 		for (int i = 0; i < 3; i++) {
-			mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("Fly-Client-IP", "203.0.113." + i)
+			mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("X-Real-IP", "203.0.113." + i)
 				.header("X-Forwarded-For", "198.51.100." + i)).andExpect(status().isOk());
 		}
-		mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("Fly-Client-IP", "203.0.113.99"))
+		mockMvc.perform(get("/api/csrf").with(remoteAddr("10.0.2.1")).header("X-Forwarded-For", "203.0.113.99"))
 			.andExpect(status().isTooManyRequests());
 	}
 

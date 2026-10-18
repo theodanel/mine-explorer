@@ -130,6 +130,8 @@ Les pseudos acceptent les lettres de tous les alphabets : « Тheo » (T cyrilli
 
 ## À vérifier au premier déploiement
 
-- `Fly-Client-IP` est bien posé (et écrasé) par le proxy de Fly.io : sinon la limite de requêtes voit l'adresse du proxy.
+Mise à jour du 18/10/2026 : l'hébergement passe de Fly.io et Neon au Raspberry Pi de Théo (`deploiement/raspberry-pi`). L'adresse du joueur vient de `X-Forwarded-For`, cru seulement depuis le réseau Docker de Nginx Proxy Manager (`172.30.0.0/24`) ; les constats ci-dessus qui citent Fly.io restent valables pour ce proxy.
+
+- Les journaux de limite de requêtes montrent l'adresse des joueurs et pas celle du proxy (`172.30.0.x`).
 - Le compte `mine_app` ne peut pas créer ni supprimer de table (`CREATE TABLE test (id int);` doit échouer avec ce compte).
 - `https://api.bouncylab.ovh/actuator/env` répond 401 et `/actuator/health` seulement `{"status":"UP"}`.

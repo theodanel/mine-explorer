@@ -79,18 +79,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	}
 
 	/**
-	 * Adresse du joueur. Derrière le proxy de l'hébergeur, l'adresse de la connexion est celle du proxy : on lit
-	 * alors l'en-tête qu'il pose. Cet en-tête n'est lu que s'il est configuré, sinon un client pourrait l'inventer
-	 * pour changer d'adresse à chaque requête.
+	 * Adresse du joueur. Derrière Nginx Proxy Manager, Tomcat l'a déjà remplacée par celle de X-Forwarded-For, et
+	 * seulement si la requête vient du proxy ({@code server.tomcat.remoteip.internal-proxies}) : un client ne peut pas
+	 * changer d'adresse en inventant l'en-tête.
 	 */
 	private String clientIp(HttpServletRequest request) {
-		String header = limits.clientIpHeader();
-		if (header != null && !header.isBlank()) {
-			String value = request.getHeader(header);
-			if (value != null && !value.isBlank()) {
-				return value.strip();
-			}
-		}
 		return request.getRemoteAddr();
 	}
 }

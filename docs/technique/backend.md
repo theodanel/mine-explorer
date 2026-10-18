@@ -9,8 +9,8 @@ Serveur Spring Boot 4.1 (Java 21) dans `backend/`. Il permet de se connecter ave
 ```
 Navigateur ── https://mine.bouncylab.ovh ──> Cloudflare Pages (front Angular)
      │
-     └── https://api.bouncylab.ovh ──> Fly.io, Paris (ce serveur, conteneur Docker)
-                                            └──> Neon (PostgreSQL)
+     └── https://api.bouncylab.ovh ──> Raspberry Pi de Théo : Nginx Proxy Manager (HTTPS)
+                                            └──> ce serveur (conteneur Docker) ──> PostgreSQL (conteneur)
 ```
 
 | Paquet | Rôle |
@@ -76,13 +76,13 @@ Limites assumées : l'or, l'équipement et le reste de la partie ne sont pas vé
 | Route oubliée | Tout ce qui n'est pas listé est refusé (`denyAll`) |
 | Fuite d'informations internes | `ProblemDetail` génériques, aucune trace, en-têtes `nosniff`, `X-Frame-Options: DENY`, CSP `default-src 'none'`, `no-store` |
 | Données personnelles | Ni e-mail ni nom : Google n'est interrogé qu'avec le scope `openid`, seul l'identifiant opaque du compte est gardé. Pseudo provisoire « Mineur-123456 » |
-| Secrets | Aucun dans le dépôt : variables d'environnement, secrets Fly.io |
+| Secrets | Aucun dans le dépôt : variables d'environnement, fichier `.env` resté sur le Pi |
 | Dépendance vulnérable | Versions corrigées de Tomcat et Jackson imposées dans `pom.xml` tant que Spring Boot ne les inclut pas (voir [[audit-securite-backend]]) |
 | Conteneur | Utilisateur sans privilèges, JRE seul, sans sources ni outils de compilation |
 
 Audit complet du 14/10/2026, constats et points à décider : [[audit-securite-backend]].
 
-La limite de requêtes vit en mémoire : elle suppose **une seule machine** (réglé dans `fly.toml`). Derrière le proxy de Fly.io, l'adresse du joueur est lue dans l'en-tête `Fly-Client-IP` (profil `prod` uniquement : ailleurs, un client pourrait l'inventer) [PROBABLE : en-tête posé par le proxy Fly.io, à vérifier au premier déploiement dans les journaux].
+La limite de requêtes vit en mémoire : elle suppose **un seul conteneur** serveur. Derrière Nginx Proxy Manager, Tomcat reprend l'adresse du joueur dans `X-Forwarded-For` (et le HTTPS dans `X-Forwarded-Proto`), mais seulement pour une requête venue du réseau Docker du proxy, `172.30.0.0/24` (`server.forward-headers-strategy=native`, `server.tomcat.remoteip.internal-proxies`, vérifié dans `ProductionProfileTests`). Une requête venue d'ailleurs garde son adresse réelle, quels que soient les en-têtes qu'elle invente.
 
 ## Lancer en local
 
@@ -103,64 +103,17 @@ Sans profil, le serveur refuse de démarrer (réglages `mine.*` manquants) : imp
 
 Tests : `./mvnw verify` (H2 en mode PostgreSQL, mêmes migrations qu'en production, horloge figée).
 
-## Mise en ligne (à faire par Théo)
+## Mise en ligne
 
-Rien n'est encore créé. Étapes dans l'ordre, une seule fois.
+Le serveur et sa base PostgreSQL tournent sur le Raspberry Pi 5 de Théo (Raspberry Pi OS 32 bits), en `docker compose`, derrière Nginx Proxy Manager qui donne le HTTPS à `https://api.bouncylab.ovh`. Tout est dans [`deploiement/raspberry-pi/`](../../deploiement/raspberry-pi/LISEZMOI.md) : compose, image (Ubuntu 24.04 + OpenJDK 21 armhf, faute d'image Java 21 officielle en 32 bits ARM), compte de base limité aux données, mode d'emploi pas à pas. La CI démarre ce même compose en amd64 à chaque PR (job « Docker »).
 
-### 1. Client OAuth Google
-
-1. [Google Cloud Console](https://console.cloud.google.com/) : créer un projet « Mine Explorer ».
-2. *APIs et services → Écran de consentement OAuth* : type **Externe**, nom de l'appli, adresse de contact, domaine autorisé `bouncylab.ovh`. Scopes : seulement `openid`. Publier l'appli (sinon seuls les comptes de test peuvent se connecter).
-3. *Identifiants → Créer des identifiants → ID client OAuth* : type **Application Web**.
-   - URI de redirection autorisés : `https://api.bouncylab.ovh/login/oauth2/code/google` et, pour le local, `http://localhost:8080/login/oauth2/code/google`.
-4. Copier l'ID client et le code secret. Le secret ne va **que** dans les secrets Fly.io et, en local, dans une variable d'environnement de la session.
-
-[PROBABLE] Les intitulés de la console Google changent souvent ; les réglages restent ceux-ci.
-
-### 2. Base Neon
-
-1. Créer un projet sur [neon.com](https://neon.com), région la plus proche de Paris (Francfort).
-2. Créer deux rôles : `mine_owner` (propriétaire de la base, pour les migrations) et `mine_app` (pour l'appli).
-3. Dans l'éditeur SQL, **avant le premier déploiement**, limiter `mine_app` aux données des tables que `mine_owner` créera :
-   ```sql
-   GRANT USAGE ON SCHEMA public TO mine_app;
-   ALTER DEFAULT PRIVILEGES FOR ROLE mine_owner IN SCHEMA public
-     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO mine_app;
-   ```
-   `mine_app` ne peut ainsi ni créer, ni modifier, ni supprimer de table : une injection SQL ne pourrait pas toucher au schéma.
-4. Relever l'adresse JDBC : `jdbc:postgresql://<hôte>.neon.tech/<base>?sslmode=require`.
-
-### 3. Appli Fly.io
-
-```bash
-fly auth login
-cd backend
-fly apps create mine-explorer-api          # changer le nom dans fly.toml s'il est pris
-fly secrets set \
-  SPRING_DATASOURCE_URL="jdbc:postgresql://…neon.tech/…?sslmode=require" \
-  SPRING_DATASOURCE_USERNAME=mine_app SPRING_DATASOURCE_PASSWORD=… \
-  SPRING_FLYWAY_USER=mine_owner SPRING_FLYWAY_PASSWORD=… \
-  GOOGLE_CLIENT_ID=… GOOGLE_CLIENT_SECRET=…
-fly deploy
-fly certs add api.bouncylab.ovh            # affiche l'enregistrement DNS à créer
-```
-
-Chez OVH, zone DNS de `bouncylab.ovh` : ajouter l'enregistrement `api` donné par `fly certs add` (CNAME vers `mine-explorer-api.fly.dev` en général). `fly certs show api.bouncylab.ovh` confirme le certificat.
-
-Vérification : `https://api.bouncylab.ovh/actuator/health` répond `{"status":"UP"}`.
-
-### 4. Front
-
-La CSP du front (`frontend/public/_headers`, `connect-src`) doit autoriser `https://api.bouncylab.ovh`, et les écrans de compte et de classement doivent être activés dans le build de production. Fait dans la PR du front, pas dans celle-ci.
-
-| Variable (secret Fly.io) | Rôle |
+| Variable (`.env` sur le Pi) | Rôle |
 |---|---|
-| `SPRING_DATASOURCE_URL` | Adresse JDBC de Neon, avec `sslmode=require` |
-| `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` | Compte `mine_app`, limité aux données |
-| `SPRING_FLYWAY_USER` / `SPRING_FLYWAY_PASSWORD` | Compte `mine_owner`, pour les migrations au démarrage |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Client OAuth Google |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` | Compte propriétaire du schéma, utilisé par Flyway pour les migrations |
+| `MINE_APP_PASSWORD` | Compte `mine_app` de l'appli, limité aux données (créé par `db/01-compte-appli.sh`) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Client OAuth Google, URI de retour `https://api.bouncylab.ovh/login/oauth2/code/google` |
 
-`SPRING_PROFILES_ACTIVE=prod` est déjà dans `fly.toml` et l'image Docker. Le déploiement automatique par la CI viendra quand l'appli existera (jeton Fly.io dans l'environnement GitHub `production`).
+Le front (Cloudflare Pages) appelle l'API depuis `https://mine.bouncylab.ovh` : seule origine autorisée par le CORS, et `connect-src` de sa CSP (`frontend/public/_headers`) ouvert à `https://api.bouncylab.ovh`.
 
 ## Ajouter Apple plus tard
 

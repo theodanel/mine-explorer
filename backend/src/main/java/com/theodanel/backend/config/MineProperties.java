@@ -35,11 +35,10 @@ public record MineProperties(
 	}
 
 	/**
-	 * Requêtes autorisées par minute et par adresse IP. {@code clientIpHeader} : en-tête posé par le proxy de
-	 * l'hébergeur avec l'adresse réelle du joueur ; vide en local, où l'adresse de la connexion suffit.
+	 * Requêtes autorisées par minute et par adresse IP. Derrière le proxy, l'adresse est déjà celle du joueur :
+	 * Tomcat la reprend de X-Forwarded-For, seulement quand la requête vient du proxy (voir application-prod).
 	 */
-	public record RateLimit(@Positive int loginPerMinute, @Positive int writePerMinute, @Positive int readPerMinute,
-			String clientIpHeader) {
+	public record RateLimit(@Positive int loginPerMinute, @Positive int writePerMinute, @Positive int readPerMinute) {
 	}
 
 	/**

@@ -1,0 +1,90 @@
+# Serveur de Mine Explorer sur le Raspberry Pi de Théo (Raspberry Pi OS 32 bits, Docker linux/arm).
+# Le jeu reste sur Cloudflare Pages (https://mine.bouncylab.ovh) ; ici, seulement le serveur et sa base.
+# Nginx Proxy Manager, déjà installé sur le Pi, donne le HTTPS à https://api.bouncylab.ovh et parle au serveur par le
+# réseau Docker « proxy ». Le jar vient du PC (preparer.ps1). Mode d'emploi : LISEZMOI.md.
+# Les secrets sont dans .env (jamais versionné), modèle : .env.example.
+
+name: mine-explorer
+
+services:
+  # Spring Boot : jamais publié sur le Pi, seulement joignable par Nginx Proxy Manager (réseau « proxy »)
+  backend:
+    build: ./backend
+    image: mine-explorer-backend:local
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # Mémoire de la JVM ajustée à la limite du conteneur
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+      # L'appli se connecte avec un compte limité aux données ; Flyway, au démarrage, avec le propriétaire du schéma
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/${POSTGRES_DB:-mine}"
+      SPRING_DATASOURCE_USERNAME: mine_app
+      SPRING_DATASOURCE_PASSWORD: "${MINE_APP_PASSWORD:?Définir MINE_APP_PASSWORD dans .env (voir LISEZMOI.md)}"
+      SPRING_FLYWAY_USER: "${POSTGRES_USER:-mine}"
+      SPRING_FLYWAY_PASSWORD: "${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env (voir LISEZMOI.md)}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:?Définir GOOGLE_CLIENT_ID dans .env (voir LISEZMOI.md)}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env (voir LISEZMOI.md)}"
+    # Une JVM 32 bits n'a pas besoin de plus ; évite qu'elle prenne la mémoire du Pi
+    mem_limit: 768m
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      default:
+      proxy:
+        # Nom à donner dans Nginx Proxy Manager (Forward Hostname)
+        aliases:
+          - mine-api
+    healthcheck:
+      # L'image n'a ni curl ni wget : bash ouvre juste une connexion sur le port du serveur
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    # Moindre privilège : système de fichiers en lecture seule, aucune capacité Linux, pas d'élévation
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  # PostgreSQL : jamais publié, seulement joignable par le serveur
+  db:
+    # Testée sur le Pi par Théo (linux/arm/v7)
+    image: postgres:17
+    # Utilisateur « postgres » de l'image (uid 999) dès le départ : l'entrée de l'image ne passe jamais par root
+    user: "999:999"
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-mine}"
+      POSTGRES_USER: "${POSTGRES_USER:-mine}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Définir POSTGRES_PASSWORD dans .env (voir LISEZMOI.md)}"
+      # Lu par db/01-compte-appli.sh au premier démarrage, pour créer le compte limité de l'appli
+      MINE_APP_PASSWORD: "${MINE_APP_PASSWORD:?Définir MINE_APP_PASSWORD dans .env (voir LISEZMOI.md)}"
+    volumes:
+      # Volume nommé : les données survivent aux redémarrages et aux mises à jour (effacé seulement par « down -v »)
+      - db-data:/var/lib/postgresql/data
+      # Exécuté par l'image une seule fois, quand la base est encore vide
+      - ./db/01-compte-appli.sh:/docker-entrypoint-initdb.d/01-compte-appli.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  # Réseau partagé avec Nginx Proxy Manager, créé une fois sur le Pi avec un sous-réseau fixe (LISEZMOI.md) : le
+  # serveur ne croit les en-têtes X-Forwarded-* que venant de ce sous-réseau (application-prod.properties)
+  proxy:
+    external: true
+
+volumes:
+  db-data:

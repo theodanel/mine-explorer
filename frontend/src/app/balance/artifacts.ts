@@ -132,6 +132,12 @@ export const ARTIFACTS: Readonly<Record<ArtifactId, ArtifactDef>> = {
  */
 export const ARTIFACT_FIND_CHANCE = 1 / 30000;
 
+/**
+ * L'onglet s'ouvre à la zone 3 (choix de Théo, 18/10/2026) : la zone 2 terminée livre le premier artefact,
+ * et aucun n'est trouvé avant.
+ */
+export const ARTIFACTS_UNLOCK_ZONE = 3;
+
 /** Poids de tirage par rareté. Les légendaires sont rares, mais un doublon fait toujours progresser. */
 export const ARTIFACT_RARITY_WEIGHTS: Readonly<Record<Rarity, number>> = {
   common: 55,

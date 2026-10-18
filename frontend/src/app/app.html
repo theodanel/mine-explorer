@@ -76,8 +76,8 @@
   <!-- Panneau crème du bas, sous l'équipement et la forge, comme celui de Legends of Mushroom -->
   <div class="bottom-panel" aria-hidden="true"></div>
   <!-- Équipements en bas, comme Legend of Mushroom ; les stats derrière le bouton rond -->
-  <app-equipment-column class="equipment-bar" [slots]="equipmentSlots" [row]="true" />
-  <app-stats-button class="stats-button" />
+  <app-equipment-column class="equipment-bar" appReveal="equipment" [slots]="equipmentSlots" [row]="true" />
+  <app-stats-button class="stats-button" appReveal="stats" />
   <app-forge-button class="forge" />
 
   <!-- Les pages se chargent à la première ouverture : le jeu démarre plus vite -->
@@ -173,9 +173,9 @@
     <app-companion-hatched />
     <app-offline-report />
   }
-  <!-- Tutoriel du premier lancement : il attend la fin du chargement, rien ne presse -->
+  <!-- Bulles de la prise en main : elles attendent la fin du chargement, rien ne presse -->
   @defer (on idle) {
-    <app-tutorial-overlay />
+    <app-reveal-hint />
   }
   <!-- Pièces et éclats gagnés qui volent jusqu'aux compteurs, par-dessus les fenêtres -->
   <app-reward-flight-layer />

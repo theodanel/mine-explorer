@@ -37,7 +37,7 @@ const TICK_MS = 1000;
 /**
  * Compagnons : œufs gagnés au Défi de la mine, éclosion par minuteur (qui continue jeu fermé), un compagnon
  * qui accompagne le mineur et donne son bonus, les autres en expédition. Les pierres d'éveil font monter les étoiles.
- * L'onglet s'ouvre à la zone 3 avec un œuf commun offert.
+ * L'onglet s'ouvre à la zone 2 avec un œuf commun offert.
  */
 @Injectable({ providedIn: 'root' })
 export class Companions {
@@ -88,7 +88,7 @@ export class Companions {
     this.grantZoneEggs(this.progression.zone() - 1);
   }
 
-  /** Un œuf commun par zone terminée (à partir de la zone 3), chacune une seule fois, même rejouée. */
+  /** Un œuf commun par zone terminée (à partir de la zone 2), chacune une seule fois, même rejouée. */
   grantZoneEggs(lastClearedZone: number): void {
     const alreadyPaid = this.zoneEggsUpTo ?? 0;
     if (lastClearedZone <= alreadyPaid) {

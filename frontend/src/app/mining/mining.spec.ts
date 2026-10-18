@@ -49,16 +49,21 @@ describe('Mining', () => {
     expect(mining.blasts()).toMatchObject({ id: 1, spell: 'dynamite' });
   });
 
-  it('livre un artefact quand une zone est terminée', () => {
-    localStorage.clear();
-    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone: 1, stage: 15, damage: 0 }));
-    TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
-    // Le gardien de la zone tombe d'un seul coup énorme
-    expect(TestBed.inject(Mining).blast('dynamite', ONE_SHOT).clearedZone).toBe(1);
-    expect(Object.keys(TestBed.inject(Artifacts).owned())).toHaveLength(1);
+  it("livre un artefact par zone terminée, dès la zone 2 qui ouvre l'onglet", () => {
+    const artifactsForClearing = (zone: number) => {
+      localStorage.clear();
+      localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 15, damage: 0 }));
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [{ provide: RANDOM, useValue: () => 0.5 }] });
+      // Le gardien de la zone tombe d'un seul coup énorme
+      expect(TestBed.inject(Mining).blast('dynamite', ONE_SHOT).clearedZone).toBe(zone);
+      return Object.keys(TestBed.inject(Artifacts).owned()).length;
+    };
+    expect(artifactsForClearing(1)).toBe(0);
+    expect(artifactsForClearing(2)).toBe(1);
   });
 
-  it('donne un œuf de compagnon pour chaque zone terminée à partir de la zone 3', () => {
+  it('donne un œuf de compagnon pour chaque zone terminée à partir de la zone 2', () => {
     const eggsForClearing = (zone: number) => {
       localStorage.clear();
       localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone, stage: 15, damage: 0 }));
@@ -68,10 +73,10 @@ describe('Mining', () => {
       TestBed.inject(Mining).blast('dynamite', ONE_SHOT);
       return addEgg.mock.calls.length;
     };
-    // Zone 2 terminée : l'onglet s'ouvre, avec son œuf offert à part
-    expect(eggsForClearing(2)).toBe(0);
-    expect(eggsForClearing(3)).toBe(1);
-    // En zone 6, le rattrapage a déjà donné les œufs des zones 3 à 5 : la zone 6 en ajoute un
+    // Zone 1 terminée : l'onglet s'ouvre, avec son œuf offert à part
+    expect(eggsForClearing(1)).toBe(0);
+    expect(eggsForClearing(2)).toBe(1);
+    // En zone 6, le rattrapage a déjà donné les œufs des zones 2 à 5 : la zone 6 en ajoute un
     expect(eggsForClearing(6)).toBe(1);
   });
 

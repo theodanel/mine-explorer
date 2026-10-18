@@ -127,11 +127,11 @@ export const COMPANIONS: Readonly<Record<CompanionId, CompanionDef>> = {
 
 // ─── Œufs ──────────────────────────────────────────────────────────────────
 
-/** L'onglet s'ouvre à la zone 3, avec un premier œuf commun offert. Les suivants : Défi, zones terminées, loterie. */
-export const COMPANIONS_UNLOCK_ZONE = 3;
+/** L'onglet s'ouvre à la zone 2 (choix de Théo, 18/10/2026), avec un premier œuf commun offert. Les suivants : Défi, zones terminées, loterie. */
+export const COMPANIONS_UNLOCK_ZONE = 2;
 
 /**
- * Chaque zone terminée une fois l'onglet ouvert (de la zone 3 à la suite) donne un œuf commun : avancer dans la
+ * Chaque zone terminée une fois l'onglet ouvert (de la zone 2 à la suite) donne un œuf commun : avancer dans la
  * mine fait grandir la collection, sans dépendre du seul Défi. Le 14/10/2026, Théo, en zone 7, ne savait pas
  * comment gagner des compagnons : le Défi, caché dans l'onglet, était la seule source.
  */

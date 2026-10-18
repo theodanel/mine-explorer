@@ -1,9 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
-import { ARTIFACT_SLOT_FORMS, ArtifactId } from '../balance/artifacts';
+import { ARTIFACT_SLOT_FORMS, ARTIFACTS_UNLOCK_ZONE, ArtifactId } from '../balance/artifacts';
 import { EVOLUTION_FORMS } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
 import { Ores } from '../ores/ores';
+import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import {
@@ -35,10 +36,13 @@ export class Artifacts {
   private readonly random = inject(RANDOM);
   private readonly ores = inject(Ores);
   private readonly evolution = inject(Evolution);
+  private readonly progression = inject(Progression);
   private readonly state = signal<ArtifactState>(loadState());
   private readonly findsToShow = signal<readonly ArtifactFind[]>([]);
   private readonly unseenCount = signal(0);
 
+  /** L'onglet s'ouvre à la zone 3 ; aucun artefact n'est trouvé avant. */
+  readonly unlocked = computed(() => this.progression.zone() >= ARTIFACTS_UNLOCK_ZONE);
   readonly owned = computed(() => this.state().owned);
   readonly affixes = computed(() => this.state().affixes);
   readonly tokens = computed(() => this.state().tokens);

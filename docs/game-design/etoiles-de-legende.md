@@ -26,35 +26,33 @@ La première fois que le joueur voit cet écran en Légende (en l'ouvrant, ou ju
 
 ## Objectifs (dernier palier)
 
-| Rang | Zone atteinte | Pioche | Objets forgés | Filons épuisés | Frappe |
-|---|---|---|---|---|---|
-| ★ | 12 | 25 | 9 000 | 185 | +100 % |
-| ★★ | 14 | 26 | 13 000 | 200 | +100 % |
-| ★★★ | 16 | 28 | 18 000 | 230 | +100 % |
-| ★★★★ | 18 | 30 | 25 000 | 255 | +100 % |
-| ★★★★★ | 20 | 30 | 34 000 | 285 | +100 % |
+| Rang | Zone atteinte | Zone terminée | Pioche | Objets forgés | Filons épuisés | Frappe |
+|---|---|---|---|---|---|---|
+| ★ | 12 | 12 | 25 | 11 500 | 190 | +100 % |
+| ★★ | 14 | 14 | 26 | 17 000 | 215 | +100 % |
+| ★★★ | 16 | 16 | 28 | 23 500 | 245 | +100 % |
+| ★★★★ | 18 | 18 | 30 | 32 500 | 275 | +100 % |
+| ★★★★★ | 20 | 19 | 30 | 44 000 | 292 | +100 % |
+
+- **Plus dur depuis le 18/10/2026** (demande de Théo : « pas juste atteindre les zones ») : le dernier palier demande de **terminer** la zone, c'est-à-dire de battre son gardien sans l'aide de l'étoile, avec environ 30 % d'objets forgés et quelques filons de plus. La 5e étoile fait exception : elle demande de terminer la zone 19 et d'épuiser quelques filons de la zone 20, car c'est elle qui donne la Frappe pour battre le dernier gardien.
 
 - **Jamais de blocage** : un objectif de zone demande d'**atteindre** la zone, pas de battre son gardien. L'étoile apporte justement la Frappe qui aide à le battre.
 - **+100 % par étoile** : à +75 %, le joueur régulier restait bloqué au gardien de la zone 19 et n'atteignait jamais la zone 20, donc jamais la cinquième étoile. Avec +100 %, la Frappe totale passe de ×5 (Légende) à ×162 (★★★★★).
 - **Objets forgés** : c'est l'horloge de la fin de partie, car ils montent d'environ 600 par jour même quand le joueur piétine. Les filons, eux, suivent la zone atteinte.
 - Les missions rapportent 12 éclats à la première étoile, puis 2 de plus à chaque étoile (20 à la cinquième).
 
-## Ce que dit le simulateur (régulier, 3 tirages, 100 jours)
+## Ce que dit le simulateur (régulier, 2 tirages, 120 jours)
 
-Avant : bloqué au gardien de la zone 16 dès le jour 28, avec 85 M de Puissance, jusqu'au jour 70.
+| Étape | Avant le 18/10 | Depuis le 18/10 |
+|---|---|---|
+| ★ | jour 18,4 | jour 22,9 |
+| ★★ | jour 25 | jour 32 |
+| ★★★ | jour 32,7 | jour 42,3 |
+| ★★★★ | jour 43,7 | jour 66,3 |
+| ★★★★★ | jour 66,6 | jour 103 |
+| Zone 20 terminée | avant le jour 100 | vers le jour 120 |
 
-Après :
-
-| Étape | Jour |
-|---|---|
-| Légende | 13,4 |
-| ★ / ★★ / ★★★ | 18,4 / 25 / 32,7 |
-| ★★★★ | 43,7 |
-| Zone 19 | 46,5 |
-| Zone 20 et ★★★★★ | 66,6 |
-| Zone 20 terminée | avant le jour 100 |
-
-Les gardiens des zones 13 à 20 tombent en 7 à 28 s : ils restent un vrai combat, sans mur. La zone 20 est la longue fin de partie (un filon y prend environ 1 h 20).
+Aucun mur : les gardiens des zones 13 à 20 tombent toujours en 7 à 28 s. Les étoiles deviennent une vraie fin de partie, la dernière arrivant après trois mois de jeu régulier.
 
 ## Prompts Gemini de la Légende du Cœur du monde
 

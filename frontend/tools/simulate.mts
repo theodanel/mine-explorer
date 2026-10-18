@@ -459,7 +459,7 @@ function payPickaxe(now: number): void {
 function tryEvolve(now: number): void {
   const next = EVOLUTION_FORMS[formIndex + 1];
   if (!next) return;
-  const progressNow = { zone: progress.zone, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
+  const progressNow = { zone: progress.zone, zoneCleared: progress.zone - 1, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
   const reward = unclaimedShards(objectives);

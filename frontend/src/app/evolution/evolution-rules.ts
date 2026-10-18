@@ -24,6 +24,7 @@ const NUMBER = new Intl.NumberFormat('fr-FR');
 
 const LABELS: Readonly<Record<EvolutionMetric, (target: number) => string>> = {
   zone: (target) => `Atteindre la zone ${target}`,
+  zoneCleared: (target) => `Terminer la zone ${target}`,
   pickaxeLevel: (target) => `Pioche niveau ${target}`,
   itemsForged: (target) => `Forger ${NUMBER.format(target)} objets`,
   rocksBroken: (target) => `Épuiser ${target} filons`,

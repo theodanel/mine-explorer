@@ -1,7 +1,7 @@
 """Prépare les images de la Légende du Cœur du monde et des étoiles de rang (sources Gemini sur fond vert #00FF00).
 
-  evolutions/coeur-pied.jpg -> frontend/public/assets/evolutions/coeur.webp (corps fixe, en attendant l'animation)
-                            -> art-source/animations/coeur-depart-16x9.png (image de départ de la vidéo de frappe)
+  evolutions/coeur-pied.jpg -> art-source/animations/coeur-depart-16x9.png (image de départ de la vidéo de frappe,
+                               découpée ensuite par art-source/animations/decouper-frappe.py)
   evolutions/coeur-portrait.jpg -> frontend/public/assets/evolutions/coeur-portrait.webp (tête et plastron, 160 px)
   ui/etoiles.png            -> frontend/public/assets/ui/etoile-pleine.webp et etoile-vide.webp
 
@@ -17,7 +17,6 @@ ASSETS = Path(__file__).parents[2] / "frontend" / "public" / "assets"
 GREEN_OPAQUE = 40
 GREEN_TRANSPARENT = 110
 QUALITY = 90
-BODY_HEIGHT = 512
 PORTRAIT_SIZE = 160
 # Cadre du portrait dans coeur-portrait.jpg (2048 × 2048) : cornes, casque et cœur serti dans le plastron
 PORTRAIT_BOX = (250, 120, 1690, 1560)
@@ -55,7 +54,6 @@ def fit_height(image: Image.Image, height: int) -> Image.Image:
 def prepare_heart() -> None:
     keyed = key_out_green(Image.open(ART / "evolutions" / "coeur-pied.jpg"))
     body = trim(keyed)
-    fit_height(body, BODY_HEIGHT).save(ASSETS / "evolutions" / "coeur.webp", quality=QUALITY)
     start = Image.new("RGBA", START_SIZE, (*GREEN, 255))
     small = fit_height(body, round(START_SIZE[1] * START_BODY_SHARE))
     start.alpha_composite(small, ((START_SIZE[0] - small.width) // 2, (START_SIZE[1] - small.height) // 2))
@@ -82,6 +80,6 @@ if __name__ == "__main__":
     prepare_heart()
     prepare_portrait()
     prepare_stars()
-    for path in ("evolutions/coeur.webp", "evolutions/coeur-portrait.webp", "ui/etoile-pleine.webp", "ui/etoile-vide.webp"):
+    for path in ("evolutions/coeur-portrait.webp", "ui/etoile-pleine.webp", "ui/etoile-vide.webp"):
         with Image.open(ASSETS / path) as result:
             print(path, result.size)

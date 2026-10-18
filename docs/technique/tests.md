@@ -10,7 +10,7 @@ Retour à [[documentation-technique]].
 | Services | État, sauvegarde, migrations, effets entre domaines (hasard et heure figés) | `*.spec.ts` à côté du service |
 | Pages et fenêtres | Rendu sur une sauvegarde donnée, boutons qui changent l'état | `shared/pages.spec.ts`, specs de composants |
 | Robustesse | Toutes les clés de sauvegarde chargées avec des valeurs abîmées ou trafiquées | `shared/save-robustness.spec.ts` |
-| Backend | Démarrage du contexte, réponses d'erreur sans information interne | `backend/src/test/` |
+| Backend | Anti-triche et pseudos (règles pures), API complète sur H2 : anti-IDOR, CSRF, CORS, PKCE, limites, conflits de sauvegarde, classements, suppression de compte ; connexion Google de bout en bout avec un faux Google local (jetons falsifiés refusés) ; réglages du profil de production | `backend/src/test/` |
 | Économie | Rythme de progression sur 90 jours avec les vraies règles | `tools/simulate.mts` |
 
 ## Outils
@@ -21,7 +21,7 @@ Retour à [[documentation-technique]].
 
 ## Couverture (13/10/2026)
 
-360 tests frontend, 3 tests backend (au 13/10/2026 au soir ; couverture mesurée sur les 340 premiers).
+360 tests frontend (au 13/10/2026 au soir ; couverture mesurée sur les 340 premiers), 99 tests backend (14/10/2026, après l'[[audit-securite-backend]] et le plafond du classement).
 
 | Mesure | Frontend |
 |---|---|

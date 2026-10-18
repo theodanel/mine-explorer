@@ -21,7 +21,6 @@ Le `docker-compose.yml` suit les conventions de Coolify (demande de Théo, 16/10
 - **`expose` au lieu de `ports`** : rien n'est publié sur le serveur, c'est le proxy de Coolify qui reçoit le trafic.
 - **Pas de `container_name` ni de nom de projet** : Coolify nomme et préfixe lui-même ses conteneurs.
 - **Domaine du jeu** : la variable magique `SERVICE_FQDN_FRONTEND_8080` demande à Coolify un domaine pour le service `frontend` et route vers son port 8080. On peut aussi saisir son propre domaine dans Coolify, en précisant le port : `https://jeu.exemple.fr:8080`.
-- **Serveur interne** : `backend` n'a pas de domaine public, le jeu le joint sous `backend:8080` sur le réseau de la ressource.
 - **Santé** : le jeu a un healthcheck (`wget` sur sa page d'accueil), que Coolify suit.
 - **Override ignoré** : Coolify ne lit que `docker-compose.yml`, donc les ports locaux de l'override ne partent pas en ligne.
 
@@ -32,14 +31,13 @@ Dans Coolify : nouvelle ressource « Docker Compose » depuis le dépôt GitHub,
 | Service | Image | Rôle |
 |---|---|---|
 | `frontend` | `frontend/Dockerfile` | build Angular (Node 24, comme la CI), puis nginx sans root (`nginx-unprivileged`) qui sert le jeu sur le port 8080 |
-| `backend` | `backend/Dockerfile` | build Maven (Java 21, comme la CI), puis le jar sur un JRE, sous un utilisateur sans droits |
 
-**Sécurité** : les deux conteneurs tournent sans root, en lecture seule (sauf `/tmp`), sans capacité Linux et sans élévation de privilèges. nginx reprend les en-têtes de `public/_headers` (CSP stricte), sauf HSTS et `upgrade-insecure-requests`, qui casseraient un service en HTTP sur localhost. Aucun secret : le serveur n'a encore ni base ni compte.
+**Sécurité** : le conteneur tourne sans root, en lecture seule (sauf `/tmp`), sans capacité Linux et sans élévation de privilèges. nginx reprend les en-têtes de `public/_headers` (CSP stricte), sauf HSTS et `upgrade-insecure-requests`, qui casseraient un service en HTTP sur localhost.
 
-## Pas de base de données pour l'instant
+## Le serveur et sa base
 
-Le serveur n'expose encore aucune route et tourne sur H2 en mémoire : le jeu vit dans le navigateur. Ajouter PostgreSQL demandera le pilote dans le `pom.xml` (une nouvelle dépendance), une migration Flyway, et des identifiants dans `.env` : à faire quand le serveur gardera les parties.
+Ils ne sont plus dans ce compose : ils tournent sur le Raspberry Pi de Théo avec PostgreSQL, voir [`deploiement/raspberry-pi`](../../deploiement/raspberry-pi/LISEZMOI.md).
 
 ## Vérifié par la CI
 
-Le job « Docker (images et démarrage) » construit les deux images à chaque PR, démarre le compose, vérifie que le jeu répond et que le serveur démarre, puis arrête tout. La fusion automatique l'attend.
+Le job « Docker (images et démarrage) » construit l'image du jeu à chaque PR, démarre le compose et vérifie que le jeu répond ; il démarre aussi le compose du Raspberry Pi en amd64 (serveur en profil prod, PostgreSQL, compte limité) et vérifie que le serveur démarre et que le compte de l'appli ne peut pas créer de table. La fusion automatique l'attend.

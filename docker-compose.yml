@@ -1,4 +1,5 @@
-# Mine Explorer : le jeu (Angular servi par nginx) et le serveur Spring Boot, prêts pour Coolify.
+# Mine Explorer : le jeu (Angular servi par nginx), prêt pour Coolify. Le serveur Spring Boot tourne sur le
+# Raspberry Pi de Théo avec sa base : voir deploiement/raspberry-pi.
 # Coolify place son proxy devant les services : rien n'est publié sur l'hôte (expose, pas ports), pas de nom de
 # conteneur ni de projet fixés (Coolify les préfixe), et le domaine du jeu vient de la variable magique
 # SERVICE_FQDN_FRONTEND_8080 (le proxy route vers le port 8080 du conteneur).
@@ -20,23 +21,6 @@ services:
       retries: 3
       start_period: 10s
     # Moindre privilège : système de fichiers en lecture seule, aucune capacité Linux, pas d'élévation
-    read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-
-  # Interne : joignable par le jeu sous le nom « backend:8080 », pas de domaine public tant qu'il n'a pas de route
-  backend:
-    build: ./backend
-    expose:
-      - "8080"
-    restart: unless-stopped
-    environment:
-      # Mémoire de la JVM ajustée à celle du conteneur
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
     read_only: true
     tmpfs:
       - /tmp

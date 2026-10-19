@@ -19,14 +19,24 @@ import com.theodanel.backend.config.MineProperties;
  */
 public final class PlausibilityRules {
 
-	/** Le Puits commence au 5-1 : l'étage 1 vaut l'étape 61 (voir frontend/src/app/balance/abyss.ts). */
-	static final int ABYSS_FIRST_FLOOR_STAGE = 61;
-	/** Chaque étage du Puits avance de deux filons dans la courbe de la mine. */
-	static final int ABYSS_STAGES_PER_FLOOR = 2;
-	/** Étages de marge : un build fort descend un peu plus loin dans le Puits que dans la mine. */
-	static final int ABYSS_FLOOR_MARGIN = 10;
+	/**
+	 * Le Puits ne suit pas la mine : son premier étage se cale sur la force du joueur (firstFloorHp dans
+	 * frontend/src/app/balance/abyss.ts), un joueur fort descend donc très bas dès sa zone. Ce qui le borne, c'est le
+	 * temps : 3 descentes par jour (ABYSS_DAILY_RUNS), une toutes les 8 h en moyenne, de 30 s chacune.
+	 */
+	static final double ABYSS_HOURS_PER_RUN = 8;
+	/** Étages qu'une descente de 30 s peut franchir au plus, même en cassant chaque étage en une demi-seconde. */
+	static final int ABYSS_MAX_FLOORS_PER_RUN = 60;
 	/** Garde-fou du jeu (MAX_FLOOR dans abyss-rules.ts). */
 	static final int ABYSS_MAX_FLOOR = 500;
+
+	/**
+	 * Marge d'une zone au-dessus du joueur de référence, à l'envoi seulement. Sans elle, l'origine recalée à chaque
+	 * sauvegarde ne laissait aucun jeu : en zone 11, un filon prend plus d'une heure au joueur de référence, et un vrai
+	 * joueur bien équipé qui allait plus vite était refusé. Elle ne se cumule pas : l'origine ne suit que la
+	 * progression envoyée.
+	 */
+	static final int STAGE_MARGIN = 15;
 
 	private static final double SECONDS_PER_HOUR = 3600;
 
@@ -52,6 +62,11 @@ public final class PlausibilityRules {
 		return (int) Math.floor(ReferenceCurve.stagesAt(hours * speedFactor + graceHours));
 	}
 
+	/** Plus grand nombre d'étapes accepté à l'envoi : la courbe de référence, plus une zone de marge. */
+	public int maxAcceptedStages(Instant origin, Instant now) {
+		return maxStages(origin, now) + STAGE_MARGIN;
+	}
+
 	/**
 	 * Origine après une sauvegarde acceptée : l'instant le plus tardif compatible avec la progression envoyée, sans
 	 * jamais reculer.
@@ -66,21 +81,19 @@ public final class PlausibilityRules {
 	/**
 	 * Valeurs affichées au classement : jamais plus que ce qu'un joueur aurait pu atteindre depuis la création de son
 	 * compte (sa première connexion). Une partie trafiquée en local avant la connexion, puis envoyée, ne fait donc
-	 * gagner aucune place ; une vraie partie jouée hors ligne remonte à sa place à la vitesse {@code speedFactor}, sans
-	 * jamais être perdue (la sauvegarde, elle, est gardée entière).
+	 * gagner aucune place ; une vraie partie jouée hors ligne remonte à sa place au fil du temps, sans jamais être
+	 * perdue (la sauvegarde, elle, est gardée entière).
 	 */
 	public SaveMetrics ranked(SaveMetrics metrics, Instant accountCreatedAt, Instant now) {
 		int stages = Math.min(metrics.stagesReached(), maxStages(accountCreatedAt, now));
-		int record = Math.min(metrics.abyssRecord(), maxAbyssRecord(stages));
+		int record = Math.min(metrics.abyssRecord(), maxAbyssRecord(accountCreatedAt, now));
 		return new SaveMetrics(stages, record);
 	}
 
-	/** Record du Puits atteignable avec cette progression dans la mine : 0 avant le 5-1. */
-	public int maxAbyssRecord(int stagesReached) {
-		if (stagesReached < ABYSS_FIRST_FLOOR_STAGE) {
-			return 0;
-		}
-		int floorsInMine = (stagesReached - ABYSS_FIRST_FLOOR_STAGE) / ABYSS_STAGES_PER_FLOOR + 1;
-		return Math.min(ABYSS_MAX_FLOOR, floorsInMine + ABYSS_FLOOR_MARGIN);
+	/** Record du Puits atteignable entre {@code since} et {@code now} : les descentes possibles, au plus profond. */
+	public int maxAbyssRecord(Instant since, Instant now) {
+		double hours = Math.max(0, Duration.between(since, now).toMillis() / 1000.0 / SECONDS_PER_HOUR);
+		long runs = (long) Math.ceil(hours / ABYSS_HOURS_PER_RUN);
+		return (int) Math.min(ABYSS_MAX_FLOOR, runs * ABYSS_MAX_FLOORS_PER_RUN);
 	}
 }

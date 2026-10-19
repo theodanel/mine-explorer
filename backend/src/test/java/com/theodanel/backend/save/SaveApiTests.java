@@ -91,8 +91,20 @@ class SaveApiTests extends ApiTestSupport {
 	}
 
 	@Test
-	void unRecordDuPuitsSansProgressionEstRefuse() throws Exception {
-		putSave(newPlayer("theo"), saveBody(null, 3, 1, 40))
+	void unePartieAvanceeEstAccepteeALaPremiereLiaisonPuisAuFilDuJeu() throws Exception {
+		// Cas de Théo : une vraie partie en zone 11, avec un record du Puits élevé, jouée avant d'avoir un compte
+		clock.advance(Duration.ofDays(7));
+		UUID theo = newPlayer("theo");
+		putSave(theo, saveBody(null, 11, 5, 90)).andExpect(status().isOk());
+		mockMvc.perform(get("/api/save").with(as(theo)))
+			.andExpect(jsonPath("$.data['mine-explorer.progress']").value(containsString("\"zone\":11")));
+
+		// Il continue à bien jouer : un filon de plus 10 minutes plus tard passe (avant, refusé faute de marge)
+		clock.advance(Duration.ofMinutes(10));
+		putSave(theo, saveBody(0L, 11, 6, 95)).andExpect(status().isOk());
+		// Mais un saut de plusieurs zones reste impossible
+		clock.advance(Duration.ofMinutes(10));
+		putSave(theo, saveBody(1L, 14, 1, 95))
 			.andExpect(status().isUnprocessableContent())
 			.andExpect(jsonPath("$.code").value("implausible-progress"));
 	}

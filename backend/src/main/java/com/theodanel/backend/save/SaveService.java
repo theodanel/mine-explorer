@@ -71,6 +71,8 @@ public class SaveService {
 
 		SaveMetrics metrics = SaveMetrics.read(data, json);
 		Instant origin = existing.map(CloudSave::getPlayOrigin).orElseGet(plausibility::firstOrigin);
+		// Première liaison : la partie locale n'est jugée que depuis la mise en ligne du jeu, donc acceptée si elle a pu
+		// être jouée ; c'est le classement qui la plafonne depuis la connexion
 		requirePlausible(metrics, origin, now);
 
 		CloudSave save = existing.orElseGet(() -> new CloudSave(playerId));
@@ -111,13 +113,15 @@ public class SaveService {
 		}
 	}
 
+	/**
+	 * Seule la mine est contrôlée à l'envoi : un saut de progression impossible depuis la sauvegarde précédente est
+	 * refusé. Le record du Puits n'est borné qu'au classement ({@link PlausibilityRules#ranked}).
+	 */
 	private void requirePlausible(SaveMetrics metrics, Instant origin, Instant now) {
-		int maxStages = plausibility.maxStages(origin, now);
-		int maxRecord = plausibility.maxAbyssRecord(metrics.stagesReached());
-		if (metrics.stagesReached() > maxStages || metrics.abyssRecord() > maxRecord) {
+		int maxStages = plausibility.maxAcceptedStages(origin, now);
+		if (metrics.stagesReached() > maxStages) {
 			// Pas d'identifiant de joueur dans le log : seules les valeurs utiles pour régler les seuils
-			LOG.warn("Sauvegarde refusée : étapes {} (max {}), Puits {} (max {})", metrics.stagesReached(), maxStages,
-					metrics.abyssRecord(), maxRecord);
+			LOG.warn("Sauvegarde refusée : étapes {} (max {})", metrics.stagesReached(), maxStages);
 			throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "implausible-progress",
 					"Progression impossible dans le temps écoulé");
 		}

@@ -71,7 +71,12 @@
     </nav>
   }
   @if (testBanner) {
-    <p class="test-ribbon">Version de test</p>
+    <button type="button" class="test-ribbon" (click)="testToolsOpen.set(true)">Version de test · 🛠 Outils</button>
+    @if (testToolsOpen()) {
+      @defer (on immediate) {
+        <app-test-tools (closed)="testToolsOpen.set(false)" />
+      }
+    }
   }
   <app-zone-banner class="zone" />
   <app-lottery-button class="lottery" />

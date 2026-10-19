@@ -32,6 +32,10 @@ services:
       # Serveur de test seulement : adresses du site et de l'API de test (vides : celles de la production)
       MINE_FRONT_URL: "${MINE_FRONT_URL:-https://mine.bouncylab.ovh}"
       MINE_API_URL: "${MINE_API_URL:-https://api.bouncylab.ovh}"
+      # Anti-triche : joueur accepté jusqu'à N fois plus rapide que la référence. 2 en production (même valeur que
+      # application.properties) ; le serveur de test le met très haut, pour accepter les parties modifiées par les
+      # outils de test
+      MINE_ANTICHEAT_SPEEDFACTOR: "${MINE_ANTICHEAT_SPEEDFACTOR:-2}"
     # Plafond du conteneur, appliqué seulement si le cgroup mémoire est activé sur le Pi (voir LISEZMOI.md)
     mem_limit: 768m
     depends_on:

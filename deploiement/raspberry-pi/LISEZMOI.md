@@ -130,7 +130,7 @@ Un second serveur, avec **sa propre base**, sert le site de test `https://stagin
 ### Une seule fois
 
 1. **DNS chez OVH**, zone `bouncylab.ovh` : un enregistrement `A` (ou `CNAME`, comme pour `api`) **`api-staging`** vers ta box, identique à celui de `api`.
-2. **Sur le Pi** : déballer l'archive dans un second dossier et créer son `.env` (étape 6), puis y **décommenter les 4 lignes du serveur de test** :
+2. **Sur le Pi** : déballer l'archive dans un second dossier et créer son `.env` (étape 6), puis y **décommenter les lignes du serveur de test** :
    ```bash
    mkdir -p ~/mine-explorer-api-staging
    tar -xzf ~/mine-explorer-api.tar.gz -C ~/mine-explorer-api-staging
@@ -148,6 +148,16 @@ Un second serveur, avec **sa propre base**, sert le site de test `https://stagin
 4. **Console Google**, client OAuth : ajouter l'URI de redirection `https://api-staging.bouncylab.ovh/login/oauth2/code/google`.
 
 Vérification : `https://api-staging.bouncylab.ovh/actuator/health` répond `{"status":"UP"}`.
+
+### Outils de test
+
+Le site de test a un bouton **Version de test · 🛠 Outils** (en haut) pour se donner de l'or, des éclats, des minerais, des ressources du Cœur, aller à une zone, choisir une forme ou un niveau de pioche, tout débloquer ou repartir de zéro. Pour que le serveur de test accepte ces parties « trichées » sans les refuser, son `.env` contient `MINE_ANTICHEAT_SPEEDFACTOR=1000` (anti-triche presque coupé). Sur un serveur de test installé avant cette ligne, l'ajouter puis relancer :
+```bash
+cd ~/mine-explorer-api-staging
+echo 'MINE_ANTICHEAT_SPEEDFACTOR=1000' >> .env
+docker compose up -d
+```
+**Jamais dans le `.env` de production.**
 
 ### Mettre à jour le serveur de test
 

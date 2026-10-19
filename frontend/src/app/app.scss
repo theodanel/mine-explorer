@@ -207,7 +207,8 @@
   }
 }
 
-// Site de test : un bandeau rayé en haut, au-dessus de tout, pour ne jamais le confondre avec le vrai jeu
+// Site de test : un bandeau rayé en haut, au-dessus de tout, pour ne jamais le confondre avec le vrai jeu ;
+// il ouvre aussi les outils de test
 .test-ribbon {
   position: absolute;
   inset: 0 auto auto 50%;
@@ -220,7 +221,7 @@
   background: repeating-linear-gradient(-45deg, #f7c84a 0 2cqw, #ffe08a 2cqw 4cqw);
   color: var(--ink);
   font: 2.8cqw / 1.2 var(--font-display);
-  pointer-events: none;
+  cursor: pointer;
   transform: translateX(-50%);
 }
 

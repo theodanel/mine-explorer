@@ -1,0 +1,95 @@
+<div class="backdrop" (click)="close()">
+  <section
+    class="dialog game-panel"
+    data-theme="amethyst"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="test-tools-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="page-header">
+      <h2 id="test-tools-title">Outils de test</h2>
+      <button type="button" class="close" aria-label="Fermer les outils de test" (click)="close()">
+        ×
+      </button>
+    </header>
+
+    <div class="scroll">
+      <p class="hint">Seulement sur le site de test. Les réglages de partie rechargent la page.</p>
+
+      <h3>Ressources</h3>
+      <div class="buttons">
+        @for (gift of coinGifts; track gift.amount) {
+          <button type="button" class="game-button gold" (click)="addCoins(gift.amount)">
+            +{{ gift.label }} or
+          </button>
+        }
+        <button type="button" class="game-button purple" (click)="addShards()">
+          +{{ shardGift }} éclats
+        </button>
+        <button type="button" class="game-button" (click)="addOres()">
+          +{{ oreGift }} de chaque minerai
+        </button>
+        <button type="button" class="game-button red" (click)="addEssences()">
+          +{{ essenceGift }} ressources du Cœur
+        </button>
+      </div>
+      @if (done(); as text) {
+        <p class="done" role="status">✔ {{ text }}</p>
+      }
+
+      <h3>Partie</h3>
+      <label class="field">
+        <span>Aller à la zone</span>
+        <select #zone>
+          @for (number of zones; track number) {
+            <option [value]="number">Zone {{ number }}</option>
+          }
+        </select>
+        <button type="button" class="game-button green" (click)="goToZone(+zone.value)">
+          Y aller
+        </button>
+      </label>
+      <label class="field">
+        <span>Forme du mineur</span>
+        <select #form>
+          @for (option of forms; track option.index) {
+            <option [value]="option.index">{{ option.label }}</option>
+          }
+        </select>
+        <button type="button" class="game-button green" (click)="setForm(+form.value)">
+          Choisir
+        </button>
+      </label>
+      <label class="field">
+        <span>Niveau de pioche</span>
+        <select #pickaxe>
+          @for (level of pickaxeLevels; track level) {
+            <option [value]="level">Niveau {{ level }}</option>
+          }
+        </select>
+        <button type="button" class="game-button green" (click)="setPickaxe(+pickaxe.value)">
+          Choisir
+        </button>
+      </label>
+
+      <div class="buttons">
+        <button type="button" class="game-button" (click)="unlockInterface()">
+          Tout débloquer à l'écran
+        </button>
+        @if (confirmingReset()) {
+          <button type="button" class="game-button red" (click)="resetGame()">
+            Oui, effacer la partie
+          </button>
+          <button type="button" class="game-button" (click)="confirmingReset.set(false)">
+            Annuler
+          </button>
+        } @else {
+          <button type="button" class="game-button red" (click)="confirmingReset.set(true)">
+            Repartir de zéro
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+</div>

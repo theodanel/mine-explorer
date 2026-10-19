@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { ArtifactFound } from './artifacts/artifact-found/artifact-found';
 import { ArtifactsPage } from './artifacts/artifacts-page/artifacts-page';
@@ -24,6 +24,7 @@ import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
 import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
 import { ONLINE_CONFIG } from './online/online-config';
+import { TestTools } from './test-tools/test-tools';
 import { environment } from '../environments/environment';
 import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
@@ -98,6 +99,7 @@ function resourceLabel(amount: number): string {
     OnlineLayer,
     LeaderboardPage,
     ChatPage,
+    TestTools,
     SplashScreen,
     RevealHint,
     RevealDirective,
@@ -121,6 +123,8 @@ export class App {
   protected readonly online = inject(ONLINE_CONFIG).enabled;
   /** Site de test (staging) : un bandeau le distingue du vrai jeu. */
   protected readonly testBanner = environment.testBanner;
+  /** Outils de test (or, zone, forme…), ouverts depuis le bandeau du site de test. */
+  protected readonly testToolsOpen = signal(false);
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);

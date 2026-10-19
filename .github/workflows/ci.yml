@@ -161,7 +161,7 @@ jobs:
       - name: Lire le type de mise à jour Dependabot
         id: meta
         if: github.event.pull_request.user.login == 'dependabot[bot]'
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@v3
       # Une version majeure (Angular, PixiJS, une action) peut casser le jeu même avec des tests verts : relecture manuelle
       - name: Fusionner
         if: steps.meta.outputs.update-type != 'version-update:semver-major'

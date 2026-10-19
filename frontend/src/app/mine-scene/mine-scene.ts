@@ -180,7 +180,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         this.app.ticker.maxFPS = covered ? COVERED_MAX_FPS : 0;
       }
     });
-    // Étoiles du Cœur du monde : le halo derrière le mineur
+    // Étoiles du Cœur du monde : l'aura sombre derrière le mineur
     effect(() => {
       const look = auraLook(this.evolution.form());
       this.aura?.show(look);
@@ -285,7 +285,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
     const auraLayer = new Container();
-    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2 - strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
     this.aura.show(auraLook(this.evolution.form()));
     this.app.stage.addChild(auraLayer, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
@@ -376,6 +376,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
+    // L'aura reste centrée sur le corps de la forme affichée : à l'opposé du décalage de la frame
+    this.aura?.moveTo(SCENE_WIDTH / 2 - strike.bodyOffsetX * strike.scale);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
   }

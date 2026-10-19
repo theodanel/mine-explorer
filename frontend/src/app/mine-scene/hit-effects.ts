@@ -11,14 +11,13 @@ const TEXT_SIZE = 52;
 const HIGHLIGHT_TEXT_SIZE = 68;
 const REWARD_TEXT_SIZE = 38;
 const DAMAGE_COLOR = 0xffffff;
-/** Critique : doré et plus gros, avec un petit coup de zoom, pour qu'on le sente passer. */
-const CRITICAL_COLOR = 0xffd34d;
+/** Critique : rouge vif et plus gros, avec un petit coup de zoom, pour qu'on le sente passer (choix de Théo). */
+const CRITICAL_COLOR = 0xff3b30;
 const POP_SCALE = 1.6;
 const POP_SHARE = 0.18;
 const GOLD_COLOR = 0xffd34d;
 const SHARD_COLOR = 0xc98bff;
 /** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
-const REWARD_TEXT_OFFSET_Y = 20;
 const SHARD_TEXT_OFFSET_Y = 70;
 const ORE_TEXT_OFFSET_Y = 120;
 const ORE_COLOR = 0xe8c48a;
@@ -169,8 +168,7 @@ export class HitEffects {
     const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
     this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
 
-    // L'or tombe à chaque coup : texte discret pour ne pas noyer les dégâts
-    this.add(new FloatingText(x, y + REWARD_TEXT_OFFSET_Y, `+${outcome.reward.gold}`, GOLD_COLOR, REWARD_TEXT_SIZE));
+    // Pas d'or affiché à chaque coup (demande de Théo) : seul le compteur du haut le montre
     const shards = outcome.reward.shards;
     if (shards > 0) {
       const shardLabel = shards === 1 ? '+1 éclat' : `+${shards} éclats`;

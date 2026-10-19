@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { forgeSound } from '../../audio/sound-catalog';
 import { Sound } from '../../audio/sound';
 
-import { MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
+import { JACKPOT_CHANCE, jackpotTier, MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
 import { AutoForge } from '../../forge/auto-forge';
 import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
@@ -62,6 +62,7 @@ export class ForgeButton {
         tier: item.tier,
         icon: itemIconUrl(item.slot, item.tier, SLOTS[item.slot].iconUrl),
         sold: sold !== null && sold.id === item.id ? sold.price : null,
+        jackpot: forged.jackpot,
       },
     ];
   });
@@ -76,7 +77,7 @@ export class ForgeButton {
     effect(() => {
       const forged = this.inventory.lastForged();
       if (forged !== null) {
-        this.sound.play(forgeSound(forged.item.tier));
+        this.sound.play(forged.jackpot ? 'jackpot' : forgeSound(forged.item.tier));
       }
     });
   }
@@ -116,6 +117,8 @@ export class ForgeButton {
     Array.from({ length: this.forge.segmentsPerLevel }, (_, index) => index < this.forge.segments()),
   );
 
+  protected readonly jackpotChance = formatPercent(JACKPOT_CHANCE);
+
   /** Table des chances : niveau actuel et niveau suivant côte à côte, un palier par ligne. */
   protected readonly odds = computed(() => {
     const level = this.forge.level();
@@ -132,6 +135,7 @@ export class ForgeButton {
         next: next === null ? null : formatPercent(next[tier]),
         // Les paliers hors de portée aux deux niveaux sont atténués, comme dans la référence
         reachable: current[tier] > 0 || (next !== null && next[tier] > 0),
+        jackpot: tier === jackpotTier(level),
       })),
     };
   });

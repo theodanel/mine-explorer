@@ -1,6 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, InjectionToken, signal } from '@angular/core';
 
-import { FORGE_SHARD_COST } from '../balance/balance';
+import { FORGE_SHARD_COST, isJackpot } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
 import { Forge } from '../forge/forge';
 import { readStorage, writeStorage } from '../shared/local-storage';
@@ -27,6 +27,8 @@ export const FORGE_ANIMATION_MS = new InjectionToken<number>('FORGE_ANIMATION_MS
 export interface ForgedEvent {
   readonly key: number;
   readonly item: Item;
+  /** Objet tiré deux paliers au-dessus de la base : la forge le fête. */
+  readonly jackpot: boolean;
 }
 
 /**
@@ -84,11 +86,12 @@ export class Inventory {
     if (this.pending() !== null || !this.shards.spend(FORGE_SHARD_COST)) {
       return false;
     }
-    const item = rollItem(this.random, this.createId, this.forgeLevel());
+    const level = this.forgeLevel();
+    const item = rollItem(this.random, this.createId, level);
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);
-    this.lastForgedState.set({ key: ++this.forgedCount, item });
+    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot: isJackpot(item.tier, level) });
     this.startForgingAnimation();
     this.missionCounters.record('itemsForged');
     return true;
@@ -102,7 +105,8 @@ export class Inventory {
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);
-    this.lastForgedState.set({ key: ++this.forgedCount, item });
+    // La Forge express choisit elle-même la qualité : ce n'est pas un jackpot de la forge
+    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot: false });
     return true;
   }
 

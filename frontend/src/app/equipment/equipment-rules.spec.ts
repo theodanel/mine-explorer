@@ -61,9 +61,11 @@ describe('rollItem', () => {
     expect(result.tier).toBe('copper');
   });
 
-  it('atteint le dernier palier non nul de la fenêtre, jamais au-delà', () => {
-    // 0.9999 tombe tout en haut de la table du niveau 2 : Pierre (8 %), jamais le Cuivre à 0 %
-    expect(rollItem(sequence(0.2, 0.9999, 0.5, 0.5, 0.5), createId, 2).tier).toBe('stone');
+  it('atteint le dernier palier non nul de la table, jamais au-delà', () => {
+    // 0.9999 tombe tout en haut de la table du niveau 2 : le jackpot en Cuivre (0,05 %), jamais le Fer à 0 %
+    expect(rollItem(sequence(0.2, 0.9999, 0.5, 0.5, 0.5), createId, 2).tier).toBe('copper');
+    // Juste en dessous du jackpot : la Pierre (8 %)
+    expect(rollItem(sequence(0.2, 0.999, 0.5, 0.5, 0.5), createId, 2).tier).toBe('stone');
   });
 
   it('donne 4 affixes distincts au palier Divin : avec la Frappe de base, les 5 stats sont présentes', () => {

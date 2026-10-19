@@ -12,6 +12,9 @@ import {
   sellPriceFor,
   TIER_ORDER,
   tierChances,
+  JACKPOT_CHANCE,
+  jackpotTier,
+  isJackpot,
   OFFLINE_CAP_MS,
   offlineGains,
   upgradeDurationMs,
@@ -68,25 +71,39 @@ describe('table des chances de la pioche', () => {
   });
 
   it('fait arriver le palier suivant par petites touches', () => {
-    expect(tierChances(2)).toMatchObject({ wood: 92, stone: 8, copper: 0 });
+    expect(tierChances(2)).toMatchObject({ wood: 92 - JACKPOT_CHANCE, stone: 8, copper: JACKPOT_CHANCE, iron: 0 });
   });
 
-  it('ne donne pas de Fer avant le niveau 7', () => {
-    expect(tierChances(5)).toMatchObject({ wood: 12, stone: 80, copper: 8, iron: 0 });
-    expect(tierChances(6).iron).toBe(0);
+  it('ne donne pas de Fer avant le niveau 7, sauf au jackpot', () => {
+    expect(tierChances(5)).toMatchObject({ wood: 12, stone: 80 - JACKPOT_CHANCE, copper: 8, iron: JACKPOT_CHANCE, steel: 0 });
+    expect(tierChances(6).iron).toBe(JACKPOT_CHANCE);
     expect(tierChances(7).iron).toBe(3);
   });
 
   it('fait glisser la fenêtre d\'un palier tous les 3 niveaux', () => {
-    expect(tierChances(4).stone).toBe(72);
-    expect(tierChances(7).copper).toBe(72);
+    expect(tierChances(4).stone).toBe(72 - JACKPOT_CHANCE);
+    expect(tierChances(7).copper).toBe(72 - JACKPOT_CHANCE);
   });
 
-  it('ne garde jamais plus de 3 paliers possibles', () => {
+  it('ne garde jamais plus de 3 paliers possibles, plus le jackpot', () => {
     for (let level = 1; level <= MAX_PICKAXE_LEVEL; level++) {
-      const possible = Object.values(tierChances(level)).filter((chance) => chance > 0);
+      const chances = tierChances(level);
+      const jackpot = jackpotTier(level);
+      const possible = TIER_ORDER.filter((tier) => chances[tier] > 0 && tier !== jackpot);
       expect(possible.length).toBeLessThanOrEqual(3);
     }
+  });
+
+  it('donne une petite chance de jackpot deux paliers au-dessus de la base', () => {
+    expect(jackpotTier(1)).toBeNull();
+    expect(jackpotTier(2)).toBe('copper');
+    expect(jackpotTier(10)).toBe('gold');
+    expect(tierChances(10).gold).toBe(JACKPOT_CHANCE);
+    // Au-delà du Divin, pas de jackpot
+    expect(jackpotTier(MAX_PICKAXE_LEVEL)).toBeNull();
+    expect(isJackpot('copper', 2)).toBe(true);
+    expect(isJackpot('stone', 2)).toBe(false);
+    expect(isJackpot('copper', 1)).toBe(false);
   });
 
   it('finit presque entièrement en Divin', () => {

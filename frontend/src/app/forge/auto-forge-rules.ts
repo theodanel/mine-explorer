@@ -16,25 +16,16 @@ export interface ForgeFilters {
   readonly stats: readonly StatId[];
   /** Ne garder que les objets qui font monter la Puissance par rapport à celui porté. */
   readonly upgradesOnly: boolean;
-  /**
-   * Qualité à partir de laquelle un objet est toujours proposé, même s'il ne passe pas les autres filtres, ou null.
-   * Théo, avec « meilleurs seulement », ne voyait jamais ses objets en or (14/10/2026) : ils étaient vendus d'office.
-   */
-  readonly keepFromTier: TierId | null;
 }
 
-export const NO_FILTERS: ForgeFilters = { slots: [], minTier: null, stats: [], upgradesOnly: false, keepFromTier: null };
+export const NO_FILTERS: ForgeFilters = { slots: [], minTier: null, stats: [], upgradesOnly: false };
 
 export function hasFilters(filters: ForgeFilters): boolean {
   return filters.slots.length > 0 || filters.minTier !== null || filters.stats.length > 0 || filters.upgradesOnly;
-  // keepFromTier seul ne filtre rien : il ne fait qu'épargner des objets aux autres filtres
 }
 
 /** Vrai si l'objet passe tous les filtres actifs : il sera proposé au joueur au lieu d'être vendu. */
 export function passesFilters(item: Item, filters: ForgeFilters, equipped: EquippedItems, levels: WorkshopLevels = {}): boolean {
-  if (filters.keepFromTier !== null && tierIndex(item.tier) >= tierIndex(filters.keepFromTier)) {
-    return true;
-  }
   if (filters.slots.length > 0 && !filters.slots.includes(item.slot)) {
     return false;
   }
@@ -51,10 +42,10 @@ export function isValidFilters(value: unknown): value is ForgeFilters {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  const { slots, minTier, stats, upgradesOnly, keepFromTier } = value as Record<string, unknown>;
+  // L'ancienne option « toujours me montrer à partir de » (retirée le 19/10/2026) peut rester dans une sauvegarde :
+  // elle est ignorée
+  const { slots, minTier, stats, upgradesOnly } = value as Record<string, unknown>;
   return (
-    // Absent des réglages d'avant le 14/10/2026 : lu comme null
-    (keepFromTier === undefined || keepFromTier === null || (TIER_IDS as readonly unknown[]).includes(keepFromTier)) &&
     Array.isArray(slots) &&
     slots.every((slot) => (SLOT_IDS as readonly unknown[]).includes(slot)) &&
     (minTier === null || (TIER_IDS as readonly unknown[]).includes(minTier)) &&

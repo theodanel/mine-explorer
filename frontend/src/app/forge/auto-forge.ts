@@ -92,8 +92,9 @@ function loadSettings(): AutoForgeSettings {
     if (typeof value === 'object' && value !== null) {
       const { enabled, filters } = value as Record<string, unknown>;
       if (typeof enabled === 'boolean' && isValidFilters(filters)) {
-        // Réglages d'avant l'option « toujours montrer » : elle part désactivée
-        return { enabled, filters: { ...filters, keepFromTier: filters.keepFromTier ?? null } };
+        // Seuls les filtres connus sont gardés : l'ancienne option « toujours montrer » disparaît de la sauvegarde
+        const { slots, minTier, stats, upgradesOnly } = filters;
+        return { enabled, filters: { slots, minTier, stats, upgradesOnly } };
       }
     }
   } catch {

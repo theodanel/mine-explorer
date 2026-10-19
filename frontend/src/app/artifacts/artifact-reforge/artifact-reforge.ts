@@ -27,7 +27,6 @@ function describeAffix(affix: ArtifactAffix): string {
 export class ArtifactReforge {
   protected readonly artifacts = inject(Artifacts);
   private readonly sound = inject(Sound);
-  protected readonly maxLevel = ARTIFACT_MAX_LEVEL;
 
   protected readonly rows = computed(() => {
     const owned = this.artifacts.owned();

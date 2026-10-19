@@ -22,6 +22,7 @@ import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page'
 import { GearRunesPage } from './heart-forge/gear-runes-page/gear-runes-page';
 import { PassBanner } from './progress-pass/pass-banner/pass-banner';
 import { PassPage } from './progress-pass/pass-page/pass-page';
+import { DungeonsPage } from './dungeons/dungeons-page/dungeons-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
@@ -101,6 +102,7 @@ function resourceLabel(amount: number): string {
     GearRunesPage,
     PassBanner,
     PassPage,
+    DungeonsPage,
     ProfilePage,
     OnlineLayer,
     LeaderboardPage,

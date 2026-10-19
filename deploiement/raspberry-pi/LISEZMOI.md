@@ -116,6 +116,35 @@ docker compose ps
 
 Vérification depuis n'importe où : `https://api.bouncylab.ovh/actuator/health` répond `{"status":"UP"}`.
 
+## Serveur de test (staging)
+
+Un second serveur, avec **sa propre base**, sert le site de test `https://staging.mine.bouncylab.ovh` : les essais ne touchent jamais les vrais comptes, le classement ni la discussion. Même archive, même `docker-compose.yml`, dans un autre dossier avec un autre `.env`.
+
+### Une seule fois
+
+1. **DNS chez OVH**, zone `bouncylab.ovh` : un enregistrement `A` (ou `CNAME`, comme pour `api`) **`api-staging`** vers ta box, identique à celui de `api`.
+2. **Sur le Pi** : déballer l'archive dans un second dossier et créer son `.env` (étape 6), puis y **décommenter les 4 lignes du serveur de test** :
+   ```bash
+   mkdir -p ~/mine-explorer-api-staging
+   tar -xzf ~/mine-explorer-api.tar.gz -C ~/mine-explorer-api-staging
+   cd ~/mine-explorer-api-staging
+   cp .env.example .env && chmod 600 .env
+   sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 32)|" .env
+   sed -i "s|^MINE_APP_PASSWORD=.*|MINE_APP_PASSWORD=$(openssl rand -hex 32)|" .env
+   sed -i 's|^# MINE_|MINE_|' .env
+   nano .env        # coller GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET (les mêmes qu'en production)
+   docker compose up -d --build
+   ```
+   `MINE_STACK=mine-explorer-staging` donne au serveur de test ses propres conteneurs et sa propre base ; `MINE_API_ALIAS=mine-api-staging` son nom sur le réseau `proxy`.
+3. **Nginx Proxy Manager** : un Proxy Host `api-staging.bouncylab.ovh` vers `mine-api-staging`, port `8080`, avec les mêmes réglages SSL que `api`.
+4. **Console Google**, client OAuth : ajouter l'URI de redirection `https://api-staging.bouncylab.ovh/login/oauth2/code/google`.
+
+Vérification : `https://api-staging.bouncylab.ovh/actuator/health` répond `{"status":"UP"}`.
+
+### Mettre à jour le serveur de test
+
+Comme la production, mais dans `~/mine-explorer-api-staging`. Une archive préparée depuis la branche `staging` (`git switch staging` avant `preparer.ps1`) teste un changement du serveur avant de l'envoyer en production.
+
 ## Devenir modérateur de la discussion
 
 1. Dans le jeu, Profil → Compte → Gérer mon compte → **Télécharger mes données** : le fichier commence par ton `id` (par exemple `3f2a…-…`).

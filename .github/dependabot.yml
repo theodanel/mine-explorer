@@ -3,6 +3,8 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /frontend
+    # Les mises à jour passent d'abord par le site de test, comme toute PR
+    target-branch: staging
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -13,10 +15,12 @@ updates:
         dependency-type: development
   - package-ecosystem: maven
     directory: /backend
+    target-branch: staging
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
   - package-ecosystem: github-actions
     directory: /
+    target-branch: staging
     schedule:
       interval: weekly

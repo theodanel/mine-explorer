@@ -8,6 +8,17 @@ Seul le frontend est mis en ligne : c'est un site statique (HTML, JavaScript, im
 
 Les en-têtes HTTP de sécurité sont dans `frontend/public/_headers`, copié à la racine du build et appliqué par Cloudflare Pages (voir [[securite]]).
 
+## Environnement de test
+
+Demande de Théo (19/10/2026), pour ne plus envoyer chaque PR directement en production :
+
+| Branche | Site | Serveur | Fusion |
+|---|---|---|---|
+| `staging` | `https://staging.mine.bouncylab.ovh` (projet Cloudflare Pages `mine-explorer-staging`, bandeau « Version de test ») | `https://api-staging.bouncylab.ovh`, second serveur sur le Pi avec sa propre base | Automatique : chaque PR verte vers `staging` (Théo, Dependabot) |
+| `main` | `https://mine.bouncylab.ovh` | `https://api.bouncylab.ovh` | Une PR `staging` → `main`, sur le « ok » de Théo |
+
+Le build du site de test est le build de production combiné à la configuration Angular `staging` (`environment.staging.ts` : API de test, bandeau). La CI crée le projet Cloudflare du site de test à sa première publication ; son domaine se branche comme celui du vrai jeu (section « Domaine personnalisé », avec `staging.mine` vers `mine-explorer-staging.pages.dev`). Serveur de test : `deploiement/raspberry-pi/LISEZMOI.md`, section « Serveur de test ».
+
 ## Mise en place (une seule fois)
 
 1. **Créer le projet Cloudflare Pages** : *Workers & Pages*, *Create application*, puis le lien « Continue to Pages » en bas de l'écran (Cloudflare met désormais les Workers en avant et appelle Pages « legacy » ; « Upload your static files » crée un Worker, que la CI ne sait pas mettre à jour et qui n'accepte pas de CNAME chez OVH), puis « Drag and drop your files ». Nom du projet : `mine-explorer`. Le tableau de bord exige un premier envoi : y déposer le dossier `frontend/dist/frontend/browser` d'un `npm run build` local, puis *Deploy site*. Les déploiements suivants viennent de la CI. Vérifier ensuite dans *Settings* que la branche de production est `main`.

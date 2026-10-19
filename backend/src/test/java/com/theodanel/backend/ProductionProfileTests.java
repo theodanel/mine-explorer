@@ -31,9 +31,10 @@ class ProductionProfileTests {
 		assertThat("172.30.1.7").doesNotMatch(trustedProxies);
 		assertThat("172.30.0.7.1").doesNotMatch(trustedProxies);
 		assertThat("203.0.113.5").doesNotMatch(trustedProxies);
-		assertThat(prod.getProperty("mine.front.allowed-origins")).startsWith("https://").doesNotContain("*");
+		// Adresses remplaçables par variable d'environnement (serveur de test), mais toujours en HTTPS par défaut
+		assertThat(prod.getProperty("mine.front.allowed-origins")).isEqualTo("${MINE_FRONT_URL:https://mine.bouncylab.ovh}");
 		assertThat(prod.getProperty("spring.security.oauth2.client.registration.google.redirect-uri"))
-			.startsWith("https://");
+			.isEqualTo("${MINE_API_URL:https://api.bouncylab.ovh}/login/oauth2/code/{registrationId}");
 	}
 
 	@Test

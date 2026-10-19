@@ -4,13 +4,15 @@
 # réseau Docker « proxy ». Le jar vient du PC (preparer.ps1). Mode d'emploi : LISEZMOI.md.
 # Les secrets sont dans .env (jamais versionné), modèle : .env.example.
 
-name: mine-explorer
+# Nom du projet : « mine-explorer » pour la production ; le serveur de test met MINE_STACK=mine-explorer-staging dans
+# son .env, pour avoir ses propres conteneurs, sa propre base et son propre nom sur le réseau du proxy.
+name: ${MINE_STACK:-mine-explorer}
 
 services:
   # Spring Boot : jamais publié sur le Pi, seulement joignable par Nginx Proxy Manager (réseau « proxy »)
   backend:
     build: ./backend
-    image: mine-explorer-backend:local
+    image: ${MINE_STACK:-mine-explorer}-backend:local
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -27,6 +29,9 @@ services:
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:?Définir GOOGLE_CLIENT_SECRET dans .env (voir LISEZMOI.md)}"
       # Modérateurs de la discussion : identifiants de joueurs séparés par des virgules (facultatif)
       MINE_MODERATORS: "${MINE_MODERATORS:-}"
+      # Serveur de test seulement : adresses du site et de l'API de test (vides : celles de la production)
+      MINE_FRONT_URL: "${MINE_FRONT_URL:-https://mine.bouncylab.ovh}"
+      MINE_API_URL: "${MINE_API_URL:-https://api.bouncylab.ovh}"
     # Plafond du conteneur, appliqué seulement si le cgroup mémoire est activé sur le Pi (voir LISEZMOI.md)
     mem_limit: 768m
     depends_on:
@@ -37,7 +42,7 @@ services:
       proxy:
         # Nom à donner dans Nginx Proxy Manager (Forward Hostname)
         aliases:
-          - mine-api
+          - ${MINE_API_ALIAS:-mine-api}
     healthcheck:
       # L'image n'a ni curl ni wget : bash ouvre juste une connexion sur le port du serveur
       test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/8080"]

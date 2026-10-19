@@ -18,13 +18,6 @@
   }
 }
 
-.intro,
-.hint {
-  margin: 0;
-  font-size: 2.8cqw;
-  opacity: 0.85;
-}
-
 .artifact {
   display: grid;
   grid-template-columns: 14cqw minmax(0, 1fr);

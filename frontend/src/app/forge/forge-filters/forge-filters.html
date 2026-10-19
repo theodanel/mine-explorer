@@ -60,23 +60,6 @@
       Seulement les objets meilleurs que celui porté
     </button>
 
-    <h3>Toujours me montrer à partir de <span class="hint">même si les filtres les vendraient</span></h3>
-    <div class="chips tiers">
-      @for (tier of keepTiers(); track tier.id) {
-        <button
-          type="button"
-          class="chip tier"
-          [attr.data-tier]="tier.id"
-          [class.on]="tier.on"
-          [attr.aria-pressed]="tier.on"
-          (click)="chooseKeepTier(tier.id)"
-        >
-          <img class="chip-icon" [src]="tier.icon" alt="" width="128" height="128" />
-          {{ tier.label }}
-        </button>
-      }
-    </div>
-
     <div class="actions">
       <button type="button" class="game-button stone" [disabled]="!active()" (click)="clear()">Tout retirer</button>
       <button type="button" class="game-button green" (click)="save()">Valider</button>

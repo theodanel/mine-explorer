@@ -104,7 +104,7 @@
         </button>
       </li>
     }
-    @if (workshop.unlocked()) {
+    @if (workshop.unlocked() && reforgeable()) {
       <li class="relics"><app-artifact-reforge /></li>
     }
   </ul>

@@ -83,10 +83,13 @@ class PlausibilityRulesTests {
 	}
 
 	@Test
-	void recordDuPuitsSuitLaMine() {
-		assertThat(rules.maxAbyssRecord(60)).isZero();
-		assertThat(rules.maxAbyssRecord(61)).isEqualTo(1 + PlausibilityRules.ABYSS_FLOOR_MARGIN);
-		assertThat(rules.maxAbyssRecord(100_000)).isEqualTo(PlausibilityRules.ABYSS_MAX_FLOOR);
+	void recordDuPuitsBorneParLesDescentesPossibles() {
+		assertThat(rules.maxAbyssRecord(RELEASE, RELEASE)).isZero();
+		// Une descente toutes les 8 h, 60 étages au plus chacune
+		assertThat(rules.maxAbyssRecord(RELEASE, RELEASE.plus(Duration.ofHours(1)))).isEqualTo(60);
+		assertThat(rules.maxAbyssRecord(RELEASE, RELEASE.plus(Duration.ofHours(17)))).isEqualTo(180);
+		assertThat(rules.maxAbyssRecord(RELEASE, RELEASE.plus(Duration.ofDays(100))))
+			.isEqualTo(PlausibilityRules.ABYSS_MAX_FLOOR);
 	}
 
 	@Test

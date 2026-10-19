@@ -120,6 +120,13 @@ Vérification depuis n'importe où : `https://api.bouncylab.ovh/actuator/health`
 
 Un second serveur, avec **sa propre base**, sert le site de test `https://staging.mine.bouncylab.ovh` : les essais ne touchent jamais les vrais comptes, le classement ni la discussion. Même archive, même `docker-compose.yml`, dans un autre dossier avec un autre `.env`.
 
+> ⚠️ **Toujours avec une archive à jour.** Une archive d'avant le 19/10/2026 ne connaît pas `MINE_STACK` : lancée dans le dossier de test, elle recrée le serveur **de production** avec le `.env` de test, et le vrai jeu tombe en panne (c'est arrivé le 19/10). Avant tout `docker compose up` dans `~/mine-explorer-api-staging`, vérifier :
+> ```bash
+> grep -c MINE_STACK docker-compose.yml                    # 3 ou plus, sinon refaire l'archive sur le PC
+> grep -c '^MINE_STACK=mine-explorer-staging' .env         # exactement 1
+> ```
+> Après le lancement, les conteneurs doivent s'appeler `mine-explorer-staging-…`. S'ils s'appellent `mine-explorer-…`, revenir aussitôt à la production : `cd ~/mine-explorer-api && docker compose up -d`.
+
 ### Une seule fois
 
 1. **DNS chez OVH**, zone `bouncylab.ovh` : un enregistrement `A` (ou `CNAME`, comme pour `api`) **`api-staging`** vers ta box, identique à celui de `api`.
@@ -132,6 +139,7 @@ Un second serveur, avec **sa propre base**, sert le site de test `https://stagin
    sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 32)|" .env
    sed -i "s|^MINE_APP_PASSWORD=.*|MINE_APP_PASSWORD=$(openssl rand -hex 32)|" .env
    sed -i 's|^# MINE_|MINE_|' .env
+   grep -c '^MINE_STACK=mine-explorer-staging' .env   # doit afficher 1 avant d'aller plus loin
    nano .env        # coller GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET (les mêmes qu'en production)
    docker compose up -d --build
    ```

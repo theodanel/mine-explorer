@@ -11,8 +11,8 @@ const TEXT_SIZE = 52;
 const HIGHLIGHT_TEXT_SIZE = 68;
 const REWARD_TEXT_SIZE = 38;
 const DAMAGE_COLOR = 0xffffff;
-/** Critique : rouge vif et plus gros, avec un petit coup de zoom, pour qu'on le sente passer (choix de Théo). */
-const CRITICAL_COLOR = 0xff3b30;
+/** Critique : bleu clair violet (pervenche) et plus gros, avec un petit coup de zoom : bien lisible sur la roche sombre (choix de Théo). */
+const CRITICAL_COLOR = 0xa9b4ff;
 const POP_SCALE = 1.6;
 const POP_SHARE = 0.18;
 const GOLD_COLOR = 0xffd34d;

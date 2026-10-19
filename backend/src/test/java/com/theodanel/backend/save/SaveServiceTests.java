@@ -30,7 +30,8 @@ class SaveServiceTests {
 	private final CloudSaveRepository repository = mock(CloudSaveRepository.class);
 	private final AccountService accounts = mock(AccountService.class);
 	private final SaveService service = new SaveService(repository, accounts, properties(),
-			JsonMapper.builder().build(), new MutableClock());
+			JsonMapper.builder().build(), new MutableClock(), event -> {
+			});
 
 	@Test
 	void deuxPremieresSauvegardesSimultaneesDonnentUnConflit() {

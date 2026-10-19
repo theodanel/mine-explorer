@@ -285,9 +285,12 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
     const auraLayer = new Container();
-    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2 - strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
+    // bodyOffsetX recentre la frame : le corps est au milieu de la scène, l'aura aussi
+    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2, MINER_FEET_Y);
     this.aura.show(auraLook(this.evolution.form()));
-    this.app.stage.addChild(auraLayer, miner, this.staticBody, effectsLayer);
+    // L'aura passe derrière le rocher : ses flammes entourent le mineur sans recouvrir ce qu'il frappe
+    this.app.stage.addChildAt(auraLayer, this.app.stage.getChildIndex(this.rock.sprite));
+    this.app.stage.addChild(miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -376,8 +379,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
-    // L'aura reste centrée sur le corps de la forme affichée : à l'opposé du décalage de la frame
-    this.aura?.moveTo(SCENE_WIDTH / 2 - strike.bodyOffsetX * strike.scale);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
   }

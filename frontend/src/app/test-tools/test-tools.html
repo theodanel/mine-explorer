@@ -33,6 +33,9 @@
         <button type="button" class="game-button red" (click)="addEssences()">
           +{{ essenceGift }} ressources du Cœur
         </button>
+        <button type="button" class="game-button purple" (click)="addRunes()">
+          +3 runes de chaque (rangs 1 à 3)
+        </button>
       </div>
       @if (done(); as text) {
         <p class="done" role="status">✔ {{ text }}</p>

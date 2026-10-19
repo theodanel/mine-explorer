@@ -19,6 +19,7 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page';
+import { GearRunesPage } from './heart-forge/gear-runes-page/gear-runes-page';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
@@ -95,6 +96,7 @@ function resourceLabel(amount: number): string {
     OfflineReport,
     EvolutionPage,
     HeartForgePage,
+    GearRunesPage,
     ProfilePage,
     OnlineLayer,
     LeaderboardPage,

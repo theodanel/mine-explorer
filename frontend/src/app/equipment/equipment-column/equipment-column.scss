@@ -59,6 +59,22 @@
 }
 
 // Niveau de l'objet en bas de la case, comme le « Lv. 12 » de la référence
+// Runes serties : de petites gemmes alignées en haut du cadre
+.slot-runes {
+  position: absolute;
+  inset: 0.4cqw 0.4cqw auto;
+  display: flex;
+  justify-content: center;
+  gap: 0.3cqw;
+  pointer-events: none;
+
+  img {
+    width: 3.6cqw;
+    height: 3.6cqw;
+    filter: drop-shadow(0 0 0.6cqw rgb(255 170 70 / 80%));
+  }
+}
+
 .slot-level {
   position: absolute;
   inset: auto 0 0;

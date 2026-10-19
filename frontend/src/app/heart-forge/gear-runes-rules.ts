@@ -1,0 +1,133 @@
+// Règles pures des runes d'équipement : sertir une rune de la réserve sur un emplacement, la retirer, et les bonus
+// qu'elles donnent. Les runes serties appartiennent à l'emplacement : elles restent quand une meilleure pièce
+// remplace celle qui était portée.
+import {
+  AFFINITY_MULTIPLIER,
+  ALLIANCE_ELEMENTS,
+  ALLIANCE_TOTAL_SHARE,
+  ELEMENT_EFFECTS,
+  GEAR_SOCKETS_MAX,
+  RESONANCE_MULTIPLIER,
+  STAT_BONUS,
+} from '../balance/gear-runes';
+import { AllianceRune, RUNE_ELEMENTS, RuneElement } from '../balance/heart-forge';
+import { BonusId, Bonuses, NO_BONUSES } from '../balance/skill-tree';
+import { SLOT_IDS, SLOTS, SlotId } from '../equipment/equipment.model';
+import type { HeartForgeState, Rune } from './heart-forge-rules';
+
+/** Runes serties sur chaque emplacement, châsse par châsse (null : châsse vide). */
+export type GearRunes = Readonly<Record<SlotId, readonly (Rune | null)[]>>;
+
+export const EMPTY_GEAR_RUNES: GearRunes = Object.fromEntries(
+  SLOT_IDS.map((slot) => [slot, Array.from({ length: GEAR_SOCKETS_MAX }, () => null)]),
+) as unknown as GearRunes;
+
+/** Un effet d'une rune : le bonus et sa valeur, affinité et résonance comprises. */
+export interface RuneEffect {
+  readonly bonus: BonusId;
+  readonly value: number;
+}
+
+function isElement(type: Rune['type']): type is RuneElement {
+  return (RUNE_ELEMENTS as readonly string[]).includes(type);
+}
+
+/** Éléments d'une rune, et la part d'une rune élémentaire que chacun vaut. */
+function elementsOf(rune: Rune): { readonly element: RuneElement; readonly share: number }[] {
+  if (isElement(rune.type)) {
+    return [{ element: rune.type, share: 1 }];
+  }
+  const elements = ALLIANCE_ELEMENTS[rune.type as AllianceRune];
+  return elements.map((element) => ({ element, share: ALLIANCE_TOTAL_SHARE / elements.length }));
+}
+
+/** Les trois châsses de l'emplacement serties du même type de rune. */
+export function resonates(runes: readonly (Rune | null)[]): boolean {
+  const first = runes[0];
+  return runes.length === GEAR_SOCKETS_MAX && first !== null && runes.every((rune) => rune !== null && rune.type === first.type);
+}
+
+/** Effets d'une rune sertie sur un emplacement : affinité si elle renforce l'esprit de la pièce, et résonance. */
+export function runeEffects(rune: Rune, slot: SlotId, resonance: boolean): RuneEffect[] {
+  const affinity = STAT_BONUS[SLOTS[slot].workshopStat];
+  return elementsOf(rune).map(({ element, share }) => {
+    const { bonus, values } = ELEMENT_EFFECTS[element];
+    const multiplier = (bonus === affinity ? AFFINITY_MULTIPLIER : 1) * (resonance ? RESONANCE_MULTIPLIER : 1);
+    return { bonus, value: values[rune.rank - 1] * share * multiplier };
+  });
+}
+
+/**
+ * Bonus de toutes les runes serties, en une seule famille : elles s'additionnent entre elles, et la famille se
+ * multiplie avec les autres (compétences, artefact, compagnon) pour la Frappe et l'or. Seules les châsses ouvertes
+ * comptent.
+ */
+export function gearRuneBonuses(gear: GearRunes, socketCount: number): Bonuses {
+  const totals: Record<BonusId, number> = { ...NO_BONUSES };
+  for (const slot of SLOT_IDS) {
+    const open = gear[slot].slice(0, socketCount);
+    const resonance = socketCount === GEAR_SOCKETS_MAX && resonates(open);
+    for (const rune of open) {
+      if (rune === null) {
+        continue;
+      }
+      for (const { bonus, value } of runeEffects(rune, slot, resonance)) {
+        totals[bonus] += value;
+      }
+    }
+  }
+  return totals;
+}
+
+function runeKeyOf({ type, rank }: Rune): `${Rune['type']}:${number}` {
+  return `${type}:${rank}`;
+}
+
+function countOf(state: HeartForgeState, rune: Rune): number {
+  return state.runes[runeKeyOf(rune)] ?? 0;
+}
+
+function withRune(state: HeartForgeState, rune: Rune, delta: number): HeartForgeState {
+  return { ...state, runes: { ...state.runes, [runeKeyOf(rune)]: countOf(state, rune) + delta } };
+}
+
+function withSocket(state: HeartForgeState, slot: SlotId, socket: number, rune: Rune | null): HeartForgeState {
+  const runes = state.gear[slot].map((current, index) => (index === socket ? rune : current));
+  return { ...state, gear: { ...state.gear, [slot]: runes } };
+}
+
+export function canSetGearRune(state: HeartForgeState, socket: number, rune: Rune, socketCount: number): boolean {
+  return socket >= 0 && socket < socketCount && countOf(state, rune) > 0;
+}
+
+/** Sertit une rune de la réserve ; celle qui occupait la châsse retourne dans la réserve. */
+export function setGearRune(state: HeartForgeState, slot: SlotId, socket: number, rune: Rune, socketCount: number): HeartForgeState {
+  if (!canSetGearRune(state, socket, rune, socketCount)) {
+    return state;
+  }
+  const previous = state.gear[slot][socket];
+  const freed = previous === null ? state : withRune(state, previous, 1);
+  return withSocket(withRune(freed, rune, -1), slot, socket, rune);
+}
+
+/** Retire la rune d'une châsse, gratuitement : elle retourne dans la réserve, prête à être sertie ailleurs. */
+export function removeGearRune(state: HeartForgeState, slot: SlotId, socket: number): HeartForgeState {
+  const rune = state.gear[slot][socket] ?? null;
+  return rune === null ? state : withSocket(withRune(state, rune, 1), slot, socket, null);
+}
+
+/** Lecture d'une sauvegarde : absente (avant le 19/10/2026), les châsses sont vides. */
+export function parseGearRunes(value: unknown, isRune: (rune: unknown) => rune is Rune): GearRunes | null {
+  if (value === undefined) {
+    return EMPTY_GEAR_RUNES;
+  }
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+  const gear = value as Record<string, unknown>;
+  const valid = SLOT_IDS.every((slot) => {
+    const runes = gear[slot];
+    return Array.isArray(runes) && runes.length === GEAR_SOCKETS_MAX && runes.every((rune) => rune === null || isRune(rune));
+  });
+  return valid ? (gear as GearRunes) : null;
+}

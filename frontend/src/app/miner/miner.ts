@@ -4,6 +4,7 @@ import { Artifacts } from '../artifacts/artifacts';
 import { Inventory } from '../equipment/inventory';
 import { Companions } from '../companions/companions';
 import { Galleries } from '../galleries/galleries';
+import { GearRunes } from '../heart-forge/gear-runes';
 import { Skills } from '../skills/skills';
 import { Spells } from '../spells/spells';
 import { reinforce } from '../workshop/workshop-rules';
@@ -12,6 +13,7 @@ import { minerProfile, NO_BUFFS } from './miner-rules';
 
 /**
  * Stats complètes du mineur : équipement et évolution (Inventory), Atelier, arbre de compétences, artefact porté, compagnon,
+ * runes d'équipement,
  * et sorts en cours pour `current`. `permanent` sert à l'absence et aux comparaisons, `current` à la mine.
  */
 @Injectable({ providedIn: 'root' })
@@ -23,8 +25,14 @@ export class Miner {
   private readonly workshop = inject(Workshop);
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
+  private readonly gearRunes = inject(GearRunes);
 
-  private readonly families = computed(() => [this.skills.bonuses(), this.artifacts.bonuses(), this.companions.bonuses()]);
+  private readonly families = computed(() => [
+    this.skills.bonuses(),
+    this.artifacts.bonuses(),
+    this.companions.bonuses(),
+    this.gearRunes.bonuses(),
+  ]);
   /** Équipement et évolution, renforcés par l'Atelier. */
   private readonly gear = computed(() => reinforce(this.inventory.stats(), this.workshop.levels(), this.inventory.equipped()));
   readonly permanent = computed(() => minerProfile(this.gear(), this.families(), NO_BUFFS));

@@ -29,6 +29,7 @@
       }
     </div>
     <p class="hint">Chaque étoile demande 2 runes serties. Une rune qui brille peut être sertie : touche-la.</p>
+    <button type="button" class="game-button gear-runes" (click)="openGearRunes()">Sertir mon équipement</button>
 
     @if (message(); as note) {
       <p class="message" [class.failed]="!note.success" role="status">{{ note.text }}</p>

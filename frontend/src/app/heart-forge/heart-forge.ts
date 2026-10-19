@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES_PER_ROCK, ESSENCES, EssenceId } from '../balance/heart-forge';
+import type { SlotId } from '../equipment/equipment.model';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
 import {
@@ -18,6 +19,7 @@ import {
   socketRuneIn,
   starRunesSet,
 } from './heart-forge-rules';
+import { canSetGearRune, removeGearRune, setGearRune } from './gear-runes-rules';
 
 const STORAGE_KEY = 'mine-explorer.forge-du-coeur';
 
@@ -46,6 +48,8 @@ export class HeartForge {
   readonly runes = computed(() => this.state().runes);
   readonly sockets = computed(() => this.state().sockets);
   readonly recipes = computed(() => this.state().recipes);
+  /** Runes serties sur l'équipement, par emplacement. */
+  readonly gear = computed(() => this.state().gear);
   readonly event = this.lastEvent.asReadonly();
   /** État complet, pour les écrans qui calculent avec les règles. */
   readonly snapshot = this.state.asReadonly();
@@ -109,6 +113,19 @@ export class HeartForge {
     }
     this.save(socketRuneIn(this.state(), socket));
     return true;
+  }
+
+  /** `socketCount` : châsses ouvertes par emplacement, selon les étoiles (voir GearRunes). */
+  setGearRune(slot: SlotId, socket: number, rune: Rune, socketCount: number): boolean {
+    if (!canSetGearRune(this.state(), socket, rune, socketCount)) {
+      return false;
+    }
+    this.save(setGearRune(this.state(), slot, socket, rune, socketCount));
+    return true;
+  }
+
+  removeGearRune(slot: SlotId, socket: number): void {
+    this.save(removeGearRune(this.state(), slot, socket));
   }
 
   /** Les deux runes de cette étoile (1 à 5) sont serties. */

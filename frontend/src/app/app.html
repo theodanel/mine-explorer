@@ -130,6 +130,11 @@
         <app-heart-forge-page class="page-layer" />
       }
     }
+    @case ('gear-runes') {
+      @defer (on immediate) {
+        <app-gear-runes-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />

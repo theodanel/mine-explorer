@@ -1,4 +1,5 @@
 // Règles pures de la Forge du Cœur : ressources des Échos, recettes du Creuset, fusion des runes et anneau du Cœur.
+// Les runes serties sur l'équipement sont dans gear-runes-rules.ts.
 import {
   ALLIANCE_RECIPES,
   ALLIANCE_RUNES,
@@ -15,6 +16,7 @@ import {
   STAR_RUNES,
 } from '../balance/heart-forge';
 import type { Random } from '../shared/random';
+import { EMPTY_GEAR_RUNES, GearRunes, parseGearRunes } from './gear-runes-rules';
 
 /** Une rune : son type (élément ou alliance) et son rang (1 à 5). */
 export interface Rune {
@@ -34,6 +36,8 @@ export interface HeartForgeState {
   readonly sockets: readonly boolean[];
   /** Recettes déjà trouvées au Creuset, pour le livre de recettes. */
   readonly recipes: readonly RuneType[];
+  /** Runes serties sur les emplacements d'équipement, dès la 1re étoile. */
+  readonly gear: GearRunes;
 }
 
 const NO_ESSENCES = Object.fromEntries(ESSENCES.map((id) => [id, 0])) as Record<EssenceId, number>;
@@ -43,6 +47,7 @@ export const EMPTY_HEART_FORGE: HeartForgeState = {
   runes: {},
   sockets: Array.from({ length: RING_SOCKETS }, () => false),
   recipes: [],
+  gear: EMPTY_GEAR_RUNES,
 };
 
 export function runeKey({ type, rank }: Rune): RuneKey {
@@ -156,6 +161,14 @@ export function essencesFor(rank: number): number {
   return 3 * RUNE_FUSION_COUNT ** (rank - 1);
 }
 
+function isRune(value: unknown): value is Rune {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const { type, rank } = value as Record<string, unknown>;
+  return (RUNE_TYPES as readonly unknown[]).includes(type) && Number.isSafeInteger(rank) && (rank as number) >= 1 && (rank as number) <= MAX_RUNE_RANK;
+}
+
 function isCount(value: unknown): boolean {
   return Number.isSafeInteger(value) && (value as number) >= 0;
 }
@@ -164,7 +177,7 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   if (typeof value !== 'object' || value === null) {
     return null;
   }
-  const { essences, runes, sockets, recipes } = value as Record<string, unknown>;
+  const { essences, runes, sockets, recipes, gear: rawGear } = value as Record<string, unknown>;
   const essencesValid =
     typeof essences === 'object' && essences !== null && ESSENCES.every((id) => isCount((essences as Record<string, unknown>)[id]));
   const runesValid =
@@ -176,7 +189,8 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
     });
   const socketsValid = Array.isArray(sockets) && sockets.length === RING_SOCKETS && sockets.every((filled) => typeof filled === 'boolean');
   const recipesValid = Array.isArray(recipes) && recipes.every((type) => (RUNE_TYPES as readonly unknown[]).includes(type));
-  if (!essencesValid || !runesValid || !socketsValid || !recipesValid) {
+  const gear = parseGearRunes(rawGear, isRune);
+  if (!essencesValid || !runesValid || !socketsValid || !recipesValid || gear === null) {
     return null;
   }
   return {
@@ -184,5 +198,6 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
     runes: runes as HeartForgeState['runes'],
     sockets: sockets as boolean[],
     recipes: recipes as RuneType[],
+    gear,
   };
 }

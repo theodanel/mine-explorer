@@ -212,6 +212,10 @@ export class HeartForgePage {
     }
   }
 
+  protected openGearRunes(): void {
+    this.navigation.open('gear-runes');
+  }
+
   protected close(): void {
     this.navigation.open('evolution');
   }

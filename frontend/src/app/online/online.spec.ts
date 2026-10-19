@@ -5,7 +5,8 @@ import { Overlays } from '../shared/overlays';
 import { PlayerName } from '../shared/player-name';
 import { AccountCard } from './account-card/account-card';
 import { AccountPrompt } from './account-prompt/account-prompt';
-import { CloudSync, RELOAD } from './cloud-sync';
+import { Progression } from '../progression/progression';
+import { CloudSync, RANKED_UPLOAD_DELAY_MS, RELOAD } from './cloud-sync';
 import { NAVIGATE, OnlineAccount } from './online-account';
 import { FETCH } from './online-api';
 import { ONLINE_CONFIG } from './online-config';
@@ -146,7 +147,8 @@ describe('Jeu en ligne', () => {
     await settle();
     expect(TestBed.inject(PlayerName).label()).toBe('Mineur-12');
     expect(sync.state().kind).toBe('synced');
-    expect(server.cloud?.data).toEqual({
+    // Les autres services du jeu ajoutent aussi leurs clés de départ (compagnons…) : on vérifie celles de la partie
+    expect(server.cloud?.data).toMatchObject({
       'mine-explorer.progress': '{"zone":4,"stage":2,"damage":0}',
       'mine-explorer.coins': '500',
     });
@@ -194,6 +196,25 @@ describe('Jeu en ligne', () => {
     await sync.upload();
     expect(server.cloud?.data['mine-explorer.coins']).toBe('900');
     expect(server.calls.filter((call) => call === 'GET /api/csrf')).toHaveLength(2);
+  });
+
+  it('nouveau filon : la partie repart peu après, pour que le classement suive', async () => {
+    const { sync } = setup();
+    await settle();
+    expect(sync.state().kind).toBe('synced');
+    expect(server.cloud?.version).toBe(0);
+    vi.useFakeTimers();
+    try {
+      TestBed.inject(Progression).hit(Number.MAX_SAFE_INTEGER);
+      TestBed.tick();
+      await vi.advanceTimersByTimeAsync(RANKED_UPLOAD_DELAY_MS - 1);
+      expect(server.cloud?.version).toBe(0);
+      await vi.advanceTimersByTimeAsync(1);
+    } finally {
+      vi.useRealTimers();
+    }
+    await settle();
+    expect(server.cloud?.version).toBe(1);
   });
 
   it('déconnexion : cet appareil oublie la version du cloud', async () => {

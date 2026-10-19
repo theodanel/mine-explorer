@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Duration;
@@ -13,8 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.theodanel.backend.support.ApiTestSupport;
@@ -25,6 +29,14 @@ class LeaderboardApiTests extends ApiTestSupport {
 
 	/** Temps de jeu depuis la connexion : assez pour que le classement affiche toutes les parties des tests (zone 9). */
 	private static final Duration PLAYED_SINCE_LOGIN = Duration.ofHours(4);
+
+	@Autowired
+	private LeaderboardEvents events;
+
+	@AfterEach
+	void closeStreams() {
+		events.closeAll();
+	}
 
 	private UUID playerWith(String subject, String pseudo, int zone, int stage, int abyss) throws Exception {
 		UUID player = newPlayer(subject);
@@ -136,6 +148,46 @@ class LeaderboardApiTests extends ApiTestSupport {
 		mockMvc.perform(get("/api/leaderboard/depth").with(as(mallory)))
 			.andExpect(jsonPath("$.me.value").value(103))
 			.andExpect(jsonPath("$.me.rank").value(2));
+	}
+
+	@Test
+	void leFluxPrevientQuandUnClassementChange() throws Exception {
+		MvcResult stream = mockMvc.perform(get("/api/leaderboard/events"))
+			.andExpect(request().asyncStarted())
+			.andReturn();
+		assertThat(stream.getResponse().getContentType()).startsWith("text/event-stream");
+		assertThat(stream.getResponse().getHeader("X-Accel-Buffering")).isEqualTo("no");
+
+		UUID alice = playerWith("a", "Alice", 5, 2, 0);
+		events.flush();
+		String afterFirstSave = stream.getResponse().getContentAsString();
+		// Un nouveau joueur entre dans les deux classements ; le flux ne dit que lesquels, sans aucune donnée de joueur
+		assertThat(afterFirstSave).contains("event:changed\ndata:depth").contains("event:changed\ndata:abyss")
+			.doesNotContain("Alice");
+
+		// Même progression renvoyée : aucun classement ne bouge, rien n'est envoyé
+		long version = versionOf(putSave(alice, 0L, 5, 2, 0).andExpect(status().isOk()));
+		events.flush();
+		assertThat(stream.getResponse().getContentAsString()).isEqualTo(afterFirstSave);
+
+		// Le Puits seul progresse : seul son classement est à relire
+		putSave(alice, version, 5, 2, 7).andExpect(status().isOk());
+		events.flush();
+		assertThat(stream.getResponse().getContentAsString().substring(afterFirstSave.length()))
+			.isEqualTo("event:changed\ndata:abyss\n\n");
+	}
+
+	@Test
+	void uneSauvegardeRefuseeNePrevientPersonne() throws Exception {
+		MvcResult stream = mockMvc.perform(get("/api/leaderboard/events")).andReturn();
+		String opened = stream.getResponse().getContentAsString();
+		putSave(newPlayer("x"), null, 9000, 1, 0).andExpect(status().isUnprocessableContent());
+		events.flush();
+		assertThat(stream.getResponse().getContentAsString()).isEqualTo(opened);
+	}
+
+	private long versionOf(ResultActions response) throws Exception {
+		return json.readTree(response.andReturn().getResponse().getContentAsString()).get("version").asLong();
 	}
 
 	private ResultActions putSave(UUID player, Long expectedVersion, int zone, int stage, int abyss) throws Exception {

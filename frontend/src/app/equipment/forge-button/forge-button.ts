@@ -114,6 +114,11 @@ export class ForgeButton {
     return ms === null ? null : formatDuration(ms);
   });
 
+  protected readonly shortcutPop = computed(() => {
+    const cut = this.forge.lastShortcut();
+    return cut === null ? [] : [{ key: cut.key, text: formatDuration(cut.savedMs) }];
+  });
+
   protected readonly segments = computed(() =>
     Array.from({ length: this.forge.segmentsPerLevel }, (_, index) => index < this.forge.segments()),
   );

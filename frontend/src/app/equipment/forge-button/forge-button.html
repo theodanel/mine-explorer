@@ -10,6 +10,10 @@
     @if (upgradeTimeLeft(); as timeLeft) {
       <span class="side-timer">{{ timeLeft }}</span>
     }
+    <!-- Un filon épuisé fait avancer l'amélioration : le temps gagné s'envole du minuteur -->
+    @for (cut of shortcutPop(); track cut.key) {
+      <span class="timer-cut" aria-hidden="true">−{{ cut.text }}</span>
+    }
   </button>
 
   <span class="forge-wrapper" appReveal="forge">

@@ -24,6 +24,7 @@ import {
   segmentCost,
   shardsForStage,
   upgradeDurationMs,
+  upgradeShortcutMs,
   ZONE_CLEAR_ORES,
   zoneClearShards,
   zoneMaterial,
@@ -151,6 +152,7 @@ const withCompanions = withNewSystems && !process.argv.includes('--sans-compagno
 const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
 const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equipement');
+const withUpgradeShortcut = !process.argv.includes('--sans-raccourci-pioche');
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -917,6 +919,9 @@ function dealDamage(now: number, damage: number): void {
   if (result.rockBroken) {
     record('rocksBroken');
     filonsInZone++;
+    if (withUpgradeShortcut && pickaxe.upgradeEndsAt !== null) {
+      pickaxe.upgradeEndsAt = Math.max(pickaxe.upgradeEndsAt - upgradeShortcutMs(pickaxe.level, result.clearedZone !== null) / 1000, now);
+    }
     const stageShards = shardsForStage(zone, stage);
     shards += stageShards;
     shardSources.filons += stageShards;

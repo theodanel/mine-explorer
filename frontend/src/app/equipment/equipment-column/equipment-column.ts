@@ -15,12 +15,15 @@ import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { Tooltip, TooltipContent } from '../../shared/tooltip/tooltip';
 import { formatStatDelta } from '../equipment-format';
-import { sellPrice } from '../equipment-rules';
-import { Item, SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
+import { gearSet, sellPrice } from '../equipment-rules';
+import { Item, SLOT_IDS, SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
 
 /** Emplacement d'objet, case d'artefact ou de compagnon, ou null pour une case verrouillée réservée à plus tard. */
 export type ColumnSlot = SlotId | 'artifact' | 'companion' | null;
+
+/** La pastille de panoplie apparaît dès 2 pièces du même palier, avant le premier bonus (3 pièces). */
+const SET_HINT_PIECES = 2;
 
 @Component({
   selector: 'app-equipment-column',
@@ -83,6 +86,16 @@ export class EquipmentColumn {
         tooltip: item ? itemCard(label, item) : `${label} : vide. Forge un objet pour l'équiper ici.`,
       };
     });
+  });
+
+  /** Panoplie portée, affichée dès 2 pièces du même palier : le joueur voit ce qu'il lui manque pour le bonus. */
+  protected readonly setBadge = computed(() => {
+    const set = gearSet(this.inventory.equipped());
+    if (set === null || set.pieces < SET_HINT_PIECES) {
+      return null;
+    }
+    const bonus = set.strikePct > 0 ? ` · +${Math.round(set.strikePct * 100)} % Frappe` : '';
+    return { tier: set.tier, text: `Panoplie ${TIER_LABELS[set.tier]} ${set.pieces}/${SLOT_IDS.length}${bonus}`, active: set.strikePct > 0 };
   });
 
   protected openArtifacts(): void {

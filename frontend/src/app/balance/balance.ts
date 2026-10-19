@@ -124,6 +124,17 @@ export function sellPriceFor(tier: TierId, level: number): number {
 
 // ─── Pioche (Forge) ────────────────────────────────────────────────────────
 
+/**
+ * Panoplie (lot 3 des idées Forge Master, 19/10/2026) : des pièces portées du même palier donnent de la Frappe.
+ * 3 pièces : +3 % ; les 5 : +8 % (le bonus à 3 ne s'y ajoute pas). Du plus grand au plus petit. La spec partait de
+ * +5 % et +15 % : en fin de partie presque tout l'équipement est du même palier, et la pioche 30 arrivait 1,3 jour
+ * plus tôt ; à +3 % et +8 %, l'écart reste dans le bruit du simulateur (moins d'un demi-jour).
+ */
+export const SET_BONUSES: readonly { readonly pieces: number; readonly strikePct: number }[] = [
+  { pieces: 5, strikePct: 0.08 },
+  { pieces: 3, strikePct: 0.03 },
+];
+
 /** Un tirage à la Forge coûte des éclats, quel que soit le niveau de la pioche. */
 export const FORGE_SHARD_COST = 2;
 

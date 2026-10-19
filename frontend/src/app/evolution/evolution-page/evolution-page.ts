@@ -140,6 +140,10 @@ export class EvolutionPage {
     }
   }
 
+  protected openGearRunes(): void {
+    this.navigation.open('gear-runes');
+  }
+
   protected openForge(): void {
     this.navigation.open('heart-forge');
   }

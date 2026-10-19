@@ -11,6 +11,10 @@
         <button type="button" class="game-button gold forge-link" (click)="openForge()">Forge du Cœur</button>
         <button type="button" class="info" aria-label="Comment éveiller les étoiles ?" (click)="helpOpen.set(true)">i</button>
       </div>
+      <!-- Dès la 1re étoile : les runes d'équipement, à un geste de l'écran d'évolution -->
+      @if (evolution.form().stars > 0) {
+        <button type="button" class="game-button forge-link gear-runes-link" (click)="openGearRunes()">Runes d'équipement</button>
+      }
     } @else {
       <!-- Carte du rang : la forme actuelle, la flèche, la forme visée -->
       <article class="rank">

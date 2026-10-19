@@ -5,6 +5,8 @@ import { ABYSS_FLOORS_PER_ESSENCES } from '../balance/heart-forge';
 import { TIER_IDS } from '../equipment/equipment.model';
 import { formTitle } from '../evolution/evolution-rules';
 import { HeartForge } from '../heart-forge/heart-forge';
+import { RuneKey } from '../heart-forge/heart-forge-rules';
+import { RUNE_TYPES } from '../balance/heart-forge';
 import { REVEAL_IDS } from '../onboarding/reveal-rules';
 import { Ores } from '../ores/ores';
 import { writeStorage } from '../shared/local-storage';
@@ -19,6 +21,9 @@ const COIN_GIFTS = [10_000, 1_000_000, 1_000_000_000] as const;
 const SHARD_GIFT = 1_000;
 const ORE_GIFT = 100;
 const ESSENCE_GIFT = 50;
+/** Runes offertes : 3 de chaque type, aux rangs 1 à 3. */
+const RUNE_GIFT = 3;
+const RUNE_GIFT_RANKS = [1, 2, 3] as const;
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact' });
 
 /**
@@ -80,6 +85,20 @@ export class TestTools {
   protected addEssences(): void {
     this.heartForge.onAbyssRun(ESSENCE_GIFT * ABYSS_FLOORS_PER_ESSENCES);
     this.done.set(`+${ESSENCE_GIFT} de chaque ressource du Cœur`);
+  }
+
+  /** Réécrit la réserve de la Forge du Cœur puis recharge : le service relit sa sauvegarde, comme au lancement. */
+  protected addRunes(): void {
+    const state = this.heartForge.snapshot();
+    const runes: Partial<Record<RuneKey, number>> = { ...state.runes };
+    for (const type of RUNE_TYPES) {
+      for (const rank of RUNE_GIFT_RANKS) {
+        const key: RuneKey = `${type}:${rank}`;
+        runes[key] = (runes[key] ?? 0) + RUNE_GIFT;
+      }
+    }
+    writeStorage(`${SAVE_PREFIX}forge-du-coeur`, JSON.stringify({ ...state, runes }));
+    this.reload();
   }
 
   protected goToZone(zone: number): void {

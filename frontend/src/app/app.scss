@@ -207,6 +207,23 @@
   }
 }
 
+// Site de test : un bandeau rayé en haut, au-dessus de tout, pour ne jamais le confondre avec le vrai jeu
+.test-ribbon {
+  position: absolute;
+  inset: 0 auto auto 50%;
+  z-index: var(--z-tooltip);
+  margin: 0;
+  padding: 0.6cqw 3cqw;
+  border: 0.4cqw solid var(--ink);
+  border-top: none;
+  border-radius: 0 0 2cqw 2cqw;
+  background: repeating-linear-gradient(-45deg, #f7c84a 0 2cqw, #ffe08a 2cqw 4cqw);
+  color: var(--ink);
+  font: 2.8cqw / 1.2 var(--font-display);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
 .zone {
   position: absolute;
   inset: calc(var(--core) * 0.155) 0 auto;

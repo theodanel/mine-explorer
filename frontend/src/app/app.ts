@@ -24,6 +24,7 @@ import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
 import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
 import { ONLINE_CONFIG } from './online/online-config';
+import { environment } from '../environments/environment';
 import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
 import { StatsButton } from './equipment/stats-button/stats-button';
@@ -118,6 +119,8 @@ export class App {
   protected readonly navigation = inject(Navigation);
   protected readonly playerName = inject(PlayerName);
   protected readonly online = inject(ONLINE_CONFIG).enabled;
+  /** Site de test (staging) : un bandeau le distingue du vrai jeu. */
+  protected readonly testBanner = environment.testBanner;
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée
   protected readonly challenge = inject(Challenge);
   private readonly ores = inject(Ores);

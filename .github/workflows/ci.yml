@@ -1,14 +1,15 @@
 # Intégration et déploiement continus de Mine Explorer.
 # Sur chaque PR et chaque push sur main : lint, tests, build et audit du frontend ; build et tests du backend ;
 # construction et démarrage de l'image du jeu, et du serveur avec sa base tel qu'il tourne sur le Raspberry Pi.
-# Sur une PR verte de Théo, ou de Dependabot en version mineure ou corrective : fusion automatique.
-# Sur main uniquement, quand tout est vert : déploiement du frontend sur Cloudflare Pages.
+# Sur une PR verte vers staging, de Théo ou de Dependabot en version mineure ou corrective : fusion automatique.
+# Quand tout est vert, déploiement du frontend sur Cloudflare Pages : staging sur le site de test
+# (staging.mine.bouncylab.ovh), main sur le vrai jeu (mine.bouncylab.ovh). main ne reçoit que des PR relues.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, staging]
   # Relancé par la fusion automatique : une fusion faite avec le jeton de la CI ne déclenche pas « push »
   workflow_dispatch:
 
@@ -44,8 +45,9 @@ jobs:
         run: npm run lint
       - name: Tests unitaires et couverture
         run: npx ng test --watch=false --coverage
+      # Site de test : même build de production, mais branché sur le serveur de test et avec le bandeau « Version de test »
       - name: Build de production
-        run: npm run build
+        run: npx ng build --configuration "${{ github.ref == 'refs/heads/staging' && 'production,staging' || 'production' }}"
       - name: Audit des dépendances (échoue sur une faille haute ou critique)
         run: npm audit --audit-level=high
       - name: Garder le build pour le déploiement
@@ -137,9 +139,11 @@ jobs:
   automerge:
     name: Fusion automatique
     needs: [frontend, backend, docker]
-    # Seulement les PR de ce dépôt, prêtes (pas en brouillon), sans le label qui la bloque, de Théo ou de Dependabot
+    # Seulement les PR vers staging (main ne reçoit que des PR relues), de ce dépôt, prêtes (pas en brouillon), sans le
+    # label qui la bloque, de Théo ou de Dependabot
     if: >-
       github.event_name == 'pull_request' &&
+      github.event.pull_request.base.ref == 'staging' &&
       !github.event.pull_request.draft &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       !contains(github.event.pull_request.labels.*.name, 'pas-de-fusion-auto') &&
@@ -162,29 +166,44 @@ jobs:
       - name: Fusionner
         if: steps.meta.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge "$PR_URL" --merge --delete-branch
-      - name: Lancer le déploiement de main
+      - name: Lancer le déploiement du site de test
         if: steps.meta.outputs.update-type != 'version-update:semver-major'
-        run: gh workflow run ci.yml --ref main --repo "$GITHUB_REPOSITORY"
+        run: gh workflow run ci.yml --ref staging --repo "$GITHUB_REPOSITORY"
 
   deploy:
     name: Déploiement sur Cloudflare Pages
     needs: [frontend, backend]
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Environnement GitHub « production » : ses secrets ne sont lisibles que par ce job
+    # Environnement GitHub « production » : ses secrets ne sont lisibles que par ce job. Le site de test est un second
+    # projet Cloudflare Pages (branche de production « staging »), publié avec le même jeton.
     environment:
       name: production
       url: ${{ steps.deploy.outputs.deployment-url }}
+    env:
+      PROJECT: ${{ github.ref == 'refs/heads/staging' && (vars.CLOUDFLARE_STAGING_PROJECT_NAME || 'mine-explorer-staging') || vars.CLOUDFLARE_PROJECT_NAME }}
+      BRANCH: ${{ github.ref_name }}
     steps:
       - uses: actions/download-artifact@v8
         with:
           name: frontend-dist
           path: dist
+      # Première publication du site de test : le projet est créé ici ; ensuite la commande échoue, sans conséquence
+      - name: Créer le projet du site de test s'il n'existe pas
+        if: github.ref == 'refs/heads/staging'
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create ${{ env.PROJECT }} --production-branch=staging
       - name: Publier
         id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
+          command: pages deploy dist --project-name=${{ env.PROJECT }} --branch=${{ env.BRANCH }}

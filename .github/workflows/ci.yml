@@ -103,7 +103,7 @@ jobs:
         run: docker compose down
       # Le serveur du Raspberry Pi (deploiement/raspberry-pi), ici en amd64 : même image Ubuntu + OpenJDK 21, même
       # base PostgreSQL et même compte limité. Il démarre en profil prod (migrations Flyway, schéma validé par Hibernate)
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'

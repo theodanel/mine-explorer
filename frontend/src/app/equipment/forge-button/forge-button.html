@@ -36,10 +36,9 @@
     </button>
     <!-- Animation de forge : étincelles et objet qui monte, rejouées à chaque tirage -->
     @for (pop of forgedPop(); track pop.key) {
-      <span class="forge-burst" [class.jackpot]="pop.jackpot" [attr.data-tier]="pop.tier" aria-hidden="true"></span>
+      <span class="forge-burst" [attr.data-tier]="pop.jackpot ? 'gold' : pop.tier" aria-hidden="true"></span>
       @if (pop.jackpot) {
-        <span class="jackpot-flash" aria-hidden="true"></span>
-        <span class="jackpot-banner" role="status">Jackpot !</span>
+        <app-jackpot-burst />
       }
       <span class="forged-pop" [attr.data-tier]="pop.tier" aria-hidden="true">
         <img class="item-frame" [attr.data-tier]="pop.tier" [src]="pop.icon" alt="" width="128" height="128" />

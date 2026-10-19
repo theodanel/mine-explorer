@@ -17,6 +17,7 @@ import { GeodeShards } from '../../wallet/geode-shards';
 import { Wallet } from '../../wallet/wallet';
 import { SLOTS, TIER_IDS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
+import { JackpotBurst } from '../jackpot-burst/jackpot-burst';
 import { compactNumber } from '../../shared/format-number';
 
 const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
@@ -27,7 +28,7 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
-  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective],
+  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective, JackpotBurst],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })

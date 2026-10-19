@@ -1,0 +1,77 @@
+:host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+// Jackpot : un éclair doré qui couvre la forge, des étincelles plus grandes et un bandeau qui jaillit
+.jackpot-flash {
+  position: absolute;
+  inset: -40cqw -20cqw;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 40%, rgb(255 240 170 / 90%), rgb(255 200 60 / 45%) 35%, transparent 70%);
+  pointer-events: none;
+  animation: jackpot-flash 1.2s ease-out forwards;
+}
+
+@keyframes jackpot-flash {
+  0% {
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.jackpot-banner {
+  position: absolute;
+  top: -12cqw;
+  left: 50%;
+  z-index: 3;
+  padding: 1.2cqw 4cqw;
+  border: 0.5cqw solid var(--ink);
+  border-radius: 999px;
+  background: linear-gradient(#ffe68a, #f2b52c);
+  color: var(--ink);
+  font: 5cqw / 1 var(--font-display);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: jackpot-banner 2.2s ease-out forwards;
+}
+
+@keyframes jackpot-banner {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 4cqw) scale(0.4);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.15);
+  }
+
+  30% {
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -4cqw) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jackpot-flash,
+  .jackpot-banner {
+    animation-duration: 0.01s;
+  }
+}

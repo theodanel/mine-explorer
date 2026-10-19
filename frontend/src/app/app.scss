@@ -230,6 +230,14 @@
   inset: calc(var(--core) * 0.155) 0 auto;
 }
 
+// Passe de progression : sous le bandeau de zone, au milieu
+.pass-banner-slot {
+  position: absolute;
+  inset: calc(var(--core) * 0.215) auto auto 50%;
+  z-index: var(--z-scene-ui);
+  transform: translateX(-50%);
+}
+
 // Loterie du jour, à droite du bandeau de zone : en miroir des raccourcis du jeu en ligne, à gauche
 .lottery {
   position: absolute;

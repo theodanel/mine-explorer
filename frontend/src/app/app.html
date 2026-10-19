@@ -79,6 +79,7 @@
     }
   }
   <app-zone-banner class="zone" />
+  <app-pass-banner class="pass-banner-slot" />
   <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
@@ -133,6 +134,11 @@
     @case ('gear-runes') {
       @defer (on immediate) {
         <app-gear-runes-page class="page-layer" />
+      }
+    }
+    @case ('pass') {
+      @defer (on immediate) {
+        <app-pass-page class="page-layer" />
       }
     }
     @case ('challenge') {

@@ -11,9 +11,11 @@ import {
   NEXT_AFFIX_RATIO,
   powerOf,
   sellPriceFor,
+  SET_BONUSES,
   STAT_CAPS,
   STAT_ROLL_SPREAD,
   tierChances,
+  tierIndex,
 } from '../balance/balance';
 import type { Random } from '../shared/random';
 import {
@@ -90,6 +92,35 @@ export function hasAffix(item: Item, stat: StatId): boolean {
   return value > Math.max(1, Math.round(baseMax));
 }
 
+/** Panoplie portée : le palier le plus représenté, son nombre de pièces et le bonus de Frappe qu'il donne. */
+export interface GearSet {
+  readonly tier: TierId;
+  readonly pieces: number;
+  readonly strikePct: number;
+}
+
+/** Palier le plus porté (à égalité, le plus haut), ou null sans aucune pièce. */
+export function gearSet(equipped: EquippedItems): GearSet | null {
+  const counts = new Map<TierId, number>();
+  for (const slot of SLOT_IDS) {
+    const tier = equipped[slot]?.tier;
+    if (tier !== undefined) {
+      counts.set(tier, (counts.get(tier) ?? 0) + 1);
+    }
+  }
+  let best: { tier: TierId; pieces: number } | null = null;
+  for (const [tier, pieces] of counts) {
+    if (best === null || pieces > best.pieces || (pieces === best.pieces && tierIndex(tier) > tierIndex(best.tier))) {
+      best = { tier, pieces };
+    }
+  }
+  if (best === null) {
+    return null;
+  }
+  const pieces = best.pieces;
+  return { ...best, strikePct: SET_BONUSES.find((bonus) => pieces >= bonus.pieces)?.strikePct ?? 0 };
+}
+
 export function computeStats(equipped: EquippedItems): MiningStats {
   const total: MiningStats = { ...BASE_STATS };
   for (const slot of SLOT_IDS) {
@@ -98,6 +129,8 @@ export function computeStats(equipped: EquippedItems): MiningStats {
       total[stat] += item?.stats[stat] ?? 0;
     }
   }
+  // La panoplie multiplie toute la Frappe de l'équipement : l'Atelier et l'évolution s'y appliquent ensuite
+  total.strikePower *= 1 + (gearSet(equipped)?.strikePct ?? 0);
   for (const stat of STAT_IDS) {
     const cap = STAT_CAPS[stat];
     if (cap !== undefined) {

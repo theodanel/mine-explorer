@@ -1,0 +1,100 @@
+<section class="page game-panel" data-theme="ember" aria-labelledby="gear-runes-title">
+  <header class="page-header">
+    <h2 id="gear-runes-title">Runes d'équipement</h2>
+    <button type="button" class="close" aria-label="Revenir à la Forge du Cœur" (click)="close()">×</button>
+  </header>
+
+  <div class="scroll">
+    @if (gearRunes.unlocked()) {
+      <p class="hint">
+        Sertis tes runes sur tes pièces : elles y restent quand tu forges mieux, et se retirent gratuitement. Une rune
+        posée sur la pièce de son élément compte une fois et demie, trois runes identiques sur une pièce résonnent.
+      </p>
+
+      @if (totals().length > 0) {
+        <ul class="totals" aria-label="Bonus de toutes les runes serties">
+          @for (line of totals(); track line) {
+            <li>{{ line }}</li>
+          }
+        </ul>
+      }
+
+      <ul class="slots">
+        @for (piece of slots(); track piece.slot) {
+          <li class="piece" [class.resonance]="piece.resonance">
+            <img class="piece-icon" [src]="piece.icon" alt="" width="128" height="128" />
+            <div class="piece-body">
+              <h3>
+                {{ piece.label }}
+                @if (piece.resonance) {
+                  <span class="resonance-tag">Résonance</span>
+                }
+              </h3>
+              <div class="sockets">
+                @for (socket of piece.sockets; track socket.socket) {
+                  <button
+                    type="button"
+                    class="socket"
+                    [class.closed]="!socket.open"
+                    [class.filled]="socket.rune !== null"
+                    [class.selected]="socket.selected"
+                    [disabled]="!socket.open"
+                    [attr.aria-label]="socket.open ? piece.label + ' : ' + socket.label : 'Châsse fermée jusqu’à l’étoile ' + socket.star"
+                    (click)="select(piece.slot, socket.socket, socket.open)"
+                  >
+                    @if (!socket.open) {
+                      <span class="lock">★{{ socket.star }}</span>
+                    } @else if (socket.icon !== null && socket.rune !== null) {
+                      <img [src]="socket.icon" alt="" width="128" height="128" />
+                      <span class="socket-rank">{{ socket.rune.rank }}</span>
+                    } @else {
+                      <span class="plus" aria-hidden="true">+</span>
+                    }
+                  </button>
+                }
+              </div>
+              @if (piece.lines.length > 0) {
+                <p class="piece-lines">{{ piece.lines.join(' · ') }}</p>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+
+      @if (nextSocketStar(); as star) {
+        <p class="hint">La prochaine châsse de chaque pièce s'ouvre à l'étoile {{ star }} du Cœur du monde.</p>
+      }
+    } @else {
+      <p class="locked">Les runes d'équipement s'ouvrent à la 1re étoile du Cœur du monde.</p>
+    }
+  </div>
+
+  @if (selection() !== null) {
+    <div class="picker-backdrop" (click)="selection.set(null)"></div>
+    <div class="picker" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+      <h3 id="picker-title">{{ selectedLabel() }}</h3>
+      @if (selectedRune() !== null) {
+        <button type="button" class="game-button red remove" (click)="removeRune()">Retirer la rune</button>
+      }
+      @if (choices().length > 0) {
+        <ul class="choices">
+          @for (choice of choices(); track choice.key) {
+            <li>
+              <button type="button" class="choice" (click)="setRune(choice.rune)">
+                <img [src]="choice.icon" alt="" width="128" height="128" />
+                <span class="choice-text">
+                  <strong>{{ choice.label }}</strong>
+                  <small>{{ choice.lines.join(' · ') }}</small>
+                </span>
+                <span class="choice-count">×{{ choice.count }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="hint">Aucune rune en réserve.</p>
+        <button type="button" class="game-button" (click)="openForge()">Aller au Creuset</button>
+      }
+    </div>
+  }
+</section>

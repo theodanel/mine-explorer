@@ -137,6 +137,8 @@ import {
   starRunesSet,
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
+import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
+import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -148,6 +150,7 @@ const withEvents = withNewSystems && !process.argv.includes('--sans-evenements')
 const withCompanions = withNewSystems && !process.argv.includes('--sans-compagnons');
 const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
+const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equipement');
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -406,8 +409,20 @@ function gearStats(): MiningStats {
   return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
+function gearSockets(): number {
+  return gearSocketCount(EVOLUTION_FORMS[formIndex].stars);
+}
+
 function families() {
-  return withNewSystems ? [passiveBonuses(ranks), equippedArtifactBonuses(artifacts, artifactSlots()), activeCompanionBonuses(companions)] : [NO_BONUSES];
+  return withNewSystems
+    ? [
+        passiveBonuses(ranks),
+        equippedArtifactBonuses(artifacts, artifactSlots()),
+        activeCompanionBonuses(companions),
+        // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
+        withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, gearSockets()) : NO_BONUSES,
+      ]
+    : [NO_BONUSES];
 }
 
 function buffsAt(now: number): SpellBuffs {
@@ -759,6 +774,70 @@ function craftRunes(): void {
   }
 }
 
+/**
+ * Runes d'équipement (dès la 1re étoile) : le joueur passe GEAR_ECHO_MINUTES par jour dans les Échos pour elles, et
+ * sertit sur chaque emplacement la rune de son esprit (Feu sur la pioche, Glace sur les gants…) au rang visé.
+ * Les runes des étoiles passent avant : craftRunes() tourne d'abord.
+ */
+const GEAR_ECHO_MINUTES_PER_DAY = Number(process.env.GEAR_ECHO_MINUTES ?? 10);
+const GEAR_TARGET_RANK = Number(process.env.GEAR_RANK ?? 2);
+const GEAR_PLAN: readonly [SlotId, RuneType][] = [
+  ['pickaxe', 'fire'],
+  ['helmet', 'shadow'],
+  ['gloves', 'ice'],
+  ['bag', 'light'],
+  ['boots', 'earth'],
+];
+let gearRunesSet = 0;
+
+function gearTargets(): { slot: SlotId; socket: number; type: RuneType }[] {
+  const open = gearSockets();
+  const targets: { slot: SlotId; socket: number; type: RuneType }[] = [];
+  for (let socket = 0; socket < Math.min(open, GEAR_SOCKETS_MAX); socket++) {
+    for (const [slot, type] of GEAR_PLAN) {
+      const current = heartForge.gear[slot][socket];
+      if (current === null || current.rank < GEAR_TARGET_RANK) targets.push({ slot, socket, type });
+    }
+  }
+  return targets;
+}
+
+function craftGearRunes(): void {
+  if (!withGearRunes || gearSockets() === 0) return;
+  let rocks = Math.round((GEAR_ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
+  for (let guard = 0; guard < 5000; guard++) {
+    const target = gearTargets()[0];
+    if (target === undefined) return;
+    const wanted = { type: target.type, rank: GEAR_TARGET_RANK };
+    if (runeCount(heartForge, wanted) > 0) {
+      heartForge = setGearRune(heartForge, target.slot, target.socket, wanted, gearSockets());
+      gearRunesSet++;
+      continue;
+    }
+    let progressMade = false;
+    for (let rank = GEAR_TARGET_RANK - 1; rank >= 1; rank--) {
+      const rune = { type: target.type, rank };
+      if (canFuse(heartForge, rune)) {
+        const fused = fuseRunes(heartForge, rune, heartRandom);
+        heartForge = fused.state;
+        if (!fused.success) fusionsFailed++;
+        progressMade = true;
+        break;
+      }
+    }
+    if (progressMade) continue;
+    const recipe = recipeOf(target.type);
+    if (canBrew(heartForge, recipe)) {
+      heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
+      runesBrewed++;
+      continue;
+    }
+    if (rocks <= 0) return;
+    earnEssences({ [recipe[0]]: 1 });
+    rocks--;
+  }
+}
+
 /** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
 function reforgeArtifacts(now: number): void {
   if (!withNewSystems) return;
@@ -1016,6 +1095,7 @@ for (let day = 0; day < days; day++) {
   }
   reforgeArtifacts(lastSeen);
   craftRunes();
+  craftGearRunes();
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(

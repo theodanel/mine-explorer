@@ -8,6 +8,8 @@ import { Companions } from '../../companions/companions';
 import { RARITY_LABELS } from '../../balance/skill-tree';
 import { artifactEffects } from '../../artifacts/artifact-rules';
 import { Artifacts } from '../../artifacts/artifacts';
+import { GearRunes } from '../../heart-forge/gear-runes';
+import { runeIconUrl } from '../../heart-forge/heart-forge-page/heart-forge-page';
 import { artifactIconUrl, companionIconUrl, itemIconUrl } from '../../loading/game-assets';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
@@ -35,6 +37,7 @@ export class EquipmentColumn {
   /** En ligne : le panneau d'équipement du bas de l'écran, façon Legend of Mushroom. */
   readonly row = input(false);
   private readonly companions = inject(Companions);
+  private readonly gearRunes = inject(GearRunes);
 
   /** Emplacement de la meilleure pièce portée (le palier le plus haut) : elle respire pour attirer l'œil. */
   private readonly bestSlot = computed(() => {
@@ -51,6 +54,8 @@ export class EquipmentColumn {
   protected readonly cells = computed(() => {
     const equipped = this.inventory.equipped();
     const bestSlot = this.bestSlot();
+    const gear = this.gearRunes.gear();
+    const openSockets = this.gearRunes.socketCount();
     return this.slots().map((slot, index) => {
       if (slot === null) {
         return { key: `locked-${index}`, kind: 'locked' as const, tooltip: 'Emplacement bientôt disponible.' };
@@ -71,6 +76,10 @@ export class EquipmentColumn {
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
         best: slot === bestSlot,
+        // Runes serties sur l'emplacement : de petites gemmes au coin du cadre, qui rendent chaque équipement unique
+        runes: gear[slot]
+          .slice(0, openSockets)
+          .flatMap((rune, socket) => (rune === null ? [] : [{ key: `${socket}-${rune.type}`, icon: runeIconUrl(rune.type) }])),
         tooltip: item ? itemCard(label, item) : `${label} : vide. Forge un objet pour l'équiper ici.`,
       };
     });

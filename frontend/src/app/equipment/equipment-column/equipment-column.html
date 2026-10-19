@@ -54,6 +54,13 @@
           [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
         >
           <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
+          @if (cell.runes.length > 0) {
+            <span class="slot-runes" aria-hidden="true">
+              @for (rune of cell.runes; track rune.key) {
+                <img [src]="rune.icon" alt="" width="128" height="128" />
+              }
+            </span>
+          }
           @if (cell.level !== null) {
             <span class="slot-level frame-label">Niv. {{ cell.level }}</span>
           }

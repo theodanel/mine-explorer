@@ -1,6 +1,5 @@
 <section class="reforge" aria-labelledby="artifact-reforge-title">
   <h3 id="artifact-reforge-title">Réforge des artefacts</h3>
-  <p class="intro">Un artefact au niveau {{ maxLevel }} gagne un effet secondaire tiré au hasard. Tu gardes le nouveau, ou tu reviens à l'ancien.</p>
 
   @for (row of rows(); track row.id) {
     <article class="artifact" [attr.data-rarity]="row.rarity">
@@ -31,7 +30,5 @@
         }
       </div>
     </article>
-  } @empty {
-    <p class="hint">Aucun artefact au niveau {{ maxLevel }} pour l'instant : chaque doublon le fait monter d'un niveau.</p>
   }
 </section>

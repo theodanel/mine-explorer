@@ -23,6 +23,8 @@ Proposition du 18/10/2026, après le retour d'un ami de Théo : « les reliques 
 
 ## 2. La réforge (le « pari » proposé)
 
+> **19/10/2026** (demande de Théo) : le bloc de réforge de l'Atelier n'apparaît plus qu'avec un artefact au niveau 5, sans texte d'explication.
+
 À l'Atelier, un artefact **au niveau 5** peut être réforgé. Il garde son effet et gagne un **effet secondaire** tiré au hasard, avec sa qualité.
 
 | Effet secondaire | Commun | Rare | Épique | Légendaire |

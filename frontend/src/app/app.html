@@ -141,6 +141,11 @@
         <app-pass-page class="page-layer" />
       }
     }
+    @case ('dungeons') {
+      @defer (on immediate) {
+        <app-dungeons-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />

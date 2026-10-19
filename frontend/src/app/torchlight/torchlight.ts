@@ -102,7 +102,7 @@ export class Torchlight {
     if (expedition === null) {
       return;
     }
-    const next = step(expedition, index);
+    const next = step(expedition, index, this.random);
     this.expeditionState.set(next);
     if (next !== expedition && isOver(next)) {
       this.finish(next);

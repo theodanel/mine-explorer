@@ -25,7 +25,7 @@
           [class]="cell.view.kind"
           [class.here]="cell.here"
           [class.reachable]="cell.reachable"
-          [class.wall]="(cell.view.kind === 'lit' && cell.view.content === 'wall') || (cell.view.kind === 'remembered' && cell.view.wall)"
+          [class.wall]="cell.view.kind === 'lit' && cell.view.content === 'wall'"
           [style.--glow]="cell.glow"
           [disabled]="!cell.reachable"
           [attr.aria-label]="cell.reachable ? 'Avancer ici' : null"
@@ -34,36 +34,25 @@
           @if (cell.here) {
             <img class="miner" [src]="images.miner" alt="Ton mineur" width="256" height="256" />
             <span class="flame" aria-hidden="true"></span>
-          } @else {
-            @switch (cell.view.kind) {
-              @case ('lit') {
-                @switch (cell.view.content) {
-                  @case ('wall') {
-                    <img class="thing" [src]="images.wall" alt="Rocher" width="256" height="256" />
-                  }
-                  @case ('monster') {
-                    <img class="thing monster" [src]="images.monster" alt="Monstre" width="256" height="256" />
-                  }
-                  @case ('stones') {
-                    <img class="thing" [src]="images.stones" alt="Pierre d'éveil" width="128" height="128" />
-                  }
-                  @case ('chest') {
-                    <img class="thing" [src]="images.chest" alt="Coffre" width="128" height="128" />
-                  }
-                  @case ('oil') {
-                    <img class="thing" [src]="images.oil" alt="Huile" width="128" height="128" />
-                  }
-                  @case ('treasure') {
-                    <img class="thing treasure" [src]="images.treasure" alt="Trésor" width="128" height="128" />
-                  }
-                }
+          } @else if (cell.view.kind === 'lit') {
+            @switch (cell.view.content) {
+              @case ('wall') {
+                <img class="thing" [src]="images.wall" alt="Rocher" width="256" height="256" />
               }
-              @case ('glimpse') {
-                @if (cell.view.content === 'monster') {
-                  <span class="eyes" aria-label="Des yeux dans le noir"></span>
-                } @else {
-                  <span class="gleam" aria-label="Une lueur dorée"></span>
-                }
+              @case ('monster') {
+                <img class="thing monster" [src]="images.monster" alt="Monstre" width="256" height="256" />
+              }
+              @case ('stones') {
+                <img class="thing" [src]="images.stones" alt="Pierre d'éveil" width="128" height="128" />
+              }
+              @case ('chest') {
+                <img class="thing" [src]="images.chest" alt="Coffre" width="128" height="128" />
+              }
+              @case ('oil') {
+                <img class="thing" [src]="images.oil" alt="Huile" width="128" height="128" />
+              }
+              @case ('treasure') {
+                <img class="thing treasure" [src]="images.treasure" alt="Trésor" width="128" height="128" />
               }
             }
           }
@@ -123,7 +112,7 @@
       <ul class="rules">
         <li>La grotte est <strong>plongée dans le noir</strong> : ta torche n'éclaire que les cases autour de toi.</li>
         <li><strong>Touche une case voisine</strong> pour avancer. Tu as <strong>30 pas</strong> pour trouver le trésor, tout en haut. Il met fin à l'expédition : ramasse d'abord ce que tu peux.</li>
-        <li>Ramasse les <strong>pierres d'éveil</strong>, les coffres et l'huile (+4 pas). Un monstre te coûte {{ torchlight.monsterCost() }} pas.</li>
+        <li>Ramasse les <strong>pierres d'éveil</strong>, les coffres et l'huile (+4 pas). Un monstre te coûte {{ torchlight.monsterCost() }} pas, et ils <strong>rôdent</strong> : ils bougent d'une case tous les 2 pas.</li>
         <li>
           @if (torchlight.radius() > 1) {
             Ta Chance agrandit ta torche : elle éclaire <strong>2 cases</strong> autour de toi.

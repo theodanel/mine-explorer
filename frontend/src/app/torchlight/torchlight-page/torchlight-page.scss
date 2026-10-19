@@ -104,7 +104,7 @@
   aspect-ratio: var(--columns) / var(--rows);
   padding: 2cqw;
   border-radius: 4cqw;
-  background: #07040a;
+  background: #000;
   box-shadow:
     inset 0 0 6cqw rgb(0 0 0 / 90%),
     0 1cqw 3cqw rgb(0 0 0 / 60%);
@@ -136,8 +136,8 @@
   padding: 0;
   border: none;
   border-radius: 1.8cqw;
-  // Le noir garde la forme du plateau : on devine les cases sans rien y voir
-  background: #110c0f;
+  // Hors de la torche, le noir complet : on ne devine même pas les cases
+  background: #000;
   cursor: default;
   transition:
     background 0.35s,
@@ -151,17 +151,6 @@
       var(--floor) center / cover;
     box-shadow: inset 0 -0.5cqw 0 rgb(0 0 0 / 30%);
     filter: brightness(calc(0.55 + var(--glow) * 0.6));
-  }
-
-  // Sol déjà vu, retombé dans l'ombre : la carte s'en souvient à peine
-  &.remembered {
-    background: var(--floor) center / cover;
-    opacity: 0.3;
-    filter: grayscale(0.5);
-  }
-
-  &.wall.remembered {
-    background: #3a332d;
   }
 
   &.lit.wall {
@@ -250,44 +239,6 @@
 @keyframes flicker {
   to {
     transform: scale(0.88, 1.08) rotate(4deg);
-  }
-}
-
-// Ce qui perce le noir : deux yeux jaunes, ou une lueur dorée
-.eyes {
-  width: 50%;
-  height: 20%;
-  background:
-    radial-gradient(circle at 25% 50%, #ffe34d 0 22%, transparent 26%),
-    radial-gradient(circle at 75% 50%, #ffe34d 0 22%, transparent 26%);
-  filter: drop-shadow(0 0 1cqw rgb(255 220 70 / 90%));
-  animation: blinkEyes 3s infinite;
-}
-
-@keyframes blinkEyes {
-  0%,
-  90%,
-  100% {
-    transform: scaleY(1);
-  }
-
-  95% {
-    transform: scaleY(0.1);
-  }
-}
-
-.gleam {
-  width: 60%;
-  height: 60%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(255 220 110 / 85%), rgb(255 190 60 / 30%) 50%, transparent 72%);
-  animation: gleam 1.6s ease-in-out infinite alternate;
-}
-
-@keyframes gleam {
-  to {
-    transform: scale(1.25);
-    opacity: 0.6;
   }
 }
 
@@ -460,8 +411,6 @@
   .thing,
   .monster,
   .flame,
-  .eyes,
-  .gleam,
   .toast,
   .hero,
   .result {

@@ -1,9 +1,11 @@
-// Moteur pur de l'Expédition aux flambeaux : la grotte, la torche qui éclaire autour du mineur, et ses pas.
+// Moteur pur de l'Expédition aux flambeaux : la grotte, la torche qui éclaire autour du mineur, ses pas, et les
+// monstres qui rôdent.
 import {
   CAVE_COLUMNS,
   CAVE_CONTENT,
   CAVE_ROWS,
   CHEST_LOOT,
+  MONSTER_MOVE_EVERY,
   MONSTER_STONES,
   OIL_STEPS,
   STONES_PER_PILE,
@@ -25,10 +27,10 @@ export type StepEvent =
 
 export interface Expedition {
   readonly cells: readonly CellContent[];
-  /** Cases déjà éclairées une fois : la carte s'en souvient, sans en montrer les monstres. */
-  readonly seen: readonly boolean[];
   readonly position: number;
   readonly stepsLeft: number;
+  /** Pas faits depuis le départ : les monstres bougent tous les MONSTER_MOVE_EVERY pas. */
+  readonly turns: number;
   readonly radius: number;
   /** Pas qu'arrache un monstre, selon la Puissance. */
   readonly monsterCost: number;
@@ -127,29 +129,23 @@ function reachable(cells: readonly CellContent[], from: number, to: number): boo
 }
 
 export function startExpedition(cells: readonly CellContent[], steps: number, radius: number, monsterCost: number): Expedition {
-  return light({
+  return {
     cells,
-    seen: cells.map(() => false),
     position: START_INDEX,
     stepsLeft: steps,
+    turns: 0,
     radius,
     monsterCost,
     stones: 0,
     goldStages: 0,
     status: 'exploring',
     lastEvent: null,
-  });
+  };
 }
 
 /** La case est-elle dans la lumière de la torche ? */
 export function isLit(expedition: Expedition, index: number): boolean {
   return distance(expedition.position, index) <= expedition.radius;
-}
-
-/** Les yeux d'un monstre et la lueur du trésor percent le noir une case plus loin que la torche. */
-export function isGlimpsed(expedition: Expedition, index: number): boolean {
-  const content = expedition.cells[index];
-  return (content === 'monster' || content === 'treasure') && distance(expedition.position, index) === expedition.radius + 1;
 }
 
 export function canStep(expedition: Expedition, index: number): boolean {
@@ -160,15 +156,38 @@ export function canStep(expedition: Expedition, index: number): boolean {
   );
 }
 
-/** Un pas vers une case voisine : on ramasse ce qu'elle cache, la torche éclaire autour. */
-export function step(expedition: Expedition, index: number): Expedition {
+/** Un pas vers une case voisine : on ramasse ce qu'elle cache, puis les monstres rôdent un pas sur deux. */
+export function step(expedition: Expedition, index: number, random: Random): Expedition {
   if (!canStep(expedition, index)) {
     return expedition;
   }
   const content = expedition.cells[index];
   const cells = content === 'treasure' ? expedition.cells : expedition.cells.map((cell, at) => (at === index ? 'floor' : cell));
-  const moved = { ...expedition, cells, position: index, stepsLeft: expedition.stepsLeft - 1 };
-  return finish(light(collect(moved, content)));
+  const moved = { ...expedition, cells, position: index, stepsLeft: expedition.stepsLeft - 1, turns: expedition.turns + 1 };
+  const collected = finish(collect(moved, content));
+  return collected.status === 'exploring' && collected.turns % MONSTER_MOVE_EVERY === 0
+    ? { ...collected, cells: prowl(collected.cells, collected.position, random) }
+    : collected;
+}
+
+/**
+ * Chaque monstre fait un pas au hasard vers une case de sol libre (haut, bas, gauche, droite). Il ne marche ni sur
+ * le mineur, ni sur un rocher, ni sur une trouvaille, qui restent donc à leur place ; coincé, il attend.
+ */
+export function prowl(cells: readonly CellContent[], minerAt: number, random: Random): CellContent[] {
+  const next = [...cells];
+  const monsters = next.map((cell, index) => (cell === 'monster' ? index : -1)).filter((index) => index >= 0);
+  // Ordre tiré au hasard : aucun monstre n'a toujours la priorité sur une case convoitée par deux
+  shuffle(monsters, random);
+  for (const from of monsters) {
+    const free = orthogonalNeighbours(from).filter((to) => next[to] === 'floor' && to !== minerAt);
+    if (free.length > 0) {
+      const to = free[Math.floor(random() * free.length)];
+      next[from] = 'floor';
+      next[to] = 'monster';
+    }
+  }
+  return next;
 }
 
 function collect(expedition: Expedition, content: CellContent): Expedition {
@@ -199,10 +218,6 @@ function collect(expedition: Expedition, content: CellContent): Expedition {
     default:
       return { ...expedition, lastEvent: { kind: 'walk' } };
   }
-}
-
-function light(expedition: Expedition): Expedition {
-  return { ...expedition, seen: expedition.seen.map((seen, index) => seen || isLit(expedition, index)) };
 }
 
 /** Plus de pas : la torche s'éteint et le mineur remonte avec ce qu'il a ramassé. */

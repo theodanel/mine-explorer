@@ -1,0 +1,57 @@
+<section class="page game-panel" data-theme="gold" aria-labelledby="pass-title">
+  <header class="page-header">
+    <h2 id="pass-title">Passe de progression</h2>
+    <button type="button" class="close" aria-label="Revenir à la mine" (click)="close()">×</button>
+  </header>
+
+  <div class="summary">
+    <p class="hint">Une récompense tous les 5 filons, jusqu'à la zone 20.</p>
+    <button type="button" class="game-button green" [disabled]="pass.claimable().length === 0" (click)="claimAll()">
+      @if (pass.claimable().length > 0) {
+        Tout récupérer ({{ pass.claimable().length }})
+      } @else {
+        Rien à récupérer
+      }
+    </button>
+    @if (message(); as text) {
+      <p class="message" role="status">{{ text }}</p>
+    }
+  </div>
+
+  <ol class="zones">
+    @for (zone of zones(); track zone.zone) {
+      <li class="zone" [class.current]="zone.current">
+        <h3>Zone {{ zone.zone }}</h3>
+        <ol class="tiers">
+          @for (tier of zone.tiers; track tier.index) {
+            <li class="tier" [class]="tier.state" [class.finale]="tier.finale">
+              <span class="rocks">{{ tier.rocks }} filons</span>
+              <span class="reward">
+                <img src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />{{ tier.shards }}
+              </span>
+              @if (tier.oreIcon !== null) {
+                <span class="reward"><img [src]="tier.oreIcon" alt="" width="128" height="128" />{{ tier.oreLabel }}</span>
+              }
+              @if (tier.finale) {
+                <span class="collection">Récompense de collection à venir</span>
+              }
+              <span class="state" aria-hidden="true">
+                @switch (tier.state) {
+                  @case ('claimed') {
+                    ✔
+                  }
+                  @case ('ready') {
+                    !
+                  }
+                  @default {
+                    🔒
+                  }
+                }
+              </span>
+            </li>
+          }
+        </ol>
+      </li>
+    }
+  </ol>
+</section>

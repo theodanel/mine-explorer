@@ -139,6 +139,8 @@ import {
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
 import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
+import { PASS_TIERS } from '../src/app/balance/progress-pass.ts';
+import { reachedTiers } from '../src/app/progress-pass/progress-pass-rules.ts';
 import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -153,6 +155,7 @@ const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
 const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equipement');
 const withUpgradeShortcut = !process.argv.includes('--sans-raccourci-pioche');
+const withPass = !process.argv.includes('--sans-passe');
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -366,7 +369,7 @@ let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
 // ─── Mesures ────────────────────────────────────────────────────────────────
-const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
+const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0, passe: 0 };
 let camp: CampState = EMPTY_CAMP;
 let abyssRecord = 0;
 let abyssBest = 0;
@@ -898,6 +901,19 @@ function claimMissions(): void {
   }
 }
 
+/** Passe de progression : les paliers atteints sont récupérés aussitôt (éclats et minerai de la zone). */
+let passClaimed = 0;
+function claimPass(): void {
+  const reached = reachedTiers(progress.zone, progress.stage);
+  while (passClaimed < reached) {
+    const tier = PASS_TIERS[passClaimed];
+    shards += tier.shards;
+    shardSources.passe += tier.shards;
+    if (tier.ore !== null) ores[tier.ore.tier] += tier.ore.amount;
+    passClaimed++;
+  }
+}
+
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */
 function dealDamage(now: number, damage: number): void {
   updateGuardian(now);
@@ -919,6 +935,7 @@ function dealDamage(now: number, damage: number): void {
   if (result.rockBroken) {
     record('rocksBroken');
     filonsInZone++;
+    if (withPass) claimPass();
     if (withUpgradeShortcut && pickaxe.upgradeEndsAt !== null) {
       pickaxe.upgradeEndsAt = Math.max(pickaxe.upgradeEndsAt - upgradeShortcutMs(pickaxe.level, result.clearedZone !== null) / 1000, now);
     }

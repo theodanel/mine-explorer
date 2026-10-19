@@ -1,0 +1,100 @@
+// Fenêtre des outils de test, dans le style des autres fenêtres du jeu
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: 4cqw;
+  background: rgb(10 6 3 / 60%);
+}
+
+.dialog {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 3cqw;
+  width: 100%;
+  max-height: 90%;
+  padding: 4cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+  }
+
+  .close {
+    margin-left: auto;
+  }
+}
+
+.scroll {
+  display: grid;
+  // Colonne unique qui ne déborde pas : les boutons passent à la ligne au lieu d'être coupés
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.4cqw;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+h3 {
+  margin: 1.5cqw 0 0;
+  font-size: 3.2cqw;
+  text-transform: uppercase;
+  letter-spacing: 0.2cqw;
+  opacity: 0.8;
+}
+
+.hint,
+.done {
+  margin: 0;
+  font-size: 3cqw;
+}
+
+.done {
+  color: #b8f5a8;
+  font-weight: 700;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2cqw;
+
+  .game-button {
+    padding: 1.8cqw 3cqw;
+    font-size: 3.2cqw;
+  }
+}
+
+.field {
+  display: grid;
+  // Le libellé au-dessus, la liste et le bouton côte à côte
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2cqw;
+  font-size: 3.2cqw;
+  font-weight: 700;
+
+  span {
+    grid-column: 1 / -1;
+  }
+
+  select {
+    padding: 1.4cqw 2cqw;
+    border: 0.45cqw solid var(--ink);
+    border-radius: 2cqw;
+    background: var(--parchment);
+    color: var(--ink);
+    font: 700 3.2cqw var(--font-body);
+  }
+
+  .game-button {
+    padding: 1.6cqw 3cqw;
+    font-size: 3.2cqw;
+  }
+}

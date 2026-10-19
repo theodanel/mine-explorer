@@ -195,6 +195,15 @@ const TIER_WINDOW_PATTERNS: readonly (readonly [number, number, number])[] = [
 ];
 const LEVELS_PER_TIER_STEP = TIER_WINDOW_PATTERNS.length;
 
+/**
+ * Jackpot (demande de Théo, 19/10/2026) : à chaque tirage, une petite chance (en %) d'un objet deux paliers au-dessus
+ * du palier de base, prise sur la part du palier de base. Un moment fort rare : environ 5 sur toute une partie au
+ * rythme de 200 forges par jour. Le palier « deux crans au-dessus » à 3 % avait été retiré (Fer dès le niveau 5) ;
+ * Théo autorise 0,05 à 0,5 %, le simulateur montre que 0,05 % ne bouge pas la courbe.
+ */
+export const JACKPOT_CHANCE = 0.05;
+const JACKPOT_TIER_GAP = 2;
+
 /** Palier le plus probable au niveau de pioche donné (Bois au niveau 1). */
 function baseTierIndex(pickaxeLevel: number): number {
   return Math.floor((Math.max(pickaxeLevel, 1) - 1) / LEVELS_PER_TIER_STEP);
@@ -217,7 +226,25 @@ export function tierChances(pickaxeLevel: number): Readonly<Record<TierId, numbe
     const tier = TIER_ORDER[index];
     chances[tier] = Math.round((chances[tier] + chance) * 10) / 10;
   });
+  const jackpotIndex = baseTier + JACKPOT_TIER_GAP;
+  if (jackpotIndex < TIER_ORDER.length) {
+    const base = TIER_ORDER[baseTier];
+    chances[TIER_ORDER[jackpotIndex]] = JACKPOT_CHANCE;
+    chances[base] = Math.round((chances[base] - JACKPOT_CHANCE) * 100) / 100;
+  }
   return chances;
+}
+
+/** Objet forgé deux paliers (ou plus) au-dessus de la base de son niveau : un jackpot. */
+export function isJackpot(tier: TierId, pickaxeLevel: number): boolean {
+  return pickaxeLevel > 1 && tierIndex(tier) - baseTierIndex(pickaxeLevel) >= JACKPOT_TIER_GAP;
+}
+
+/** Palier que le jackpot donne au niveau de pioche donné, ou null (niveau 1, ou au-delà du Divin). */
+export function jackpotTier(pickaxeLevel: number): TierId | null {
+  const level = Math.min(Math.max(Math.floor(pickaxeLevel), 1), MAX_PICKAXE_LEVEL);
+  const index = baseTierIndex(level) + JACKPOT_TIER_GAP;
+  return level > 1 && index < TIER_ORDER.length ? TIER_ORDER[index] : null;
 }
 
 // ─── Mine ──────────────────────────────────────────────────────────────────

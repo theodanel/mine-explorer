@@ -67,7 +67,9 @@ export class AutoForge {
       return;
     }
     const item = this.inventory.pending();
-    if (item !== null && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped(), this.workshop.levels())) {
+    // Un jackpot est toujours montré : les filtres ne le vendent jamais
+    const jackpot = this.inventory.lastForged()?.jackpot ?? false;
+    if (item !== null && !jackpot && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped(), this.workshop.levels())) {
       const price = sellPrice(item);
       this.inventory.sellPending();
       this.soldCount.update((count) => count + 1);

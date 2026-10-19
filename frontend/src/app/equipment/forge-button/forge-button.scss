@@ -407,7 +407,23 @@
   animation: forge-strike 0.9s ease-out;
 }
 
+.jackpot-tag {
+  margin-left: 1cqw;
+  padding: 0.2cqw 1.2cqw;
+  border-radius: 999px;
+  background: #ffd34d;
+  color: var(--ink);
+  font-size: 2.4cqw;
+}
+
+.jackpot-note {
+  margin: 1cqw 0 0;
+  font-size: 2.8cqw;
+  opacity: 0.85;
+}
+
 @media (prefers-reduced-motion: reduce) {
+
   .ready .anvil-img,
   .striking .anvil-img,
   .embers {

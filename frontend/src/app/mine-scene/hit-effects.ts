@@ -3,6 +3,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { TIER_LABELS } from '../equipment/equipment.model';
 import type { StrikeOutcome } from '../mining/mining';
 import type { PowerGain } from './power-gain';
+import { compactNumber } from '../shared/format-number';
 
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
@@ -48,7 +49,6 @@ const POWER_RING_RADIUS = 210;
 const POWER_RING_WIDTH = 10;
 const POWER_SPARKS = 22;
 const SPARK_COLORS = [0xffd34d, 0xfff1b0, 0xffb02e] as const;
-const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 
 /** Un effet vit dans le temps et se retire tout seul une fois terminé. */
 interface Effect {
@@ -163,7 +163,9 @@ export class HitEffects {
     for (let i = 0; i < CHIP_COUNT; i++) {
       this.add(new RockChip(x, y));
     }
-    const damageLabel = outcome.critical ? `${outcome.damage} !` : String(outcome.damage);
+    // Format court, comme les stats : « 4,9 M » se lit d'un coup d'œil, « 4980692 » non (demande de Théo)
+    const damage = compactNumber(outcome.damage);
+    const damageLabel = outcome.critical ? `${damage} !` : damage;
     const damageColor = outcome.critical ? CRITICAL_COLOR : DAMAGE_COLOR;
     const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
     this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
@@ -209,7 +211,7 @@ export class HitEffects {
     for (let i = 0; i < POWER_SPARKS; i++) {
       this.add(new RockChip(x, y, 1, SPARK_COLORS));
     }
-    const label = `Puissance +${NUMBER_FORMAT.format(gain.to - gain.from)}`;
+    const label = `Puissance +${compactNumber(gain.to - gain.from)}`;
     this.add(new FloatingText(x, y, label, GOLD_COLOR, POWER_TEXT_SIZE, true, POWER_TEXT_MS));
     gain.lines.forEach((line, index) => {
       this.add(new FloatingText(x, y + POWER_LINE_GAP * (index + 1), line, DAMAGE_COLOR, POWER_LINE_SIZE, false, POWER_TEXT_MS));

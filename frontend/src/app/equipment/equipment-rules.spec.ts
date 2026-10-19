@@ -1,9 +1,10 @@
-import { BASE_STATS } from '../balance/balance';
-import { Item } from './equipment.model';
+import { BASE_STATS, SET_BONUSES } from '../balance/balance';
+import { EquippedItems, Item, SLOT_IDS, SlotId, TierId } from './equipment.model';
 import {
   compareItems,
   computePower,
   computeStats,
+  gearSet,
   powerDelta,
   resolveHit,
   rollItem,
@@ -149,3 +150,25 @@ describe('autres règles', () => {
     ]);
   });
 });
+
+describe('panoplie', () => {
+  const piece = (slot: SlotId, tier: TierId): Item => ({ id: slot, slot, tier, level: 1, stats: { strikePower: 10 } });
+  const wear = (tiers: readonly TierId[]): EquippedItems =>
+    Object.fromEntries(tiers.map((tier, index) => [SLOT_IDS[index], piece(SLOT_IDS[index], tier)]));
+
+  it('compte le palier le plus porté, le plus haut à égalité', () => {
+    expect(gearSet({})).toBeNull();
+    expect(gearSet(wear(['iron', 'iron', 'gold', 'gold']))).toEqual({ tier: 'gold', pieces: 2, strikePct: 0 });
+  });
+
+  it('donne de la Frappe à 3 pièces du même palier, davantage aux 5, sans cumul', () => {
+    const three = gearSet(wear(['iron', 'iron', 'iron', 'gold', 'stone']));
+    const five = gearSet(wear(['iron', 'iron', 'iron', 'iron', 'iron']));
+    expect(three?.strikePct).toBe(SET_BONUSES[1].strikePct);
+    expect(five?.strikePct).toBe(SET_BONUSES[0].strikePct);
+    const raw = BASE_STATS.strikePower + 50;
+    expect(computeStats(wear(['iron', 'iron', 'iron', 'iron', 'iron'])).strikePower).toBeCloseTo(raw * (1 + SET_BONUSES[0].strikePct));
+    expect(computeStats(wear(['iron', 'gold', 'stone', 'wood', 'copper'])).strikePower).toBe(raw);
+  });
+});
+

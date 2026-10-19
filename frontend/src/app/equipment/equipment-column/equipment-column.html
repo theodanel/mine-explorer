@@ -69,3 +69,6 @@
     }
   }
 </ul>
+@if (row() && setBadge(); as set) {
+  <p class="set-badge" [class.active]="set.active" [attr.data-tier]="set.tier">{{ set.text }}</p>
+}

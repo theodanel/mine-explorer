@@ -16,12 +16,14 @@ export const TREASURE_ROWS = 3;
 export const CAVE_CONTENT = { walls: 9, monsters: 6, stones: 7, chests: 2, oil: 3 } as const;
 
 export const STARTING_STEPS = 30;
+/** Les monstres rôdent : chacun se déplace d'une case tous les 2 pas du mineur. */
+export const MONSTER_MOVE_EVERY = 2;
 /** Une fiole d'huile ranime la torche : quelques pas de plus. */
 export const OIL_STEPS = 4;
 
 /**
- * La torche éclaire les cases voisines (diagonales comprises). La Chance l'agrandit d'une case dès +15 % de bonus
- * d'or ; les yeux des monstres et la lueur du trésor se voient une case plus loin que la lumière.
+ * La torche éclaire les cases voisines (diagonales comprises) ; tout le reste est noir. La Chance l'agrandit d'une case
+ * dès +15 % de bonus d'or.
  */
 export const WIDE_TORCH_LUCK = 0.15;
 

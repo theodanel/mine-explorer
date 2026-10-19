@@ -5,10 +5,10 @@ import {
   CellContent,
   distance,
   generateCave,
-  isGlimpsed,
   isLit,
   leaveCave,
   orthogonalNeighbours,
+  prowl,
   rowOf,
   START_INDEX,
   startExpedition,
@@ -21,6 +21,8 @@ function cave(contents: Readonly<Record<number, CellContent>>): CellContent[] {
 }
 
 const UP = START_INDEX - CAVE_COLUMNS;
+/** Hasard fixe : les monstres prennent toujours la première case libre. */
+const FIRST = (): number => 0;
 
 describe('torchlight-game', () => {
   it('tire une grotte complète, trésor en haut, départ dégagé', () => {
@@ -35,39 +37,53 @@ describe('torchlight-game', () => {
     }
   });
 
-  it('éclaire autour du mineur et laisse voir les yeux une case plus loin', () => {
+  it("n'éclaire que les cases autour du mineur", () => {
     const expedition = startExpedition(cave({ [START_INDEX - 2 * CAVE_COLUMNS]: 'monster' }), 30, 1, 2);
     expect(isLit(expedition, UP)).toBe(true);
     expect(isLit(expedition, START_INDEX - 2 * CAVE_COLUMNS)).toBe(false);
-    expect(isGlimpsed(expedition, START_INDEX - 2 * CAVE_COLUMNS)).toBe(true);
-    expect(expedition.seen.filter(Boolean).length).toBe(6);
+  });
+
+  it("fait bouger les monstres d'une case tous les 2 pas", () => {
+    const lurking = START_INDEX - 4 * CAVE_COLUMNS;
+    const start = startExpedition(cave({ [lurking]: 'monster' }), 30, 1, 2);
+    const once = step(start, UP, FIRST);
+    expect(once.cells.indexOf('monster')).toBe(lurking);
+    const twice = step(once, UP - CAVE_COLUMNS, FIRST);
+    expect(twice.turns).toBe(2);
+    expect(distance(twice.cells.indexOf('monster'), lurking)).toBe(1);
+    expect(twice.cells.filter((cell) => cell === 'monster').length).toBe(1);
+  });
+
+  it('ne fait marcher un monstre ni sur le mineur, ni sur un rocher, ni sur une trouvaille', () => {
+    const cornered = cave({ [UP]: 'monster', [UP - CAVE_COLUMNS]: 'wall', [UP - 1]: 'chest', [UP + 1]: 'oil' });
+    expect(prowl(cornered, START_INDEX, FIRST)).toEqual(cornered);
   });
 
   it("n'avance que d'une case, jamais dans un rocher", () => {
     const expedition = startExpedition(cave({ [START_INDEX - 1]: 'wall' }), 30, 1, 2);
-    expect(step(expedition, START_INDEX - 1)).toBe(expedition);
-    expect(step(expedition, START_INDEX - 2 * CAVE_COLUMNS)).toBe(expedition);
-    const moved = step(expedition, UP);
+    expect(step(expedition, START_INDEX - 1, FIRST)).toBe(expedition);
+    expect(step(expedition, START_INDEX - 2 * CAVE_COLUMNS, FIRST)).toBe(expedition);
+    const moved = step(expedition, UP, FIRST);
     expect(moved.position).toBe(UP);
     expect(moved.stepsLeft).toBe(29);
   });
 
   it('ramasse les trouvailles, et un monstre coûte ses pas mais lâche une pierre', () => {
     const start = startExpedition(cave({ [UP]: 'monster', [UP - CAVE_COLUMNS]: 'oil', [UP - 2 * CAVE_COLUMNS]: 'chest' }), 30, 1, 4);
-    const fought = step(start, UP);
+    const fought = step(start, UP, FIRST);
     expect(fought.stepsLeft).toBe(26);
     expect(fought.stones).toBe(1);
     expect(fought.cells[UP]).toBe('floor');
-    const oiled = step(fought, UP - CAVE_COLUMNS);
+    const oiled = step(fought, UP - CAVE_COLUMNS, FIRST);
     expect(oiled.stepsLeft).toBe(29);
-    const chest = step(oiled, UP - 2 * CAVE_COLUMNS);
+    const chest = step(oiled, UP - 2 * CAVE_COLUMNS, FIRST);
     expect(chest.stones).toBe(3);
     expect(chest.goldStages).toBe(3);
   });
 
   it('finit au trésor, quand la torche s’éteint, ou en rentrant', () => {
-    expect(step(startExpedition(cave({ [UP]: 'treasure' }), 30, 1, 2), UP).status).toBe('treasure');
-    expect(step(startExpedition(cave({}), 1, 1, 2), UP).status).toBe('exhausted');
+    expect(step(startExpedition(cave({ [UP]: 'treasure' }), 30, 1, 2), UP, FIRST).status).toBe('treasure');
+    expect(step(startExpedition(cave({}), 1, 1, 2), UP, FIRST).status).toBe('exhausted');
     expect(leaveCave(startExpedition(cave({}), 30, 1, 2)).status).toBe('left');
   });
 

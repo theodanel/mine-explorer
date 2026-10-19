@@ -5,7 +5,7 @@ import { CAVE_COLUMNS, CAVE_ROWS } from '../../balance/torchlight';
 import { pageBackground, TORCHLIGHT_IMAGES } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Torchlight } from '../torchlight';
-import { canStep, CellContent, distance, Expedition, isGlimpsed, isLit, StepEvent } from '../torchlight-game';
+import { canStep, CellContent, distance, Expedition, isLit, StepEvent } from '../torchlight-game';
 
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 /** Durée de la petite annonce au-dessus de la grotte (« +1 pierre », « −2 pas »…). */
@@ -22,11 +22,7 @@ const TOASTS: Readonly<Record<StepEvent['kind'], string>> = {
   treasure: 'Le trésor !',
 };
 
-type CellView =
-  | { readonly kind: 'dark' }
-  | { readonly kind: 'glimpse'; readonly content: CellContent }
-  | { readonly kind: 'remembered'; readonly wall: boolean }
-  | { readonly kind: 'lit'; readonly content: CellContent };
+type CellView = { readonly kind: 'dark' } | { readonly kind: 'lit'; readonly content: CellContent };
 
 /** Expédition aux flambeaux : la grotte dans le noir, la torche, les pas, et le bilan. */
 @Component({
@@ -144,13 +140,7 @@ export class TorchlightPage implements OnDestroy {
   }
 }
 
+/** Hors de la torche, tout est noir : la grotte ne garde aucun souvenir, et les monstres y rôdent sans être vus. */
 function viewOf(expedition: Expedition, content: CellContent, index: number): CellView {
-  if (isLit(expedition, index)) {
-    return { kind: 'lit', content };
-  }
-  if (isGlimpsed(expedition, index)) {
-    return { kind: 'glimpse', content };
-  }
-  // Hors de la lumière, la carte ne retient que le sol et les rochers déjà vus, pas ce qui s'y cache
-  return expedition.seen[index] ? { kind: 'remembered', wall: content === 'wall' } : { kind: 'dark' };
+  return isLit(expedition, index) ? { kind: 'lit', content } : { kind: 'dark' };
 }

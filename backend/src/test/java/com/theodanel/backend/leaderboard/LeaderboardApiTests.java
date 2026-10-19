@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -32,6 +33,15 @@ class LeaderboardApiTests extends ApiTestSupport {
 
 	@Autowired
 	private LeaderboardEvents events;
+
+	/**
+	 * Les changements laissés en attente par les tests précédents (toutes classes confondues : le service est partagé)
+	 * partiraient dans le premier flux ouvert ici : on les envoie d'abord, à personne.
+	 */
+	@BeforeEach
+	void drainPendingChanges() {
+		events.flush();
+	}
 
 	@AfterEach
 	void closeStreams() {

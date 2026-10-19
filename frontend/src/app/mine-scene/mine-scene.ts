@@ -18,7 +18,6 @@ import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
 import { MineRock, RockTop } from './mine-rock';
 import { AmbienceLayer } from './ambience-layer';
-import { auraLook, MinerAura } from './miner-aura';
 import { PowerGain, powerGain } from './power-gain';
 import { MiningStats } from '../equipment/equipment.model';
 
@@ -89,7 +88,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private squashMs = 0;
   private shakeMs = 0;
   private effects: HitEffects | null = null;
-  private aura: MinerAura | null = null;
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
   private readonly ambience = new AmbienceLayer(inject(RANDOM));
@@ -179,11 +177,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
       if (this.initialized) {
         this.app.ticker.maxFPS = covered ? COVERED_MAX_FPS : 0;
       }
-    });
-    // Étoiles du Cœur du monde : l'aura sombre derrière le mineur
-    effect(() => {
-      const look = auraLook(this.evolution.form());
-      this.aura?.show(look);
     });
     // Nouvelle zone (ou retour dans une zone passée), nouveau décor : le fond se charge pendant que le mineur continue
     effect(() => {
@@ -284,12 +277,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    const auraLayer = new Container();
-    // bodyOffsetX recentre la frame : le corps est au milieu de la scène, l'aura aussi
-    this.aura = new MinerAura(auraLayer, SCENE_WIDTH / 2, MINER_FEET_Y);
-    this.aura.show(auraLook(this.evolution.form()));
-    // L'aura passe derrière le rocher : ses flammes entourent le mineur sans recouvrir ce qu'il frappe
-    this.app.stage.addChildAt(auraLayer, this.app.stage.getChildIndex(this.rock.sprite));
     this.app.stage.addChild(miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
@@ -312,7 +299,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
     };
     this.app.ticker.add((ticker: Ticker) => {
       effects.update(ticker.deltaMS);
-      this.aura?.update(ticker.deltaMS);
       this.ambience.update(ticker.deltaMS);
       this.rock.update(ticker.deltaMS);
       this.updateSquash(ticker.deltaMS);

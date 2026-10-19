@@ -24,6 +24,8 @@ import { MiningStats } from '../equipment/equipment.model';
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
 const SCENE_HEIGHT = 1280;
+/** Images par seconde des décors animés, celles de la vidéo. */
+const ZONE_VIDEO_FPS = 24;
 // Couleur visible le temps que le fond charge, proche de ses tons
 const CAVE_COLOR = 0x24170f;
 // Pieds du mineur : le fond est remonté pour que son sol passe ici, ce qui libère le bas de l'écran
@@ -83,6 +85,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
   /** Animation affichée par `miner`, qui donne aussi le point d'impact des effets. */
   private strike: StrikeAnimation = APPRENTICE_STRIKE;
   private background: Sprite | null = null;
+  /** Vidéo du décor animé en cours, à libérer en changeant de zone. */
+  private zoneVideoUrl: string | null = null;
   private staticBody: Sprite | null = null;
   private staticScale = 1;
   private squashMs = 0;
@@ -421,12 +425,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
   }
 
   private async showZoneBackground(zone: number): Promise<void> {
-    const { url, floorY } = zoneBackground(zone);
+    const { url, videoUrl, floorY } = zoneBackground(zone);
     try {
-      const texture = await Assets.load<Texture>(url);
+      const texture = videoUrl === null ? await Assets.load<Texture>(url) : await this.loadZoneVideo(videoUrl, url);
       if (this.destroyed || !this.background) {
         return;
       }
+      this.releaseZoneVideo(videoUrl);
       this.background.texture = texture;
       this.background.tint = this.progression.inEcho() ? ECHO_TINT : NO_TINT;
       this.floorY = floorY;
@@ -434,6 +439,33 @@ export class MineScene implements AfterViewInit, OnDestroy {
     } catch (error) {
       // On garde l'ancien décor plutôt qu'un écran vide
       console.error(`Fond de la zone ${zone} introuvable`, error);
+    }
+  }
+
+  /**
+   * Décor animé : la vidéo boucle sans son, lue en ligne (iOS), mise à jour 24 fois par seconde comme elle a été
+   * tournée. Si elle ne se charge pas (réseau, navigateur), l'image fixe la remplace.
+   */
+  private async loadZoneVideo(videoUrl: string, imageUrl: string): Promise<Texture> {
+    try {
+      const texture = await Assets.load<Texture>({
+        src: videoUrl,
+        data: { autoPlay: true, loop: true, muted: true, playsinline: true, updateFPS: ZONE_VIDEO_FPS },
+      });
+      this.zoneVideoUrl = videoUrl;
+      return texture;
+    } catch (error) {
+      console.warn('Décor animé indisponible, image fixe à la place', error);
+      return Assets.load<Texture>(imageUrl);
+    }
+  }
+
+  /** En quittant une zone animée, la vidéo s'arrête et sa mémoire est libérée. */
+  private releaseZoneVideo(keep: string | null): void {
+    const previous = this.zoneVideoUrl;
+    if (previous !== null && previous !== keep) {
+      this.zoneVideoUrl = null;
+      void Assets.unload(previous);
     }
   }
 

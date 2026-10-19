@@ -70,10 +70,19 @@ const MASTER_STRIKE: StrikeAnimation = {
 };
 
 interface ZoneBackground {
+  /** Image fixe : le décor, et l'image de secours d'un décor animé (premier chargement, vidéo indisponible). */
   readonly url: string;
+  /** Décor animé en boucle (vidéo sans son, même cadrage que l'image), ou null. */
+  readonly videoUrl: string | null;
   /** Hauteur du sol plat dans la scène 720×1280, l'image étirée en plein écran. */
   readonly floorY: number;
 }
+
+/**
+ * Décors animés : une boucle sans couture préparée par art-source/backgrounds/boucler-video.py. La première image de
+ * la vidéo de Gemini est l'image fixe, donc le cadrage et le sol sont les mêmes.
+ */
+const ZONE_VIDEOS: Readonly<Record<number, string>> = { 20: 'assets/backgrounds/zone20.mp4' };
 
 /** Le fond de la zone 1 a son sol plus bas que les fonds suivants, peints d'après un autre gabarit. */
 const ZONE1_FLOOR_Y = 850;
@@ -102,7 +111,7 @@ function visualZone(zone: number): number {
 export function zoneBackground(zone: number): ZoneBackground {
   const shown = visualZone(zone);
   const floorY = shown === 1 ? ZONE1_FLOOR_Y : (DEEP_ZONES_FLOOR_Y[shown] ?? OTHER_ZONES_FLOOR_Y);
-  return { url: `assets/backgrounds/zone${shown}.webp`, floorY };
+  return { url: `assets/backgrounds/zone${shown}.webp`, videoUrl: ZONE_VIDEOS[shown] ?? null, floorY };
 }
 
 /**

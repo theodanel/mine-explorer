@@ -140,6 +140,8 @@ import {
 } from '../src/app/heart-forge/heart-forge-rules.ts';
 import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
 import { PASS_TIERS } from '../src/app/balance/progress-pass.ts';
+import { outfitCollectionBonus } from '../src/app/balance/outfits.ts';
+import { ownedOutfits } from '../src/app/outfits/outfit-rules.ts';
 import { DUNGEON_DAILY_KEYS, DUNGEON_IDS, DUNGEON_STRIKES, DUNGEON_UNLOCK_ZONE, DUNGEONS, dungeonHp, dungeonReward, type DungeonId } from '../src/app/balance/dungeons.ts';
 import { reachedTiers } from '../src/app/progress-pass/progress-pass-rules.ts';
 import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
@@ -158,6 +160,9 @@ const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equ
 const withUpgradeShortcut = !process.argv.includes('--sans-raccourci-pioche');
 const withPass = !process.argv.includes('--sans-passe');
 const withDungeons = !process.argv.includes('--sans-donjons');
+const withOutfits = !process.argv.includes('--sans-tenues');
+/** Bonus de la collection de tenues, recalculé quand un palier du passe ou un record de donjon tombe. */
+let outfitBonusValue = 0;
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -428,6 +433,7 @@ function families() {
         activeCompanionBonuses(companions),
         // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
         withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, gearSockets()) : NO_BONUSES,
+        { ...NO_BONUSES, strikePct: outfitBonusValue },
       ]
     : [NO_BONUSES];
 }
@@ -914,6 +920,7 @@ function claimPass(): void {
     if (tier.ore !== null) ores[tier.ore.tier] += tier.ore.amount;
     passClaimed++;
   }
+  updateOutfits();
 }
 
 /**
@@ -945,6 +952,12 @@ function playDungeons(): void {
       }
     }
   }
+  updateOutfits();
+}
+
+/** Collection de tenues : d'après les paliers du passe récupérés et les records des donjons. */
+function updateOutfits(): void {
+  if (withOutfits) outfitBonusValue = outfitCollectionBonus(ownedOutfits({ passClaimed, dungeonBest }).length);
 }
 
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */

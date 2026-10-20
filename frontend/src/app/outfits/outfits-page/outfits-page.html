@@ -1,0 +1,29 @@
+<section class="page game-panel" data-theme="teal" aria-labelledby="outfits-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir au profil" (click)="close()">‹</button>
+    <h2 id="outfits-title">Tenues</h2>
+  </header>
+
+  <p class="summary">{{ summary() }}</p>
+
+  <ul class="grid">
+    @for (card of cards(); track card.id) {
+      <li>
+        <button
+          type="button"
+          class="outfit"
+          [class.owned]="card.owned"
+          [class.worn]="card.worn"
+          [disabled]="!card.owned"
+          [attr.aria-pressed]="card.worn"
+          (click)="toggle(card.id, card.owned)"
+        >
+          <span class="art" aria-hidden="true">{{ card.owned ? 'Visuel à venir' : '?' }}</span>
+          <strong>{{ card.label }}</strong>
+          <small>{{ card.partLabel }}</small>
+          <small class="source">{{ card.owned ? (card.worn ? 'Portée' : 'Toucher pour porter') : card.sourceLabel }}</small>
+        </button>
+      </li>
+    }
+  </ul>
+</section>

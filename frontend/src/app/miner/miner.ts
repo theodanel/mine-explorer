@@ -5,6 +5,7 @@ import { Inventory } from '../equipment/inventory';
 import { Companions } from '../companions/companions';
 import { Galleries } from '../galleries/galleries';
 import { GearRunes } from '../heart-forge/gear-runes';
+import { Outfits } from '../outfits/outfits';
 import { Skills } from '../skills/skills';
 import { Spells } from '../spells/spells';
 import { reinforce } from '../workshop/workshop-rules';
@@ -26,12 +27,14 @@ export class Miner {
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
   private readonly gearRunes = inject(GearRunes);
+  private readonly outfits = inject(Outfits);
 
   private readonly families = computed(() => [
     this.skills.bonuses(),
     this.artifacts.bonuses(),
     this.companions.bonuses(),
     this.gearRunes.bonuses(),
+    this.outfits.bonuses(),
   ]);
   /** Équipement et évolution, renforcés par l'Atelier. */
   private readonly gear = computed(() => reinforce(this.inventory.stats(), this.workshop.levels(), this.inventory.equipped()));

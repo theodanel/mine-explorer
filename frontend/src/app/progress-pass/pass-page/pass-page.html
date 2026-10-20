@@ -32,8 +32,8 @@
               @if (tier.oreIcon !== null) {
                 <span class="reward"><img [src]="tier.oreIcon" alt="" width="128" height="128" />{{ tier.oreLabel }}</span>
               }
-              @if (tier.finale) {
-                <span class="collection">Récompense de collection à venir</span>
+              @if (tier.outfit; as outfit) {
+                <span class="collection">Tenue : {{ outfit }}</span>
               }
               <span class="state" aria-hidden="true">
                 @switch (tier.state) {

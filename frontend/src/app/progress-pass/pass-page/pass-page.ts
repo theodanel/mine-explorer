@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
 import { PASS_TIERS, PASS_TIERS_PER_ZONE, PASS_ZONES } from '../../balance/progress-pass';
+import { OUTFITS } from '../../balance/outfits';
 import { TIER_LABELS } from '../../equipment/equipment.model';
 import { materialIconUrl } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
@@ -33,6 +34,7 @@ export class PassPage {
         state: tier.index <= claimed ? ('claimed' as const) : tier.index <= reached ? ('ready' as const) : ('locked' as const),
         oreIcon: tier.ore === null ? null : materialIconUrl(tier.ore.tier),
         oreLabel: tier.ore === null ? null : `${tier.ore.amount} ${TIER_LABELS[tier.ore.tier]}`,
+        outfit: tier.finale ? (OUTFITS.find((outfit) => outfit.source.kind === 'pass' && outfit.source.zone === tier.zone)?.label ?? null) : null,
       }));
       return { zone, tiers, current: tiers.some((tier) => tier.state !== 'claimed') && tiers.some((tier) => tier.state !== 'locked') };
     });

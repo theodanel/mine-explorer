@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Injector, signal } from '@angular/core';
 
 import { zoneMaterial } from '../balance/balance';
 import { DUNGEON_UNLOCK_ZONE, DUNGEONS, DungeonId, dungeonReward } from '../balance/dungeons';
@@ -44,7 +44,11 @@ export interface DungeonPrize {
 export class Dungeons {
   private readonly clock = inject(CLOCK);
   private readonly random = inject(RANDOM);
-  private readonly miner = inject(Miner);
+  /**
+   * Le Mineur n'est demandé qu'au coup de pioche : il dépend des tenues, qui lisent les records des donjons ; l'injecter
+   * au démarrage ferait une dépendance circulaire (Miner → Outfits → Dungeons → Miner).
+   */
+  private readonly injector = inject(Injector);
   private readonly progression = inject(Progression);
   private readonly shards = inject(GeodeShards);
   private readonly ores = inject(Ores);
@@ -78,7 +82,7 @@ export class Dungeons {
     if (run === null || isRunOver(run)) {
       return run;
     }
-    const hit = resolveHit(this.miner.permanent().stats, this.random);
+    const hit = resolveHit(this.injector.get(Miner).permanent().stats, this.random);
     const next = strikeRun(run, hit.damage);
     this.runState.set(next);
     if (isRunWon(next)) {

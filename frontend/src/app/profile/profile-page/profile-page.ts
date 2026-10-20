@@ -9,6 +9,8 @@ import { LeaderboardPage } from '../../online/leaderboard-page/leaderboard-page'
 import { OnlineAccount } from '../../online/online-account';
 import { Progression } from '../../progression/progression';
 import { PlayerName } from '../../shared/player-name';
+import { OUTFITS } from '../../balance/outfits';
+import { Outfits } from '../../outfits/outfits';
 
 /** Volumes proposés, du plus fort au coupé. */
 const VOLUME_OPTIONS = [
@@ -33,9 +35,16 @@ export class ProfilePage {
   protected readonly online = inject(OnlineAccount).enabled;
   protected readonly leaderboardOpen = signal(false);
   private readonly navigation = inject(Navigation);
+  protected readonly outfits = inject(Outfits);
+  protected readonly outfitCount = OUTFITS.length;
+  protected readonly outfitBonus = computed(() => Math.round(this.outfits.collectionBonus() * 100));
 
   protected readonly volumes = VOLUME_OPTIONS;
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
+
+  protected openOutfits(): void {
+    this.navigation.open('outfits');
+  }
 
   protected openEvolution(): void {
     this.navigation.open('evolution');

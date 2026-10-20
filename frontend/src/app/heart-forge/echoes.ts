@@ -1,4 +1,4 @@
-import { computed, inject, Injectable } from '@angular/core';
+import { computed, effect, inject, Injectable, untracked } from '@angular/core';
 
 import { EVOLUTION_FORMS, hitsPerSecond, powerOf } from '../balance/balance';
 import { ECHO_ESSENCES, ECHO_SECONDS_PER_ROCK, ESSENCE_LABELS } from '../balance/heart-forge';
@@ -25,6 +25,17 @@ export class Echoes {
 
   /** Les Échos sont ouverts : le mineur est Légende de la mine ou plus. */
   readonly open = computed(() => this.evolution.index() >= LEGEND_INDEX);
+
+  constructor() {
+    // Une zone passée ouverte avant la Légende (ou avant l'arrivée des Échos) restait une zone ordinaire, sans
+    // ressource : elle devient son Écho dès qu'il existe
+    effect(() => {
+      const zone = this.progression.farmZone();
+      if (zone !== null && !this.progression.inEcho() && this.isEcho(zone)) {
+        untracked(() => this.enter(zone));
+      }
+    });
+  }
 
   /** Cette zone passée est un Écho. */
   isEcho(zone: number): boolean {

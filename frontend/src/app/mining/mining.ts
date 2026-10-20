@@ -18,6 +18,9 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { HeartForge } from '../heart-forge/heart-forge';
 import { StrikeReward, strikeReward } from './mining-rules';
+import type { EssenceId } from '../balance/heart-forge';
+import { echoEssence } from '../heart-forge/heart-forge-rules';
+import { Echoes } from '../heart-forge/echoes';
 
 export interface StrikeOutcome extends HitResult {
   readonly reward: StrikeReward;
@@ -27,6 +30,8 @@ export interface StrikeOutcome extends HitResult {
   readonly clearedZone: number | null;
   /** Minerai ramassé si le rocher a cassé, ou null. */
   readonly ore: { readonly tier: TierId; readonly amount: number } | null;
+  /** Ressource du Cœur ramassée sur un filon d'Écho épuisé, ou null. */
+  readonly essence: EssenceId | null;
 }
 
 /** Explosion d'un sort, pour que la scène l'affiche. `id` change à chaque explosion, même identique. */
@@ -53,6 +58,11 @@ export class Mining {
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
   private readonly heartForge = inject(HeartForge);
+
+  constructor() {
+    // Les Échos doivent veiller dès le lancement : une zone passée ouverte avant la Légende devient son Écho
+    inject(Echoes);
+  }
   private readonly lastBlast = signal<BlastEvent | null>(null);
   private blastCount = 0;
 
@@ -89,7 +99,8 @@ export class Mining {
       this.missionCounters.record('rocksBroken');
     }
     // Un filon d'Écho donne sa ressource, sans tirage
-    if (rockBroken && struck.echoZone !== null) {
+    const essence = rockBroken && struck.echoZone !== null ? echoEssence(struck.echoZone) : null;
+    if (essence !== null && struck.echoZone !== null) {
       this.heartForge.onEchoRock(struck.echoZone);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
@@ -124,6 +135,6 @@ export class Mining {
     if (reward.shards > 0) {
       this.shards.add(reward.shards);
     }
-    return { ...hit, reward, rockBroken, clearedZone, ore };
+    return { ...hit, reward, rockBroken, clearedZone, ore, essence };
   }
 }

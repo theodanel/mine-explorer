@@ -1,5 +1,8 @@
+import { TestBed } from '@angular/core/testing';
+
+import { Progression } from '../progression/progression';
 import { applyFarmDamage, isValidFarm } from '../progression/progression-rules';
-import { echoRockHp } from './echoes';
+import { Echoes, echoRockHp } from './echoes';
 
 describe('Échos', () => {
   it("donnent des filons d'environ 2 minutes à la Puissance du joueur", () => {
@@ -13,5 +16,18 @@ describe('Échos', () => {
     const progress = { zone: 14, stage: 1, damage: 0 };
     expect(isValidFarm({ zone: 3, damage: 499, echoHp: 500 }, progress)).toBe(true);
     expect(isValidFarm({ zone: 3, damage: 0, echoHp: -1 }, progress)).toBe(false);
+  });
+
+  it('transforme en Écho une zone passée ouverte avant la Légende', () => {
+    localStorage.clear();
+    localStorage.setItem('mine-explorer.evolution', '4');
+    localStorage.setItem('mine-explorer.progress', JSON.stringify({ zone: 12, stage: 3, damage: 0 }));
+    localStorage.setItem('mine-explorer.farm', JSON.stringify({ zone: 3, damage: 0 }));
+    TestBed.inject(Echoes);
+    TestBed.tick();
+    const progression = TestBed.inject(Progression);
+    expect(progression.farmZone()).toBe(3);
+    expect(progression.inEcho()).toBe(true);
+    localStorage.clear();
   });
 });

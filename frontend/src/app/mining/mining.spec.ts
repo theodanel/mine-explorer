@@ -36,6 +36,7 @@ describe('Mining', () => {
       rockBroken: false,
       clearedZone: null,
       ore: null,
+      essence: null,
     });
     expect(wallet.coins()).toBe(3);
     expect(progression.progress().damage).toBe(5);

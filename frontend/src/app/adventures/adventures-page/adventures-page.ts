@@ -2,7 +2,6 @@ import { Component, computed, inject } from '@angular/core';
 
 import { Abyss } from '../../abyss/abyss';
 import { Camp } from '../../camp/camp';
-import { Dungeons } from '../../dungeons/dungeons';
 import { ForgeExpress } from '../../forge-express/forge-express';
 import { Torchlight } from '../../torchlight/torchlight';
 import { Merchant } from '../../merchant/merchant';
@@ -39,7 +38,6 @@ export class AdventuresPage {
   private readonly merchant = inject(Merchant);
   private readonly forgeExpress = inject(ForgeExpress);
   private readonly torchlight = inject(Torchlight);
-  private readonly dungeons = inject(Dungeons);
 
   protected readonly adventures = computed<readonly Adventure[]>(() => [
     {
@@ -59,15 +57,6 @@ export class AdventuresPage {
       text: 'Descends le plus bas possible en 30 secondes.',
       locked: this.abyss.unlocked() ? null : `Débloqué : ${this.abyss.unlockLabel}`,
       status: this.abyss.unlocked() ? `${this.abyss.runsLeft()} / ${this.abyss.dailyRuns} essais` : null,
-    },
-    {
-      page: 'dungeons',
-      icon: 'assets/ui/geode-shard.webp',
-      scene: 'url(assets/backgrounds/zone8.webp)',
-      title: 'Donjons',
-      text: 'Casse le rocher en 20 coups, niveau après niveau, sans fin.',
-      locked: this.dungeons.unlocked() ? null : `Débloqué : Zone ${this.dungeons.unlockZone}`,
-      status: this.dungeons.unlocked() ? `${this.dungeons.totalKeys()} clé${this.dungeons.totalKeys() > 1 ? 's' : ''}` : null,
     },
     {
       page: 'minehunt',

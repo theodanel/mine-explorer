@@ -1,31 +1,17 @@
-// Règles pures des tenues : une tenue est à soi dès que sa source est atteinte. Rien n'est stocké à part le choix
-// porté : récupérer un palier du passe ou battre un niveau de donjon suffit, même avant l'arrivée des tenues.
-import type { DungeonId } from '../balance/dungeons';
+// Règles pures des tenues : une tenue est à soi dès que sa zone est terminée. Rien n'est stocké à part le choix porté.
 import { Outfit, OUTFITS } from '../balance/outfits';
-import { PASS_TIERS_PER_ZONE } from '../balance/progress-pass';
 
-export interface OutfitProgress {
-  /** Paliers du passe déjà récupérés. */
-  readonly passClaimed: number;
-  /** Meilleur niveau battu de chaque donjon. */
-  readonly dungeonBest: Readonly<Record<DungeonId, number>>;
+export function ownsOutfit(outfit: Outfit, zonesCleared: number): boolean {
+  return zonesCleared >= outfit.zone;
 }
 
-export function ownsOutfit(outfit: Outfit, progress: OutfitProgress): boolean {
-  const { source } = outfit;
-  return source.kind === 'pass'
-    ? progress.passClaimed >= source.zone * PASS_TIERS_PER_ZONE
-    : progress.dungeonBest[source.dungeon] >= source.level;
-}
-
-export function ownedOutfits(progress: OutfitProgress): readonly Outfit[] {
-  return OUTFITS.filter((outfit) => ownsOutfit(outfit, progress));
+export function ownedOutfits(zonesCleared: number): readonly Outfit[] {
+  return OUTFITS.filter((outfit) => ownsOutfit(outfit, zonesCleared));
 }
 
 /** D'où vient une tenue, en clair. */
-export function outfitSourceLabel(outfit: Outfit, dungeonLabel: (id: DungeonId) => string): string {
-  const { source } = outfit;
-  return source.kind === 'pass' ? `Passe : fin de la zone ${source.zone}` : `${dungeonLabel(source.dungeon)} : niveau ${source.level}`;
+export function outfitSourceLabel(outfit: Outfit): string {
+  return `Terminer la zone ${outfit.zone}`;
 }
 
 export function isValidOutfitChoice(value: unknown): value is { readonly worn: string | null } {

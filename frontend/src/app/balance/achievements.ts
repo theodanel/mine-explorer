@@ -12,7 +12,6 @@ export type AchievementMetric =
   | 'setPieces'
   | 'divineSet'
   | 'outfits'
-  | 'dungeonLevel'
   | 'evolutionForm'
   | 'heartStars';
 
@@ -48,11 +47,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'panoplie-5', title: 'Tiré à quatre épingles', description: 'Porter les 5 pièces du même palier', metric: 'setPieces', target: 5 },
   { id: 'panoplie-divine', title: 'Divinement paré', description: 'Porter les 5 pièces en Divin', metric: 'divineSet', target: 1 },
   { id: 'tenues-5', title: 'Coquet', description: 'Collectionner 5 tenues', metric: 'outfits', target: 5 },
-  { id: 'tenues-15', title: 'Élégant des galeries', description: 'Collectionner 15 tenues', metric: 'outfits', target: 15 },
-  { id: 'tenues-30', title: 'Icône de la mine', description: 'Collectionner les 30 tenues', metric: 'outfits', target: 30 },
-  { id: 'donjon-10', title: 'Pilleur de donjons', description: 'Battre le niveau 10 d’un donjon', metric: 'dungeonLevel', target: 10 },
-  { id: 'donjon-25', title: 'Conquérant des profondeurs', description: 'Battre le niveau 25 d’un donjon', metric: 'dungeonLevel', target: 25 },
-  { id: 'donjon-50', title: 'Maître des donjons', description: 'Battre le niveau 50 d’un donjon', metric: 'dungeonLevel', target: 50 },
+  { id: 'tenues-10', title: 'Élégant des galeries', description: 'Collectionner 10 tenues', metric: 'outfits', target: 10 },
+  { id: 'tenues-20', title: 'Icône de la mine', description: 'Collectionner les 20 tenues', metric: 'outfits', target: 20 },
   { id: 'legende', title: 'Légende', description: 'Devenir Légende de la mine', metric: 'evolutionForm', target: 4 },
   { id: 'coeur-1', title: 'Éveillé', description: 'Éveiller la 1re étoile du Cœur du monde', metric: 'heartStars', target: 1 },
   { id: 'coeur-5', title: 'Cœur du monde', description: 'Éveiller les 5 étoiles du Cœur du monde', metric: 'heartStars', target: 5 },

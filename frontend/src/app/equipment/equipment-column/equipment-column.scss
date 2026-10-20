@@ -79,6 +79,37 @@
 }
 
 // Niveau de l'objet en bas de la case, comme le « Lv. 12 » de la référence
+// Pièce d'une panoplie active : un liseré doré qui pulse et une étoile au coin
+.slot.in-set {
+  box-shadow:
+    0 0 0 0.5cqw #ffd34d,
+    0 0 2.4cqw 0.4cqw rgb(255 211 77 / 70%);
+  animation: set-glow 1.6s ease-in-out infinite alternate;
+
+  &::after {
+    content: '✦';
+    position: absolute;
+    inset: -1.6cqw -1.2cqw auto auto;
+    color: #ffd34d;
+    font-size: 3.6cqw;
+    text-shadow: 0 0 1cqw rgb(0 0 0 / 60%);
+  }
+}
+
+@keyframes set-glow {
+  to {
+    box-shadow:
+      0 0 0 0.5cqw #ffd34d,
+      0 0 0.8cqw 0.2cqw rgb(255 211 77 / 40%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot.in-set {
+    animation: none;
+  }
+}
+
 // Runes serties : de petites gemmes alignées en haut du cadre
 .slot-runes {
   position: absolute;

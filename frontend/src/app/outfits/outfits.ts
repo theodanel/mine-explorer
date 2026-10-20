@@ -2,24 +2,23 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { outfitCollectionBonus } from '../balance/outfits';
 import { NO_BONUSES } from '../balance/skill-tree';
-import { Dungeons } from '../dungeons/dungeons';
-import { ProgressPass } from '../progress-pass/progress-pass';
+import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { isValidOutfitChoice, ownedOutfits } from './outfit-rules';
 
 const STORAGE_KEY = 'mine-explorer.tenues';
 
 /**
- * Tenues du dragon : gagnées au passe de progression et dans les donjons. Aucune stat par tenue ; la collection donne
- * +1 % de Frappe par tranche de 5, +5 % au plus. La tenue portée est retenue pour le jour où ses visuels arrivent.
+ * Tenues du dragon : une par zone terminée. Aucune stat par tenue ; la collection donne +1 % de Frappe par tranche de
+ * 5, +4 % au plus. La tenue portée est retenue pour le jour où ses visuels arrivent.
  */
 @Injectable({ providedIn: 'root' })
 export class Outfits {
-  private readonly pass = inject(ProgressPass);
-  private readonly dungeons = inject(Dungeons);
+  private readonly progression = inject(Progression);
   private readonly wornState = signal<string | null>(loadWorn());
 
-  readonly owned = computed(() => ownedOutfits({ passClaimed: this.pass.claimed(), dungeonBest: this.dungeons.best() }));
+  /** Zones terminées : celles avant la frontière de la mine. */
+  readonly owned = computed(() => ownedOutfits(this.progression.progress().zone - 1));
   readonly worn = this.wornState.asReadonly();
   readonly collectionBonus = computed(() => outfitCollectionBonus(this.owned().length));
   /** La collection, comme une famille de bonus du mineur. */

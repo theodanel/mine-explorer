@@ -23,6 +23,7 @@ import com.theodanel.backend.account.TitleCatalog;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
 import com.theodanel.backend.leaderboard.LeaderboardChanged;
+import com.theodanel.backend.league.LeagueService;
 import com.theodanel.backend.leaderboard.LeaderboardType;
 
 import tools.jackson.core.JacksonException;
@@ -48,15 +49,17 @@ public class SaveService {
 	private final JsonMapper json;
 	private final Clock clock;
 	private final ApplicationEventPublisher events;
+	private final LeagueService leagues;
 
 	public SaveService(CloudSaveRepository saves, AccountService accounts, MineProperties properties, JsonMapper json,
-			Clock clock, ApplicationEventPublisher events) {
+			Clock clock, ApplicationEventPublisher events, LeagueService leagues) {
 		this.saves = saves;
 		this.accounts = accounts;
 		this.plausibility = new PlausibilityRules(properties.antiCheat());
 		this.json = json;
 		this.clock = clock;
 		this.events = events;
+		this.leagues = leagues;
 	}
 
 	public record StoredSave(long version, Instant updatedAt, Map<String, String> data) {
@@ -111,6 +114,9 @@ public class SaveService {
 				plausibility.nextOrigin(origin, metrics.stagesReached(), now), now);
 		CloudSave saved = saveFirstWins(save);
 		publishRankingChanges(saved, firstSave, previousStages, previousAbyss);
+		// Le joueur entre en ligue à sa première sauvegarde (ou à la première depuis l'arrivée des ligues) : son score de
+		// la semaine part d'ici
+		leagues.join(playerId, saved.getStagesReached());
 		return new StoredSave(saved.getVersion(), saved.getUpdatedAt(), sorted);
 	}
 

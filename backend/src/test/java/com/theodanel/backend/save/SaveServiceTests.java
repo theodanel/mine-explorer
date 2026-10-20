@@ -22,6 +22,8 @@ import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
 import com.theodanel.backend.support.MutableClock;
 
+import com.theodanel.backend.league.LeagueService;
+
 import tools.jackson.databind.json.JsonMapper;
 
 /** Cas impossibles à provoquer de façon fiable par l'API : deux écritures exactement simultanées. */
@@ -31,7 +33,7 @@ class SaveServiceTests {
 	private final AccountService accounts = mock(AccountService.class);
 	private final SaveService service = new SaveService(repository, accounts, properties(),
 			JsonMapper.builder().build(), new MutableClock(), event -> {
-			});
+			}, mock(LeagueService.class));
 
 	@Test
 	void deuxPremieresSauvegardesSimultaneesDonnentUnConflit() {

@@ -20,7 +20,8 @@ public class LeaderboardService {
 	/** Lignes affichées : assez pour se situer, peu pour une requête légère et publique. */
 	static final int TOP_SIZE = 100;
 
-	public record Entry(int rank, String pseudo, int value) {
+	/** {@code title} : identifiant du titre porté, ou null. */
+	public record Entry(int rank, String pseudo, int value, String title) {
 	}
 
 	private final EntityManager entityManager;
@@ -33,13 +34,14 @@ public class LeaderboardService {
 	public List<Entry> top(LeaderboardType type) {
 		Columns columns = Columns.of(type);
 		List<Object[]> rows = entityManager
-			.createQuery("select p.pseudo, s." + columns.value() + " from CloudSave s join Player p on p.id = s.playerId"
+			.createQuery("select p.pseudo, s." + columns.value() + ", p.title from CloudSave s join Player p on p.id = s.playerId"
 					+ " order by s." + columns.value() + " desc, s." + columns.reachedAt() + " asc, s.playerId asc",
 					Object[].class)
 			.setMaxResults(TOP_SIZE)
 			.getResultList();
 		return IntStream.range(0, rows.size())
-			.mapToObj(index -> new Entry(index + 1, (String) rows.get(index)[0], (Integer) rows.get(index)[1]))
+			.mapToObj(index -> new Entry(index + 1, (String) rows.get(index)[0], (Integer) rows.get(index)[1],
+					(String) rows.get(index)[2]))
 			.toList();
 	}
 
@@ -48,7 +50,7 @@ public class LeaderboardService {
 	public Optional<Entry> rankOf(LeaderboardType type, UUID playerId) {
 		Columns columns = Columns.of(type);
 		List<Object[]> mine = entityManager
-			.createQuery("select p.pseudo, s." + columns.value() + ", s." + columns.reachedAt()
+			.createQuery("select p.pseudo, s." + columns.value() + ", s." + columns.reachedAt() + ", p.title"
 					+ " from CloudSave s join Player p on p.id = s.playerId where s.playerId = :playerId", Object[].class)
 			.setParameter("playerId", playerId)
 			.getResultList();
@@ -66,7 +68,7 @@ public class LeaderboardService {
 			.setParameter("reachedAt", row[2])
 			.setParameter("playerId", playerId)
 			.getSingleResult();
-		return Optional.of(new Entry(Math.toIntExact(ahead + 1), (String) row[0], (Integer) row[1]));
+		return Optional.of(new Entry(Math.toIntExact(ahead + 1), (String) row[0], (Integer) row[1], (String) row[3]));
 	}
 
 	/**

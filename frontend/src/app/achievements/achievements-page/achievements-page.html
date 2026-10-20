@@ -1,0 +1,36 @@
+<section class="page game-panel" data-theme="gold" aria-labelledby="achievements-title">
+  <header class="page-header">
+    <button type="button" class="back" aria-label="Revenir au profil" (click)="close()">‹</button>
+    <h2 id="achievements-title">Succès et titres</h2>
+  </header>
+
+  <p class="summary">
+    {{ achievements.unlocked().length }} / {{ total }} succès · titre porté :
+    <strong>{{ achievements.titleLabel() ?? 'aucun' }}</strong>
+  </p>
+
+  <ul class="list">
+    @for (row of rows(); track row.id) {
+      <li>
+        <button
+          type="button"
+          class="achievement"
+          [class.unlocked]="row.unlocked"
+          [class.worn]="row.worn"
+          [disabled]="!row.unlocked"
+          [attr.aria-pressed]="row.worn"
+          (click)="toggle(row.id, row.unlocked)"
+        >
+          <span class="mark" aria-hidden="true">{{ row.unlocked ? '★' : '☆' }}</span>
+          <span class="text">
+            <strong>{{ row.title }}</strong>
+            <small>{{ row.description }}</small>
+          </span>
+          @if (row.worn) {
+            <span class="tag">Porté</span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+</section>

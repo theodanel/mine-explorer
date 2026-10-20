@@ -19,6 +19,8 @@ import { TIER_LABELS } from './equipment/equipment.model';
 import { Evolution } from './evolution/evolution';
 import { EvolutionPage } from './evolution/evolution-page/evolution-page';
 import { HeartForgePage } from './heart-forge/heart-forge-page/heart-forge-page';
+import { AchievementsPage } from './achievements/achievements-page/achievements-page';
+import { AchievementToast } from './achievements/achievement-toast';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
@@ -96,6 +98,8 @@ function resourceLabel(amount: number): string {
     PatchNotesDialog,
     EvolutionPage,
     HeartForgePage,
+    AchievementsPage,
+    AchievementToast,
     ProfilePage,
     OnlineLayer,
     LeaderboardPage,

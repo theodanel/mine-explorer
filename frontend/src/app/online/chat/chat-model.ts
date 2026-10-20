@@ -14,6 +14,8 @@ export const CHAT_EMOJIS: readonly string[] = [
 export interface ChatMessage {
   readonly id: number;
   readonly pseudo: string;
+  /** Identifiant du titre porté par l'auteur (succès), absent d'un serveur plus ancien. */
+  readonly title?: string | null;
   readonly text: string;
   readonly sentAt: string;
   readonly mine: boolean;
@@ -74,6 +76,7 @@ function isChatMessage(value: unknown): value is ChatMessage {
     typeof message.pseudo === 'string' &&
     typeof message.text === 'string' &&
     typeof message.sentAt === 'string' &&
-    typeof message.mine === 'boolean'
+    typeof message.mine === 'boolean' &&
+    (message.title === undefined || message.title === null || typeof message.title === 'string')
   );
 }

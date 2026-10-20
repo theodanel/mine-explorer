@@ -46,7 +46,11 @@ public class AccountController {
 		this.sessions = sessions;
 	}
 
-	public record Profile(String pseudo, Instant createdAt, List<String> providers) {
+	public record Profile(String pseudo, Instant createdAt, List<String> providers, String title) {
+	}
+
+	/** Identifiant du titre à porter, ou null pour aucun. */
+	public record TitleRequest(String title) {
 	}
 
 	public record RenameRequest(@NotNull String pseudo) {
@@ -62,8 +66,8 @@ public class AccountController {
 	}
 
 	/** Toutes les données gardées sur le joueur (droit d'accès et de portabilité, RGPD). */
-	public record AccountExport(UUID id, String pseudo, Instant createdAt, List<IdentityExport> identities,
-			SaveExport save, List<ChatExport> chatMessages) {
+	public record AccountExport(UUID id, String pseudo, String title, Instant createdAt,
+			List<IdentityExport> identities, SaveExport save, List<ChatExport> chatMessages) {
 	}
 
 	@GetMapping
@@ -73,12 +77,18 @@ public class AccountController {
 			.stream()
 			.map(PlayerIdentity::getProvider)
 			.toList();
-		return new Profile(player.getPseudo(), player.getCreatedAt(), providers);
+		return new Profile(player.getPseudo(), player.getCreatedAt(), providers, player.getTitle());
 	}
 
 	@PutMapping("/pseudo")
 	public Profile rename(@AuthenticationPrincipal PlayerOidcUser user, @Valid @RequestBody RenameRequest request) {
 		accounts.rename(user.getPlayerId(), request.pseudo());
+		return me(user);
+	}
+
+	@PutMapping("/title")
+	public Profile wearTitle(@AuthenticationPrincipal PlayerOidcUser user, @RequestBody TitleRequest request) {
+		accounts.wearTitle(user.getPlayerId(), request.title(), saves.unlockedAchievements(user.getPlayerId()));
 		return me(user);
 	}
 
@@ -96,8 +106,8 @@ public class AccountController {
 			.stream()
 			.map(message -> new ChatExport(message.getText(), message.getSentAt()))
 			.toList();
-		return new AccountExport(player.getId(), player.getPseudo(), player.getCreatedAt(), identities, save,
-				chatMessages);
+		return new AccountExport(player.getId(), player.getPseudo(), player.getTitle(), player.getCreatedAt(),
+				identities, save, chatMessages);
 	}
 
 	/** Supprime le compte, sa partie et toutes ses sessions, sur tous les appareils. */

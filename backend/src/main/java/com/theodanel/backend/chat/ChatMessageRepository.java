@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
 	/** Derniers messages visibles avec le pseudo actuel de leur auteur, du plus récent au plus ancien. */
-	@Query("select new com.theodanel.backend.chat.ChatLine(m.id, m.playerId, p.pseudo, m.text, m.sentAt)"
+	@Query("select new com.theodanel.backend.chat.ChatLine(m.id, m.playerId, p.pseudo, p.title, m.text, m.sentAt)"
 			+ " from ChatMessage m join Player p on p.id = m.playerId where m.hidden = false order by m.id desc")
 	List<ChatLine> latestVisible(Limit limit);
 

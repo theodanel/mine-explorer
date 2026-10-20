@@ -28,6 +28,8 @@ export interface LeaderboardEntry {
   readonly rank: number;
   readonly pseudo: string;
   readonly value: number;
+  /** Identifiant du titre porté (succès), absent d'un serveur plus ancien. */
+  readonly title?: string | null;
 }
 
 export interface Leaderboard {
@@ -101,8 +103,13 @@ function isLeaderboardEntry(value: unknown): value is LeaderboardEntry {
     isRecord(value) &&
     isPositiveInteger(value['rank']) &&
     typeof value['pseudo'] === 'string' &&
-    Number.isSafeInteger(value['value'])
+    Number.isSafeInteger(value['value']) &&
+    isOptionalTitle(value['title'])
   );
+}
+
+export function isOptionalTitle(value: unknown): boolean {
+  return value === undefined || value === null || typeof value === 'string';
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {

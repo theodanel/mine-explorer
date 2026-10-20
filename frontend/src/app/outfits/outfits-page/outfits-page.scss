@@ -1,0 +1,94 @@
+:host {
+  display: block;
+}
+
+.page {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 2cqw;
+  height: 100%;
+  padding: 4cqw 4cqw 3cqw;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+
+  h2 {
+    margin: 0;
+    font-size: 6cqw;
+  }
+}
+
+.summary {
+  margin: 0;
+  font-size: 3.1cqw;
+  font-weight: 700;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 2cqw;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+// Carte de tenue : grisée tant qu'elle n'est pas gagnée, liseré doré quand elle est portée
+.outfit {
+  display: grid;
+  justify-items: center;
+  gap: 0.8cqw;
+  width: 100%;
+  height: 100%;
+  padding: 2cqw 1.5cqw;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 2.5cqw;
+  background: var(--parchment);
+  color: var(--parchment-text);
+  font: inherit;
+  text-align: center;
+  filter: grayscale(0.8);
+  opacity: 0.6;
+
+  &.owned {
+    filter: none;
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  &.worn {
+    box-shadow: 0 0 0 0.7cqw #ffd34d;
+  }
+
+  strong {
+    font-size: 2.9cqw;
+    line-height: 1.15;
+  }
+
+  small {
+    font-size: 2.4cqw;
+  }
+}
+
+.art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 2cqw;
+  background: rgb(74 44 22 / 15%);
+  font-size: 2.4cqw;
+  font-style: italic;
+}
+
+.source {
+  opacity: 0.85;
+}

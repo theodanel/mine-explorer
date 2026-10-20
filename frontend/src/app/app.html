@@ -146,6 +146,11 @@
         <app-dungeons-page class="page-layer" />
       }
     }
+    @case ('outfits') {
+      @defer (on immediate) {
+        <app-outfits-page class="page-layer" />
+      }
+    }
     @case ('challenge') {
       @defer (on immediate) {
         <app-challenge-page class="page-layer" />

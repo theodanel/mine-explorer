@@ -43,6 +43,7 @@ import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
+import { PatchNotesDialog } from './patch-notes/patch-notes-dialog/patch-notes-dialog';
 import { RevealDirective } from './onboarding/reveal.directive';
 import { RevealHint } from './onboarding/reveal-hint/reveal-hint';
 import { Ores } from './ores/ores';
@@ -96,6 +97,7 @@ function resourceLabel(amount: number): string {
     ItemCompare,
     ArtifactFound,
     OfflineReport,
+    PatchNotesDialog,
     EvolutionPage,
     HeartForgePage,
     GearRunesPage,

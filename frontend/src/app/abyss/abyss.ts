@@ -7,7 +7,6 @@ import { Companions } from '../companions/companions';
 import { Evolution } from '../evolution/evolution';
 import { Miner } from '../miner/miner';
 import { dayKey } from '../missions/mission-rules';
-import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { RANDOM } from '../shared/random';
@@ -50,7 +49,6 @@ export class Abyss {
   private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
   private readonly miner = inject(Miner);
-  private readonly progression = inject(Progression);
   private readonly skills = inject(Skills);
   private readonly shards = inject(GeodeShards);
   private readonly companions = inject(Companions);
@@ -105,10 +103,9 @@ export class Abyss {
       critChance: stats.critChance,
       critDamage: stats.critDamage,
       hitsPerSecond: hitsPerSecond(stats),
-      zone: this.progression.zone(),
     };
     this.lastResult.set(null);
-    this.gameState.set(startGame(this.fighter, this.random));
+    this.gameState.set(startGame(this.random));
     this.lastTickAt = this.clock();
     this.timer = setInterval(() => this.step(), TICK_MS);
     return true;

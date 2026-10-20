@@ -1,5 +1,17 @@
-import { DestroyRef, DOCUMENT, effect, inject, Injectable, InjectionToken, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  DOCUMENT,
+  effect,
+  inject,
+  Injectable,
+  InjectionToken,
+  signal,
+  untracked,
+} from '@angular/core';
 
+import { Abyss } from '../abyss/abyss';
+import { Progression } from '../progression/progression';
 import { readStorage, removeStorage, storageEntries, writeStorage } from '../shared/local-storage';
 import { OnlineAccount } from './online-account';
 import { OnlineApi } from './online-api';
@@ -12,6 +24,12 @@ import { collectSave, isCloudSave, isSaveKey, isSaveReceipt, progressLabel, Save
 const SYNC_KEY = 'mine-explorer-cloud';
 /** Envoi régulier pendant le jeu ; aussi à chaque fois que l'onglet passe en arrière-plan. */
 const UPLOAD_EVERY_MS = 5 * 60 * 1000;
+/**
+ * Nouveau filon ou record du Puits : la partie part peu après, pour que le classement suive le jeu. Les progrès
+ * rapprochés partent ensemble : au plus un envoi par délai, loin de la limite d'écritures du serveur.
+ */
+export const RANKED_UPLOAD_DELAY_MS = 15 * 1000;
+const STAGES_PER_ZONE = 15;
 
 /** Rechargement de la page après avoir pris la partie du cloud, injecté pour les tests. */
 export const RELOAD = new InjectionToken<() => void>('RELOAD', {
@@ -41,6 +59,7 @@ export class CloudSync {
   private readonly document = inject(DOCUMENT);
   private readonly current = signal<SyncState>({ kind: 'idle' });
   private started = false;
+  private rankedUpload: ReturnType<typeof setTimeout> | null = null;
 
   readonly state = this.current.asReadonly();
 
@@ -56,6 +75,7 @@ export class CloudSync {
         this.started = false;
       }
     });
+    this.uploadOnRankedProgress();
     const timer = setInterval(() => void this.upload(), UPLOAD_EVERY_MS);
     const onVisibilityChange = () => {
       if (this.document.hidden) {
@@ -65,6 +85,9 @@ export class CloudSync {
     this.document.addEventListener('visibilitychange', onVisibilityChange);
     inject(DestroyRef).onDestroy(() => {
       clearInterval(timer);
+      if (this.rankedUpload !== null) {
+        clearTimeout(this.rankedUpload);
+      }
       this.document.removeEventListener('visibilitychange', onVisibilityChange);
     });
   }
@@ -119,6 +142,37 @@ export class CloudSync {
     this.replaceLocal(result.body.data);
     this.rememberVersion(result.body.version);
     this.reload();
+  }
+
+  /** Chaque valeur classée qui monte (profondeur, record du Puits) programme un envoi, s'il n'y en a pas déjà un. */
+  private uploadOnRankedProgress(): void {
+    const progression = inject(Progression);
+    const abyss = inject(Abyss);
+    const depth = computed(() => {
+      const { zone, stage } = progression.progress();
+      return (zone - 1) * STAGES_PER_ZONE + stage;
+    });
+    let first = true;
+    effect(() => {
+      depth();
+      abyss.record();
+      // Au lancement, la partie part déjà avec la première synchronisation
+      if (first) {
+        first = false;
+        return;
+      }
+      untracked(() => this.scheduleRankedUpload());
+    });
+  }
+
+  private scheduleRankedUpload(): void {
+    if (this.rankedUpload !== null) {
+      return;
+    }
+    this.rankedUpload = setTimeout(() => {
+      this.rankedUpload = null;
+      void this.upload();
+    }, RANKED_UPLOAD_DELAY_MS);
   }
 
   /** Après une suppression de compte ou une déconnexion : cet appareil ne connaît plus de version du cloud. */

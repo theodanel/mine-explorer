@@ -1,10 +1,10 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, InjectionToken, output, signal } from '@angular/core';
 
 import { Abyss } from '../../abyss/abyss';
 import { Progression } from '../../progression/progression';
 import { OnlineAccount } from '../online-account';
-
 import { OnlineApi } from '../online-api';
+import { ONLINE_CONFIG } from '../online-config';
 import { isLeaderboard, Leaderboard, LeaderboardType } from '../online-rules';
 
 interface Tab {
@@ -16,6 +16,20 @@ const TABS: readonly Tab[] = [
   { type: 'depth', label: 'Profondeur' },
   { type: 'abyss', label: 'Puits sans fond' },
 ];
+
+/**
+ * Flux du serveur qui annonce les classements changés, injecté pour que les tests s'en passent. Null sans
+ * EventSource (tests, très vieux navigateurs) : la page se contente alors du chargement à l'ouverture.
+ */
+export const LEADERBOARD_EVENTS = new InjectionToken<((url: string) => EventSource) | null>(
+  'LEADERBOARD_EVENTS',
+  {
+    providedIn: 'root',
+    factory: () => (typeof EventSource === 'undefined' ? null : (url: string) => new EventSource(url)),
+  },
+);
+/** Nom de l'événement envoyé par le serveur (LeaderboardEvents.CHANGED_EVENT). */
+const CHANGED_EVENT = 'changed';
 
 const STAGES_PER_ZONE = 15;
 /** Les trois premiers reçoivent une médaille : or, argent, bronze. */
@@ -60,6 +74,7 @@ export class LeaderboardPage {
 
   constructor() {
     void this.load('depth');
+    this.listenToChanges();
   }
 
   protected async load(type: LeaderboardType): Promise<void> {
@@ -71,6 +86,33 @@ export class LeaderboardPage {
       this.board.set(result.body);
     } else {
       this.failed.set(true);
+    }
+  }
+
+  /**
+   * Classements en direct : le serveur dit lequel vient de changer, la page le relit sans s'effacer. Le navigateur
+   * rouvre seul le flux après une coupure.
+   */
+  private listenToChanges(): void {
+    const open = inject(LEADERBOARD_EVENTS);
+    if (open === null) {
+      return;
+    }
+    const source = open(`${inject(ONLINE_CONFIG).apiUrl}/api/leaderboard/events`);
+    source.addEventListener(CHANGED_EVENT, (event: MessageEvent<string>) => {
+      if (event.data === this.type()) {
+        void this.refresh(this.type());
+      }
+    });
+    inject(DestroyRef).onDestroy(() => source.close());
+  }
+
+  /** Relecture silencieuse : en cas d'échec, le classement affiché reste, le prochain changement le relira. */
+  private async refresh(type: LeaderboardType): Promise<void> {
+    const result = await this.api.get(`/api/leaderboard/${type}`);
+    // L'onglet a pu changer pendant l'appel : on n'affiche pas un classement qui n'est plus celui demandé
+    if (this.type() === type && result.ok && isLeaderboard(result.body)) {
+      this.board.set(result.body);
     }
   }
 

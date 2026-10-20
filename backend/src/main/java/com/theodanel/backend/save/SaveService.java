@@ -2,13 +2,16 @@ package com.theodanel.backend.save;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.theodanel.backend.account.AccountService;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
+import com.theodanel.backend.leaderboard.LeaderboardChanged;
+import com.theodanel.backend.leaderboard.LeaderboardType;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -37,14 +42,16 @@ public class SaveService {
 	private final PlausibilityRules plausibility;
 	private final JsonMapper json;
 	private final Clock clock;
+	private final ApplicationEventPublisher events;
 
 	public SaveService(CloudSaveRepository saves, AccountService accounts, MineProperties properties, JsonMapper json,
-			Clock clock) {
+			Clock clock, ApplicationEventPublisher events) {
 		this.saves = saves;
 		this.accounts = accounts;
 		this.plausibility = new PlausibilityRules(properties.antiCheat());
 		this.json = json;
 		this.clock = clock;
+		this.events = events;
 	}
 
 	public record StoredSave(long version, Instant updatedAt, Map<String, String> data) {
@@ -76,12 +83,30 @@ public class SaveService {
 		requirePlausible(metrics, origin, now);
 
 		CloudSave save = existing.orElseGet(() -> new CloudSave(playerId));
+		boolean firstSave = existing.isEmpty();
+		int previousStages = save.getStagesReached();
+		int previousAbyss = save.getAbyssRecord();
 		TreeMap<String, String> sorted = new TreeMap<>(data);
 		// L'anti-triche suit la vraie progression ; le classement, celle qui a pu se faire depuis la première connexion
 		save.replace(json.writeValueAsString(sorted), plausibility.ranked(metrics, accountCreatedAt, now),
 				plausibility.nextOrigin(origin, metrics.stagesReached(), now), now);
 		CloudSave saved = saveFirstWins(save);
+		publishRankingChanges(saved, firstSave, previousStages, previousAbyss);
 		return new StoredSave(saved.getVersion(), saved.getUpdatedAt(), sorted);
+	}
+
+	/** Un nouveau joueur, ou une valeur classée qui bouge : les pages Classement ouvertes se rafraîchissent. */
+	private void publishRankingChanges(CloudSave saved, boolean firstSave, int previousStages, int previousAbyss) {
+		Set<LeaderboardType> changed = EnumSet.noneOf(LeaderboardType.class);
+		if (firstSave || saved.getStagesReached() != previousStages) {
+			changed.add(LeaderboardType.DEPTH);
+		}
+		if (firstSave || saved.getAbyssRecord() != previousAbyss) {
+			changed.add(LeaderboardType.ABYSS);
+		}
+		if (!changed.isEmpty()) {
+			events.publishEvent(new LeaderboardChanged(changed));
+		}
 	}
 
 	/**

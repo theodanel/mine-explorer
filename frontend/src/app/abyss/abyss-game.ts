@@ -9,7 +9,6 @@ import {
   CRYSTAL_LIFETIME_MS,
   CRYSTAL_SPAWN_MAX_MS,
   CRYSTAL_SPAWN_MIN_MS,
-  firstFloorHp,
   floorHp,
   FloorKind,
   floorKind,
@@ -31,8 +30,6 @@ export interface Fighter {
   readonly critDamage: number;
   /** Coups automatiques du mineur par seconde, en plus des touchers. */
   readonly hitsPerSecond: number;
-  /** Zone atteinte dans la mine : elle fixe la dureté des étages. */
-  readonly zone: number;
 }
 
 export interface Point {
@@ -70,8 +67,6 @@ export interface Buffs {
 }
 
 export interface Game {
-  /** PV de l'étage 1, fixés au départ selon la zone et la Puissance du joueur. */
-  readonly firstFloor: number;
   /** Temps écoulé depuis le départ. */
   readonly elapsedMs: number;
   readonly timeLeftMs: number;
@@ -92,14 +87,11 @@ export interface Game {
 
 const NO_BUFFS: Buffs = { doubleUntilMs: 0, critUntilMs: 0, bonusShardUntilMs: 0 };
 
-export function startGame(fighter: Fighter, random: Random): Game {
-  const dps = fighter.strike * (1 + fighter.critChance * fighter.critDamage) * fighter.hitsPerSecond;
-  const firstFloor = firstFloorHp(fighter.zone, dps);
+export function startGame(random: Random): Game {
   return {
-    firstFloor,
     elapsedMs: 0,
     timeLeftMs: ABYSS_RUN_MS,
-    floor: makeFloor(1, firstFloor, random),
+    floor: makeFloor(1, random),
     floorsCleared: 0,
     shards: 0,
     combo: 0,
@@ -215,7 +207,7 @@ function clearFloor(game: Game, fighter: Fighter, random: Random): Game {
     ...game,
     floorsCleared: game.floorsCleared + 1,
     shards: game.shards + shards,
-    floor: makeFloor(game.floor.number + 1, game.firstFloor, random),
+    floor: makeFloor(game.floor.number + 1, random),
     sinceWeakMoveMs: 0,
     events: [...game.events, { kind: 'floorCleared', floor: game.floor.number, shards }],
   };
@@ -235,7 +227,7 @@ function burnFuse(game: Game, dt: number, fighter: Fighter, random: Random): Gam
     timeLeftMs: Math.max(game.timeLeftMs - TRAP_PENALTY_MS, 0),
     floorsCleared: game.floorsCleared + 1,
     sinceWeakMoveMs: 0,
-    floor: makeFloor(game.floor.number + 1, game.firstFloor, random),
+    floor: makeFloor(game.floor.number + 1, random),
     events: [...game.events, { kind: 'trapExploded' }],
   };
 }
@@ -267,9 +259,9 @@ function driftCrystal(game: Game, dt: number, random: Random): Game {
   };
 }
 
-function makeFloor(number: number, firstFloor: number, random: Random): Floor {
+function makeFloor(number: number, random: Random): Floor {
   const kind = floorKind(number, random());
-  const hp = floorHp(number, firstFloor, kind);
+  const hp = floorHp(number, kind);
   return {
     number,
     kind,

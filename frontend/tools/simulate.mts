@@ -588,11 +588,10 @@ function playAbyss(): void {
     critChance: stats.critChance,
     critDamage: stats.critDamage,
     hitsPerSecond: hitsPerSecond(stats),
-    zone: progress.zone,
   };
   const step = 50;
   for (let run = 0; run < ABYSS_DAILY_RUNS; run++) {
-    let game = startGame(fighter, abyssRandom);
+    let game = startGame(abyssRandom);
     let tapDebt = 0;
     while (!isOver(game)) {
       game = abyssTick(game, step, fighter, abyssRandom);

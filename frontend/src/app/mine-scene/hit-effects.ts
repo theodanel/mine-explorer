@@ -3,6 +3,7 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { TIER_LABELS } from '../equipment/equipment.model';
 import type { StrikeOutcome } from '../mining/mining';
 import type { PowerGain } from './power-gain';
+import { ESSENCE_LABELS } from '../balance/heart-forge';
 
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
@@ -20,7 +21,9 @@ const SHARD_COLOR = 0xc98bff;
 /** Le butin s'affiche sous les dégâts pour ne pas les recouvrir. */
 const SHARD_TEXT_OFFSET_Y = 70;
 const ORE_TEXT_OFFSET_Y = 120;
+const ESSENCE_TEXT_OFFSET_Y = 165;
 const ORE_COLOR = 0xe8c48a;
+const ESSENCE_COLOR = 0x9ff0d4;
 const ZONE_CLEARED_OFFSET_Y = -160;
 const CHIP_COUNT = 7;
 const CHIP_DURATION_MS = 450;
@@ -177,6 +180,10 @@ export class HitEffects {
     if (outcome.ore !== null) {
       const oreLabel = `+${outcome.ore.amount} ${TIER_LABELS[outcome.ore.tier]}`;
       this.add(new FloatingText(x, y + ORE_TEXT_OFFSET_Y, oreLabel, ORE_COLOR, REWARD_TEXT_SIZE));
+    }
+    // Filon d'Écho : sa ressource du Cœur, bien visible (on croyait ne rien gagner dans les Échos)
+    if (outcome.essence !== null) {
+      this.add(new FloatingText(x, y + ESSENCE_TEXT_OFFSET_Y, `+1 ${ESSENCE_LABELS[outcome.essence]}`, ESSENCE_COLOR, HIGHLIGHT_TEXT_SIZE));
     }
     if (outcome.clearedZone !== null) {
       this.add(

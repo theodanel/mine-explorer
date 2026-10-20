@@ -2,7 +2,6 @@ import { computed, effect, inject, Injectable, signal, untracked } from '@angula
 
 import { Abyss } from '../abyss/abyss';
 import { Achievement } from '../balance/achievements';
-import { Dungeons } from '../dungeons/dungeons';
 import { gearSet } from '../equipment/equipment-rules';
 import { Inventory } from '../equipment/inventory';
 import { Evolution } from '../evolution/evolution';
@@ -10,7 +9,7 @@ import { MissionCounters } from '../missions/mission-counters';
 import { Outfits } from '../outfits/outfits';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { AchievementSnapshot, isValidUnlocked, newlyMet, titleOf } from './achievement-rules';
+import { AchievementSnapshot, isValidUnlocked, knownAchievements, newlyMet, titleOf } from './achievement-rules';
 
 const UNLOCKED_KEY = 'mine-explorer.succes';
 const TITLE_KEY = 'mine-explorer.titre';
@@ -27,7 +26,6 @@ export class Achievements {
   private readonly abyss = inject(Abyss);
   private readonly inventory = inject(Inventory);
   private readonly outfits = inject(Outfits);
-  private readonly dungeons = inject(Dungeons);
   private readonly evolution = inject(Evolution);
   private readonly unlockedState = signal<readonly string[]>(loadUnlocked());
   private readonly titleState = signal<string | null>(loadTitle());
@@ -43,7 +41,6 @@ export class Achievements {
     const { zone } = this.progression.progress();
     const counters = this.counters();
     const set = gearSet(this.inventory.equipped());
-    const best = this.dungeons.best();
     return {
       zoneReached: zone,
       zonesCleared: zone - 1,
@@ -53,7 +50,6 @@ export class Achievements {
       setPieces: set?.pieces ?? 0,
       divineSet: set !== null && set.tier === 'divine' && set.pieces === 5 ? 1 : 0,
       outfits: this.outfits.owned().length,
-      dungeonLevel: Math.max(...Object.values(best)),
       evolutionForm: this.evolution.index(),
       heartStars: this.evolution.form().stars,
     };
@@ -95,7 +91,7 @@ function loadUnlocked(): readonly string[] {
   try {
     const value: unknown = JSON.parse(raw);
     if (isValidUnlocked(value)) {
-      return value;
+      return knownAchievements(value);
     }
   } catch {
     // JSON illisible : traité comme une sauvegarde invalide juste en dessous

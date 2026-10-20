@@ -139,11 +139,8 @@ import {
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
 import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
-import { PASS_TIERS } from '../src/app/balance/progress-pass.ts';
 import { outfitCollectionBonus } from '../src/app/balance/outfits.ts';
 import { ownedOutfits } from '../src/app/outfits/outfit-rules.ts';
-import { DUNGEON_DAILY_KEYS, DUNGEON_IDS, DUNGEON_STRIKES, DUNGEON_UNLOCK_ZONE, DUNGEONS, dungeonHp, dungeonReward, type DungeonId } from '../src/app/balance/dungeons.ts';
-import { reachedTiers } from '../src/app/progress-pass/progress-pass-rules.ts';
 import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -158,8 +155,6 @@ const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
 const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equipement');
 const withUpgradeShortcut = !process.argv.includes('--sans-raccourci-pioche');
-const withPass = !process.argv.includes('--sans-passe');
-const withDungeons = !process.argv.includes('--sans-donjons');
 const withOutfits = !process.argv.includes('--sans-tenues');
 /** Bonus de la collection de tenues, recalculé quand un palier du passe ou un record de donjon tombe. */
 let outfitBonusValue = 0;
@@ -376,7 +371,7 @@ let gear: MiningStats = gearStats();
 let profileNow: MinerProfile = profileAt(0);
 
 // ─── Mesures ────────────────────────────────────────────────────────────────
-const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0, passe: 0, donjons: 0 };
+const shardSources = { coups: 0, filons: 0, zones: 0, missions: 0, absence: 0, artefacts: 0, evenements: 0, expeditions: 0, evolution: 0, defi: 0, puits: 0 };
 let camp: CampState = EMPTY_CAMP;
 let abyssRecord = 0;
 let abyssBest = 0;
@@ -909,55 +904,9 @@ function claimMissions(): void {
   }
 }
 
-/** Passe de progression : les paliers atteints sont récupérés aussitôt (éclats et minerai de la zone). */
-let passClaimed = 0;
-function claimPass(): void {
-  const reached = reachedTiers(progress.zone, progress.stage);
-  while (passClaimed < reached) {
-    const tier = PASS_TIERS[passClaimed];
-    shards += tier.shards;
-    shardSources.passe += tier.shards;
-    if (tier.ore !== null) ores[tier.ore.tier] += tier.ore.amount;
-    passClaimed++;
-  }
-  updateOutfits();
-}
-
-/**
- * Donjons, une fois par jour dès la zone 4 : chaque clé va au niveau suivant si 20 coups moyens le cassent (Frappe
- * et critiques permanents), sinon au balayage du record.
- */
-const dungeonBest: Record<DungeonId, number> = { crystal: 0, forge: 0 };
-let dungeonShards = 0;
-let dungeonOres = 0;
-function playDungeons(): void {
-  if (!withDungeons || progress.zone < DUNGEON_UNLOCK_ZONE) return;
-  const stats = permanentProfile().stats;
-  const strikeAverage = stats.strikePower * (1 + Math.min(stats.critChance, 1) * stats.critDamage);
-  for (const id of DUNGEON_IDS) {
-    for (let key = 0; key < DUNGEON_DAILY_KEYS; key++) {
-      const next = dungeonBest[id] + 1;
-      const level = strikeAverage * DUNGEON_STRIKES >= dungeonHp(next) ? next : dungeonBest[id];
-      if (level === 0) continue;
-      dungeonBest[id] = Math.max(dungeonBest[id], level);
-      const amount = dungeonReward(id, level);
-      if (DUNGEONS[id].reward === 'shards') {
-        shards += amount;
-        shardSources.donjons += amount;
-        dungeonShards += amount;
-      } else {
-        const tier = zoneMaterial(Math.max(progress.zone, 2));
-        if (tier !== null) ores[tier] += amount;
-        dungeonOres += amount;
-      }
-    }
-  }
-  updateOutfits();
-}
-
-/** Collection de tenues : d'après les paliers du passe récupérés et les records des donjons. */
+/** Collection de tenues : une par zone terminée. */
 function updateOutfits(): void {
-  if (withOutfits) outfitBonusValue = outfitCollectionBonus(ownedOutfits({ passClaimed, dungeonBest }).length);
+  if (withOutfits) outfitBonusValue = outfitCollectionBonus(ownedOutfits(progress.zone - 1).length);
 }
 
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */
@@ -981,7 +930,6 @@ function dealDamage(now: number, damage: number): void {
   if (result.rockBroken) {
     record('rocksBroken');
     filonsInZone++;
-    if (withPass) claimPass();
     if (withUpgradeShortcut && pickaxe.upgradeEndsAt !== null) {
       pickaxe.upgradeEndsAt = Math.max(pickaxe.upgradeEndsAt - upgradeShortcutMs(pickaxe.level, result.clearedZone !== null) / 1000, now);
     }
@@ -991,6 +939,7 @@ function dealDamage(now: number, damage: number): void {
     const tier = zoneMaterial(zone);
     if (tier !== null && result.clearedZone !== null) ores[tier] += scaleAmount(ZONE_CLEAR_ORES, mods.ores, galleryRandom);
     if (result.clearedZone !== null) {
+      updateOutfits();
       shards += zoneClearShards(zone);
       shardSources.zones += zoneClearShards(zone);
       findArtifact(now);
@@ -1164,7 +1113,6 @@ for (let day = 0; day < days; day++) {
   reforgeArtifacts(lastSeen);
   craftRunes();
   craftGearRunes();
-  playDungeons();
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -1234,7 +1182,6 @@ console.log(
   `Gardiens : ${guardianFails} échecs (${Object.entries(guardianFailsByZone).map(([zone, fails]) => `z${zone}×${fails}`).join(', ') || 'aucun'}), ` +
     `réussis en ${guardianKills.join(', ')}`,
 );
-console.log(`Donjons : records ${DUNGEON_IDS.map((id) => `${id} ${dungeonBest[id]}`).join(', ')}, ${dungeonShards} éclats, ${dungeonOres} minerais`);
 console.log(`Minerais en stock : ${TIER_IDS.filter((t) => ores[t] > 0).map((t) => `${t} ${ores[t]}`).join(', ')}`);
 
 /** Tirages du Puits séparés de ceux de la mine : ajouter le mini-jeu ne change pas le reste de la partie simulée. */

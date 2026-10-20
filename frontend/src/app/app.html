@@ -79,7 +79,6 @@
     }
   }
   <app-zone-banner class="zone" />
-  <app-pass-banner class="pass-banner-slot" />
   <app-achievement-toast class="achievement-toast" />
   <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
@@ -135,16 +134,6 @@
     @case ('gear-runes') {
       @defer (on immediate) {
         <app-gear-runes-page class="page-layer" />
-      }
-    }
-    @case ('pass') {
-      @defer (on immediate) {
-        <app-pass-page class="page-layer" />
-      }
-    }
-    @case ('dungeons') {
-      @defer (on immediate) {
-        <app-dungeons-page class="page-layer" />
       }
     }
     @case ('outfits') {

@@ -1,6 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { DUNGEONS } from '../../balance/dungeons';
 import { OUTFIT_BONUS_MAX, OUTFITS, OUTFITS_PER_BONUS, OutfitPart } from '../../balance/outfits';
 import { Navigation } from '../../navigation/navigation';
 import { outfitSourceLabel } from '../outfit-rules';
@@ -38,7 +37,7 @@ export class OutfitsPage {
       partLabel: PART_LABELS[outfit.part],
       owned: owned.has(outfit.id),
       worn: worn === outfit.id,
-      sourceLabel: outfitSourceLabel(outfit, (id) => DUNGEONS[id].label),
+      sourceLabel: outfitSourceLabel(outfit),
     }));
   });
 

@@ -11,7 +11,8 @@ Lot 3 des idées inspirées de Forge Master, demandé par Théo le 19/10/2026.
 
 ## Écran
 
-Une pastille au-dessus de la rangée d'équipement, dès 2 pièces du même palier : « Panoplie Fer 3/5 · +3 % Frappe », aux couleurs du palier quand le bonus est actif.
+- Une pastille au-dessus de la rangée d'équipement, dès 2 pièces du même palier : « Panoplie Fer 2/5 : bonus à 3 pièces du même rang », puis, une fois le bonus actif, « ✦ Bonus panoplie Fer 3/5 : +3 % Frappe » aux couleurs du palier.
+- Bonus actif (demande de Théo, 20/10/2026) : les pièces de la panoplie ont un liseré doré qui pulse et une étoile ✦ au coin.
 
 ## Simulateur (60 jours, 3 tirages, pioche 30)
 

@@ -4,7 +4,7 @@ Lot 6 des idées inspirées de Forge Master, demandé par Théo le 19/10/2026.
 
 ## Règles
 
-- **30 succès** (`balance/achievements.ts`) : profondeur (zones 2, 5, 10, 15, 20), gardiens (zones 5, 10 et 19 terminées), forges (100 à 50 000 objets), jackpots (1 et 5), record du Puits (25 à 200 étages), panoplies (3 et 5 pièces, 5 pièces en Divin), tenues (5, 15, 30), donjons (niveaux 10, 25, 50), évolution (Légende, 1re et 5e étoile du Cœur du monde).
+- **27 succès** (`balance/achievements.ts`) : profondeur (zones 2, 5, 10, 15, 20), gardiens (zones 5, 10 et 19 terminées), forges (100 à 50 000 objets), jackpots (1 et 5), record du Puits (25 à 200 étages), panoplies (3 et 5 pièces, 5 pièces en Divin), tenues (5, 10, 20), évolution (Légende, 1re et 5e étoile du Cœur du monde). Les 3 succès des donjons ont disparu avec eux (20/10/2026) ; une sauvegarde qui les contient garde ses autres succès.
 - Un succès se gagne quand sa mesure atteint son seuil et reste gagné ensuite (une panoplie retirée ne le reprend pas). Liste gardée dans `mine-explorer.succes`, qui part avec la sauvegarde cloud.
 - Une annonce « Succès : Forgeron ! » apparaît sur la mine quand un succès tombe.
 - Chaque succès donne un **titre**. Le joueur en porte un (Profil, carte « Succès et titres » : toucher un succès gagné pour porter son titre, le toucher encore pour l'enlever).

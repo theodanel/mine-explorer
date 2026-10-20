@@ -58,6 +58,9 @@ export class EquipmentColumn {
     const equipped = this.inventory.equipped();
     const bestSlot = this.bestSlot();
     const gear = this.gearRunes.gear();
+    // Panoplie active : les pièces du palier qui donne le bonus s'illuminent
+    const set = gearSet(equipped);
+    const setTier = set !== null && set.strikePct > 0 ? set.tier : null;
     const openSockets = this.gearRunes.socketCount();
     return this.slots().map((slot, index) => {
       if (slot === null) {
@@ -79,6 +82,7 @@ export class EquipmentColumn {
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
         best: slot === bestSlot,
+        inSet: setTier !== null && item?.tier === setTier,
         // Runes serties sur l'emplacement : de petites gemmes au coin du cadre, qui rendent chaque équipement unique
         runes: gear[slot]
           .slice(0, openSockets)
@@ -94,8 +98,12 @@ export class EquipmentColumn {
     if (set === null || set.pieces < SET_HINT_PIECES) {
       return null;
     }
-    const bonus = set.strikePct > 0 ? ` · +${Math.round(set.strikePct * 100)} % Frappe` : '';
-    return { tier: set.tier, text: `Panoplie ${TIER_LABELS[set.tier]} ${set.pieces}/${SLOT_IDS.length}${bonus}`, active: set.strikePct > 0 };
+    const label = `${TIER_LABELS[set.tier]} ${set.pieces}/${SLOT_IDS.length}`;
+    const text =
+      set.strikePct > 0
+        ? `✦ Bonus panoplie ${label} : +${Math.round(set.strikePct * 100)} % Frappe`
+        : `Panoplie ${label} : bonus à 3 pièces du même rang`;
+    return { tier: set.tier, text, active: set.strikePct > 0 };
   });
 
   protected openArtifacts(): void {

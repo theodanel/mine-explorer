@@ -49,6 +49,7 @@
           class="slot item-frame"
           tabindex="0"
           [class.breathe]="cell.best"
+          [class.in-set]="cell.inSet"
           [appTooltip]="cell.tooltip"
           [attr.data-tier]="cell.tier"
           [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"

@@ -1,5 +1,7 @@
 # Tenues du dragon
 
+> **Retirées du jeu le 20/10/2026** (demande de Théo : « retire juste les tenues pour le moment, on verra plus tard »). Le code a été supprimé ; ces règles et les prompts des visuels restent ici pour y revenir.
+
 Lot 7 des idées inspirées de Forge Master, demandé par Théo le 19/10/2026. Depuis le 20/10/2026 (passe de progression et donjons retirés à la demande de Théo), une tenue par zone terminée.
 
 ## Règles

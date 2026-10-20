@@ -23,7 +23,7 @@ export function isValidUnlocked(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((id) => typeof id === 'string');
 }
 
-/** Succès connus d'une liste sauvegardée : ceux retirés du jeu (donjons, 20/10/2026) sont oubliés sans tout perdre. */
+/** Succès connus d'une liste sauvegardée : ceux retirés du jeu (donjons, tenues, 20/10/2026) sont oubliés sans tout perdre. */
 export function knownAchievements(ids: readonly string[]): string[] {
   return ids.filter((id) => ACHIEVEMENT_IDS.has(id));
 }

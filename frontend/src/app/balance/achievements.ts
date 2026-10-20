@@ -11,7 +11,6 @@ export type AchievementMetric =
   | 'abyssRecord'
   | 'setPieces'
   | 'divineSet'
-  | 'outfits'
   | 'evolutionForm'
   | 'heartStars';
 
@@ -46,9 +45,6 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'panoplie-3', title: 'Bien assorti', description: 'Porter 3 pièces du même palier', metric: 'setPieces', target: 3 },
   { id: 'panoplie-5', title: 'Tiré à quatre épingles', description: 'Porter les 5 pièces du même palier', metric: 'setPieces', target: 5 },
   { id: 'panoplie-divine', title: 'Divinement paré', description: 'Porter les 5 pièces en Divin', metric: 'divineSet', target: 1 },
-  { id: 'tenues-5', title: 'Coquet', description: 'Collectionner 5 tenues', metric: 'outfits', target: 5 },
-  { id: 'tenues-10', title: 'Élégant des galeries', description: 'Collectionner 10 tenues', metric: 'outfits', target: 10 },
-  { id: 'tenues-20', title: 'Icône de la mine', description: 'Collectionner les 20 tenues', metric: 'outfits', target: 20 },
   { id: 'legende', title: 'Légende', description: 'Devenir Légende de la mine', metric: 'evolutionForm', target: 4 },
   { id: 'coeur-1', title: 'Éveillé', description: 'Éveiller la 1re étoile du Cœur du monde', metric: 'heartStars', target: 1 },
   { id: 'coeur-5', title: 'Cœur du monde', description: 'Éveiller les 5 étoiles du Cœur du monde', metric: 'heartStars', target: 5 },

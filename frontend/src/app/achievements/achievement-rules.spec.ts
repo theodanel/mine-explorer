@@ -9,15 +9,14 @@ const START: AchievementSnapshot = {
   abyssRecord: 0,
   setPieces: 0,
   divineSet: 0,
-  outfits: 0,
   evolutionForm: 0,
   heartStars: 0,
 };
 
 describe('succès', () => {
-  it('compte 27 succès aux identifiants uniques, chacun avec un titre', () => {
-    expect(ACHIEVEMENTS).toHaveLength(27);
-    expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(27);
+  it('compte 24 succès aux identifiants uniques, chacun avec un titre', () => {
+    expect(ACHIEVEMENTS).toHaveLength(24);
+    expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(24);
   });
 
   it('ne donne rien au début, puis les succès atteints, une seule fois', () => {

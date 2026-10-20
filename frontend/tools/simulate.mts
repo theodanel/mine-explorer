@@ -139,8 +139,6 @@ import {
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
 import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
-import { outfitCollectionBonus } from '../src/app/balance/outfits.ts';
-import { ownedOutfits } from '../src/app/outfits/outfit-rules.ts';
 import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -155,9 +153,6 @@ const withCamp = withNewSystems && !process.argv.includes('--sans-campement');
 const withAbyss = withNewSystems && !process.argv.includes('--sans-puits');
 const withGearRunes = withNewSystems && !process.argv.includes('--sans-runes-equipement');
 const withUpgradeShortcut = !process.argv.includes('--sans-raccourci-pioche');
-const withOutfits = !process.argv.includes('--sans-tenues');
-/** Bonus de la collection de tenues, recalculé quand un palier du passe ou un record de donjon tombe. */
-let outfitBonusValue = 0;
 /**
  * Choix de galerie en fin de zone : neutre (le joueur ne choisit jamais, rythme de base), optimal (préfère l'or,
  * puis les explosions, puis le minerai s'il manque pour évoluer, puis les éclats), hasard.
@@ -428,7 +423,6 @@ function families() {
         activeCompanionBonuses(companions),
         // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
         withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, gearSockets()) : NO_BONUSES,
-        { ...NO_BONUSES, strikePct: outfitBonusValue },
       ]
     : [NO_BONUSES];
 }
@@ -904,11 +898,6 @@ function claimMissions(): void {
   }
 }
 
-/** Collection de tenues : une par zone terminée. */
-function updateOutfits(): void {
-  if (withOutfits) outfitBonusValue = outfitCollectionBonus(ownedOutfits(progress.zone - 1).length);
-}
-
 /** Applique des dégâts au filon en cours, avec tout ce qui en découle (or, éclats, minerai, artefact). */
 function dealDamage(now: number, damage: number): void {
   updateGuardian(now);
@@ -939,7 +928,6 @@ function dealDamage(now: number, damage: number): void {
     const tier = zoneMaterial(zone);
     if (tier !== null && result.clearedZone !== null) ores[tier] += scaleAmount(ZONE_CLEAR_ORES, mods.ores, galleryRandom);
     if (result.clearedZone !== null) {
-      updateOutfits();
       shards += zoneClearShards(zone);
       shardSources.zones += zoneClearShards(zone);
       findArtifact(now);

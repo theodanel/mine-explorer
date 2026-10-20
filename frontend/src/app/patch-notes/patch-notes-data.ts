@@ -15,10 +15,10 @@ export const RELEASES: readonly Release[] = [
     id: '2026-10-21',
     title: 'Corrections du 21 octobre',
     fixes: [
-      'Zones d’Écho : chaque filon se casse désormais en 2 minutes environ, au lieu de plusieurs heures.',
-      'Zones d’Écho : les essences pour les runes tombent bien, et « +1 essence » s’affiche à chaque gain.',
-      'Sauvegarde Google : la vérification était trop stricte et refusait des parties honnêtes, elle est corrigée.',
-      'Classements : ils se mettent à jour en direct, sans recharger la page.',
+      'Difficulté des filons des zones Écho réduite',
+      'Correctif : dans les zones Écho, les ressources tombent désormais correctement',
+      'Correctif : la vérification de la sauvegarde Google est moins stricte',
+      'Classements mis à jour en direct',
     ],
   },
 ];

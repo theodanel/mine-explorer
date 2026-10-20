@@ -12,8 +12,8 @@ export interface Release {
  */
 export const RELEASES: readonly Release[] = [
   {
-    id: '2026-10-21',
-    title: 'Corrections du 21 octobre',
+    id: '2026-10-20',
+    title: 'Corrections du 20 octobre',
     fixes: [
       'Difficulté des filons des zones Écho réduite',
       'Correctif : dans les zones Écho, les ressources tombent désormais correctement',

@@ -80,6 +80,7 @@
   }
   <app-zone-banner class="zone" />
   <app-pass-banner class="pass-banner-slot" />
+  <app-achievement-toast class="achievement-toast" />
   <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
@@ -149,6 +150,11 @@
     @case ('outfits') {
       @defer (on immediate) {
         <app-outfits-page class="page-layer" />
+      }
+    }
+    @case ('achievements') {
+      @defer (on immediate) {
+        <app-achievements-page class="page-layer" />
       }
     }
     @case ('challenge') {

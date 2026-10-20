@@ -24,6 +24,8 @@ import { PassBanner } from './progress-pass/pass-banner/pass-banner';
 import { PassPage } from './progress-pass/pass-page/pass-page';
 import { DungeonsPage } from './dungeons/dungeons-page/dungeons-page';
 import { OutfitsPage } from './outfits/outfits-page/outfits-page';
+import { AchievementsPage } from './achievements/achievements-page/achievements-page';
+import { AchievementToast } from './achievements/achievement-toast';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
@@ -105,6 +107,8 @@ function resourceLabel(amount: number): string {
     PassPage,
     DungeonsPage,
     OutfitsPage,
+    AchievementsPage,
+    AchievementToast,
     ProfilePage,
     OnlineLayer,
     LeaderboardPage,

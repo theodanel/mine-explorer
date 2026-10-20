@@ -3,6 +3,7 @@ package com.theodanel.backend.account;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.random.RandomGenerator;
 
@@ -72,6 +73,24 @@ public class AccountService {
 		catch (DataIntegrityViolationException race) {
 			throw pseudoTaken();
 		}
+		return player;
+	}
+
+	/**
+	 * Porte un titre (null : aucun). Le titre doit être connu ({@link TitleCatalog}) et le succès gagné dans la
+	 * sauvegarde cloud du joueur. L'enjeu est cosmétique : on fait confiance à la liste des succès de la sauvegarde,
+	 * dont l'anti-triche ne vérifie que la progression.
+	 */
+	@Transactional
+	public Player wearTitle(UUID playerId, String title, Set<String> unlocked) {
+		Player player = get(playerId);
+		if (title != null && !TitleCatalog.isKnown(title)) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "title-unknown", "Titre inconnu");
+		}
+		if (title != null && !unlocked.contains(title)) {
+			throw new ApiException(HttpStatus.CONFLICT, "title-locked", "Succès pas encore gagné dans la sauvegarde");
+		}
+		player.wearTitle(title);
 		return player;
 	}
 

@@ -49,7 +49,7 @@ public class ChatService {
 	}
 
 	/** Message vu par un joueur ({@code mine} : c'est le sien), du plus ancien au plus récent. */
-	public record Message(long id, String pseudo, String text, Instant sentAt, boolean mine) {
+	public record Message(long id, String pseudo, String title, String text, Instant sentAt, boolean mine) {
 	}
 
 	/** Ce que voit un joueur : les messages, et ce qu'il a le droit de faire. */
@@ -61,7 +61,7 @@ public class ChatService {
 		List<Message> latest = messages.latestVisible(Limit.of(VISIBLE_MESSAGES))
 			.reversed()
 			.stream()
-			.map(line -> new Message(line.id(), line.pseudo(), line.text(), line.sentAt(), line.playerId().equals(viewer)))
+			.map(line -> new Message(line.id(), line.pseudo(), line.title(), line.text(), line.sentAt(), line.playerId().equals(viewer)))
 			.toList();
 		boolean canWrite = viewer != null && !mutes.existsById(viewer);
 		return new View(latest, canWrite, isModerator(viewer));

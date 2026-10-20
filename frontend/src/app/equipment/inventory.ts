@@ -91,7 +91,11 @@ export class Inventory {
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);
-    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot: isJackpot(item.tier, level) });
+    const jackpot = isJackpot(item.tier, level);
+    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot });
+    if (jackpot) {
+      this.missionCounters.record('jackpots');
+    }
     this.startForgingAnimation();
     this.missionCounters.record('itemsForged');
     return true;

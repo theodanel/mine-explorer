@@ -243,3 +243,13 @@
     font-weight: 700;
   }
 }
+
+// Titre porté (succès), à côté du pseudo
+.title {
+  padding: 0.2cqw 1.4cqw;
+  border-radius: 999px;
+  background: #ffd34d;
+  color: var(--ink);
+  font-size: 2.4cqw;
+  font-weight: 700;
+}

@@ -10,6 +10,8 @@ import { OnlineAccount } from '../../online/online-account';
 import { Progression } from '../../progression/progression';
 import { PlayerName } from '../../shared/player-name';
 import { OUTFITS } from '../../balance/outfits';
+import { ACHIEVEMENTS } from '../../balance/achievements';
+import { Achievements } from '../../achievements/achievements';
 import { Outfits } from '../../outfits/outfits';
 
 /** Volumes proposés, du plus fort au coupé. */
@@ -36,11 +38,17 @@ export class ProfilePage {
   protected readonly leaderboardOpen = signal(false);
   private readonly navigation = inject(Navigation);
   protected readonly outfits = inject(Outfits);
+  protected readonly achievements = inject(Achievements);
+  protected readonly achievementCount = ACHIEVEMENTS.length;
   protected readonly outfitCount = OUTFITS.length;
   protected readonly outfitBonus = computed(() => Math.round(this.outfits.collectionBonus() * 100));
 
   protected readonly volumes = VOLUME_OPTIONS;
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
+
+  protected openAchievements(): void {
+    this.navigation.open('achievements');
+  }
 
   protected openOutfits(): void {
     this.navigation.open('outfits');

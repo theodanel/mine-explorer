@@ -13,7 +13,6 @@ import {
   isValidPickaxeState,
   migratePickaxeState,
   PickaxeState,
-  shortenUpgrade,
   START_PICKAXE,
   upgradeTimeLeftMs,
 } from './pickaxe-rules';
@@ -33,8 +32,6 @@ export class Forge {
   private readonly missionCounters = inject(MissionCounters);
   private readonly state = signal<PickaxeState>(loadState());
   private readonly now = signal(this.clock());
-  private readonly shortcut = signal<{ readonly key: number; readonly savedMs: number } | null>(null);
-  private shortcutCount = 0;
 
   readonly level = computed(() => this.state().level);
   readonly segments = computed(() => this.state().segments);
@@ -52,8 +49,6 @@ export class Forge {
     return cost !== null && this.wallet.coins() >= cost;
   });
   readonly tierChances = computed(() => tierChances(this.level()));
-  /** Dernier temps gagné sur l'amélioration en jouant, pour faire sauter le minuteur à l'écran. */
-  readonly lastShortcut = this.shortcut.asReadonly();
 
   constructor() {
     // Une amélioration finie pendant que le jeu était fermé est validée dès le chargement
@@ -71,16 +66,6 @@ export class Forge {
     this.save(addSegment(this.state(), this.clock()));
     this.missionCounters.record('segmentsPaid');
     return true;
-  }
-
-  /** Un filon épuisé ou un gardien battu : l'amélioration en cours avance. */
-  shortenUpgrade(guardian: boolean): void {
-    const { state, savedMs } = shortenUpgrade(this.state(), this.clock(), guardian);
-    if (savedMs > 0) {
-      this.save(state);
-      this.shortcut.set({ key: ++this.shortcutCount, savedMs });
-      this.tick();
-    }
   }
 
   tick(): void {

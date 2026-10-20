@@ -194,20 +194,6 @@ export function upgradeDurationMs(pickaxeLevel: number): number {
 }
 
 /**
- * Jouer raccourcit l'amélioration (lot 2 des idées Forge Master, 19/10/2026) : chaque filon épuisé retire 2 % de sa
- * durée totale (au moins 5 s), un gardien battu 10 %. Rien hors ligne : ça récompense le jeu actif.
- */
-const ROCK_UPGRADE_SHARE = 0.02;
-const GUARDIAN_UPGRADE_SHARE = 0.1;
-const MIN_UPGRADE_SHORTCUT_MS = 5000;
-
-/** Temps retiré à l'amélioration de la pioche (au niveau donné) par un filon épuisé, ou par un gardien battu. */
-export function upgradeShortcutMs(pickaxeLevel: number, guardian: boolean): number {
-  const share = guardian ? GUARDIAN_UPGRADE_SHARE : ROCK_UPGRADE_SHARE;
-  return Math.max(Math.round(upgradeDurationMs(pickaxeLevel) * share), MIN_UPGRADE_SHORTCUT_MS);
-}
-
-/**
  * Fenêtre glissante de chances : tous les 3 niveaux, le palier de base monte d'un cran.
  * Chaque motif liste les chances du palier précédent, du palier de base et du suivant.
  * Le palier suivant arrive par petites touches (3 %, 8 %, 16 %) et l'ancien s'efface sur 3 niveaux.

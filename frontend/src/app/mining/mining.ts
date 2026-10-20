@@ -18,7 +18,6 @@ import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { HeartForge } from '../heart-forge/heart-forge';
 import { StrikeReward, strikeReward } from './mining-rules';
-import { Forge } from '../forge/forge';
 
 export interface StrikeOutcome extends HitResult {
   readonly reward: StrikeReward;
@@ -49,7 +48,6 @@ export class Mining {
   private readonly shards = inject(GeodeShards);
   private readonly random = inject(RANDOM);
   private readonly missionCounters = inject(MissionCounters);
-  private readonly forge = inject(Forge);
   private readonly ores = inject(Ores);
   private readonly artifacts = inject(Artifacts);
   private readonly galleries = inject(Galleries);
@@ -89,8 +87,6 @@ export class Mining {
     // Les filons sans fin d'une zone passée ne comptent pas pour les missions ni le Défi : trop faciles à enchaîner
     if (rockBroken && !farming) {
       this.missionCounters.record('rocksBroken');
-      // Jouer fait avancer l'amélioration de la pioche ; le gardien (fin de zone) compte bien plus
-      this.forge.shortenUpgrade(clearedZone !== null);
     }
     // Un filon d'Écho donne sa ressource, sans tirage
     if (rockBroken && struck.echoZone !== null) {

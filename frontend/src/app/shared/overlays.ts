@@ -6,7 +6,7 @@ import { Navigation } from '../navigation/navigation';
  * Fenêtres qui s'ouvrent d'elles-mêmes (le jeu les déclenche, pas un toucher du joueur), de la plus prioritaire
  * à la moins prioritaire. Une seule est montrée à la fois ; les autres attendent leur tour.
  */
-export const AUTO_DIALOG_IDS = ['offlineReport', 'companionHatched', 'artifactFound', 'galleryChoice', 'itemCompare', 'account'] as const;
+export const AUTO_DIALOG_IDS = ['offlineReport', 'patchNotes', 'companionHatched', 'artifactFound', 'galleryChoice', 'itemCompare', 'account'] as const;
 export type AutoDialogId = (typeof AUTO_DIALOG_IDS)[number];
 
 /**

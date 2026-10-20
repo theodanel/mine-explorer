@@ -15,7 +15,7 @@ La première version (un chrono qui défilait seul, étages calés sur les filon
   - **gardien** tous les 10 étages : PV ×4.
 - **Cristal de temps** : il tombe toutes les 6 à 10 s et reste 2,5 s ; l'attraper donne +2 s.
 - **Sorts** équipés, une fois chacun par descente : Dynamite et Coup de grisou frappent fort, Frénésie double les dégâts, Œil du géologue rend tout critique, Filon doré et Écho de géode donnent un éclat de plus par étage pendant leur durée.
-- **PV des étages** : l'étage 1 vaut 2 s d'une Puissance de référence, puis +15 % par étage. La référence est la moyenne géométrique de la Puissance attendue dans la zone du joueur et de sa Puissance réelle : un joueur en retard sur sa zone descend quand même, un build en avance descend plus bas sans écraser les autres.
+- **PV des étages** : les mêmes pour tout le monde. L'étage 1 vaut 2 s de la Puissance attendue à l'ouverture du Puits (zone 7), puis +15 % par étage. Un mineur plus fort descend donc plus bas, et son record suit sa progression. Corrigé le 20/10/2026 à la demande de Théo : les étages suivaient la zone et la Puissance du joueur, et le record restait bloqué vers 20 étages de la zone 7 à la zone 20 (simulateur : 22 étages en zone 7, 88 en zone 19).
 - **Récompenses** : 2 éclats par étage cassé (4 sous bonus) ; chaque palier de 5 étages battu pour la première fois donne 30 éclats et 2 pierres d'éveil. Relevé le 14/10/2026 (1 éclat et 20 avant), Théo trouvait le Puits trop pauvre.
 
 ## Réglage

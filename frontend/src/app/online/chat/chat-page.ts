@@ -4,6 +4,7 @@ import { GoogleButton } from '../google-button/google-button';
 import { OnlineAccount } from '../online-account';
 import { OnlineApi } from '../online-api';
 import { CHAT_EMOJIS, CHAT_MAX_LENGTH, ChatView, chatLength, chatRefusalText, isChatView } from './chat-model';
+import { titleOf } from '../../achievements/achievement-rules';
 
 /** La discussion est relue toutes les 6 s tant qu'elle est ouverte, jamais en arrière-plan. */
 const REFRESH_MS = 6000;
@@ -43,7 +44,11 @@ export class ChatPage {
   protected readonly remaining = computed(() => CHAT_MAX_LENGTH - chatLength(this.draft()));
   protected readonly canSend = computed(() => !this.sending() && this.draft().trim() !== '' && this.remaining() >= 0);
   protected readonly messages = computed(() =>
-    this.view()?.messages.map((message) => ({ ...message, time: TIME_FORMAT.format(new Date(message.sentAt)) })) ?? null,
+    this.view()?.messages.map((message) => ({
+      ...message,
+      time: TIME_FORMAT.format(new Date(message.sentAt)),
+      titleLabel: titleOf(message.title ?? null),
+    })) ?? null,
   );
 
   constructor() {

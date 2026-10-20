@@ -6,6 +6,7 @@ import { OnlineAccount } from '../online-account';
 import { OnlineApi } from '../online-api';
 import { ONLINE_CONFIG } from '../online-config';
 import { isLeaderboard, Leaderboard, LeaderboardType } from '../online-rules';
+import { titleOf } from '../../achievements/achievement-rules';
 
 interface Tab {
   readonly type: LeaderboardType;
@@ -114,6 +115,10 @@ export class LeaderboardPage {
     if (this.type() === type && result.ok && isLeaderboard(result.body)) {
       this.board.set(result.body);
     }
+  }
+
+  protected titleLabel(id: string | null | undefined): string | null {
+    return titleOf(id ?? null);
   }
 
   /** Valeur lisible : « Zone 5 · filon 12 » pour la profondeur (comme le bandeau de la mine), « 34 étages » pour le Puits. */

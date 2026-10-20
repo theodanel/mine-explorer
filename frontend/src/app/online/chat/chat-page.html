@@ -13,6 +13,9 @@
         <article class="message" [class.mine]="message.mine">
           <header>
             <strong>{{ message.mine ? 'Toi' : message.pseudo }}</strong>
+            @if (message.titleLabel; as title) {
+              <span class="title">{{ title }}</span>
+            }
             <time>{{ message.time }}</time>
             @if (!message.mine && account.signedIn()) {
               <span class="actions">

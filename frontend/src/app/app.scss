@@ -230,6 +230,15 @@
   inset: calc(var(--core) * 0.155) 0 auto;
 }
 
+// Succès gagné : l'annonce passe au-dessus du bandeau du passe
+.achievement-toast {
+  position: absolute;
+  inset: calc(var(--core) * 0.27) auto auto 50%;
+  z-index: var(--z-tooltip);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 // Passe de progression : sous le bandeau de zone, au milieu
 .pass-banner-slot {
   position: absolute;

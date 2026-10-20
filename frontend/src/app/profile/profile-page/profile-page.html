@@ -34,6 +34,14 @@
         <span class="chevron" aria-hidden="true">›</span>
       </button>
 
+      <button type="button" class="card evolution" (click)="openAchievements()">
+        <span class="evolution-text">
+          <strong>Succès et titres</strong>
+          <span>{{ achievements.unlocked().length }} / {{ achievementCount }} · titre : {{ achievements.titleLabel() ?? 'aucun' }}</span>
+        </span>
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+
       <button type="button" class="card evolution" (click)="openOutfits()">
         <span class="evolution-text">
           <strong>Tenues</strong>

@@ -45,7 +45,12 @@
         @for (entry of board.top; track entry.rank) {
           <li [class.mine]="board.me?.rank === entry.rank" [attr.data-podium]="entry.rank <= podium ? entry.rank : null">
             <span class="rank">{{ entry.rank }}</span>
-            <span class="pseudo">{{ entry.pseudo }}</span>
+            <span class="pseudo">
+              {{ entry.pseudo }}
+              @if (titleLabel(entry.title); as title) {
+                <small class="title">{{ title }}</small>
+              }
+            </span>
             <span class="value">{{ format(entry.value) }}</span>
           </li>
         }

@@ -12,8 +12,8 @@ export interface Release {
  */
 export const RELEASES: readonly Release[] = [
   {
-    id: '2026-10-21',
-    title: 'Corrections du 21 octobre',
+    id: '2026-10-20',
+    title: 'Corrections du 20 octobre',
     fixes: [
       'Zones d’Écho : chaque filon se casse désormais en 2 minutes environ, au lieu de plusieurs heures.',
       'Zones d’Écho : les essences pour les runes tombent bien, et « +1 essence » s’affiche à chaque gain.',

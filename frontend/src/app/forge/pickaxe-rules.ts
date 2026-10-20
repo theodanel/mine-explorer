@@ -1,5 +1,5 @@
 // Règles pures de la pioche : segments payés en or, puis minuteur d'amélioration.
-import { MAX_PICKAXE_LEVEL, SEGMENTS_PER_LEVEL, upgradeDurationMs, upgradeShortcutMs } from '../balance/balance';
+import { MAX_PICKAXE_LEVEL, SEGMENTS_PER_LEVEL, upgradeDurationMs } from '../balance/balance';
 
 export interface PickaxeState {
   readonly level: number;
@@ -36,18 +36,6 @@ export function completeUpgrade(state: PickaxeState, now: number): PickaxeState 
     return state;
   }
   return { level: state.level + 1, segments: 0, upgradeEndsAt: null };
-}
-
-/**
- * Un filon épuisé (ou un gardien battu) pendant l'amélioration : son minuteur avance. Rend le nouvel état et le temps
- * vraiment gagné (jamais plus que ce qu'il reste).
- */
-export function shortenUpgrade(state: PickaxeState, now: number, guardian: boolean): { state: PickaxeState; savedMs: number } {
-  if (state.upgradeEndsAt === null || now >= state.upgradeEndsAt) {
-    return { state, savedMs: 0 };
-  }
-  const upgradeEndsAt = Math.max(state.upgradeEndsAt - upgradeShortcutMs(state.level, guardian), now);
-  return { state: { ...state, upgradeEndsAt }, savedMs: state.upgradeEndsAt - upgradeEndsAt };
 }
 
 export function upgradeTimeLeftMs(state: PickaxeState, now: number): number | null {

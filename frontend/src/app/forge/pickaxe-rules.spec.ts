@@ -1,4 +1,4 @@
-import { MAX_PICKAXE_LEVEL, SEGMENTS_PER_LEVEL, upgradeDurationMs, upgradeShortcutMs } from '../balance/balance';
+import { MAX_PICKAXE_LEVEL, upgradeDurationMs } from '../balance/balance';
 import {
   addSegment,
   canBuySegment,
@@ -6,7 +6,6 @@ import {
   isValidPickaxeState,
   migratePickaxeState,
   PickaxeState,
-  shortenUpgrade,
   START_PICKAXE,
   upgradeTimeLeftMs,
 } from './pickaxe-rules';
@@ -68,23 +67,5 @@ describe('sauvegarde', () => {
     { level: 1, segments: 3, upgradeEndsAt: NOW },
   ])('rejette %j', (value: unknown) => {
     expect(isValidPickaxeState(value)).toBe(false);
-  });
-
-  it('avance l’amélioration à chaque filon épuisé, bien plus pour un gardien, jamais au-delà de sa fin', () => {
-    const level = 20;
-    const duration = upgradeDurationMs(level);
-    const upgrading = { level, segments: SEGMENTS_PER_LEVEL, upgradeEndsAt: duration };
-    const rock = shortenUpgrade(upgrading, 0, false);
-    expect(rock.savedMs).toBe(upgradeShortcutMs(level, false));
-    expect(rock.state.upgradeEndsAt).toBe(duration - rock.savedMs);
-    expect(shortenUpgrade(upgrading, 0, true).savedMs).toBe(Math.round(duration * 0.1));
-    // Presque fini : on ne gagne que ce qu'il reste
-    expect(shortenUpgrade(upgrading, duration - 1000, true)).toEqual({ state: { ...upgrading, upgradeEndsAt: duration - 1000 }, savedMs: 1000 });
-    // Pas d'amélioration en cours : rien ne change
-    expect(shortenUpgrade(START_PICKAXE, 0, true).state).toBe(START_PICKAXE);
-  });
-
-  it('retire au moins 5 secondes, même aux premiers niveaux', () => {
-    expect(upgradeShortcutMs(1, false)).toBe(5000);
   });
 });

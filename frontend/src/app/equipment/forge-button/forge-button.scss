@@ -33,7 +33,6 @@
 }
 
 .side-button {
-  position: relative;
   display: grid;
   justify-items: center;
   gap: 0.6cqw;
@@ -433,29 +432,6 @@
 }
 
 // Gerbe d'étincelles de la couleur du palier, au moment du choc
-// Temps gagné sur l'amélioration : un « −12 s » qui s'envole du bouton de la pioche
-.timer-cut {
-  position: absolute;
-  top: -2cqw;
-  left: 50%;
-  color: #8dff9c;
-  font: 3.4cqw / 1 var(--font-display);
-  text-shadow: 0 0.3cqw 0 var(--ink);
-  pointer-events: none;
-  animation: timer-cut 1.2s ease-out forwards;
-}
-
-@keyframes timer-cut {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    opacity: 0;
-    transform: translate(-50%, -7cqw);
-  }
-}
-
 .forge-burst {
   position: absolute;
   top: 7cqw;

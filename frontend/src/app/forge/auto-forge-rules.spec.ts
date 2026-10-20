@@ -45,20 +45,14 @@ describe('filtres de forge automatique', () => {
     expect(passesFilters(item({ slot: 'pickaxe', stats: { strikePower: 20 } }), filters, worn)).toBe(true);
   });
 
-  it('montrent toujours les objets à partir de la qualité choisie, même moins bons', () => {
-    const filters = { ...NO_FILTERS, upgradesOnly: true, keepFromTier: 'gold' as const };
-    const worn = { pickaxe: item({ slot: 'pickaxe', tier: 'steel', stats: { strikePower: 100 } }) };
-    expect(hasFilters({ ...NO_FILTERS, keepFromTier: 'gold' })).toBe(false);
-    expect(passesFilters(item({ slot: 'pickaxe', tier: 'gold', stats: { strikePower: 5 } }), filters, worn)).toBe(true);
-    expect(passesFilters(item({ slot: 'pickaxe', tier: 'divine', stats: { strikePower: 5 } }), filters, worn)).toBe(true);
-    expect(passesFilters(item({ slot: 'pickaxe', tier: 'steel', stats: { strikePower: 5 } }), filters, worn)).toBe(false);
+  it('ignorent l’ancienne option « toujours me montrer à partir de » d’une sauvegarde', () => {
+    expect(isValidFilters({ ...NO_FILTERS, keepFromTier: 'gold' })).toBe(true);
   });
 
   it('refusent une sauvegarde invalide', () => {
     expect(isValidFilters(NO_FILTERS)).toBe(true);
     expect(isValidFilters({ ...NO_FILTERS, slots: ['épée'] })).toBe(false);
     expect(isValidFilters({ ...NO_FILTERS, minTier: 'bronze' })).toBe(false);
-    expect(isValidFilters({ ...NO_FILTERS, keepFromTier: 'bronze' })).toBe(false);
     // Réglages enregistrés avant l'option « toujours montrer »
     expect(isValidFilters({ slots: [], minTier: null, stats: [], upgradesOnly: true })).toBe(true);
   });

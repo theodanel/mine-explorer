@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
 import { ArtifactReforge } from '../../artifacts/artifact-reforge/artifact-reforge';
+import { Artifacts } from '../../artifacts/artifacts';
+import { ARTIFACT_IDS, ARTIFACT_MAX_LEVEL } from '../../balance/artifacts';
 import { Sound } from '../../audio/sound';
 import { tierZone, WORKSHOP_MAX_LEVEL, WORKSHOP_STEP, workshopMaterial } from '../../balance/workshop';
 import { formatStat } from '../../equipment/equipment-format';
@@ -42,10 +44,19 @@ export class WorkshopPage {
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
   private readonly inventory = inject(Inventory);
+  private readonly artifacts = inject(Artifacts);
   /** Dernière reforge, pour faire briller l'affixe obtenu. */
   protected readonly reforged = signal<{ readonly slot: SlotId; readonly stat: StatId } | null>(null);
 
   protected readonly maxLevel = WORKSHOP_MAX_LEVEL;
+  /**
+   * La réforge des artefacts n'apparaît qu'avec un artefact au niveau maximum : sans lui, elle n'était qu'un texte
+   * d'explication (retiré à la demande de Théo, 19/10/2026).
+   */
+  protected readonly reforgeable = computed(() => {
+    const owned = this.artifacts.owned();
+    return ARTIFACT_IDS.some((id) => owned[id] === ARTIFACT_MAX_LEVEL);
+  });
   protected readonly coins = computed(() => COMPACT.format(this.wallet.coins()));
 
   protected readonly rows = computed(() =>

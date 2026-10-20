@@ -1,0 +1,20 @@
+@if (releases().length > 0) {
+  <div class="backdrop">
+    <section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="patch-notes-title">
+      <h2 id="patch-notes-title">Quoi de neuf ?</h2>
+      <div class="releases">
+        @for (release of releases(); track release.id) {
+          <article class="release">
+            <h3>{{ release.title }}</h3>
+            <ul>
+              @for (fix of release.fixes; track fix) {
+                <li>{{ fix }}</li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+      <button type="button" class="game-button green ok" (click)="notes.dismiss()">C'est noté !</button>
+    </section>
+  </div>
+}

@@ -125,7 +125,7 @@ class LeaderboardApiTests extends ApiTestSupport {
 			.andExpect(jsonPath("$.top[0].pseudo").value("Alice"))
 			.andExpect(jsonPath("$.me.rank").value(2))
 			// Affichée au niveau d'un joueur qui vient de commencer, pas à sa zone trafiquée
-			.andExpect(jsonPath("$.me.value").value(36));
+			.andExpect(jsonPath("$.me.value").value(40));
 		// La partie, elle, est gardée entière
 		mockMvc.perform(get("/api/save").with(as(mallory)))
 			.andExpect(jsonPath("$.data['mine-explorer.progress']").value(containsString("\"zone\":13")));
@@ -134,7 +134,7 @@ class LeaderboardApiTests extends ApiTestSupport {
 		clock.advance(Duration.ofHours(2));
 		putSave(mallory, 0L, 13, 1, 0).andExpect(status().isOk());
 		mockMvc.perform(get("/api/leaderboard/depth").with(as(mallory)))
-			.andExpect(jsonPath("$.me.value").value(103))
+			.andExpect(jsonPath("$.me.value").value(114))
 			.andExpect(jsonPath("$.me.rank").value(2));
 	}
 

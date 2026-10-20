@@ -69,6 +69,8 @@ export class Progression {
   readonly playingZone = computed(() => this.farmZone() ?? this.zone());
   /** Le joueur mine un Écho : une zone passée devenue plus dure, qui donne sa ressource à chaque filon. */
   readonly inEcho = computed(() => this.farmState()?.echoHp !== undefined);
+  /** PV de chaque filon de l'Écho en cours, ou null. */
+  readonly echoHp = computed(() => this.farmState()?.echoHp ?? null);
   readonly label = computed(() => stageLabel(this.state()));
   readonly health = computed(() => {
     const farm = this.farmState();

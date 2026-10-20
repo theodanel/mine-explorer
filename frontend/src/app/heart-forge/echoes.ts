@@ -1,6 +1,6 @@
 import { computed, effect, inject, Injectable, untracked } from '@angular/core';
 
-import { EVOLUTION_FORMS, hitsPerSecond, powerOf } from '../balance/balance';
+import { damagePerSecond, EVOLUTION_FORMS } from '../balance/balance';
 import { ECHO_ESSENCES, ECHO_SECONDS_PER_ROCK, ESSENCE_LABELS } from '../balance/heart-forge';
 import { Evolution } from '../evolution/evolution';
 import { Miner } from '../miner/miner';
@@ -8,10 +8,17 @@ import { Progression } from '../progression/progression';
 
 const LEGEND_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === 'legend');
 
-/** PV d'un filon d'Écho : environ 2 minutes de coups à la Puissance donnée. */
-export function echoRockHp(power: number, hitsEachSecond: number): number {
-  return Math.max(1, Math.round(power * hitsEachSecond * ECHO_SECONDS_PER_ROCK));
+/**
+ * PV d'un filon d'Écho : environ 2 minutes de coups aux dégâts par seconde donnés. Avant le 20/10/2026, le calcul
+ * partait de la Puissance (déjà 100 × les dégâts par seconde) multipliée encore par les coups par seconde : un filon
+ * d'Écho durait 2 à 5 heures au lieu de 2 minutes, bien plus dur que la zone 20.
+ */
+export function echoRockHp(damageEachSecond: number): number {
+  return Math.max(1, Math.round(damageEachSecond * ECHO_SECONDS_PER_ROCK));
 }
+
+/** Un filon d'Écho bien plus dur que prévu (ancien calcul) : il est recalculé. */
+const OVERSIZED_ECHO_FACTOR = 3;
 
 /**
  * Le monde change à la Légende de la mine : les zones 1 à 11 deviennent leurs Échos, plus dures (le monde suit la
@@ -35,6 +42,15 @@ export class Echoes {
         untracked(() => this.enter(zone));
       }
     });
+    // Un Écho entré avec l'ancien calcul garde des filons de plusieurs heures : il est recalculé au lancement
+    const echoHp = this.progression.echoHp();
+    const zone = this.progression.farmZone();
+    if (echoHp !== null && zone !== null && this.isEcho(zone)) {
+      const fair = echoRockHp(damagePerSecond(this.miner.permanent().stats));
+      if (echoHp > fair * OVERSIZED_ECHO_FACTOR) {
+        this.enter(zone);
+      }
+    }
   }
 
   /** Cette zone passée est un Écho. */
@@ -53,6 +69,6 @@ export class Echoes {
       return this.progression.startFarm(zone);
     }
     const { stats } = this.miner.permanent();
-    return this.progression.startFarm(zone, echoRockHp(powerOf(stats), hitsPerSecond(stats)));
+    return this.progression.startFarm(zone, echoRockHp(damagePerSecond(stats)));
   }
 }

@@ -42,14 +42,6 @@
         <span class="chevron" aria-hidden="true">›</span>
       </button>
 
-      <button type="button" class="card evolution" (click)="openOutfits()">
-        <span class="evolution-text">
-          <strong>Tenues</strong>
-          <span>{{ outfits.owned().length }} / {{ outfitCount }} · +{{ outfitBonus() }} % de Frappe</span>
-        </span>
-        <span class="chevron" aria-hidden="true">›</span>
-      </button>
-
       @if (online) {
         <app-account-card (leaderboard)="leaderboardOpen.set(true)" />
       }

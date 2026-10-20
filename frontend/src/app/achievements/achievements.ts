@@ -6,7 +6,6 @@ import { gearSet } from '../equipment/equipment-rules';
 import { Inventory } from '../equipment/inventory';
 import { Evolution } from '../evolution/evolution';
 import { MissionCounters } from '../missions/mission-counters';
-import { Outfits } from '../outfits/outfits';
 import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { AchievementSnapshot, isValidUnlocked, knownAchievements, newlyMet, titleOf } from './achievement-rules';
@@ -25,7 +24,6 @@ export class Achievements {
   private readonly counters = inject(MissionCounters).counters;
   private readonly abyss = inject(Abyss);
   private readonly inventory = inject(Inventory);
-  private readonly outfits = inject(Outfits);
   private readonly evolution = inject(Evolution);
   private readonly unlockedState = signal<readonly string[]>(loadUnlocked());
   private readonly titleState = signal<string | null>(loadTitle());
@@ -49,7 +47,6 @@ export class Achievements {
       abyssRecord: this.abyss.record(),
       setPieces: set?.pieces ?? 0,
       divineSet: set !== null && set.tier === 'divine' && set.pieces === 5 ? 1 : 0,
-      outfits: this.outfits.owned().length,
       evolutionForm: this.evolution.index(),
       heartStars: this.evolution.form().stars,
     };

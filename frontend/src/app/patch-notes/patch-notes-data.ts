@@ -12,6 +12,11 @@ export interface Release {
  */
 export const RELEASES: readonly Release[] = [
   {
+    id: '2026-10-20b',
+    title: 'Correctif du 20 octobre',
+    fixes: ['Puits sans fond : les étages sont les mêmes pour tous, un mineur plus fort descend plus loin'],
+  },
+  {
     id: '2026-10-20',
     title: 'Corrections du 20 octobre',
     fixes: [

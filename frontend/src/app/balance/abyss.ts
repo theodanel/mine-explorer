@@ -32,24 +32,22 @@ export function floorKind(floor: number, roll: number): FloorKind {
 }
 
 /**
- * PV d'un étage. Ils ne suivent pas les filons de la mine (trop durs : tout le monde faisait 0 étage). L'étage 1
- * vaut 2 s d'une Puissance de référence, puis +15 % par étage. Cette référence est la moyenne géométrique de la
- * Puissance attendue dans la zone du joueur et de sa Puissance réelle : un joueur en retard sur sa zone descend
- * quand même, un build en avance descend plus bas, sans que l'écart devienne écrasant. Taper vite et viser le
- * point faible font le reste.
+ * PV d'un étage : les mêmes pour tout le monde, à chaque profondeur. L'étage 1 vaut 2 s de la Puissance attendue
+ * à l'ouverture du Puits, puis +15 % par étage. Un mineur plus fort casse donc chaque étage plus vite et descend
+ * plus bas : son record suit sa progression. (Avant le 20/10/2026, les étages suivaient la zone et la Puissance du
+ * joueur, et le record restait bloqué vers 20 étages de la zone 7 à la zone 20.)
  */
 const FLOOR_SECONDS = 2;
 const FLOOR_HP_GROWTH = 1.15;
 const KIND_HP_FACTOR: Readonly<Record<FloorKind, number>> = { normal: 1, crystal: 1.3, trap: 0.8, guardian: 4 };
+/** Zone où le joueur moyen devient Contremaître et ouvre le Puits (tools/simulate.mts). */
+const ABYSS_REFERENCE_ZONE = 7;
 
-/** PV de l'étage 1, pour un joueur de cette zone et de cette Puissance (dégâts par seconde). */
-export function firstFloorHp(zone: number, playerDps: number): number {
-  const zoneDps = rockHp(zone, 1) / stageTargetSeconds(zone);
-  return FLOOR_SECONDS * Math.sqrt(zoneDps * Math.max(playerDps, 1));
-}
+/** PV de l'étage 1, fixes. */
+export const FIRST_FLOOR_HP = FLOOR_SECONDS * (rockHp(ABYSS_REFERENCE_ZONE, 1) / stageTargetSeconds(ABYSS_REFERENCE_ZONE));
 
-export function floorHp(floor: number, firstFloor: number, kind: FloorKind): number {
-  return Math.ceil(firstFloor * FLOOR_HP_GROWTH ** (floor - 1) * KIND_HP_FACTOR[kind]);
+export function floorHp(floor: number, kind: FloorKind): number {
+  return Math.ceil(FIRST_FLOOR_HP * FLOOR_HP_GROWTH ** (floor - 1) * KIND_HP_FACTOR[kind]);
 }
 
 /** Combo : chaque toucher à moins de 0,6 s du précédent ajoute 10 % de dégâts, jusqu'à ×1,9. */

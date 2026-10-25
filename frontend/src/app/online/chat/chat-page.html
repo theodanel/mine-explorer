@@ -11,6 +11,15 @@
       }
       @for (message of messages; track message.id) {
         <article class="message" [class.mine]="message.mine">
+          <button
+            type="button"
+            class="avatar"
+            [style.--avatar-hue]="message.hue"
+            [attr.aria-label]="'Voir la fiche de ' + (message.mine ? 'ton mineur' : message.pseudo)"
+            (click)="authorOf.set(message.id)"
+          >
+            {{ message.initial }}
+          </button>
           <header>
             <strong>{{ message.mine ? 'Toi' : message.pseudo }}</strong>
             @if (message.titleLabel; as title) {
@@ -94,3 +103,6 @@
     }
   </footer>
 </section>
+@if (authorOf(); as id) {
+  <app-author-card [messageId]="id" (closed)="authorOf.set(null)" />
+}

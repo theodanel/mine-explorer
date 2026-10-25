@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,14 +21,16 @@ import com.theodanel.backend.config.MineProperties;
 
 /**
  * Limite de requêtes par adresse IP, avant toute autre étape (session, sécurité, base) : une rafale coûte le
- * moins possible au serveur. Trois budgets : connexion (le plus serré, contre la force brute et l'abus du flux
- * OAuth), écriture et lecture de l'API.
+ * moins possible au serveur. Quatre budgets : connexion (le plus serré, contre la force brute et l'abus du flux
+ * OAuth), écriture et lecture de l'API, et profils de joueurs (chacun lit une sauvegarde entière).
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(RateLimitFilter.class);
 	private static final Duration WINDOW = Duration.ofMinutes(1);
 	private static final Set<String> WRITE_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
+	/** Profil d'un joueur ouvert depuis la discussion : il lit toute une sauvegarde, d'où un budget plus serré. */
+	private static final Pattern PROFILE_PATH = Pattern.compile("/api/chat/\\d+/author");
 
 	private final MineProperties.RateLimit limits;
 	private final RateLimiter limiter;
@@ -64,6 +67,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		if (path.startsWith("/oauth2/") || path.startsWith("/login/")) {
 			return "login";
 		}
+		if (PROFILE_PATH.matcher(path).matches()) {
+			return "profile";
+		}
 		if (path.startsWith("/api/")) {
 			return WRITE_METHODS.contains(request.getMethod()) ? "write" : "read";
 		}
@@ -74,6 +80,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		return switch (category) {
 			case "login" -> limits.loginPerMinute();
 			case "write" -> limits.writePerMinute();
+			case "profile" -> limits.profilePerMinute();
 			default -> limits.readPerMinute();
 		};
 	}

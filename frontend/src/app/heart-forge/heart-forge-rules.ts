@@ -7,6 +7,7 @@ import {
   ESSENCE_ELEMENTS,
   ESSENCES,
   EssenceId,
+  ALLIANCE_EXTRA_ESSENCES,
   MAX_RUNE_RANK,
   RING_SOCKETS,
   RUNE_FUSION_COUNT,
@@ -106,8 +107,39 @@ export function recipeResult(mix: readonly [EssenceId, EssenceId, EssenceId]): R
   return ESSENCE_ELEMENTS[mix[best > 1 ? counts.indexOf(best) : 0]];
 }
 
+/**
+ * Ressources que coûte vraiment un mélange : les 3 versées, plus, pour une rune d'alliance, les deux premières de sa
+ * recette une fois de plus (ALLIANCE_EXTRA_ESSENCES).
+ */
+export function brewCost(mix: readonly [EssenceId, EssenceId, EssenceId]): readonly EssenceId[] {
+  const result = recipeResult(mix);
+  if (!isAllianceRune(result)) {
+    return mix;
+  }
+  return [...mix, ...ALLIANCE_RECIPES[result].slice(0, ALLIANCE_EXTRA_ESSENCES)];
+}
+
+function isAllianceRune(type: RuneType): type is (typeof ALLIANCE_RUNES)[number] {
+  return (ALLIANCE_RUNES as readonly RuneType[]).includes(type);
+}
+
 export function canBrew(state: HeartForgeState, mix: readonly EssenceId[]): boolean {
-  return mix.length === 3 && ESSENCES.every((id) => state.essences[id] >= mix.filter((other) => other === id).length);
+  if (mix.length !== 3) {
+    return false;
+  }
+  const cost = brewCost(mix as [EssenceId, EssenceId, EssenceId]);
+  return ESSENCES.every((id) => state.essences[id] >= cost.filter((other) => other === id).length);
+}
+
+/**
+ * Recettes d'alliance révélées par les étoiles : celles des runes que demandent les étoiles déjà éveillées et la
+ * suivante. Le livre les montre même si le joueur ne les a jamais versées.
+ */
+export function revealedRecipes(stars: number): readonly RuneType[] {
+  return STAR_RUNES.slice(0, Math.min(stars + 1, STAR_RUNES.length))
+    .flat()
+    .map((rune) => rune.type)
+    .filter((type, index, all) => isAllianceRune(type) && all.indexOf(type) === index);
 }
 
 /** Verse 3 ressources au Creuset : elles donnent une rune de rang 1, et la recette s'inscrit au livre. */
@@ -116,7 +148,7 @@ export function brew(state: HeartForgeState, mix: readonly [EssenceId, EssenceId
     throw new RangeError('Ressources insuffisantes pour ce mélange');
   }
   const essences = { ...state.essences };
-  for (const id of mix) {
+  for (const id of brewCost(mix)) {
     essences[id] -= 1;
   }
   const rune = recipeResult(mix);
@@ -149,13 +181,32 @@ export function socketRune(socket: number): Rune {
   return STAR_RUNES[Math.floor(socket / 2)][socket % 2];
 }
 
-export function canSocket(state: HeartForgeState, socket: number): boolean {
-  return socket >= 0 && socket < RING_SOCKETS && !state.sockets[socket] && runeCount(state, socketRune(socket)) > 0;
+/** Étoile (1 à 5) dont l'emplacement attend une rune. */
+export function socketStar(socket: number): number {
+  return Math.floor(socket / 2) + 1;
+}
+
+/**
+ * Les emplacements d'une étoile ne s'ouvrent qu'une fois l'étoile précédente obtenue (25/10/2026) : on ne prépare plus
+ * tout l'anneau d'avance, chaque étoile est une étape. `stars` : étoiles déjà obtenues.
+ */
+export function socketOpen(socket: number, stars: number): boolean {
+  return socketStar(socket) <= stars + 1;
+}
+
+export function canSocket(state: HeartForgeState, socket: number, stars: number): boolean {
+  return (
+    socket >= 0 &&
+    socket < RING_SOCKETS &&
+    socketOpen(socket, stars) &&
+    !state.sockets[socket] &&
+    runeCount(state, socketRune(socket)) > 0
+  );
 }
 
 /** Sertit la rune attendue : elle quitte la réserve et reste dans l'anneau. */
-export function socketRuneIn(state: HeartForgeState, socket: number): HeartForgeState {
-  if (!canSocket(state, socket)) {
+export function socketRuneIn(state: HeartForgeState, socket: number, stars: number): HeartForgeState {
+  if (!canSocket(state, socket, stars)) {
     return state;
   }
   const sockets = state.sockets.map((filled, index) => filled || index === socket);

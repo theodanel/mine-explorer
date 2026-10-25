@@ -17,7 +17,7 @@ const STEPS: readonly { readonly title: string; readonly text: string; readonly 
   },
   {
     title: 'Verser au Creuset',
-    text: "3 ressources donnent une rune de rang 1. Trois identiques donnent la rune de leur élément ; certains mélanges donnent des runes d'alliance. Chaque recette trouvée s'inscrit au livre.",
+    text: "3 ressources donnent une rune de rang 1. Trois identiques donnent la rune de leur élément ; certains mélanges donnent des runes d'alliance, qui coûtent 2 ressources de plus. Chaque étoile révèle au livre la recette des alliances qu'elle demande ; les autres restent à trouver.",
     icon: 'assets/ui/forge-du-coeur/rune-fire.webp',
   },
   {
@@ -27,7 +27,7 @@ const STEPS: readonly { readonly title: string; readonly text: string; readonly 
   },
   {
     title: 'Sertir',
-    text: "Dans l'anneau, l'emplacement qui attend une rune que tu possèdes brille : touche-le pour l'y sertir. Chaque étoile demande 2 runes serties, en plus de ses missions, et chacune est plus complexe que la précédente.",
+    text: "Dans l'anneau, l'emplacement qui attend une rune que tu possèdes brille : touche-le pour l'y sertir. Chaque étoile demande 2 runes serties, en plus de ses missions ; ses emplacements ne s'ouvrent qu'une fois l'étoile précédente obtenue, et chacune est plus complexe que la précédente.",
     icon: 'assets/ui/forge-du-coeur/rune-light.webp',
   },
 ];

@@ -112,6 +112,11 @@
     filter: grayscale(0.6);
   }
 
+  // Étoile pas encore à portée : l'emplacement reste éteint
+  &.locked img {
+    opacity: 0.15;
+  }
+
   &.ready {
     cursor: pointer;
     animation: socket-call 1.4s ease-in-out infinite;

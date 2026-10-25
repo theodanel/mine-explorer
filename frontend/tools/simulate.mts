@@ -125,12 +125,13 @@ import {
 } from '../src/app/balance/heart-forge.ts';
 import {
   addEssences,
-  brew,
-  canBrew,
-  canFuse,
+  canCreate,
+  canGrow,
   canSocket,
+  createRune,
   EMPTY_HEART_FORGE,
-  fuseRunes,
+  growCost,
+  growRune,
   runeCount,
   socketRune,
   socketRuneIn,
@@ -394,8 +395,8 @@ let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
 /** Jour où la pièce la moins éveillée atteint chaque palier d'Éveil. */
 const awakeningDays: string[] = [];
 let essencesEarned = 0;
-let runesBrewed = 0;
-let fusionsFailed = 0;
+let runesCreated = 0;
+let runesGrown = 0;
 const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
 /** Minutes passées chaque jour dans les Échos, dès la Légende (le reste du temps actif va à la zone en cours). */
 const ECHO_MINUTES_PER_DAY = Number(process.env.ECHO_MINUTES ?? 20);
@@ -743,9 +744,35 @@ function recipeOf(type: RuneType): readonly EssenceId[] {
   return [essence, essence, essence];
 }
 
+/** Avance d'un pas vers une rune visée : fait grandir la plus haute en dessous de son rang, sinon en crée une. */
+function stepTowards(target: { type: RuneType; rank: number }): boolean {
+  for (let rank = target.rank - 1; rank >= 1; rank--) {
+    const rune = { type: target.type, rank };
+    if (runeCount(heartForge, rune) > 0) {
+      if (!canGrow(heartForge, rune)) return false;
+      heartForge = growRune(heartForge, rune);
+      runesGrown++;
+      return true;
+    }
+  }
+  const stars = EVOLUTION_FORMS[formIndex].stars;
+  if (!canCreate(heartForge, target.type, stars)) return false;
+  heartForge = createRune(heartForge, target.type, stars);
+  runesCreated++;
+  return true;
+}
+
+/** Ressource qui manque le plus pour le prochain pas vers cette rune. */
+function lackingFor(target: { type: RuneType; rank: number }): EssenceId {
+  const owned = [...Array(target.rank - 1).keys()].map((index) => target.rank - 1 - index).find((rank) => runeCount(heartForge, { type: target.type, rank }) > 0);
+  const cost = owned === undefined ? null : growCost({ type: target.type, rank: owned });
+  const needs = cost === null ? recipeOf(target.type) : (Object.keys(cost) as EssenceId[]);
+  return [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
+}
+
 /**
  * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos à récolter ce qui manque, puis
- * verse au Creuset, fusionne et sertit les runes de la prochaine étoile.
+ * crée, fait grandir et sertit les runes de la prochaine étoile.
  */
 function craftRunes(): void {
   if (formIndex < EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) return;
@@ -756,9 +783,9 @@ function craftRunes(): void {
   // Récolte du jour : un filon d'Écho toutes les 2 minutes, dans l'Écho de la ressource qui manque le plus
   let rocks = Math.round((ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
   while (rocks > 0) {
-    const needs = targets.flatMap((socket) => recipeOf(socketRune(socket).type));
-    const lacking = [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
-    earnEssences({ [lacking]: 1 });
+    const unfilled = targets.filter((socket) => !heartForge.sockets[socket] && runeCount(heartForge, socketRune(socket)) === 0);
+    if (unfilled.length === 0) break;
+    earnEssences({ [lackingFor(socketRune(unfilled[rocks % unfilled.length]))]: 1 });
     rocks--;
   }
   for (let guard = 0; guard < 5000; guard++) {
@@ -771,21 +798,7 @@ function craftRunes(): void {
     }
     for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
       const target = socketRune(socket);
-      for (let rank = 1; rank < target.rank; rank++) {
-        const rune = { type: target.type, rank };
-        if (canFuse(heartForge, rune)) {
-          const fused = fuseRunes(heartForge, rune, heartRandom);
-          heartForge = fused.state;
-          if (!fused.success) fusionsFailed++;
-          progressMade = true;
-        }
-      }
-      const recipe = recipeOf(target.type);
-      if (runeCount(heartForge, target) === 0 && canBrew(heartForge, recipe)) {
-        heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
-        runesBrewed++;
-        progressMade = true;
-      }
+      if (runeCount(heartForge, target) === 0 && stepTowards(target)) progressMade = true;
     }
     if (!progressMade) break;
   }
@@ -832,26 +845,9 @@ function craftGearRunes(): void {
       gearRunesSet++;
       continue;
     }
-    let progressMade = false;
-    for (let rank = GEAR_TARGET_RANK - 1; rank >= 1; rank--) {
-      const rune = { type: target.type, rank };
-      if (canFuse(heartForge, rune)) {
-        const fused = fuseRunes(heartForge, rune, heartRandom);
-        heartForge = fused.state;
-        if (!fused.success) fusionsFailed++;
-        progressMade = true;
-        break;
-      }
-    }
-    if (progressMade) continue;
-    const recipe = recipeOf(target.type);
-    if (canBrew(heartForge, recipe)) {
-      heartForge = brew(heartForge, recipe as [EssenceId, EssenceId, EssenceId]).state;
-      runesBrewed++;
-      continue;
-    }
+    if (stepTowards(wanted)) continue;
     if (rocks <= 0) return;
-    earnEssences({ [recipe[0]]: 1 });
+    earnEssences({ [lackingFor(wanted)]: 1 });
     rocks--;
   }
 }
@@ -1194,7 +1190,7 @@ if (withNewSystems) {
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
       `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
-      `ressources du Cœur ${essencesEarned} récoltées, ${runesBrewed} runes du Creuset, ${fusionsFailed} fusions ratées, ` +
+      `ressources du Cœur ${essencesEarned} récoltées, ${runesCreated} runes créées, ${runesGrown} croissances, ` +
       `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );

@@ -49,59 +49,40 @@
       <p class="message" [class.failed]="!note.success" role="status">{{ note.text }}</p>
     }
 
-    <!-- Le Creuset : 3 ressources des Échos donnent une rune, selon la recette -->
+    <!-- Le Creuset : les ressources des Échos créent des runes de rang 1 -->
     <article class="crucible">
       <h3>Creuset du Cœur</h3>
       <img class="machine" src="assets/ui/forge-du-coeur/creuset.webp" alt="" width="400" height="373" />
-      <ol class="funnels" aria-label="Ressources versées">
-        @for (slot of slots(); track slot.index) {
-          <li>
-            <button
-              type="button"
-              class="funnel"
-              [attr.data-essence]="slot.essence"
-              [disabled]="slot.essence === null"
-              [attr.aria-label]="slot.essence ? 'Retirer cette ressource' : 'Emplacement vide'"
-              (click)="removeEssence(slot.index)"
-            >
-              @if (slot.icon; as icon) {
-                <img [src]="icon" alt="" width="128" height="128" />
-              }
-            </button>
-          </li>
-        }
-      </ol>
-      <p class="preview">{{ preview() ?? 'Verse 3 ressources' }}</p>
       <ul class="essences" aria-label="Ressources des Échos">
         @for (essence of essences(); track essence.id) {
-          <li>
-            <button type="button" class="essence" [disabled]="essence.left <= 0" (click)="addEssence(essence.id, essence.left)">
-              <img [src]="essence.icon" alt="" width="128" height="128" />
-              <strong>{{ essence.left }}</strong>
-              <small>{{ essence.label }}</small>
-            </button>
+          <li class="essence">
+            <img [src]="essence.icon" alt="" width="128" height="128" />
+            <strong>{{ essence.left }}</strong>
+            <small>{{ essence.label }}</small>
           </li>
         }
       </ul>
-      <button type="button" class="game-button gold pour" [disabled]="preview() === null" (click)="pour()">Verser au Creuset</button>
       <p class="hint">Les ressources se récoltent dans les Échos des zones 1 à 11, depuis la carte des zones.</p>
     </article>
 
-    <!-- Livre de recettes : les runes trouvées montrent leur recette, les autres restent cachées -->
+    <!-- Créer une rune de rang 1 : les éléments, et les alliances dont une étoile a révélé la recette -->
     <article class="book">
-      <h3>Livre de recettes</h3>
+      <h3>Créer une rune</h3>
       <ul>
-        @for (entry of book(); track entry.type) {
+        @for (entry of creations(); track entry.type) {
           <li [class.known]="entry.known">
             <img [src]="entry.icon" alt="" width="128" height="128" />
-            <span class="name">{{ entry.known ? entry.label : '???' }}</span>
-            <span class="recipe">{{ entry.known ? entry.recipe : 'Recette à découvrir' }}</span>
+            <span class="name">{{ entry.label }}</span>
+            <span class="recipe">{{ entry.cost }}</span>
+            @if (entry.known) {
+              <button type="button" class="create" [disabled]="!entry.canCreate" (click)="create(entry.type)">Créer</button>
+            }
           </li>
         }
       </ul>
     </article>
 
-    <!-- Réserve : fusionner 3 runes d'un type et d'un rang en une du rang suivant -->
+    <!-- Réserve : nourrir une rune de ses ressources pour la faire grandir d'un rang -->
     @if (rows().length > 0) {
       <table class="runes">
         <thead>
@@ -122,12 +103,17 @@
               @for (cell of row.cells; track cell.rank) {
                 <td>
                   <span class="count" [class.zero]="cell.count === 0">{{ cell.count }}</span>
-                  @if (cell.canFuse) {
-                    <button type="button" class="fuse" (click)="fuse(row.type, cell.rank)" [attr.aria-label]="'Fusionner ' + fusionCount + ' runes ' + row.label + ' de rang ' + cell.rank">
-                      Fusion
-                      @if (cell.failPercent > 0) {
-                        <small>{{ cell.failPercent }} % d'échec</small>
-                      }
+                  @if (cell.growCost; as cost) {
+                    <span class="gauge" aria-hidden="true"><span [style.width.%]="cell.progress"></span></span>
+                    <button
+                      type="button"
+                      class="fuse"
+                      [disabled]="!cell.canGrow"
+                      (click)="grow(row.type, cell.rank)"
+                      [attr.aria-label]="'Faire grandir une rune ' + row.label + ' de rang ' + cell.rank + ' : ' + cost"
+                    >
+                      Grandir
+                      <small>{{ cost }}</small>
                     </button>
                   }
                 </td>

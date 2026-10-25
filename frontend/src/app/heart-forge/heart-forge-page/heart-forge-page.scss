@@ -264,7 +264,24 @@
   }
 }
 
-.fuse {
+// Jauge des ressources réunies pour faire grandir la rune
+.gauge {
+  display: block;
+  height: 1cqw;
+  margin: 0.6cqw 0.4cqw 0;
+  overflow: hidden;
+  border-radius: 1cqw;
+  background: rgb(0 0 0 / 35%);
+
+  span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #ffb347, #ff7a1a);
+  }
+}
+
+.fuse,
+.create {
   display: grid;
   margin: 0.8cqw auto 0;
   padding: 0.6cqw 1cqw;
@@ -277,6 +294,11 @@
 
   small {
     font-size: 1.9cqw;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
   }
 }
 
@@ -323,45 +345,6 @@
   }
 }
 
-.funnels {
-  display: flex;
-  gap: 3cqw;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.funnel {
-  width: 11cqw;
-  height: 11cqw;
-  border: 0.5cqw dashed #b08a3e;
-  border-radius: 50%;
-  background: rgb(0 0 0 / 30%);
-  cursor: pointer;
-
-  &[data-essence] {
-    border-style: solid;
-    background: rgb(0 0 0 / 45%);
-  }
-
-  img {
-    width: 100%;
-    height: 100%;
-    padding: 1.2cqw;
-    object-fit: contain;
-  }
-
-  &:disabled {
-    cursor: default;
-  }
-}
-
-.preview {
-  margin: 0;
-  font: 3.6cqw / 1 var(--font-display);
-  color: #ffd36a;
-}
-
 .essences {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -382,7 +365,6 @@
   border-radius: 2cqw;
   background: rgb(0 0 0 / 22%);
   color: inherit;
-  cursor: pointer;
 
   img {
     width: 8cqw;
@@ -399,18 +381,9 @@
     font-size: 2cqw;
     line-height: 1.1;
   }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
 }
 
-.pour {
-  padding: 2cqw 6cqw;
-}
-
-// ─── Livre de recettes ───
+// ─── Créer une rune ───
 
 .book ul {
   display: grid;
@@ -422,7 +395,7 @@
 
   li {
     display: grid;
-    grid-template-columns: 8cqw 18cqw minmax(0, 1fr);
+    grid-template-columns: 8cqw 16cqw minmax(0, 1fr) auto;
     gap: 2cqw;
     align-items: center;
     font-size: 2.6cqw;

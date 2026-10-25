@@ -1,19 +1,18 @@
-import { RING_SOCKETS, STAR_RUNES } from '../balance/heart-forge';
+import { RING_SOCKETS, RUNE_GROW_ESSENCES, STAR_RUNES } from '../balance/heart-forge';
 import {
   addEssences,
-  brew,
-  brewCost,
-  canBrew,
-  canFuse,
+  canCreate,
+  canGrow,
   canSocket,
+  createCost,
+  createRune,
   echoEssence,
   EMPTY_HEART_FORGE,
   essencesFor,
-  fuseRunes,
-  fusionFailChance,
+  growCost,
+  growRune,
   HeartForgeState,
   parseHeartForgeState,
-  recipeResult,
   revealedRecipes,
   runeCount,
   socketOpen,
@@ -21,8 +20,6 @@ import {
   socketRuneIn,
   starRunesSet,
 } from './heart-forge-rules';
-
-const always = (value: number) => () => value;
 
 describe('Échos', () => {
   it('donnent la ressource de leur zone, et rien hors des zones 1 à 11', () => {
@@ -33,54 +30,41 @@ describe('Échos', () => {
   });
 });
 
-describe('Creuset du Cœur', () => {
-  it("donne la rune de l'élément pour 3 ressources identiques", () => {
-    expect(recipeResult(['ember', 'ember', 'ember'])).toBe('fire');
-    expect(recipeResult(['frost', 'frost', 'frost'])).toBe('ice');
-  });
-
-  it("trouve les alliances quel que soit l'ordre des ressources", () => {
-    expect(recipeResult(['sap', 'ember', 'ember'])).toBe('magma');
-    expect(recipeResult(['dawn', 'frost', 'ember'])).toBe('heart');
-  });
-
-  it("donne sinon l'élément le plus présent, ou celui de la 1re ressource", () => {
-    expect(recipeResult(['mist', 'sap', 'mist'])).toBe('shadow');
-    expect(recipeResult(['sap', 'mist', 'frost'])).toBe('earth');
-  });
-
-  it('consomme les ressources, donne une rune de rang 1 et inscrit la recette', () => {
-    const stocked = addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 });
-    expect(canBrew(stocked, ['sap', 'sap', 'sap'])).toBe(false);
-    const { state, rune } = brew(stocked, ['ember', 'ember', 'sap']);
-    expect(rune).toBe('magma');
+describe('Création et croissance des runes', () => {
+  it("crée une rune d'élément pour 3 ressources de son élément", () => {
+    expect(createCost('fire')).toEqual({ ember: 3 });
+    const state = createRune(addEssences(EMPTY_HEART_FORGE, { ember: 3 }), 'fire', 0);
+    expect(runeCount(state, { type: 'fire', rank: 1 })).toBe(1);
     expect(state.essences.ember).toBe(0);
-    expect(runeCount(state, { type: 'magma', rank: 1 })).toBe(1);
-    expect(state.recipes).toEqual(['magma']);
+    expect(state.recipes).toEqual(['fire']);
+  });
+
+  it("ne crée une alliance que si une étoile a révélé sa recette, pour 2 ressources de plus", () => {
+    const stocked = addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 });
+    expect(createCost('magma')).toEqual({ ember: 4, sap: 1 });
+    expect(canCreate(stocked, 'magma', 0)).toBe(false);
+    expect(canCreate(stocked, 'magma', 1)).toBe(true);
+    expect(canCreate(addEssences(EMPTY_HEART_FORGE, { ember: 3, sap: 1 }), 'magma', 1)).toBe(false);
+  });
+
+  it('fait grandir une rune de ses ressources, réparties comme sa recette, sans hasard', () => {
+    expect(growCost({ type: 'ice', rank: 1 })).toEqual({ frost: RUNE_GROW_ESSENCES[2] });
+    expect(growCost({ type: 'magma', rank: 1 })).toEqual({ ember: 4, sap: 2 });
+    const state: HeartForgeState = { ...addEssences(EMPTY_HEART_FORGE, { frost: 6 }), runes: { 'ice:1': 2 } };
+    const grown = growRune(state, { type: 'ice', rank: 1 });
+    expect(runeCount(grown, { type: 'ice', rank: 1 })).toBe(1);
+    expect(runeCount(grown, { type: 'ice', rank: 2 })).toBe(1);
+    expect(grown.essences.frost).toBe(0);
+    expect(canGrow(grown, { type: 'ice', rank: 1 })).toBe(false);
+  });
+
+  it('ne fait pas grandir au-delà du rang 5', () => {
+    expect(growCost({ type: 'heart', rank: 5 })).toBeNull();
+    expect(canGrow({ ...EMPTY_HEART_FORGE, runes: { 'heart:5': 1 } }, { type: 'heart', rank: 5 })).toBe(false);
   });
 });
 
-describe('Fusion et anneau', () => {
-  it('fusionne 3 runes en une du rang suivant', () => {
-    const state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'ice:1': 4 } };
-    const { state: fused, success } = fuseRunes(state, { type: 'ice', rank: 1 }, always(0));
-    expect(success).toBe(true);
-    expect(runeCount(fused, { type: 'ice', rank: 2 })).toBe(1);
-  });
-
-  it('peut rater à partir du rang 3 : il ne reste alors qu’une rune', () => {
-    expect(fusionFailChance(2)).toBe(0);
-    expect(fusionFailChance(5)).toBeGreaterThan(fusionFailChance(4));
-    const state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'storm:2': 3 } };
-    const { state: failed, success } = fuseRunes(state, { type: 'storm', rank: 2 }, always(0));
-    expect(success).toBe(false);
-    expect(runeCount(failed, { type: 'storm', rank: 2 })).toBe(1);
-  });
-
-  it('ne fusionne pas au-delà du rang 5', () => {
-    expect(canFuse({ ...EMPTY_HEART_FORGE, runes: { 'heart:5': 9 } }, { type: 'heart', rank: 5 })).toBe(false);
-  });
-
+describe('Anneau', () => {
   it('demande des étoiles de plus en plus complexes, dans un anneau de 10', () => {
     expect(RING_SOCKETS).toBe(10);
     const essences = STAR_RUNES.map(([first, second]) => essencesFor(first.rank) + essencesFor(second.rank));
@@ -110,17 +94,8 @@ describe('Fusion et anneau', () => {
     expect(revealedRecipes(4)).toEqual(['magma', 'storm', 'grove', 'eclipse', 'heart']);
   });
 
-  it("fait payer 2 ressources de plus pour une rune d'alliance", () => {
-    expect(brewCost(['ember', 'ember', 'ember'])).toHaveLength(3);
-    expect(brewCost(['ember', 'sap', 'ember'])).toEqual(['ember', 'sap', 'ember', 'ember', 'ember']);
-    expect(canBrew(addEssences(EMPTY_HEART_FORGE, { ember: 3, sap: 1 }), ['ember', 'ember', 'sap'])).toBe(false);
-    const { state, rune } = brew(addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 }), ['ember', 'ember', 'sap']);
-    expect(rune).toBe('magma');
-    expect(state.essences.ember + state.essences.sap).toBe(0);
-  });
-
   it('relit une sauvegarde valide et refuse une rune inconnue', () => {
-    const state = brew(addEssences(EMPTY_HEART_FORGE, { mist: 2, dawn: 3 }), ['mist', 'dawn', 'dawn']).state;
+    const state = createRune(addEssences(EMPTY_HEART_FORGE, { mist: 2, dawn: 3 }), 'eclipse', 3);
     expect(parseHeartForgeState(JSON.parse(JSON.stringify(state)))).toEqual(state);
     expect(parseHeartForgeState({ ...state, runes: { 'water:1': 1 } })).toBeNull();
     expect(parseHeartForgeState({ ...state, sockets: [true] })).toBeNull();

@@ -19,10 +19,11 @@ export interface AwakeningCost {
 
 /**
  * Doublons Divin de la pièce pour passer chaque palier (index 0 : vers l'Éveil 1). En fin de partie, la Forge sort
- * environ 170 Divin par emplacement et par jour (simulateur, régulier) : les doublons rythment les premiers paliers,
- * les ressources du Cœur les derniers.
+ * environ 170 Divin par emplacement et par jour (simulateur, régulier) : à 50/150/400/900/1 800, les doublons
+ * n'étaient qu'une formalité (Théo, 25/10/2026) ; multipliés par 6, ils freinent les derniers paliers et la Forge reste
+ * utile des semaines (Éveil 5 des 5 pièces vers le jour 137 au lieu de 129).
  */
-const DUPLICATE_COSTS = [50, 150, 400, 900, 1800] as const;
+const DUPLICATE_COSTS = [300, 900, 2400, 5400, 10800] as const;
 /** Ressources du Cœur pour chaque palier : le gros du temps de fin de partie, avec les runes. */
 const ESSENCE_COSTS = [25, 60, 120, 220, 375] as const;
 

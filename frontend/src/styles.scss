@@ -47,11 +47,37 @@ body {
 [data-awakening='4'] { --frame-light: #ff7a1a; --frame-dark: #24100c; --corrupt-filter: drop-shadow(0 0 1.3cqw #ff5a00); }
 [data-awakening='5'] { --frame-light: #ff6a00; --frame-dark: #0c0605; --corrupt-filter: drop-shadow(0 0 0.5cqw #ffb050) drop-shadow(0 0 1.6cqw #ff5a00); }
 
+// Ondes de braise qui partent du centre de la pièce vers le bord, comme les ondes des objets de Forge Master (demande
+// de Théo, 25/10/2026). --ripple décale les anneaux d'une période : la boucle ne se voit pas.
+@property --ripple {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes corrupted-ripple {
+  to {
+    --ripple: 18%;
+  }
+}
+
 // Plus précis que les styles des composants (cadre Divin arc-en-ciel, filtre des icônes de la barre d'équipement)
 .item-frame[data-tier='divine'][data-awakening] {
   background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent calc(var(--ripple) + 0%),
+      rgb(255 120 30 / 38%) calc(var(--ripple) + 4%),
+      transparent calc(var(--ripple) + 9%),
+      transparent calc(var(--ripple) + 18%)
+    ),
     linear-gradient(rgb(255 255 255 / 12%), transparent 45%),
     linear-gradient(135deg, var(--frame-light), var(--frame-dark));
+  animation: corrupted-ripple 2.4s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 img[data-awakening],

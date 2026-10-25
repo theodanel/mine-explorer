@@ -137,8 +137,11 @@ import {
   starRunesSet,
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
-import { gearRuneBonuses, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
-import { GEAR_SOCKETS_MAX, gearSocketCount } from '../src/app/balance/gear-runes.ts';
+import { gearRuneBonuses, OpenSockets, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
+import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets, MAX_AWAKENING } from '../src/app/balance/awakening.ts';
+import { activeAwakening, awaken, AwakeningState, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
+import { spendEssences } from '../src/app/heart-forge/heart-forge-rules.ts';
+import { GEAR_SOCKETS_TOTAL, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -345,6 +348,9 @@ let shards = 0;
 const ores = Object.fromEntries(TIER_IDS.map((tier) => [tier, 0])) as Record<TierId, number>;
 let pickaxe = { level: 1, segments: 0, upgradeEndsAt: null as number | null };
 let formIndex = 0;
+// Déclarés tôt : gearStats() les lit dès le premier calcul de stats
+let awakeningState: AwakeningState = EMPTY_AWAKENING;
+const withAwakening = withNewSystems && !process.argv.includes('--sans-eveil');
 let counters: Counters = EMPTY_COUNTERS;
 let mainIndex = 0;
 let mainBaseline: Counters = EMPTY_COUNTERS;
@@ -385,6 +391,8 @@ let blastDamage = 0;
 let totalDamage = 0;
 let artifactsFound = 0;
 let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
+/** Jour où la pièce la moins éveillée atteint chaque palier d'Éveil. */
+const awakeningDays: string[] = [];
 let essencesEarned = 0;
 let runesBrewed = 0;
 let fusionsFailed = 0;
@@ -405,12 +413,20 @@ let filonSecondsInZone = 0;
 let filonsInZone = 0;
 
 function gearStats(): MiningStats {
-  const base = computeStats(equipped);
+  const base = computeStats(equipped, awakeningState.levels);
   return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
 function gearSockets(): number {
   return gearSocketCount(EVOLUTION_FORMS[formIndex].stars);
+}
+
+/** Châsses ouvertes par emplacement : les étoiles, plus l'Éveil des pièces Divin. */
+function openSockets(): OpenSockets {
+  const base = gearSockets();
+  return Object.fromEntries(
+    SLOT_IDS.map((slot) => [slot, base === 0 ? 0 : base + awakeningSockets(activeAwakening(equipped, awakeningState.levels, slot))]),
+  ) as Record<SlotId, number>;
 }
 
 function families() {
@@ -420,7 +436,7 @@ function families() {
         equippedArtifactBonuses(artifacts, artifactSlots()),
         activeCompanionBonuses(companions),
         // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
-        withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, gearSockets()) : NO_BONUSES,
+        withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, openSockets()) : NO_BONUSES,
       ]
     : [NO_BONUSES];
 }
@@ -480,9 +496,10 @@ function forgeAll(now: number): void {
     forges++;
     record('itemsForged');
     const item: Item = rollItem(random, createId, pickaxe.level);
-    if (powerDelta(equipped, item, workshop) > 0) {
+    if (powerDelta(equipped, item, workshop, awakeningState.levels) > 0) {
       const replaced = equipped[item.slot];
       if (replaced) {
+        if (awakeningUnlocked()) awakeningState = recordDuplicate(awakeningState, replaced);
         gold += sellPrice(replaced);
         goldFromSales += sellPrice(replaced);
         record('itemsSold');
@@ -491,6 +508,7 @@ function forgeAll(now: number): void {
       equipped = { ...equipped, [item.slot]: item };
       refresh(now);
     } else {
+      if (awakeningUnlocked()) awakeningState = recordDuplicate(awakeningState, item);
       gold += sellPrice(item);
       goldFromSales += sellPrice(item);
       record('itemsSold');
@@ -790,10 +808,11 @@ const GEAR_PLAN: readonly [SlotId, RuneType][] = [
 let gearRunesSet = 0;
 
 function gearTargets(): { slot: SlotId; socket: number; type: RuneType }[] {
-  const open = gearSockets();
+  const open = openSockets();
   const targets: { slot: SlotId; socket: number; type: RuneType }[] = [];
-  for (let socket = 0; socket < Math.min(open, GEAR_SOCKETS_MAX); socket++) {
+  for (let socket = 0; socket < GEAR_SOCKETS_TOTAL; socket++) {
     for (const [slot, type] of GEAR_PLAN) {
+      if (socket >= open[slot]) continue;
       const current = heartForge.gear[slot][socket];
       if (current === null || current.rank < GEAR_TARGET_RANK) targets.push({ slot, socket, type });
     }
@@ -809,7 +828,7 @@ function craftGearRunes(): void {
     if (target === undefined) return;
     const wanted = { type: target.type, rank: GEAR_TARGET_RANK };
     if (runeCount(heartForge, wanted) > 0) {
-      heartForge = setGearRune(heartForge, target.slot, target.socket, wanted, gearSockets());
+      heartForge = setGearRune(heartForge, target.slot, target.socket, wanted, openSockets()[target.slot]);
       gearRunesSet++;
       continue;
     }
@@ -835,6 +854,46 @@ function craftGearRunes(): void {
     earnEssences({ [recipe[0]]: 1 });
     rocks--;
   }
+}
+
+/**
+ * Éveil des pièces Divin (dès la Légende du Cœur du monde) : le joueur passe AWAKEN_ECHO_MINUTES par jour dans les
+ * Échos pour la ressource de la pièce la moins éveillée, puis éveille tout ce qu'il peut payer, la moins éveillée
+ * d'abord. Les runes passent avant.
+ */
+const AWAKEN_ECHO_MINUTES_PER_DAY = Number(process.env.AWAKEN_ECHO_MINUTES ?? 10);
+function awakeningUnlocked(): boolean {
+  return withAwakening && formIndex >= EVOLUTION_FORMS.findIndex((form) => form.id === AWAKENING_UNLOCK_FORM);
+}
+function awakenGear(now: number): void {
+  if (!awakeningUnlocked()) return;
+  const byLevel = () => [...SLOT_IDS].sort((a, b) => (awakeningState.levels[a] ?? 0) - (awakeningState.levels[b] ?? 0));
+  let rocks = Math.round((AWAKEN_ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
+  const target = byLevel().find((slot) => equipped[slot]?.tier === 'divine' && (awakeningState.levels[slot] ?? 0) < MAX_AWAKENING);
+  const cost = target === undefined ? null : awakeningCost(target, awakeningState.levels[target] ?? 0);
+  if (cost !== null) {
+    while (rocks-- > 0) earnEssences({ [cost.essence]: 1 });
+  }
+  for (let guard = 0; guard < 25; guard++) {
+    const slot = byLevel().find((id) => {
+      const next = awakeningCost(id, awakeningState.levels[id] ?? 0);
+      return (
+        equipped[id]?.tier === 'divine' &&
+        next !== null &&
+        (awakeningState.duplicates[id] ?? 0) >= next.duplicates &&
+        heartForge.essences[next.essence] >= next.essences
+      );
+    });
+    if (slot === undefined) break;
+    const next = awakeningCost(slot, awakeningState.levels[slot] ?? 0);
+    const paid = next === null ? null : spendEssences(heartForge, { [next.essence]: next.essences });
+    if (paid === null) break;
+    heartForge = paid;
+    awakeningState = awaken(awakeningState, slot);
+  }
+  const lowest = lowestAwakening(equipped, awakeningState.levels);
+  while (awakeningDays.length < lowest) awakeningDays.push(fmt(now));
+  refresh(now);
 }
 
 /** Une fois par jour, réforge chaque artefact porté au niveau 5 qu'on peut payer, et garde l'effet s'il est meilleur. */
@@ -1095,6 +1154,7 @@ for (let day = 0; day < days; day++) {
   reforgeArtifacts(lastSeen);
   craftRunes();
   craftGearRunes();
+  awakenGear(lastSeen);
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -1112,6 +1172,12 @@ console.log(`Profil ${profile}, ${days} jours${withNewSystems ? '' : ' (sans arb
 console.log(milestones.join('\n'));
 console.log('');
 console.log(daily.join('\n'));
+if (withAwakening) {
+  console.log(
+    `\nÉveil (Divin corrompu) : les 5 pièces à l'Éveil ${awakeningDays.map((day, index) => `${index + 1} ${day}`).join(', ') || 'jamais atteint'} ; ` +
+      `paliers ${SLOT_IDS.map((slot) => `${slot} ${awakeningState.levels[slot] ?? 0}`).join(', ')}`,
+  );
+}
 console.log(`\nOr gagné : minage ${big(goldMined)}, absence ${big(goldOffline)}, ventes ${big(goldFromSales)} (${sold} objets), événements ${big(goldEvents)} (${eventsSeen} apparus)`);
 console.log(`Éclats sur la partie : ${Object.entries(shardSources).map(([key, value]) => `${key} ${value}`).join(', ')}`);
 const pct = (value: number): string => `${Math.round(value * 100)} %`;

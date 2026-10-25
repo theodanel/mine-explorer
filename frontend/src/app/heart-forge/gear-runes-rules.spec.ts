@@ -3,7 +3,8 @@ import {
   EMPTY_GEAR_RUNES,
   gearRuneBonuses,
   removeGearRune,
-  resonates,
+  resonantType,
+  sameOpenSockets,
   runeEffects,
   setGearRune,
 } from './gear-runes-rules';
@@ -62,27 +63,39 @@ describe('runes d’équipement', () => {
   });
 
   it('fait résonner trois runes du même type, seulement quand les trois châsses sont ouvertes', () => {
-    const gear = { ...EMPTY_GEAR_RUNES, bag: [FIRE_2, FIRE_1, FIRE_2] };
-    expect(resonates(gear.bag)).toBe(true);
-    expect(resonates([FIRE_2, ICE_1, FIRE_2])).toBe(false);
+    const gear = { ...EMPTY_GEAR_RUNES, bag: [FIRE_2, FIRE_1, FIRE_2, null, null] };
+    expect(resonantType(gear.bag)).toBe('fire');
+    expect(resonantType([FIRE_2, ICE_1, FIRE_2])).toBeNull();
     const single = ELEMENT_EFFECTS.fire.values[1];
     const total = (2 * single + ELEMENT_EFFECTS.fire.values[0]) * RESONANCE_MULTIPLIER;
-    expect(gearRuneBonuses(gear, 3).strikePct).toBeCloseTo(total);
+    expect(gearRuneBonuses(gear, sameOpenSockets(3)).strikePct).toBeCloseTo(total);
     // Deux châsses ouvertes : seules les deux premières comptent, sans résonance
-    expect(gearRuneBonuses(gear, 2).strikePct).toBeCloseTo(single + ELEMENT_EFFECTS.fire.values[0]);
+    expect(gearRuneBonuses(gear, sameOpenSockets(2)).strikePct).toBeCloseTo(single + ELEMENT_EFFECTS.fire.values[0]);
+  });
+
+  it('fait résonner seulement les runes du type répété quand l’Éveil ouvre deux châsses de plus', () => {
+    const gear = { ...EMPTY_GEAR_RUNES, bag: [FIRE_1, FIRE_1, ICE_1, FIRE_1, ICE_1] };
+    const bonuses = gearRuneBonuses(gear, sameOpenSockets(5));
+    expect(bonuses.strikePct).toBeCloseTo(3 * ELEMENT_EFFECTS.fire.values[0] * RESONANCE_MULTIPLIER);
+    expect(bonuses.critChance).toBeCloseTo(2 * ELEMENT_EFFECTS.ice.values[0]);
+  });
+
+  it('agrandit une ancienne sauvegarde à trois châsses', () => {
+    const old = { ...EMPTY_HEART_FORGE, gear: Object.fromEntries(Object.keys(EMPTY_GEAR_RUNES).map((slot) => [slot, [FIRE_1, null, null]])) };
+    expect(parseHeartForgeState(old)?.gear.bag).toEqual([FIRE_1, null, null, null, null]);
   });
 
   it('additionne toutes les runes serties en une famille de bonus', () => {
-    const gear = { ...EMPTY_GEAR_RUNES, bag: [ICE_1, null, null], boots: [ICE_1, null, null] };
-    expect(gearRuneBonuses(gear, 1).critChance).toBeCloseTo(2 * ELEMENT_EFFECTS.ice.values[0]);
-    expect(gearRuneBonuses(gear, 0).critChance).toBe(0);
+    const gear = { ...EMPTY_GEAR_RUNES, bag: [ICE_1, null, null, null, null], boots: [ICE_1, null, null, null, null] };
+    expect(gearRuneBonuses(gear, sameOpenSockets(1)).critChance).toBeCloseTo(2 * ELEMENT_EFFECTS.ice.values[0]);
+    expect(gearRuneBonuses(gear, sameOpenSockets(0)).critChance).toBe(0);
   });
 
   it('lit une ancienne sauvegarde sans runes d’équipement, et refuse une rune inconnue', () => {
     const { gear, ...old } = EMPTY_HEART_FORGE;
     expect(gear).toBe(EMPTY_GEAR_RUNES);
     expect(parseHeartForgeState(old)?.gear).toEqual(EMPTY_GEAR_RUNES);
-    const broken = { ...EMPTY_HEART_FORGE, gear: { ...EMPTY_GEAR_RUNES, bag: [{ type: 'gold', rank: 1 }, null, null] } };
+    const broken = { ...EMPTY_HEART_FORGE, gear: { ...EMPTY_GEAR_RUNES, bag: [{ type: 'gold', rank: 1 }, null, null, null, null] } };
     expect(parseHeartForgeState(broken)).toBeNull();
   });
 });

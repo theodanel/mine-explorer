@@ -8,6 +8,7 @@ import { ID_FACTORY, RANDOM } from '../shared/random';
 import { MissionCounters } from '../missions/mission-counters';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
+import { Awakening } from './awakening';
 import { computePower, computeStats, rollItem, sellPrice } from './equipment-rules';
 import { EMPTY_SAVE, EquipmentSave, parseEquipmentSave } from './equipment-save';
 import { EquippedItems, Item, MiningStats } from './equipment.model';
@@ -44,6 +45,7 @@ export class Inventory {
   private readonly createId = inject(ID_FACTORY);
   private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
+  private readonly awakening = inject(Awakening);
   private readonly state = signal<EquipmentSave>(loadSave());
   private readonly animationMs = inject(FORGE_ANIMATION_MS);
   private readonly forgingState = signal(false);
@@ -75,9 +77,9 @@ export class Inventory {
   readonly forgeCost = FORGE_SHARD_COST;
   readonly canForge = computed(() => this.pending() === null && !this.forging() && this.shards.amount() >= FORGE_SHARD_COST);
 
-  /** Stats d'un équipement, porté ou envisagé, avec le bonus de Frappe des évolutions du mineur. */
+  /** Stats d'un équipement, porté ou envisagé, avec l'Éveil des emplacements et le bonus de Frappe des évolutions. */
   statsOf(equipped: EquippedItems): MiningStats {
-    const stats = computeStats(equipped);
+    const stats = computeStats(equipped, this.awakening.levels());
     return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
   }
 
@@ -155,6 +157,7 @@ export class Inventory {
   sellPending(): void {
     const item = this.requirePending();
     this.wallet.add(sellPrice(item));
+    this.awakening.onSold(item);
     this.missionCounters.record('itemsSold');
     this.save({ ...this.state(), pending: null });
     this.pendingIsPrevious.set(false);

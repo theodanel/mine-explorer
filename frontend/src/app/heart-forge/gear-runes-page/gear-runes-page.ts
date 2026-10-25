@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
+import { AWAKENING_SOCKET_LEVELS } from '../../balance/awakening';
 import { GEAR_SOCKETS_MAX } from '../../balance/gear-runes';
 import { MAX_RUNE_RANK, RUNE_LABELS, RUNE_TYPES } from '../../balance/heart-forge';
 import { BONUS_IDS, BonusId, NO_BONUSES } from '../../balance/skill-tree';
@@ -8,7 +9,7 @@ import { SLOT_IDS, SLOTS, SlotId } from '../../equipment/equipment.model';
 import { describeBonus, describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { GearRunes } from '../gear-runes';
-import { resonates, runeEffects } from '../gear-runes-rules';
+import { resonantType, runeEffects } from '../gear-runes-rules';
 import { HeartForge } from '../heart-forge';
 import { Rune, runeCount } from '../heart-forge-rules';
 import { runeIconUrl } from '../heart-forge-page/heart-forge-page';
@@ -57,12 +58,16 @@ export class GearRunesPage {
 
   protected readonly slots = computed(() => {
     const gear = this.gearRunes.gear();
-    const open = this.gearRunes.socketCount();
+    const openSockets = this.gearRunes.openSockets();
     const selected = this.selection();
     return SLOT_IDS.map((slot) => {
+      const open = openSockets[slot];
       const runes = gear[slot];
-      const resonance = open === GEAR_SOCKETS_MAX && resonates(runes);
-      const effects = runes.slice(0, open).flatMap((rune) => (rune === null ? [] : runeEffects(rune, slot, resonance)));
+      const resonant = resonantType(runes.slice(0, open));
+      const resonance = resonant !== null;
+      const effects = runes
+        .slice(0, open)
+        .flatMap((rune) => (rune === null ? [] : runeEffects(rune, slot, rune.type === resonant)));
       return {
         slot,
         label: SLOTS[slot].label,
@@ -72,7 +77,13 @@ export class GearRunesPage {
         sockets: runes.map((rune, socket) => ({
           socket,
           open: socket < open,
-          star: socket + 1,
+          // Une rune restée dans une châsse refermée (pièce qui n'est plus Divin) peut encore être retirée
+          reachable: socket < open || rune !== null,
+          lockLabel: socket < GEAR_SOCKETS_MAX ? `★${socket + 1}` : `Éveil ${AWAKENING_SOCKET_LEVELS[socket - GEAR_SOCKETS_MAX]}`,
+          lockHint:
+            socket < GEAR_SOCKETS_MAX
+              ? `Châsse fermée jusqu'à l'étoile ${socket + 1}`
+              : `Châsse fermée jusqu'à l'Éveil ${AWAKENING_SOCKET_LEVELS[socket - GEAR_SOCKETS_MAX]} d'une pièce Divin`,
           rune,
           icon: rune === null ? null : runeIconUrl(rune.type),
           selected: selected?.slot === slot && selected.socket === socket,
@@ -113,8 +124,8 @@ export class GearRunesPage {
     return selection === null ? '' : `${SLOTS[selection.slot].label}, châsse ${selection.socket + 1}`;
   });
 
-  protected select(slot: SlotId, socket: number, open: boolean): void {
-    if (!open) {
+  protected select(slot: SlotId, socket: number, reachable: boolean): void {
+    if (!reachable) {
       return;
     }
     const current = this.selection();

@@ -1,0 +1,161 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 6cqw;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  position: relative;
+  display: grid;
+  gap: 3cqw;
+  width: 100%;
+  padding: 5cqw;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    margin: 0;
+    font-size: 5cqw;
+  }
+}
+
+.title-text {
+  display: grid;
+  gap: 1cqw;
+}
+
+.tier {
+  color: var(--tier-color, #fff3dc);
+  font-size: 3.4cqw;
+}
+
+.piece-icon {
+  width: 18cqw;
+  height: 18cqw;
+  object-fit: contain;
+}
+
+.stats {
+  display: grid;
+  gap: 1.2cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.4cqw 2.4cqw;
+    border-radius: 2cqw;
+    background: rgb(0 0 0 / 25%);
+    font-size: 3.4cqw;
+  }
+}
+
+// L'Éveil : un encart d'obsidienne veinée d'orange, de plus en plus sombre
+.awaken {
+  display: grid;
+  gap: 2cqw;
+  padding: 3cqw;
+  border: 0.5cqw solid #6b3a1f;
+  border-radius: 3cqw;
+  background: linear-gradient(160deg, #2b1d18, #140c0a);
+
+  &.corrupted {
+    border-color: #ff7a1a;
+    box-shadow: 0 0 3cqw rgb(255 110 20 / 35%);
+  }
+
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2cqw;
+    margin: 0;
+    color: #ffb070;
+    font-size: 4.2cqw;
+  }
+}
+
+.bonus {
+  padding: 0.6cqw 2cqw;
+  border-radius: 999px;
+  background: #ff7a1a;
+  color: var(--ink);
+  font-size: 2.8cqw;
+}
+
+.pips {
+  display: flex;
+  gap: 1.6cqw;
+  margin: 0;
+}
+
+.pip {
+  width: 4cqw;
+  height: 4cqw;
+  border: 0.4cqw solid #6b3a1f;
+  border-radius: 50%;
+  background: #1a100c;
+
+  &.lit {
+    border-color: #ffb070;
+    background: radial-gradient(circle, #ffd27a, #ff6a00 70%);
+    box-shadow: 0 0 1.6cqw #ff7a1a;
+  }
+}
+
+.next,
+.hint {
+  margin: 0;
+  color: #ffe2b0;
+  font-size: 3.2cqw;
+  line-height: 1.35;
+}
+
+.hint {
+  color: #ffb4a2;
+}
+
+.cost {
+  display: grid;
+  gap: 1.2cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 2cqw;
+    font-size: 3.2cqw;
+
+    img {
+      width: 7cqw;
+      height: 7cqw;
+      object-fit: contain;
+    }
+
+    strong {
+      margin-left: auto;
+    }
+  }
+}
+
+.awaken-button {
+  padding: 2.6cqw;
+  background: linear-gradient(#ff9a3c, #d24a00);
+  font-size: 4.4cqw;
+}
+
+.close {
+  position: absolute;
+  top: 2cqw;
+  right: 2cqw;
+}

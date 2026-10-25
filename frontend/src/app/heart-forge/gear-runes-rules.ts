@@ -6,7 +6,8 @@ import {
   ALLIANCE_ELEMENTS,
   ALLIANCE_TOTAL_SHARE,
   ELEMENT_EFFECTS,
-  GEAR_SOCKETS_MAX,
+  GEAR_SOCKETS_TOTAL,
+  RESONANCE_MIN_RUNES,
   RESONANCE_MULTIPLIER,
   STAT_BONUS,
 } from '../balance/gear-runes';
@@ -18,9 +19,18 @@ import type { HeartForgeState, Rune } from './heart-forge-rules';
 /** Runes serties sur chaque emplacement, châsse par châsse (null : châsse vide). */
 export type GearRunes = Readonly<Record<SlotId, readonly (Rune | null)[]>>;
 
-export const EMPTY_GEAR_RUNES: GearRunes = Object.fromEntries(
-  SLOT_IDS.map((slot) => [slot, Array.from({ length: GEAR_SOCKETS_MAX }, () => null)]),
-) as unknown as GearRunes;
+/** Châsses ouvertes sur chaque emplacement : selon les étoiles, et l'Éveil de la pièce. */
+export type OpenSockets = Readonly<Record<SlotId, number>>;
+
+export function sameOpenSockets(count: number): OpenSockets {
+  return Object.fromEntries(SLOT_IDS.map((slot) => [slot, count])) as Record<SlotId, number>;
+}
+
+function emptySockets(): (Rune | null)[] {
+  return Array.from({ length: GEAR_SOCKETS_TOTAL }, () => null);
+}
+
+export const EMPTY_GEAR_RUNES: GearRunes = Object.fromEntries(SLOT_IDS.map((slot) => [slot, emptySockets()])) as unknown as GearRunes;
 
 /** Un effet d'une rune : le bonus et sa valeur, affinité et résonance comprises. */
 export interface RuneEffect {
@@ -41,10 +51,15 @@ function elementsOf(rune: Rune): { readonly element: RuneElement; readonly share
   return elements.map((element) => ({ element, share: ALLIANCE_TOTAL_SHARE / elements.length }));
 }
 
-/** Les trois châsses de l'emplacement serties du même type de rune. */
-export function resonates(runes: readonly (Rune | null)[]): boolean {
-  const first = runes[0];
-  return runes.length === GEAR_SOCKETS_MAX && first !== null && runes.every((rune) => rune !== null && rune.type === first.type);
+/** Type de rune qui résonne parmi ces runes (au moins trois du même type), ou null. */
+export function resonantType(runes: readonly (Rune | null)[]): Rune['type'] | null {
+  const counts = new Map<Rune['type'], number>();
+  for (const rune of runes) {
+    if (rune !== null) {
+      counts.set(rune.type, (counts.get(rune.type) ?? 0) + 1);
+    }
+  }
+  return [...counts].find(([, count]) => count >= RESONANCE_MIN_RUNES)?.[0] ?? null;
 }
 
 /** Effets d'une rune sertie sur un emplacement : affinité si elle renforce l'esprit de la pièce, et résonance. */
@@ -62,16 +77,16 @@ export function runeEffects(rune: Rune, slot: SlotId, resonance: boolean): RuneE
  * multiplie avec les autres (compétences, artefact, compagnon) pour la Frappe et l'or. Seules les châsses ouvertes
  * comptent.
  */
-export function gearRuneBonuses(gear: GearRunes, socketCount: number): Bonuses {
+export function gearRuneBonuses(gear: GearRunes, openSockets: OpenSockets): Bonuses {
   const totals: Record<BonusId, number> = { ...NO_BONUSES };
   for (const slot of SLOT_IDS) {
-    const open = gear[slot].slice(0, socketCount);
-    const resonance = socketCount === GEAR_SOCKETS_MAX && resonates(open);
+    const open = gear[slot].slice(0, openSockets[slot]);
+    const resonant = resonantType(open);
     for (const rune of open) {
       if (rune === null) {
         continue;
       }
-      for (const { bonus, value } of runeEffects(rune, slot, resonance)) {
+      for (const { bonus, value } of runeEffects(rune, slot, rune.type === resonant)) {
         totals[bonus] += value;
       }
     }
@@ -116,7 +131,10 @@ export function removeGearRune(state: HeartForgeState, slot: SlotId, socket: num
   return rune === null ? state : withSocket(withRune(state, rune, 1), slot, socket, null);
 }
 
-/** Lecture d'une sauvegarde : absente (avant le 19/10/2026), les châsses sont vides. */
+/**
+ * Lecture d'une sauvegarde : absente (avant le 19/10/2026), les châsses sont vides ; à trois châsses (avant l'Éveil,
+ * 21/10/2026), les deux de l'Éveil s'ajoutent vides.
+ */
 export function parseGearRunes(value: unknown, isRune: (rune: unknown) => rune is Rune): GearRunes | null {
   if (value === undefined) {
     return EMPTY_GEAR_RUNES;
@@ -127,7 +145,18 @@ export function parseGearRunes(value: unknown, isRune: (rune: unknown) => rune i
   const gear = value as Record<string, unknown>;
   const valid = SLOT_IDS.every((slot) => {
     const runes = gear[slot];
-    return Array.isArray(runes) && runes.length === GEAR_SOCKETS_MAX && runes.every((rune) => rune === null || isRune(rune));
+    return (
+      Array.isArray(runes) &&
+      runes.length >= 1 &&
+      runes.length <= GEAR_SOCKETS_TOTAL &&
+      runes.every((rune) => rune === null || isRune(rune))
+    );
   });
-  return valid ? (gear as GearRunes) : null;
+  if (!valid) {
+    return null;
+  }
+  const typed = gear as Record<SlotId, readonly (Rune | null)[]>;
+  return Object.fromEntries(
+    SLOT_IDS.map((slot) => [slot, [...typed[slot], ...emptySockets()].slice(0, GEAR_SOCKETS_TOTAL)]),
+  ) as unknown as GearRunes;
 }

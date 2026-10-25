@@ -7,6 +7,15 @@ import type { BonusId } from './skill-tree';
 /** Châsses par emplacement : une par étoile du Cœur du monde, trois au plus (dès la 3e étoile). */
 export const GEAR_SOCKETS_MAX = 3;
 
+/**
+ * Châsses d'un emplacement au total : les trois des étoiles, plus deux ouvertes par l'Éveil d'une pièce Divin
+ * (paliers 2 et 4, voir balance/awakening.ts).
+ */
+export const GEAR_SOCKETS_TOTAL = 5;
+
+/** Il faut au moins trois runes du même type sur un emplacement pour qu'elles résonnent. */
+export const RESONANCE_MIN_RUNES = 3;
+
 export function gearSocketCount(stars: number): number {
   return Math.min(Math.max(stars, 0), GEAR_SOCKETS_MAX);
 }
@@ -46,7 +55,7 @@ export const ALLIANCE_TOTAL_SHARE = 1.2;
 
 /** Rune sertie sur l'emplacement dont c'est l'esprit (Feu sur la pioche, Lumière sur le sac…) : +50 %. */
 export const AFFINITY_MULTIPLIER = 1.5;
-/** Résonance : les trois châsses d'un emplacement serties de la même rune, même rang ou non : +25 %. */
+/** Résonance : au moins trois runes du même type sur un emplacement, même rang ou non : chacune +25 %. */
 export const RESONANCE_MULTIPLIER = 1.25;
 
 /** Bonus qui correspond à la stat d'Atelier d'un emplacement, pour l'affinité. */

@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 
 import { ARTIFACTS } from '../../balance/artifacts';
 import { tierIndex } from '../../balance/balance';
@@ -18,6 +18,9 @@ import { formatStatDelta } from '../equipment-format';
 import { gearSet, sellPrice } from '../equipment-rules';
 import { Item, SLOT_IDS, SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
+import { Awakening } from '../awakening';
+import { activeAwakening, applyAwakening } from '../awakening-rules';
+import { ItemSheet } from '../item-sheet/item-sheet';
 
 /** Emplacement d'objet, case d'artefact ou de compagnon, ou null pour une case verrouillée réservée à plus tard. */
 export type ColumnSlot = SlotId | 'artifact' | 'companion' | null;
@@ -27,7 +30,7 @@ const SET_HINT_PIECES = 2;
 
 @Component({
   selector: 'app-equipment-column',
-  imports: [Tooltip],
+  imports: [Tooltip, ItemSheet],
   templateUrl: './equipment-column.html',
   styleUrl: './equipment-column.scss',
 })
@@ -41,6 +44,10 @@ export class EquipmentColumn {
   readonly row = input(false);
   private readonly companions = inject(Companions);
   private readonly gearRunes = inject(GearRunes);
+  private readonly awakening = inject(Awakening);
+
+  /** Pièce dont la fiche est ouverte (stats et Éveil). */
+  protected readonly sheetSlot = signal<SlotId | null>(null);
 
   /** Emplacement de la meilleure pièce portée (le palier le plus haut) : elle respire pour attirer l'œil. */
   private readonly bestSlot = computed(() => {
@@ -59,9 +66,11 @@ export class EquipmentColumn {
     const bestSlot = this.bestSlot();
     const gear = this.gearRunes.gear();
     // Panoplie active : les pièces du palier qui donne le bonus s'illuminent
-    const set = gearSet(equipped);
+    const awakening = this.awakening.levels();
+    const awakened = applyAwakening(equipped, awakening);
+    const set = gearSet(equipped, awakening);
     const setTier = set !== null && set.strikePct > 0 ? set.tier : null;
-    const openSockets = this.gearRunes.socketCount();
+    const openSockets = this.gearRunes.openSockets();
     return this.slots().map((slot, index) => {
       if (slot === null) {
         return { key: `locked-${index}`, kind: 'locked' as const, tooltip: 'Emplacement bientôt disponible.' };
@@ -81,20 +90,23 @@ export class EquipmentColumn {
         iconUrl: itemIconUrl(slot, item?.tier ?? null, iconUrl),
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
+        awakening: activeAwakening(equipped, awakening, slot),
         best: slot === bestSlot,
         inSet: setTier !== null && item?.tier === setTier,
         // Runes serties sur l'emplacement : de petites gemmes au coin du cadre, qui rendent chaque équipement unique
         runes: gear[slot]
-          .slice(0, openSockets)
+          .slice(0, openSockets[slot])
           .flatMap((rune, socket) => (rune === null ? [] : [{ key: `${socket}-${rune.type}`, icon: runeIconUrl(rune.type) }])),
-        tooltip: item ? itemCard(label, item) : `${label} : vide. Forge un objet pour l'équiper ici.`,
+        tooltip: item
+          ? itemCard(label, item, awakened[slot] ?? item, activeAwakening(equipped, awakening, slot))
+          : `${label} : vide. Forge un objet pour l'équiper ici.`,
       };
     });
   });
 
   /** Panoplie portée, affichée dès 2 pièces du même palier : le joueur voit ce qu'il lui manque pour le bonus. */
   protected readonly setBadge = computed(() => {
-    const set = gearSet(this.inventory.equipped());
+    const set = gearSet(this.inventory.equipped(), this.awakening.levels());
     if (set === null || set.pieces < SET_HINT_PIECES) {
       return null;
     }
@@ -105,6 +117,14 @@ export class EquipmentColumn {
         : `Panoplie ${label} : bonus à 3 pièces du même rang`;
     return { tier: set.tier, text, active: set.strikePct > 0 };
   });
+
+  /** Ouvre la fiche d'une pièce portée ; un emplacement vide n'a pas de fiche. */
+  protected openSheet(key: string): void {
+    const slot = SLOT_IDS.find((id) => id === key);
+    if (slot !== undefined && this.inventory.equipped()[slot] !== undefined) {
+      this.sheetSlot.set(slot);
+    }
+  }
 
   protected openArtifacts(): void {
     this.navigation.open('artifacts');
@@ -176,14 +196,15 @@ export class EquipmentColumn {
   }
 }
 
-/** Carte affichée au survol d'un objet porté : matériau, niveau, effets et prix de revente. */
-function itemCard(label: string, item: Item): TooltipContent {
-  const effects = STAT_IDS.filter((stat) => item.stats[stat] !== undefined).map(
-    (stat) => `${STATS[stat].label} ${formatStatDelta(stat, item.stats[stat] ?? 0)}`,
+/** Carte affichée au survol d'un objet porté : matériau, niveau, Éveil, effets (Éveil compris) et prix de revente. */
+function itemCard(label: string, item: Item, shown: Item, awakening: number): TooltipContent {
+  const effects = STAT_IDS.filter((stat) => shown.stats[stat] !== undefined).map(
+    (stat) => `${STATS[stat].label} ${formatStatDelta(stat, shown.stats[stat] ?? 0)}`,
   );
+  const tierLabel = awakening > 0 ? `${TIER_LABELS[item.tier]} corrompu · Éveil ${awakening}` : TIER_LABELS[item.tier];
   return {
     title: label,
-    badge: { label: `${TIER_LABELS[item.tier]} · Niv. ${item.level}`, tier: item.tier },
-    lines: [...effects, `Revente : ${sellPrice(item)} or`],
+    badge: { label: `${tierLabel} · Niv. ${item.level}`, tier: item.tier },
+    lines: [...effects, `Revente : ${sellPrice(item)} or`, 'Touche pour ouvrir la fiche.'],
   };
 }

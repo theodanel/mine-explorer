@@ -37,9 +37,11 @@ export function isAlliance(type: RuneType): boolean {
   return (ALLIANCE_RUNES as readonly string[]).includes(type);
 }
 
-/** « 25 Braise vive et 12 Sève de pierre ». */
+/** Coût en ressources, en toutes lettres. */
 function describeCost(cost: Partial<Record<EssenceId, number>>): string {
+  // La ressource principale d'abord : « 4 Braise vive et 1 Sève de pierre »
   return ESSENCES.filter((id) => (cost[id] ?? 0) > 0)
+    .sort((a, b) => (cost[b] ?? 0) - (cost[a] ?? 0))
     .map((id) => `${cost[id]} ${ESSENCE_LABELS[id]}`)
     .join(' et ');
 }

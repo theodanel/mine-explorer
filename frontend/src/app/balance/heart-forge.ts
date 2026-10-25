@@ -85,9 +85,10 @@ export const RUNE_CREATE_ESSENCES = 3;
 /**
  * Runes qui grandissent (choix de Théo, 25/10/2026, à la place des fusions) : ressources à donner à une rune pour
  * passer au rang indiqué. Calé sur ce que coûtaient les fusions en comptant leurs échecs (20/30/35 % aux rangs 3/4/5) :
- * même difficulté, sans le hasard. Total depuis la création : 9 au rang 2, 34 au rang 3, 144 au rang 4, 674 au rang 5.
+ * même difficulté, sans le hasard. Total depuis la création : 9 au rang 2, 34 au rang 3, 144 au rang 4, 494 au rang 5 (rang 5 ramené de 530 à 350 :
+ * 5e étoile au jour 67 au simulateur, comme avec les fusions).
  */
-export const RUNE_GROW_ESSENCES: Readonly<Record<number, number>> = { 2: 6, 3: 25, 4: 110, 5: 530 };
+export const RUNE_GROW_ESSENCES: Readonly<Record<number, number>> = { 2: 6, 3: 25, 4: 110, 5: 350 };
 
 /** Runes à sertir pour chaque étoile, de la 1re à la 5e : de plus en plus complexes. */
 export const STAR_RUNES: readonly (readonly [{ type: RuneType; rank: number }, { type: RuneType; rank: number }])[] = [

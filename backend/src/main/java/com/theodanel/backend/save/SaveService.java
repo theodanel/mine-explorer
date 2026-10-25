@@ -76,6 +76,12 @@ public class SaveService {
 		}).orElse(Set.of());
 	}
 
+	/** Ce que les autres joueurs voient de la partie : zone, forme et équipement porté (profil vide sans sauvegarde). */
+	@Transactional(readOnly = true)
+	public PublicProfile publicProfile(UUID playerId) {
+		return find(playerId).map(save -> PublicProfile.read(save.data(), json)).orElse(PublicProfile.EMPTY);
+	}
+
 	@Transactional(readOnly = true)
 	public Optional<StoredSave> find(UUID playerId) {
 		return saves.findById(playerId)

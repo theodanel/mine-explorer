@@ -2,6 +2,7 @@ package com.theodanel.backend.chat;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Limit;
@@ -18,6 +19,15 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 	List<ChatLine> latestVisible(Limit limit);
 
 	boolean existsByPlayerIdAndSentAtAfter(UUID playerId, Instant since);
+
+	Optional<ChatMessage> findByIdAndHiddenFalse(long id);
+
+	long countByHiddenFalseAndIdGreaterThan(long after);
+
+	long countByHiddenFalseAndIdGreaterThanAndPlayerIdNot(long after, UUID playerId);
+
+	@Query("select coalesce(max(m.id), 0) from ChatMessage m where m.hidden = false")
+	long lastVisibleId();
 
 	List<ChatMessage> findByPlayerIdOrderByIdAsc(UUID playerId);
 

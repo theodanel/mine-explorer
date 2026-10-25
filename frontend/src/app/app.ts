@@ -24,6 +24,7 @@ import { AchievementToast } from './achievements/achievement-toast';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
+import { ChatUnread } from './online/chat/chat-unread';
 import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
 import { ONLINE_CONFIG } from './online/online-config';
 import { environment } from '../environments/environment';
@@ -125,6 +126,8 @@ export class App {
   protected readonly navigation = inject(Navigation);
   protected readonly playerName = inject(PlayerName);
   protected readonly online = inject(ONLINE_CONFIG).enabled;
+  /** Pastille de la bulle de discussion : messages des autres pas encore lus. */
+  protected readonly chatBadge = inject(ChatUnread).badge;
   /** Site de test (staging) : un bandeau le distingue du vrai jeu. */
   protected readonly testBanner = environment.testBanner;
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée

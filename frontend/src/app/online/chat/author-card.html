@@ -1,0 +1,65 @@
+<div class="backdrop" (click)="closed.emit()">
+  <section
+    class="card game-panel"
+    data-theme="sapphire"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="author-card-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button type="button" class="close close-button" aria-label="Fermer la fiche" (click)="closed.emit()">×</button>
+    @if (view(); as view) {
+      <header class="who">
+        <img class="portrait" [src]="view.portrait" alt="" width="256" height="256" />
+        <div>
+          <h2 id="author-card-title">{{ view.pseudo }}</h2>
+          @if (view.title; as title) {
+            <p class="title">{{ title }}</p>
+          }
+          <p class="form">
+            {{ view.formLabel }}
+            @if (view.stars > 0) {
+              <span class="stars">{{ view.stars }} ★</span>
+            }
+            · Zone {{ view.zone }}
+          </p>
+        </div>
+      </header>
+      <ul class="pieces">
+        @for (piece of view.slots; track piece.slot) {
+          <li class="piece">
+            <img
+              class="piece-icon item-frame"
+              [attr.data-tier]="piece.tier"
+              [attr.data-awakening]="piece.awakening || null"
+              [src]="piece.icon"
+              alt=""
+              width="128"
+              height="128"
+            />
+            <div class="piece-text">
+              <strong>
+                {{ piece.label }}
+                <span class="tier" [attr.data-tier]="piece.tier">
+                  {{ piece.tierLabel }}
+                  @if (piece.level !== null) {
+                    · Niv. {{ piece.level }}
+                  }
+                </span>
+              </strong>
+              @if (piece.stats.length > 0) {
+                <small>{{ piece.stats.join(' · ') }}</small>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else if (failed()) {
+      <h2 id="author-card-title">Fiche indisponible</h2>
+      <p class="hint">Ce message n'existe plus, ou le serveur ne répond pas.</p>
+    } @else {
+      <h2 id="author-card-title" class="visually-hidden">Fiche du joueur</h2>
+      <p class="hint">Chargement…</p>
+    }
+  </section>
+</div>

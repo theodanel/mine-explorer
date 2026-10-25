@@ -175,6 +175,23 @@
   margin: -0.2em 0;
 }
 
+// Pastille rouge des messages non lus, en haut à droite de la bulle de discussion
+.side-badge {
+  position: absolute;
+  top: -1cqw;
+  right: -1cqw;
+  display: grid;
+  place-items: center;
+  min-width: 5.4cqw;
+  height: 5.4cqw;
+  padding: 0 1.2cqw;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 999px;
+  background: #e8402a;
+  color: #fff;
+  font: 3cqw / 1 var(--font-display);
+}
+
 // Raccourcis du jeu en ligne (classement, discussion), en colonne sous le portrait du joueur.
 // Sans fond : seule une ombre détache l'icône du décor.
 .side-links {
@@ -188,6 +205,7 @@
 }
 
 .side-link {
+  position: relative;
   width: 13cqw;
   height: 13cqw;
   padding: 0;

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,6 +44,19 @@ public class ChatController {
 	public ChatService.View latest(@AuthenticationPrincipal PlayerOidcUser user) {
 		UUID viewer = user == null ? null : user.getPlayerId();
 		return chat.view(viewer);
+	}
+
+	/** Nombre de messages des autres arrivés depuis le dernier lu : la pastille de la bulle de discussion. */
+	@GetMapping("/unread")
+	public ChatService.Unread unread(@AuthenticationPrincipal PlayerOidcUser user,
+			@RequestParam(defaultValue = "0") long after) {
+		return chat.unread(Math.max(0, after), user == null ? null : user.getPlayerId());
+	}
+
+	/** Profil public de l'auteur d'un message, retrouvé par le message : aucun identifiant de joueur ne sort. */
+	@GetMapping("/{id}/author")
+	public ChatService.AuthorProfile author(@PathVariable long id) {
+		return chat.authorProfile(id);
 	}
 
 	@PostMapping

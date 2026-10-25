@@ -103,15 +103,16 @@ export class HeartForge {
     return success;
   }
 
-  canSocket(socket: number): boolean {
-    return canSocket(this.state(), socket);
+  /** `stars` : étoiles déjà obtenues ; seuls les emplacements de la suivante (et d'avant) s'ouvrent. */
+  canSocket(socket: number, stars: number): boolean {
+    return canSocket(this.state(), socket, stars);
   }
 
-  socket(socket: number): boolean {
-    if (!this.canSocket(socket)) {
+  socket(socket: number, stars: number): boolean {
+    if (!this.canSocket(socket, stars)) {
       return false;
     }
-    this.save(socketRuneIn(this.state(), socket));
+    this.save(socketRuneIn(this.state(), socket, stars));
     return true;
   }
 

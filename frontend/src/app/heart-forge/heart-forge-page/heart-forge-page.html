@@ -18,8 +18,9 @@
           class="socket"
           [class.filled]="socket.filled"
           [class.ready]="socket.ready"
+          [class.locked]="!socket.open"
           [style.--angle.deg]="socket.angle"
-          [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
+          [attr.aria-label]="(socket.filled ? 'Sertie : ' : !socket.open ? 'Fermé : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
           (click)="setRune(socket.index)"
         >
           <img [src]="socket.icon" alt="" width="128" height="128" />

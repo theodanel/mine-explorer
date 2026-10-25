@@ -96,5 +96,11 @@ export const STAR_RUNES: readonly (readonly [{ type: RuneType; rank: number }, {
   [{ type: 'heart', rank: 5 }, { type: 'eclipse', rank: 5 }],
 ];
 
+/**
+ * Une rune d'alliance coûte 2 ressources de plus que les 3 de sa recette (les deux premières de la recette, une fois de
+ * plus) : depuis le 25/10/2026, l'étoile qui la demande révèle sa recette, on ne la cherche plus au hasard.
+ */
+export const ALLIANCE_EXTRA_ESSENCES = 2;
+
 /** Un emplacement de l'anneau par rune à sertir : 2 par étoile, 10 en tout. */
 export const RING_SOCKETS = STAR_RUNES.length * 2;

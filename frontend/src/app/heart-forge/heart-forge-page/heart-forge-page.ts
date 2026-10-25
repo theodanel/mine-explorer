@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 
 import { Sound } from '../../audio/sound';
 import {
+  ALLIANCE_EXTRA_ESSENCES,
   ALLIANCE_RECIPES,
   ALLIANCE_RUNES,
   ESSENCE_ELEMENTS,
@@ -164,9 +165,7 @@ export class HeartForgePage {
         icon: runeIconUrl(type),
         known: known.includes(type),
         // Une alliance coûte en plus les deux premières ressources de sa recette
-        recipe:
-          recipe.map((id) => ESSENCE_LABELS[id]).join(' + ') +
-          (isAlliance(type) ? ` (+ ${recipe.slice(0, 2).map((id) => ESSENCE_LABELS[id]).join(' + ')})` : ''),
+        recipe: recipe.map((id) => ESSENCE_LABELS[id]).join(' + ') + (isAlliance(type) ? `, et paie ${extraCost(recipe)}` : ''),
       };
     });
   });
@@ -262,4 +261,12 @@ export class HeartForgePage {
   protected close(): void {
     this.navigation.open('evolution');
   }
+}
+
+/** Ressources payées en plus d'une alliance, regroupées : « 2 Braise vive » ou « 1 Givre ancien et 1 Brume d'ombre ». */
+function extraCost(recipe: readonly EssenceId[]): string {
+  const extra = recipe.slice(0, ALLIANCE_EXTRA_ESSENCES);
+  return [...new Set(extra)]
+    .map((id) => `${extra.filter((other) => other === id).length} ${ESSENCE_LABELS[id]}`)
+    .join(' et ');
 }

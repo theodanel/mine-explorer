@@ -104,11 +104,12 @@
   background: none;
   cursor: default;
 
+  // Assez visible pour reconnaître la rune attendue, encore loin de l'éclat d'une rune sertie
   img {
     width: 100%;
     height: 100%;
-    opacity: 0.18;
-    filter: grayscale(0.8);
+    opacity: 0.45;
+    filter: grayscale(0.6);
   }
 
   &.ready {
@@ -149,6 +150,44 @@
 @keyframes socket-call {
   50% {
     transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle))) scale(1.15);
+  }
+}
+
+// La prochaine étoile en clair : nom, rang et réserve de chacune de ses deux runes
+.next-star {
+  display: grid;
+  gap: 1cqw;
+  padding: 2cqw 3cqw;
+  border-radius: 2.4cqw;
+  background: rgb(0 0 0 / 25%);
+  font-size: 3cqw;
+
+  ul {
+    display: grid;
+    gap: 0.8cqw;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 1.6cqw;
+  }
+
+  img {
+    width: 6cqw;
+    height: 6cqw;
+  }
+
+  span {
+    margin-left: auto;
+    color: #ffd8a8;
+  }
+
+  .done {
+    opacity: 0.55;
   }
 }
 

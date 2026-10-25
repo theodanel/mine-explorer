@@ -17,6 +17,7 @@ import {
   parseHeartForgeState,
   Rune,
   socketRuneIn,
+  spendEssences,
   starRunesSet,
 } from './heart-forge-rules';
 import { canSetGearRune, removeGearRune, setGearRune } from './gear-runes-rules';
@@ -71,6 +72,16 @@ export class HeartForge {
     return each;
   }
 
+  /** Paie des ressources ailleurs qu'au Creuset (Éveil des pièces Divin). Faux, sans rien prendre, s'il en manque. */
+  spendEssences(cost: Partial<Record<EssenceId, number>>): boolean {
+    const next = spendEssences(this.state(), cost);
+    if (next === null) {
+      return false;
+    }
+    this.save(next);
+    return true;
+  }
+
   canBrew(mix: readonly EssenceId[]): boolean {
     return canBrew(this.state(), mix);
   }
@@ -116,7 +127,7 @@ export class HeartForge {
     return true;
   }
 
-  /** `socketCount` : châsses ouvertes par emplacement, selon les étoiles (voir GearRunes). */
+  /** `socketCount` : châsses ouvertes sur cet emplacement, selon les étoiles et l'Éveil (voir GearRunes). */
   setGearRune(slot: SlotId, socket: number, rune: Rune, socketCount: number): boolean {
     if (!canSetGearRune(this.state(), socket, rune, socketCount)) {
       return false;

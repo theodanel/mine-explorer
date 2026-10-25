@@ -48,11 +48,15 @@
         <li
           class="slot item-frame"
           tabindex="0"
+          role="button"
           [class.breathe]="cell.best"
           [class.in-set]="cell.inSet"
           [appTooltip]="cell.tooltip"
           [attr.data-tier]="cell.tier"
+          [attr.data-awakening]="cell.awakening || null"
           [attr.aria-label]="cell.label + (cell.level !== null ? ' niveau ' + cell.level : ' vide')"
+          (click)="openSheet(cell.key)"
+          (keydown.enter)="openSheet(cell.key)"
         >
           <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
           @if (cell.runes.length > 0) {
@@ -72,4 +76,7 @@
 </ul>
 @if (row() && setBadge(); as set) {
   <p class="set-badge" [class.active]="set.active" [attr.data-tier]="set.tier">{{ set.text }}</p>
+}
+@if (sheetSlot(); as slot) {
+  <app-item-sheet [slot]="slot" (closed)="sheetSlot.set(null)" />
 }

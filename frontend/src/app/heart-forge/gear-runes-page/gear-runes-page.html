@@ -8,7 +8,7 @@
     @if (gearRunes.unlocked()) {
       <p class="hint">
         Sertis tes runes sur tes pièces : elles y restent quand tu forges mieux, et se retirent gratuitement. Une rune
-        posée sur la pièce de son élément compte une fois et demie, trois runes identiques sur une pièce résonnent.
+        posée sur la pièce de son élément compte une fois et demie, trois runes du même type sur une pièce résonnent.
       </p>
 
       @if (totals().length > 0) {
@@ -38,12 +38,12 @@
                     [class.closed]="!socket.open"
                     [class.filled]="socket.rune !== null"
                     [class.selected]="socket.selected"
-                    [disabled]="!socket.open"
-                    [attr.aria-label]="socket.open ? piece.label + ' : ' + socket.label : 'Châsse fermée jusqu’à l’étoile ' + socket.star"
-                    (click)="select(piece.slot, socket.socket, socket.open)"
+                    [disabled]="!socket.reachable"
+                    [attr.aria-label]="socket.open ? piece.label + ' : ' + socket.label : socket.lockHint"
+                    (click)="select(piece.slot, socket.socket, socket.reachable)"
                   >
-                    @if (!socket.open) {
-                      <span class="lock">★{{ socket.star }}</span>
+                    @if (!socket.open && socket.rune === null) {
+                      <span class="lock">{{ socket.lockLabel }}</span>
                     } @else if (socket.icon !== null && socket.rune !== null) {
                       <img [src]="socket.icon" alt="" width="128" height="128" />
                       <span class="socket-rank">{{ socket.rune.rank }}</span>

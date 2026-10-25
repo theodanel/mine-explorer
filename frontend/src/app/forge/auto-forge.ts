@@ -1,5 +1,6 @@
 import { computed, DestroyRef, DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
+import { Awakening } from '../equipment/awakening';
 import { sellPrice } from '../equipment/equipment-rules';
 import { Inventory } from '../equipment/inventory';
 import { readStorage, writeStorage } from '../shared/local-storage';
@@ -29,6 +30,7 @@ const DEFAULT_SETTINGS: AutoForgeSettings = { enabled: false, filters: NO_FILTER
 export class AutoForge {
   private readonly inventory = inject(Inventory);
   private readonly workshop = inject(Workshop);
+  private readonly awakening = inject(Awakening);
   private readonly document = inject(DOCUMENT);
   private readonly settings = signal<AutoForgeSettings>(loadSettings());
   private readonly soldCount = signal(0);
@@ -69,7 +71,7 @@ export class AutoForge {
     const item = this.inventory.pending();
     // Un jackpot est toujours montré : les filtres ne le vendent jamais
     const jackpot = this.inventory.lastForged()?.jackpot ?? false;
-    if (item !== null && !jackpot && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped(), this.workshop.levels())) {
+    if (item !== null && !jackpot && this.filtered() && !passesFilters(item, this.filters(), this.inventory.equipped(), this.workshop.levels(), this.awakening.levels())) {
       const price = sellPrice(item);
       this.inventory.sellPending();
       this.soldCount.update((count) => count + 1);

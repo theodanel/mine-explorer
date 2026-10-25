@@ -1,0 +1,71 @@
+@if (view(); as view) {
+  <div class="backdrop" (click)="closed.emit()">
+    <section
+      class="dialog game-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="item-sheet-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="item-sheet-title">
+        <img
+          class="piece-icon item-frame"
+          [attr.data-tier]="view.tier"
+          [attr.data-awakening]="view.awakening"
+          [src]="view.icon"
+          alt=""
+          width="128"
+          height="128"
+        />
+        <span class="title-text">
+          {{ view.label }}
+          <span class="tier" [attr.data-tier]="view.tier">{{ view.tierLabel }} · Niv. {{ view.level }}</span>
+        </span>
+      </h2>
+
+      <ul class="stats">
+        @for (row of view.stats; track row.stat) {
+          <li>
+            <span>{{ row.label }}</span><strong>{{ row.value }}</strong>
+          </li>
+        }
+      </ul>
+
+      @if (view.awaken; as panel) {
+        <div class="awaken" [class.corrupted]="panel.level > 0">
+          <h3>
+            Éveil {{ panel.level }} / {{ panel.max }}
+            @if (panel.bonus) {
+              <span class="bonus">{{ panel.bonus }} aux stats</span>
+            }
+          </h3>
+          <p class="pips" aria-hidden="true">
+            @for (pip of [1, 2, 3, 4, 5]; track pip) {
+              <span class="pip" [class.lit]="pip <= panel.level"></span>
+            }
+          </p>
+          @if (panel.cost; as cost) {
+            <p class="next">Prochain palier : {{ panel.nextBonus }} aux stats de la pièce.</p>
+            <ul class="cost">
+              <li>
+                <img [src]="view.icon" alt="" width="128" height="128" />
+                Doublons Divin <strong>{{ cost.duplicates }}</strong>
+              </li>
+              <li>
+                <img [src]="cost.essenceIcon" alt="" width="128" height="128" />
+                {{ cost.essence }} <strong>{{ cost.essences }}</strong>
+              </li>
+            </ul>
+          }
+          @if (panel.hint) {
+            <p class="hint">{{ panel.hint }}</p>
+          }
+          @if (panel.cost) {
+            <button type="button" class="game-button awaken-button" [disabled]="!panel.ready" (click)="awaken()">Éveiller</button>
+          }
+        </div>
+      }
+      <button type="button" class="close close-button" aria-label="Fermer" (click)="closed.emit()">×</button>
+    </section>
+  </div>
+}

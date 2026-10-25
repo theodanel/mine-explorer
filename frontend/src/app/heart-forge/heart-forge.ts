@@ -1,18 +1,17 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 
-import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES_PER_ROCK, ESSENCES, EssenceId } from '../balance/heart-forge';
+import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES_PER_ROCK, ESSENCES, EssenceId, RuneType } from '../balance/heart-forge';
 import type { SlotId } from '../equipment/equipment.model';
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { RANDOM } from '../shared/random';
 import {
   addEssences,
-  brew,
-  canBrew,
-  canFuse,
+  canCreate,
+  canGrow,
   canSocket,
+  createRune,
   echoEssence,
   EMPTY_HEART_FORGE,
-  fuseRunes,
+  growRune,
   HeartForgeState,
   parseHeartForgeState,
   Rune,
@@ -24,23 +23,19 @@ import { canSetGearRune, removeGearRune, setGearRune } from './gear-runes-rules'
 
 const STORAGE_KEY = 'mine-explorer.forge-du-coeur';
 
-/** Ce que le Creuset ou la dernière fusion a donné, pour l'afficher au joueur. */
+/** Rune tout juste créée ou grandie, pour l'afficher au joueur. */
 export interface ForgeEvent {
   readonly id: number;
-  readonly kind: 'brew' | 'fusion';
+  readonly kind: 'create' | 'grow';
   readonly rune: Rune;
-  readonly success: boolean;
-  /** Une recette trouvée pour la première fois. */
-  readonly discovery: boolean;
 }
 
 /**
- * Forge du Cœur : ressources récoltées dans les Échos, versées au Creuset pour faire des runes, runes fusionnées puis
- * serties dans l'anneau du Cœur du monde. Les deux runes d'une étoile doivent être serties pour l'éveiller.
+ * Forge du Cœur : ressources récoltées dans les Échos, qui créent des runes puis les font grandir jusqu'au rang 5,
+ * avant de les sertir dans l'anneau du Cœur du monde. Les deux runes d'une étoile doivent être serties pour l'éveiller.
  */
 @Injectable({ providedIn: 'root' })
 export class HeartForge {
-  private readonly random = inject(RANDOM);
   private readonly state = signal<HeartForgeState>(loadState());
   private readonly lastEvent = signal<ForgeEvent | null>(null);
   private eventCount = 0;
@@ -82,36 +77,32 @@ export class HeartForge {
     return true;
   }
 
-  canBrew(mix: readonly EssenceId[]): boolean {
-    return canBrew(this.state(), mix);
+  /** `stars` : étoiles obtenues, qui révèlent les recettes d'alliance. */
+  canCreate(type: RuneType, stars: number): boolean {
+    return canCreate(this.state(), type, stars);
   }
 
-  /** Verse 3 ressources au Creuset ; rend la rune obtenue, ou null si les ressources manquent. */
-  brew(mix: readonly [EssenceId, EssenceId, EssenceId]): Rune | null {
-    if (!this.canBrew(mix)) {
-      return null;
-    }
-    const known = this.state().recipes;
-    const result = brew(this.state(), mix);
-    this.save(result.state);
-    const rune = { type: result.rune, rank: 1 };
-    this.lastEvent.set({ id: ++this.eventCount, kind: 'brew', rune, success: true, discovery: !known.includes(result.rune) });
-    return rune;
-  }
-
-  canFuse(rune: Rune): boolean {
-    return canFuse(this.state(), rune);
-  }
-
-  fuse(rune: Rune): boolean {
-    if (!this.canFuse(rune)) {
+  create(type: RuneType, stars: number): boolean {
+    if (!this.canCreate(type, stars)) {
       return false;
     }
-    const { state, success } = fuseRunes(this.state(), rune, this.random);
-    this.save(state);
-    const result = { type: rune.type, rank: rune.rank + 1 };
-    this.lastEvent.set({ id: ++this.eventCount, kind: 'fusion', rune: result, success, discovery: false });
-    return success;
+    this.save(createRune(this.state(), type, stars));
+    this.lastEvent.set({ id: ++this.eventCount, kind: 'create', rune: { type, rank: 1 } });
+    return true;
+  }
+
+  canGrow(rune: Rune): boolean {
+    return canGrow(this.state(), rune);
+  }
+
+  /** Nourrit une rune de la réserve avec ses ressources : elle passe au rang suivant. */
+  grow(rune: Rune): boolean {
+    if (!this.canGrow(rune)) {
+      return false;
+    }
+    this.save(growRune(this.state(), rune));
+    this.lastEvent.set({ id: ++this.eventCount, kind: 'grow', rune: { type: rune.type, rank: rune.rank + 1 } });
+    return true;
   }
 
   /** `stars` : étoiles déjà obtenues ; seuls les emplacements de la suivante (et d'avant) s'ouvrent. */

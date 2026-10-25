@@ -1,4 +1,4 @@
-// Règles pures de la Forge du Cœur : ressources des Échos, recettes du Creuset, fusion des runes et anneau du Cœur.
+// Règles pures de la Forge du Cœur : ressources des Échos, création et croissance des runes, et anneau du Cœur.
 // Les runes serties sur l'équipement sont dans gear-runes-rules.ts.
 import {
   ALLIANCE_RECIPES,
@@ -10,13 +10,12 @@ import {
   ALLIANCE_EXTRA_ESSENCES,
   MAX_RUNE_RANK,
   RING_SOCKETS,
-  RUNE_FUSION_COUNT,
-  RUNE_FUSION_FAIL,
+  RUNE_CREATE_ESSENCES,
+  RUNE_GROW_ESSENCES,
   RUNE_TYPES,
   RuneType,
   STAR_RUNES,
 } from '../balance/heart-forge';
-import type { Random } from '../shared/random';
 import { EMPTY_GEAR_RUNES, GearRunes, parseGearRunes } from './gear-runes-rules';
 
 /** Une rune : son type (élément ou alliance) et son rang (1 à 5). */
@@ -88,52 +87,58 @@ export function spendEssences(state: HeartForgeState, cost: Partial<Record<Essen
   return { ...state, essences };
 }
 
-function sameEssences(a: readonly EssenceId[], b: readonly EssenceId[]): boolean {
-  const sorted = (list: readonly EssenceId[]) => [...list].sort().join(',');
-  return sorted(a) === sorted(b);
-}
-
-/**
- * Rune que donne un mélange de 3 ressources : une alliance si c'est sa recette, sinon l'élément le plus présent (ou
- * celui de la 1re ressource si les trois diffèrent).
- */
-export function recipeResult(mix: readonly [EssenceId, EssenceId, EssenceId]): RuneType {
-  const alliance = ALLIANCE_RUNES.find((type) => sameEssences(ALLIANCE_RECIPES[type], mix));
-  if (alliance !== undefined) {
-    return alliance;
-  }
-  const counts = mix.map((id) => mix.filter((other) => other === id).length);
-  const best = Math.max(...counts);
-  return ESSENCE_ELEMENTS[mix[best > 1 ? counts.indexOf(best) : 0]];
-}
-
-/**
- * Ressources que coûte vraiment un mélange : les 3 versées, plus, pour une rune d'alliance, les deux premières de sa
- * recette une fois de plus (ALLIANCE_EXTRA_ESSENCES).
- */
-export function brewCost(mix: readonly [EssenceId, EssenceId, EssenceId]): readonly EssenceId[] {
-  const result = recipeResult(mix);
-  if (!isAllianceRune(result)) {
-    return mix;
-  }
-  return [...mix, ...ALLIANCE_RECIPES[result].slice(0, ALLIANCE_EXTRA_ESSENCES)];
-}
-
-function isAllianceRune(type: RuneType): type is (typeof ALLIANCE_RUNES)[number] {
+export function isAllianceRune(type: RuneType): type is (typeof ALLIANCE_RUNES)[number] {
   return (ALLIANCE_RUNES as readonly RuneType[]).includes(type);
 }
 
-export function canBrew(state: HeartForgeState, mix: readonly EssenceId[]): boolean {
-  if (mix.length !== 3) {
-    return false;
+/** Recette d'une rune : 3 ressources de son élément, ou les 3 de son alliance. */
+export function recipeOf(type: RuneType): readonly [EssenceId, EssenceId, EssenceId] {
+  if (isAllianceRune(type)) {
+    return ALLIANCE_RECIPES[type];
   }
-  const cost = brewCost(mix as [EssenceId, EssenceId, EssenceId]);
-  return ESSENCES.every((id) => state.essences[id] >= cost.filter((other) => other === id).length);
+  const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
+  return [essence, essence, essence];
+}
+
+/** Ressources pour une quantité donnée, réparties comme la recette (2 Braise pour 1 Sève, pour Magma). */
+function spread(type: RuneType, amount: number): Partial<Record<EssenceId, number>> {
+  const recipe = recipeOf(type);
+  const cost: Partial<Record<EssenceId, number>> = {};
+  let given = 0;
+  for (const id of new Set(recipe)) {
+    const share = Math.floor((amount * recipe.filter((other) => other === id).length) / recipe.length);
+    cost[id] = share;
+    given += share;
+  }
+  // Le reste de la division va à la ressource principale, la première de la recette
+  cost[recipe[0]] = (cost[recipe[0]] ?? 0) + amount - given;
+  return cost;
+}
+
+/** Coût de création d'une rune de rang 1 : 3 ressources, plus 2 pour une alliance. */
+export function createCost(type: RuneType): Partial<Record<EssenceId, number>> {
+  const cost: Partial<Record<EssenceId, number>> = {};
+  const recipe = recipeOf(type);
+  const paid = isAllianceRune(type) ? [...recipe, ...recipe.slice(0, ALLIANCE_EXTRA_ESSENCES)] : recipe.slice(0, RUNE_CREATE_ESSENCES);
+  for (const id of paid) {
+    cost[id] = (cost[id] ?? 0) + 1;
+  }
+  return cost;
+}
+
+/** Ressources pour faire grandir une rune de son rang au suivant, ou null au rang maximum. */
+export function growCost(rune: Rune): Partial<Record<EssenceId, number>> | null {
+  const amount = RUNE_GROW_ESSENCES[rune.rank + 1];
+  return rune.rank >= MAX_RUNE_RANK || amount === undefined ? null : spread(rune.type, amount);
+}
+
+function canPay(state: HeartForgeState, cost: Partial<Record<EssenceId, number>>): boolean {
+  return ESSENCES.every((id) => state.essences[id] >= (cost[id] ?? 0));
 }
 
 /**
  * Recettes d'alliance révélées par les étoiles : celles des runes que demandent les étoiles déjà éveillées et la
- * suivante. Le livre les montre même si le joueur ne les a jamais versées.
+ * suivante. On ne peut créer une alliance que si sa recette est connue (révélée, ou trouvée avant le 25/10/2026).
  */
 export function revealedRecipes(stars: number): readonly RuneType[] {
   return STAR_RUNES.slice(0, Math.min(stars + 1, STAR_RUNES.length))
@@ -142,38 +147,37 @@ export function revealedRecipes(stars: number): readonly RuneType[] {
     .filter((type, index, all) => isAllianceRune(type) && all.indexOf(type) === index);
 }
 
-/** Verse 3 ressources au Creuset : elles donnent une rune de rang 1, et la recette s'inscrit au livre. */
-export function brew(state: HeartForgeState, mix: readonly [EssenceId, EssenceId, EssenceId]): { state: HeartForgeState; rune: RuneType } {
-  if (!canBrew(state, mix)) {
-    throw new RangeError('Ressources insuffisantes pour ce mélange');
-  }
-  const essences = { ...state.essences };
-  for (const id of brewCost(mix)) {
-    essences[id] -= 1;
-  }
-  const rune = recipeResult(mix);
-  const recipes = state.recipes.includes(rune) ? state.recipes : [...state.recipes, rune];
-  return { state: withRunes({ ...state, essences, recipes }, { type: rune, rank: 1 }, 1), rune };
+export function knowsRecipe(state: HeartForgeState, type: RuneType, stars: number): boolean {
+  return !isAllianceRune(type) || state.recipes.includes(type) || revealedRecipes(stars).includes(type);
 }
 
-export function canFuse(state: HeartForgeState, rune: Rune): boolean {
-  return rune.rank < MAX_RUNE_RANK && runeCount(state, rune) >= RUNE_FUSION_COUNT;
+export function canCreate(state: HeartForgeState, type: RuneType, stars: number): boolean {
+  return knowsRecipe(state, type, stars) && canPay(state, createCost(type));
 }
 
-export function fusionFailChance(targetRank: number): number {
-  return RUNE_FUSION_FAIL[targetRank] ?? 0;
+/** Crée une rune de rang 1 ; elle s'inscrit au livre. Sans effet si la recette est inconnue ou les ressources manquent. */
+export function createRune(state: HeartForgeState, type: RuneType, stars: number): HeartForgeState {
+  const paid = canCreate(state, type, stars) ? spendEssences(state, createCost(type)) : null;
+  if (paid === null) {
+    return state;
+  }
+  const recipes = paid.recipes.includes(type) ? paid.recipes : [...paid.recipes, type];
+  return withRunes({ ...paid, recipes }, { type, rank: 1 }, 1);
 }
 
-/** Fusionne 3 runes en une du rang suivant ; ratée, il n'en reste qu'une des trois. */
-export function fuseRunes(state: HeartForgeState, rune: Rune, random: Random): { state: HeartForgeState; success: boolean } {
-  if (!canFuse(state, rune)) {
-    return { state, success: false };
+export function canGrow(state: HeartForgeState, rune: Rune): boolean {
+  const cost = growCost(rune);
+  return cost !== null && runeCount(state, rune) > 0 && canPay(state, cost);
+}
+
+/** Nourrit une rune de la réserve : elle passe au rang suivant. */
+export function growRune(state: HeartForgeState, rune: Rune): HeartForgeState {
+  const cost = growCost(rune);
+  const paid = cost !== null && canGrow(state, rune) ? spendEssences(state, cost) : null;
+  if (paid === null) {
+    return state;
   }
-  const spent = withRunes(state, rune, -RUNE_FUSION_COUNT);
-  if (random() < fusionFailChance(rune.rank + 1)) {
-    return { state: withRunes(spent, rune, 1), success: false };
-  }
-  return { state: withRunes(spent, { type: rune.type, rank: rune.rank + 1 }, 1), success: true };
+  return withRunes(withRunes(paid, rune, -1), { type: rune.type, rank: rune.rank + 1 }, 1);
 }
 
 /** Rune qu'attend un emplacement de l'anneau : les emplacements 0 et 1 sont ceux de la 1re étoile, etc. */
@@ -219,9 +223,13 @@ export function starRunesSet(state: HeartForgeState, star: number): boolean {
   return star >= 1 && star <= STAR_RUNES.length && state.sockets[first] && state.sockets[first + 1];
 }
 
-/** Ressources que demande une rune d'un rang donné, sans fusion ratée (3 par rune de rang 1). */
+/** Ressources que demande une rune d'un rang donné, de sa création à ce rang (3 au rang 1, 674 au rang 5). */
 export function essencesFor(rank: number): number {
-  return 3 * RUNE_FUSION_COUNT ** (rank - 1);
+  let total = RUNE_CREATE_ESSENCES;
+  for (let next = 2; next <= rank; next++) {
+    total += RUNE_GROW_ESSENCES[next] ?? 0;
+  }
+  return total;
 }
 
 function isRune(value: unknown): value is Rune {

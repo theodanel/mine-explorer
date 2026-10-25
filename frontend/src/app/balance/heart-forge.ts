@@ -79,13 +79,15 @@ export const ALLIANCE_RECIPES: Readonly<Record<AllianceRune, readonly [EssenceId
 
 export const MAX_RUNE_RANK = 5;
 
-/** Fusionner : 3 runes du même type et du même rang donnent une rune du rang suivant. */
-export const RUNE_FUSION_COUNT = 3;
+/** Créer une rune de rang 1 : 3 ressources de son élément (les alliances paient en plus ALLIANCE_EXTRA_ESSENCES). */
+export const RUNE_CREATE_ESSENCES = 3;
+
 /**
- * Chance qu'une fusion rate, selon le rang visé : à partir du rang 3, le « pari » qui rend les dernières étoiles dures.
- * Une fusion ratée ne rend qu'une des trois runes.
+ * Runes qui grandissent (choix de Théo, 25/10/2026, à la place des fusions) : ressources à donner à une rune pour
+ * passer au rang indiqué. Calé sur ce que coûtaient les fusions en comptant leurs échecs (20/30/35 % aux rangs 3/4/5) :
+ * même difficulté, sans le hasard. Total depuis la création : 9 au rang 2, 34 au rang 3, 144 au rang 4, 674 au rang 5.
  */
-export const RUNE_FUSION_FAIL: Readonly<Record<number, number>> = { 2: 0, 3: 0.2, 4: 0.3, 5: 0.35 };
+export const RUNE_GROW_ESSENCES: Readonly<Record<number, number>> = { 2: 6, 3: 25, 4: 110, 5: 530 };
 
 /** Runes à sertir pour chaque étoile, de la 1re à la 5e : de plus en plus complexes. */
 export const STAR_RUNES: readonly (readonly [{ type: RuneType; rank: number }, { type: RuneType; rank: number }])[] = [

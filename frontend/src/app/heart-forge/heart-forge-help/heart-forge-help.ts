@@ -1,11 +1,15 @@
 import { Component, output } from '@angular/core';
 
-import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES, RUNE_FUSION_COUNT, RUNE_FUSION_FAIL } from '../../balance/heart-forge';
+import {
+  ABYSS_FLOORS_PER_ESSENCES,
+  ALLIANCE_EXTRA_ESSENCES,
+  ECHO_ESSENCES,
+  RUNE_CREATE_ESSENCES,
+  RUNE_GROW_ESSENCES,
+} from '../../balance/heart-forge';
 
-const PERCENT = 100;
-const FAIL_TEXT = Object.entries(RUNE_FUSION_FAIL)
-  .filter(([, chance]) => chance > 0)
-  .map(([rank, chance]) => `${Math.round(chance * PERCENT)} % au rang ${rank}`)
+const GROW_TEXT = Object.entries(RUNE_GROW_ESSENCES)
+  .map(([rank, amount]) => `${amount} pour le rang ${rank}`)
   .join(', ');
 
 /** Étapes de la page d'aide, tirées de l'équilibrage pour rester justes quand les chiffres bougent. */
@@ -16,13 +20,13 @@ const STEPS: readonly { readonly title: string; readonly text: string; readonly 
     icon: 'assets/ui/forge-du-coeur/essence-ember.webp',
   },
   {
-    title: 'Verser au Creuset',
-    text: "3 ressources donnent une rune de rang 1. Trois identiques donnent la rune de leur élément ; certains mélanges donnent des runes d'alliance, qui coûtent 2 ressources de plus. Chaque étoile révèle au livre la recette des alliances qu'elle demande ; les autres restent à trouver.",
+    title: 'Créer une rune',
+    text: `${RUNE_CREATE_ESSENCES} ressources de son élément créent une rune de rang 1. Une rune d'alliance mêle plusieurs ressources et en coûte ${ALLIANCE_EXTRA_ESSENCES} de plus ; chaque étoile révèle la recette des alliances qu'elle demande.`,
     icon: 'assets/ui/forge-du-coeur/rune-fire.webp',
   },
   {
-    title: 'Fusionner',
-    text: `${RUNE_FUSION_COUNT} runes du même type et du même rang en donnent une du rang suivant. À partir du rang 3, une fusion peut rater (${FAIL_TEXT}) : il ne reste alors qu'une rune.`,
+    title: 'Faire grandir',
+    text: `Nourris une rune avec ses ressources, comme une jauge, pour la faire passer au rang suivant (${GROW_TEXT}). Pas de hasard : seule la quantité compte.`,
     icon: 'assets/ui/forge-du-coeur/rune-ice.webp',
   },
   {

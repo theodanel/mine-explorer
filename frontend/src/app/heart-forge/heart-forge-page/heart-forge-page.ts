@@ -1,26 +1,13 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
-import {
-  ALLIANCE_EXTRA_ESSENCES,
-  ALLIANCE_RECIPES,
-  ALLIANCE_RUNES,
-  ESSENCE_ELEMENTS,
-  ESSENCE_LABELS,
-  ESSENCES,
-  EssenceId,
-  MAX_RUNE_RANK,
-  RUNE_FUSION_COUNT,
-  RUNE_LABELS,
-  RUNE_TYPES,
-  RuneType,
-} from '../../balance/heart-forge';
+import { ALLIANCE_RUNES, ESSENCE_LABELS, ESSENCES, EssenceId, MAX_RUNE_RANK, RUNE_LABELS, RUNE_TYPES, RuneType, STAR_RUNES } from '../../balance/heart-forge';
 import { EVOLUTION_VISUALS } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { readStorage, writeStorage } from '../../shared/local-storage';
 import { HeartForge } from '../heart-forge';
 import { HeartForgeHelp } from '../heart-forge-help/heart-forge-help';
-import { brewCost, fusionFailChance, recipeResult, revealedRecipes, runeCount, socketOpen, socketRune, socketStar } from '../heart-forge-rules';
+import { createCost, growCost, knowsRecipe, runeCount, socketOpen, socketRune, socketStar } from '../heart-forge-rules';
 import { Evolution } from '../../evolution/evolution';
 
 const PERCENT = 100;
@@ -35,9 +22,8 @@ const RUNE_SOCKET_ANGLES = Array.from({ length: 360 / RING_STEP }, (_, index) =>
 );
 /** L'aide s'ouvre d'elle-même à la première visite de la Forge ; ce drapeau s'en souvient. */
 const HELP_SEEN_KEY = 'mine-explorer.forge-du-coeur-aide';
-/** Durée d'affichage du résultat du Creuset ou d'une fusion. */
+/** Durée d'affichage d'une rune tout juste créée ou grandie. */
 const MESSAGE_MS = 2500;
-const CRUCIBLE_SLOTS = 3;
 
 export function runeIconUrl(type: RuneType): string {
   return `assets/ui/forge-du-coeur/rune-${type}.webp`;
@@ -51,9 +37,21 @@ export function isAlliance(type: RuneType): boolean {
   return (ALLIANCE_RUNES as readonly string[]).includes(type);
 }
 
+/** « 25 Braise vive et 12 Sève de pierre ». */
+function describeCost(cost: Partial<Record<EssenceId, number>>): string {
+  return ESSENCES.filter((id) => (cost[id] ?? 0) > 0)
+    .map((id) => `${cost[id]} ${ESSENCE_LABELS[id]}`)
+    .join(' et ');
+}
+
+/** Étoile qui demande une alliance, et donc révèle sa recette. */
+function revealingStar(type: RuneType): number {
+  return STAR_RUNES.findIndex((runes) => runes.some((rune) => rune.type === type)) + 1;
+}
+
 /**
- * Forge du Cœur : l'anneau du Cœur du monde (10 emplacements, 2 par étoile), le Creuset où l'on verse 3 ressources
- * des Échos pour faire une rune, le livre des recettes trouvées, et la réserve de runes à fusionner.
+ * Forge du Cœur : l'anneau du Cœur du monde (10 emplacements, 2 par étoile), le Creuset où les ressources des Échos
+ * créent des runes, et la réserve où on les fait grandir jusqu'au rang 5 (runes qui grandissent, 25/10/2026).
  */
 @Component({
   selector: 'app-heart-forge-page',
@@ -71,11 +69,8 @@ export class HeartForgePage {
   protected readonly portraitUrl = EVOLUTION_VISUALS.heart.portraitUrl;
   protected readonly gemAngles = GEM_ANGLES;
   protected readonly ranks = Array.from({ length: MAX_RUNE_RANK }, (_, index) => index + 1);
-  protected readonly fusionCount = RUNE_FUSION_COUNT;
   protected readonly message = signal<{ text: string; success: boolean } | null>(null);
   protected readonly helpOpen = signal(readStorage(HELP_SEEN_KEY) === null);
-  /** Ressources posées dans le Creuset, dans l'ordre. */
-  protected readonly mix = signal<readonly EssenceId[]>([]);
 
   protected readonly sockets = computed(() => {
     const state = this.forge.snapshot();
@@ -111,61 +106,25 @@ export class HeartForgePage {
     return { star: open.star, runes: sockets.filter((socket) => socket.star === open.star) };
   });
 
-  /** Les 5 ressources, avec leur réserve moins ce qui est déjà posé dans le Creuset. */
+  /** Les 5 ressources en réserve. */
   protected readonly essences = computed(() => {
     const stock = this.forge.essences();
-    const mix = this.mix();
-    return ESSENCES.map((id) => ({
-      id,
-      label: ESSENCE_LABELS[id],
-      icon: essenceIconUrl(id),
-      left: stock[id] - mix.filter((other) => other === id).length,
-    }));
+    return ESSENCES.map((id) => ({ id, label: ESSENCE_LABELS[id], icon: essenceIconUrl(id), left: stock[id] }));
   });
 
-  protected readonly slots = computed(() => {
-    const mix = this.mix();
-    return Array.from({ length: CRUCIBLE_SLOTS }, (_, index) => {
-      const essence = mix[index] ?? null;
-      return { index, essence, icon: essence === null ? null : essenceIconUrl(essence) };
-    });
-  });
-
-  /** Ce que donnera le mélange : connu si la recette a déjà été trouvée, sinon « ? ». */
-  protected readonly preview = computed(() => {
-    const mix = this.mix();
-    if (mix.length < CRUCIBLE_SLOTS) {
-      return null;
-    }
-    const full = mix as [EssenceId, EssenceId, EssenceId];
-    const result = recipeResult(full);
-    if (!this.knownRecipes().includes(result)) {
-      return 'Rune inconnue';
-    }
-    const extra = brewCost(full).length - full.length;
-    return extra > 0 ? `Rune ${RUNE_LABELS[result]} (+${extra} ressources d'alliance)` : `Rune ${RUNE_LABELS[result]}`;
-  });
-
-  /** Recettes connues : trouvées au Creuset, ou révélées par les étoiles. */
-  private readonly knownRecipes = computed(() => [...this.forge.recipes(), ...revealedRecipes(this.stars())]);
-
-  /** Livre de recettes : chaque rune avec sa recette si elle a été trouvée ou révélée par une étoile. */
-  protected readonly book = computed(() => {
-    const known = this.knownRecipes();
+  /** Runes à créer : les éléments, et les alliances dont une étoile a révélé la recette. */
+  protected readonly creations = computed(() => {
+    const state = this.forge.snapshot();
+    const stars = this.stars();
     return RUNE_TYPES.map((type) => {
-      const recipe = isAlliance(type)
-        ? ALLIANCE_RECIPES[type as keyof typeof ALLIANCE_RECIPES]
-        : (() => {
-            const essence = ESSENCES.find((id) => ESSENCE_ELEMENTS[id] === type) ?? ESSENCES[0];
-            return [essence, essence, essence] as const;
-          })();
+      const known = knowsRecipe(state, type, stars);
       return {
         type,
-        label: RUNE_LABELS[type],
+        label: known ? RUNE_LABELS[type] : '???',
         icon: runeIconUrl(type),
-        known: known.includes(type),
-        // Une alliance coûte en plus les deux premières ressources de sa recette
-        recipe: recipe.map((id) => ESSENCE_LABELS[id]).join(' + ') + (isAlliance(type) ? `, et paie ${extraCost(recipe)}` : ''),
+        known,
+        cost: known ? describeCost(createCost(type)) : `Révélée à l'étoile ${revealingStar(type)}`,
+        canCreate: this.forge.canCreate(type, stars),
       };
     });
   });
@@ -181,12 +140,23 @@ export class HeartForgePage {
         return {
           rank,
           count: runeCount(state, rune),
-          canFuse: this.forge.canFuse(rune),
-          failPercent: Math.round(fusionFailChance(rank + 1) * PERCENT),
+          ...this.growth(rune),
         };
       }),
-    })).filter((row) => row.cells.some((cell) => cell.count > 0) || this.forge.recipes().includes(row.type));
+    })).filter((row) => row.cells.some((cell) => cell.count > 0));
   });
+
+  /** Ce que coûte la croissance d'une rune de la réserve, et où en est la jauge des ressources. */
+  private growth(rune: { type: RuneType; rank: number }) {
+    const cost = growCost(rune);
+    if (cost === null || runeCount(this.forge.snapshot(), rune) === 0) {
+      return { canGrow: false, growCost: null, progress: 0 };
+    }
+    const stock = this.forge.essences();
+    const needed = ESSENCES.reduce((total, id) => total + (cost[id] ?? 0), 0);
+    const owned = ESSENCES.reduce((total, id) => total + Math.min(stock[id], cost[id] ?? 0), 0);
+    return { canGrow: this.forge.canGrow(rune), growCost: describeCost(cost), progress: Math.round((owned / needed) * PERCENT) };
+  }
 
   constructor() {
     writeStorage(HELP_SEEN_KEY, '1');
@@ -199,15 +169,8 @@ export class HeartForgePage {
       }
       const label = `${RUNE_LABELS[event.rune.type]} rang ${event.rune.rank}`;
       untracked(() => {
-        if (event.kind === 'brew') {
-          this.message.set({ text: event.discovery ? `Nouvelle recette : rune ${label} !` : `Rune ${label}`, success: true });
-          this.sound.play(event.discovery ? 'forgeLegendary' : 'forgeRare');
-        } else {
-          this.message.set(
-            event.success ? { text: `Fusion réussie : rune ${label} !`, success: true } : { text: "La fusion a raté : il ne reste qu'une rune.", success: false },
-          );
-          this.sound.play(event.success ? 'forgeEpic' : 'rockBreak');
-        }
+        this.message.set({ text: event.kind === 'create' ? `Rune ${label} créée` : `La rune grandit : ${label} !`, success: true });
+        this.sound.play(event.kind === 'create' ? 'forgeRare' : 'forgeEpic');
       });
       if (timer !== null) {
         clearTimeout(timer);
@@ -216,25 +179,12 @@ export class HeartForgePage {
     });
   }
 
-  protected addEssence(id: EssenceId, left: number): void {
-    if (left > 0 && this.mix().length < CRUCIBLE_SLOTS) {
-      this.mix.update((mix) => [...mix, id]);
-    }
+  protected create(type: RuneType): void {
+    this.forge.create(type, this.stars());
   }
 
-  protected removeEssence(index: number): void {
-    this.mix.update((mix) => mix.filter((_, position) => position !== index));
-  }
-
-  protected pour(): void {
-    const mix = this.mix();
-    if (mix.length === CRUCIBLE_SLOTS && this.forge.brew(mix as [EssenceId, EssenceId, EssenceId]) !== null) {
-      this.mix.set([]);
-    }
-  }
-
-  protected fuse(type: RuneType, rank: number): void {
-    this.forge.fuse({ type, rank });
+  protected grow(type: RuneType, rank: number): void {
+    this.forge.grow({ type, rank });
   }
 
   /** Sertit la rune attendue ; sinon, dit laquelle il faut et combien le joueur en a. */
@@ -263,10 +213,3 @@ export class HeartForgePage {
   }
 }
 
-/** Ressources payées en plus d'une alliance, regroupées : « 2 Braise vive » ou « 1 Givre ancien et 1 Brume d'ombre ». */
-function extraCost(recipe: readonly EssenceId[]): string {
-  const extra = recipe.slice(0, ALLIANCE_EXTRA_ESSENCES);
-  return [...new Set(extra)]
-    .map((id) => `${extra.filter((other) => other === id).length} ${ESSENCE_LABELS[id]}`)
-    .join(' et ');
-}

@@ -2,6 +2,7 @@ import { RING_SOCKETS, STAR_RUNES } from '../balance/heart-forge';
 import {
   addEssences,
   brew,
+  brewCost,
   canBrew,
   canFuse,
   canSocket,
@@ -13,7 +14,9 @@ import {
   HeartForgeState,
   parseHeartForgeState,
   recipeResult,
+  revealedRecipes,
   runeCount,
+  socketOpen,
   socketRune,
   socketRuneIn,
   starRunesSet,
@@ -47,8 +50,8 @@ describe('Creuset du Cœur', () => {
   });
 
   it('consomme les ressources, donne une rune de rang 1 et inscrit la recette', () => {
-    const stocked = addEssences(EMPTY_HEART_FORGE, { ember: 2, sap: 1 });
-    expect(canBrew(stocked, ['ember', 'ember', 'ember'])).toBe(false);
+    const stocked = addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 });
+    expect(canBrew(stocked, ['sap', 'sap', 'sap'])).toBe(false);
     const { state, rune } = brew(stocked, ['ember', 'ember', 'sap']);
     expect(rune).toBe('magma');
     expect(state.essences.ember).toBe(0);
@@ -87,14 +90,37 @@ describe('Fusion et anneau', () => {
 
   it("sertit la rune attendue et éveille l'étoile quand ses deux runes sont serties", () => {
     let state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'fire:1': 1, 'earth:1': 1 } };
-    expect(canSocket(state, 2)).toBe(false);
-    state = socketRuneIn(socketRuneIn(state, 0), 1);
+    expect(canSocket(state, 2, 0)).toBe(false);
+    state = socketRuneIn(socketRuneIn(state, 0, 0), 1, 0);
     expect(starRunesSet(state, 1)).toBe(true);
     expect(runeCount(state, { type: 'fire', rank: 1 })).toBe(0);
   });
 
+  it("n'ouvre les emplacements d'une étoile qu'une fois la précédente obtenue", () => {
+    const state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'ice:2': 1 } };
+    expect(socketOpen(2, 0)).toBe(false);
+    expect(canSocket(state, 2, 0)).toBe(false);
+    expect(socketRuneIn(state, 2, 0)).toBe(state);
+    expect(canSocket(state, 2, 1)).toBe(true);
+  });
+
+  it("révèle les recettes d'alliance des étoiles obtenues et de la suivante", () => {
+    expect(revealedRecipes(0)).toEqual([]);
+    expect(revealedRecipes(1)).toEqual(['magma']);
+    expect(revealedRecipes(4)).toEqual(['magma', 'storm', 'grove', 'eclipse', 'heart']);
+  });
+
+  it("fait payer 2 ressources de plus pour une rune d'alliance", () => {
+    expect(brewCost(['ember', 'ember', 'ember'])).toHaveLength(3);
+    expect(brewCost(['ember', 'sap', 'ember'])).toEqual(['ember', 'sap', 'ember', 'ember', 'ember']);
+    expect(canBrew(addEssences(EMPTY_HEART_FORGE, { ember: 3, sap: 1 }), ['ember', 'ember', 'sap'])).toBe(false);
+    const { state, rune } = brew(addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 }), ['ember', 'ember', 'sap']);
+    expect(rune).toBe('magma');
+    expect(state.essences.ember + state.essences.sap).toBe(0);
+  });
+
   it('relit une sauvegarde valide et refuse une rune inconnue', () => {
-    const state = brew(addEssences(EMPTY_HEART_FORGE, { mist: 1, dawn: 2 }), ['mist', 'dawn', 'dawn']).state;
+    const state = brew(addEssences(EMPTY_HEART_FORGE, { mist: 2, dawn: 3 }), ['mist', 'dawn', 'dawn']).state;
     expect(parseHeartForgeState(JSON.parse(JSON.stringify(state)))).toEqual(state);
     expect(parseHeartForgeState({ ...state, runes: { 'water:1': 1 } })).toBeNull();
     expect(parseHeartForgeState({ ...state, sockets: [true] })).toBeNull();

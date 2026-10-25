@@ -746,8 +746,8 @@ function craftRunes(): void {
   for (let guard = 0; guard < 5000; guard++) {
     let progressMade = false;
     for (const socket of targets) {
-      if (canSocket(heartForge, socket)) {
-        heartForge = socketRuneIn(heartForge, socket);
+      if (canSocket(heartForge, socket, EVOLUTION_FORMS[formIndex].stars)) {
+        heartForge = socketRuneIn(heartForge, socket, EVOLUTION_FORMS[formIndex].stars);
         progressMade = true;
       }
     }

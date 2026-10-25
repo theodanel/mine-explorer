@@ -351,7 +351,22 @@ const PICKAXE_ICONS: Readonly<Partial<Record<TierId, string>>> = {
   divine: 'assets/ui/pickaxes/divin.webp',
 };
 
-/** Icône d'un objet : celle de son matériau pour une pioche, sinon celle de l'emplacement. */
-export function itemIconUrl(slot: SlotId, tier: TierId | null, slotIconUrl: string): string {
+/** Pièces Divin éveillées (Divin corrompu) : obsidienne veinée de lave, dès l'Éveil 1. */
+const CORRUPTED_ICONS: Readonly<Record<SlotId, string>> = {
+  helmet: 'assets/ui/divin-corrompu/helmet.webp',
+  pickaxe: 'assets/ui/divin-corrompu/pickaxe.webp',
+  bag: 'assets/ui/divin-corrompu/bag.webp',
+  gloves: 'assets/ui/divin-corrompu/gloves.webp',
+  boots: 'assets/ui/divin-corrompu/boots.webp',
+};
+
+/**
+ * Icône d'un objet : la version corrompue d'une pièce Divin éveillée, celle de son matériau pour une pioche, sinon
+ * celle de l'emplacement.
+ */
+export function itemIconUrl(slot: SlotId, tier: TierId | null, slotIconUrl: string, awakening = 0): string {
+  if (tier === 'divine' && awakening > 0) {
+    return CORRUPTED_ICONS[slot];
+  }
   return slot === 'pickaxe' && tier !== null ? (PICKAXE_ICONS[tier] ?? slotIconUrl) : slotIconUrl;
 }

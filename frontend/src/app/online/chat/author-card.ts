@@ -55,7 +55,7 @@ export class AuthorCard implements OnInit {
         return {
           slot,
           label: SLOTS[slot].label,
-          icon: itemIconUrl(slot, piece?.tier ?? null, SLOTS[slot].iconUrl),
+          icon: itemIconUrl(slot, piece?.tier ?? null, SLOTS[slot].iconUrl, piece?.awakening ?? 0),
           tier: piece?.tier ?? 'empty',
           tierLabel: piece === undefined ? 'Vide' : TIER_LABELS[piece.tier] + (piece.awakening > 0 ? ` corrompu · Éveil ${piece.awakening}` : ''),
           level: piece?.level ?? null,

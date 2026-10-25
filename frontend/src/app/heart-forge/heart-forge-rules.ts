@@ -75,6 +75,18 @@ export function addEssences(state: HeartForgeState, gains: Partial<Record<Essenc
   return { ...state, essences };
 }
 
+/** Paie des ressources : null s'il en manque une, sans rien prendre. */
+export function spendEssences(state: HeartForgeState, cost: Partial<Record<EssenceId, number>>): HeartForgeState | null {
+  const essences = { ...state.essences };
+  for (const id of ESSENCES) {
+    essences[id] -= Math.max(0, cost[id] ?? 0);
+    if (essences[id] < 0) {
+      return null;
+    }
+  }
+  return { ...state, essences };
+}
+
 function sameEssences(a: readonly EssenceId[], b: readonly EssenceId[]): boolean {
   const sorted = (list: readonly EssenceId[]) => [...list].sort().join(',');
   return sorted(a) === sorted(b);

@@ -1,5 +1,6 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
+import { AWAKENING_SET_STRIKE_PER_LEVEL } from '../balance/awakening';
 import {
   AFFINITY_WEIGHT,
   AFFIX_SHARE,
@@ -18,6 +19,7 @@ import {
   tierIndex,
 } from '../balance/balance';
 import type { Random } from '../shared/random';
+import { applyAwakening, AwakeningLevels, lowestAwakening } from './awakening-rules';
 import {
   EquippedItems,
   Item,
@@ -99,8 +101,11 @@ export interface GearSet {
   readonly strikePct: number;
 }
 
-/** Palier le plus porté (à égalité, le plus haut), ou null sans aucune pièce. */
-export function gearSet(equipped: EquippedItems): GearSet | null {
+/**
+ * Palier le plus porté (à égalité, le plus haut), ou null sans aucune pièce. Panoplie Divin complète : le bonus
+ * grandit avec l'Éveil de la pièce la moins éveillée.
+ */
+export function gearSet(equipped: EquippedItems, awakening: AwakeningLevels = {}): GearSet | null {
   const counts = new Map<TierId, number>();
   for (const slot of SLOT_IDS) {
     const tier = equipped[slot]?.tier;
@@ -118,19 +123,22 @@ export function gearSet(equipped: EquippedItems): GearSet | null {
     return null;
   }
   const pieces = best.pieces;
-  return { ...best, strikePct: SET_BONUSES.find((bonus) => pieces >= bonus.pieces)?.strikePct ?? 0 };
+  const base = SET_BONUSES.find((bonus) => pieces >= bonus.pieces)?.strikePct ?? 0;
+  const awakened = pieces === SLOT_IDS.length ? lowestAwakening(equipped, awakening) * AWAKENING_SET_STRIKE_PER_LEVEL : 0;
+  return { ...best, strikePct: base + awakened };
 }
 
-export function computeStats(equipped: EquippedItems): MiningStats {
+export function computeStats(equipped: EquippedItems, awakening: AwakeningLevels = {}): MiningStats {
   const total: MiningStats = { ...BASE_STATS };
+  const awakened = applyAwakening(equipped, awakening);
   for (const slot of SLOT_IDS) {
-    const item = equipped[slot];
+    const item = awakened[slot];
     for (const stat of STAT_IDS) {
       total[stat] += item?.stats[stat] ?? 0;
     }
   }
   // La panoplie multiplie toute la Frappe de l'équipement : l'Atelier et l'évolution s'y appliquent ensuite
-  total.strikePower *= 1 + (gearSet(equipped)?.strikePct ?? 0);
+  total.strikePower *= 1 + (gearSet(equipped, awakening)?.strikePct ?? 0);
   for (const stat of STAT_IDS) {
     const cap = STAT_CAPS[stat];
     if (cap !== undefined) {
@@ -156,13 +164,18 @@ export function computePower(stats: MiningStats): number {
  * Gain (ou perte) de Puissance si l'on équipe cet objet à la place de celui porté. Les niveaux d'Atelier comptent :
  * ils dépendent de la qualité de la pièce, donc changer de qualité change aussi le bonus d'Atelier.
  */
-export function powerDelta(equipped: EquippedItems, candidate: Item, levels: WorkshopLevels = {}): number {
+export function powerDelta(
+  equipped: EquippedItems,
+  candidate: Item,
+  levels: WorkshopLevels = {},
+  awakening: AwakeningLevels = {},
+): number {
   const swapped: EquippedItems = { ...equipped, [candidate.slot]: candidate };
-  return gearPower(swapped, levels) - gearPower(equipped, levels);
+  return gearPower(swapped, levels, awakening) - gearPower(equipped, levels, awakening);
 }
 
-function gearPower(equipped: EquippedItems, levels: WorkshopLevels): number {
-  return computePower(reinforce(computeStats(equipped), levels, equipped));
+function gearPower(equipped: EquippedItems, levels: WorkshopLevels, awakening: AwakeningLevels): number {
+  return computePower(reinforce(computeStats(equipped, awakening), levels, equipped));
 }
 
 /** Multiplicateur appliqué à la vitesse d'animation du mineur. */

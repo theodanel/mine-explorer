@@ -62,7 +62,7 @@ export class ItemSheet {
       tier: item.tier,
       tierLabel: level > 0 ? `${TIER_LABELS[item.tier]} corrompu` : TIER_LABELS[item.tier],
       level: item.level,
-      icon: itemIconUrl(slot, item.tier, SLOTS[slot].iconUrl),
+      icon: itemIconUrl(slot, item.tier, SLOTS[slot].iconUrl, level),
       awakening: level,
       stats: STAT_IDS.filter((stat) => shown.stats[stat] !== undefined).map((stat) => ({
         stat,

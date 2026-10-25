@@ -37,7 +37,7 @@ Au jour 200 : Puissance ×2,9 par rapport à une partie sans Éveil, une zone de
 
 ## Visuel
 
-Provisoire, en attendant l'art : la pièce s'assombrit à chaque palier et une lueur orange monte (`[data-awakening]` dans `styles.scss`), jusqu'au noir veiné d'orange de l'Éveil 5. Le cadre passe de l'or au brasier.
+Dès l'Éveil 1, l'icône de la pièce passe à sa version corrompue (obsidienne veinée de lave), dessinée par Théo le 25/10/2026 à partir des prompts ci-dessous. Sa lueur orange grandit à chaque palier, et le cadre arc-en-ciel du Divin vire au brasier (`[data-awakening]` dans `styles.scss`). Sources dans `art-source/divin-corrompu/`, détourées par `preparer-divin-corrompu.py` vers `frontend/public/assets/ui/divin-corrompu/`.
 
 Prompts Gemini des versions corrompues (Éveil 5), à générer puis déposer dans `art-source/divin-corrompu/` (casque.png, pioche.png, sac.png, gants.png, bottes.png). Joindre en image de référence l'icône actuelle de la pièce (`frontend/public/assets/ui/helmet.webp`, `pickaxes/divin.webp`, `backpack.webp`, `gloves.webp`, `boots.webp`).
 

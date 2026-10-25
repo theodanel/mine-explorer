@@ -87,7 +87,7 @@ export class EquipmentColumn {
         key: slot,
         kind: 'item' as const,
         label,
-        iconUrl: itemIconUrl(slot, item?.tier ?? null, iconUrl),
+        iconUrl: itemIconUrl(slot, item?.tier ?? null, iconUrl, activeAwakening(equipped, awakening, slot)),
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
         awakening: activeAwakening(equipped, awakening, slot),

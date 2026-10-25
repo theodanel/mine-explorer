@@ -60,7 +60,7 @@ export class ItemSheet {
     return {
       label: SLOTS[slot].label,
       tier: item.tier,
-      tierLabel: TIER_LABELS[item.tier],
+      tierLabel: level > 0 ? `${TIER_LABELS[item.tier]} corrompu` : TIER_LABELS[item.tier],
       level: item.level,
       icon: itemIconUrl(slot, item.tier, SLOTS[slot].iconUrl),
       awakening: level,

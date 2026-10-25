@@ -16,6 +16,9 @@ import { RANDOM } from '../shared/random';
 import { GUARDIAN_STAGE } from '../progression/progression-rules';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
+import { RebirthAuraView } from './rebirth-aura-view';
+import { Rebirth } from '../rebirth/rebirth';
+import { rebirthAura } from '../rebirth/rebirth-visuals';
 import { MineRock, RockTop } from './mine-rock';
 import { AmbienceLayer } from './ambience-layer';
 import { PowerGain, powerGain } from './power-gain';
@@ -95,6 +98,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
   private readonly rock = new MineRock((top) => this.rockTop.set(top));
   private readonly ambience = new AmbienceLayer(inject(RANDOM));
+  /** Lueur de la Renaissance derrière le mineur, et couleur des chiffres de dégâts. */
+  private readonly aura = new RebirthAuraView();
+  private readonly rebirth = inject(Rebirth);
+  private readonly rebirthAura = computed(() => rebirthAura(this.rebirth.count()));
   private initialized = false;
   /**
    * Hauteur de la scène, en pixels de scène : 1280 en 9:16, plus sur un téléphone haut, où le cadre s'allonge.
@@ -123,6 +130,12 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private glowMs = 0;
 
   constructor() {
+    // Chaque renaissance change la lueur du mineur et la couleur de ses dégâts
+    effect(() => {
+      const aura = this.rebirthAura();
+      this.aura.set(aura);
+      this.effects?.setRebirthAura(aura);
+    });
     // Changer de bottes ou lancer Frénésie accélère le mineur tout de suite, sans recréer la scène
     effect(() => {
       const speed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
@@ -276,12 +289,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.placeMiner(strike);
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
+    effects.setRebirthAura(this.rebirthAura());
     this.effects = effects;
     this.staticBody = new Sprite();
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.app.stage.addChild(miner, this.staticBody, effectsLayer);
+    this.app.stage.addChild(this.aura.view, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -308,6 +322,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.updateSquash(ticker.deltaMS);
       this.updateShake(ticker.deltaMS);
       this.updateGlow(ticker.deltaMS);
+      this.aura.update(ticker.deltaMS);
     });
     miner.play();
   }
@@ -369,6 +384,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
+    this.aura.place(this.miner.x, MINER_FEET_Y);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
   }

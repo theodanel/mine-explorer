@@ -175,6 +175,20 @@
   margin: -0.2em 0;
 }
 
+// Emblème de la Renaissance, en bas à gauche du portrait
+.rebirth-emblem {
+  position: absolute;
+  bottom: -0.5cqw;
+  left: -0.5cqw;
+  padding: 0.3cqw 1.2cqw;
+  border: 0.4cqw solid var(--ink);
+  border-radius: 999px;
+  background: var(--emblem-color, #ffb347);
+  box-shadow: 0 0 1.6cqw var(--emblem-color, #ffb347);
+  color: var(--ink);
+  font: 2.8cqw / 1 var(--font-display);
+}
+
 // Pastille rouge des messages non lus, en haut à droite de la bulle de discussion
 .side-badge {
   position: absolute;

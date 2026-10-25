@@ -14,15 +14,17 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Valeurs classées d'une sauvegarde, lues dans les clés du jeu. Formats tirés du front :
  * {@code mine-explorer.progress} = {@code {zone, stage, damage}} (progression-rules.ts) et
- * {@code mine-explorer.abyss} = {@code {record, …}} (abyss-rules.ts).
+ * {@code mine-explorer.abyss} = {@code {record, …}} (abyss-rules.ts) et {@code mine-explorer.renaissance} =
+ * {@code {count, embers, tree, bestStages}} (rebirth-rules.ts).
  *
- * @param stagesReached étapes atteintes depuis le début : 1 au 1-1, 16 au 2-1
+ * @param stagesReached étapes atteintes au plus profond, toutes vies confondues (Renaissance) : 1 au 1-1, 16 au 2-1
  * @param abyssRecord record d'étages du Puits sans fond
  */
 public record SaveMetrics(int stagesReached, int abyssRecord) {
 
 	static final String PROGRESS_KEY = "mine-explorer.progress";
 	static final String ABYSS_KEY = "mine-explorer.abyss";
+	static final String REBIRTH_KEY = "mine-explorer.renaissance";
 	static final int STAGES_PER_ZONE = 15;
 	/** Bien au-delà de la dernière zone dessinée : seul garde-fou contre un entier absurde, l'anti-triche fait le reste. */
 	static final int MAX_ZONE = 10_000;
@@ -31,7 +33,10 @@ public record SaveMetrics(int stagesReached, int abyssRecord) {
 
 	/** Lit les valeurs classées ; une clé absente vaut une partie neuve, une clé illisible est refusée. */
 	static SaveMetrics read(Map<String, String> data, JsonMapper json) {
-		int stages = node(data, PROGRESS_KEY, json).map(SaveMetrics::stagesOf).orElse(FRESH.stagesReached());
+		int current = node(data, PROGRESS_KEY, json).map(SaveMetrics::stagesOf).orElse(FRESH.stagesReached());
+		// Après une renaissance, la vie en cours repart de la zone 1 : le classement garde la meilleure profondeur
+		int best = node(data, REBIRTH_KEY, json).map(SaveMetrics::bestStagesOf).orElse(0);
+		int stages = Math.max(current, best);
 		int record = node(data, ABYSS_KEY, json).map(SaveMetrics::recordOf).orElse(FRESH.abyssRecord());
 		return new SaveMetrics(stages, record);
 	}
@@ -53,6 +58,10 @@ public record SaveMetrics(int stagesReached, int abyssRecord) {
 		int zone = intIn(progress.get("zone"), 1, MAX_ZONE);
 		int stage = intIn(progress.get("stage"), 1, STAGES_PER_ZONE);
 		return (zone - 1) * STAGES_PER_ZONE + stage;
+	}
+
+	private static int bestStagesOf(JsonNode rebirth) {
+		return intIn(rebirth.get("bestStages"), 0, MAX_ZONE * STAGES_PER_ZONE);
 	}
 
 	private static int recordOf(JsonNode abyss) {

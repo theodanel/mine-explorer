@@ -1,0 +1,70 @@
+<section class="page game-panel" data-theme="ember" aria-labelledby="rebirth-title">
+  <header class="page-header">
+    <h2 id="rebirth-title">Renaissance</h2>
+    <button type="button" class="close" aria-label="Revenir au profil" (click)="close()">×</button>
+  </header>
+
+  <div class="scroll">
+    <article class="summary">
+      <span class="emblem" [class.empty]="emblem() === ''" aria-hidden="true">{{ emblem() || '✦' }}</span>
+      <div>
+        <p class="count">{{ rebirth.count() === 0 ? 'Aucune renaissance' : rebirth.count() + ' renaissance' + (rebirth.count() > 1 ? 's' : '') }}</p>
+        <p class="embers"><strong>{{ embersLabel() }}</strong> Braises du Cœur</p>
+      </div>
+    </article>
+
+    @if (draft() === null) {
+      @if (canRebirth()) {
+        <article class="reborn">
+          <p>
+            Zone {{ zone() }} atteinte : renaître maintenant rapporte <strong>{{ gain() }} Braises</strong>. Plus tu
+            descends avant de renaître, plus tu en gagnes.
+          </p>
+          <button type="button" class="game-button gold" (click)="prepareRebirth()">Préparer la renaissance</button>
+        </article>
+      } @else {
+        <p class="hint">Atteins la zone {{ minZone }} pour renaître (tu es en zone {{ zone() }}).</p>
+      }
+    } @else {
+      <article class="reborn confirm">
+        <h3>Avant de renaître</h3>
+        <p>
+          <strong>Repart de zéro</strong> : zone, pioche, équipement, or, minerais, Atelier, Campement et arbre de
+          compétences.
+        </p>
+        <p>
+          <strong>Reste</strong> : évolution, artefacts, compagnons, runes, Éveil, succès et Puits sans fond.
+        </p>
+        <p>Dépense tes Braises ci-dessous, puis repars en {{ start() }}.</p>
+        <p class="warning">Les filons de la prochaine vie seront {{ nextHardness() }} plus durs qu'au départ.</p>
+        <div class="actions">
+          <button type="button" class="game-button" (click)="cancelRebirth()">Annuler</button>
+          <button type="button" class="game-button red" (click)="confirmRebirth()">Renaître</button>
+        </div>
+      </article>
+    }
+
+    <h3 class="section-title">Arbre des Braises</h3>
+    <ul class="tree">
+      @for (entry of branches(); track entry.branch) {
+        <li class="branch">
+          <div class="branch-text">
+            <strong>{{ entry.label }} <span class="level">{{ entry.level }} / {{ entry.maxLevel }}</span></strong>
+            <span>{{ entry.current }}</span>
+            @if (entry.next; as next) {
+              <small>Palier suivant : {{ next }}</small>
+            }
+          </div>
+          @if (entry.cost; as cost) {
+            <button type="button" class="game-button green buy" [disabled]="!entry.affordable" (click)="buy(entry.branch)">
+              {{ cost }}
+              <small>Braises</small>
+            </button>
+          } @else {
+            <span class="max">Max</span>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</section>

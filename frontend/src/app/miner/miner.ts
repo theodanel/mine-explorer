@@ -9,11 +9,13 @@ import { Skills } from '../skills/skills';
 import { Spells } from '../spells/spells';
 import { reinforce } from '../workshop/workshop-rules';
 import { Workshop } from '../workshop/workshop';
+import { NO_BONUSES } from '../balance/skill-tree';
+import { Rebirth } from '../rebirth/rebirth';
 import { minerProfile, NO_BUFFS } from './miner-rules';
 
 /**
  * Stats complètes du mineur : équipement et évolution (Inventory), Atelier, arbre de compétences, artefact porté, compagnon,
- * runes d'équipement,
+ * runes d'équipement, arbre des Braises de la Renaissance,
  * et sorts en cours pour `current`. `permanent` sert à l'absence et aux comparaisons, `current` à la mine.
  */
 @Injectable({ providedIn: 'root' })
@@ -26,12 +28,15 @@ export class Miner {
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
   private readonly gearRunes = inject(GearRunes);
+  private readonly rebirth = inject(Rebirth);
 
   private readonly families = computed(() => [
     this.skills.bonuses(),
     this.artifacts.bonuses(),
     this.companions.bonuses(),
     this.gearRunes.bonuses(),
+    // L'arbre des Braises : une famille à part, qui multiplie les autres (la grosse hausse d'une vie à l'autre)
+    { ...NO_BONUSES, strikePct: this.rebirth.effects().strikeMultiplier - 1, speed: this.rebirth.effects().speed },
   ]);
   /** Équipement et évolution, renforcés par l'Atelier. */
   private readonly gear = computed(() => reinforce(this.inventory.stats(), this.workshop.levels(), this.inventory.equipped()));

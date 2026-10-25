@@ -1,6 +1,7 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
 import { guardianPower } from '../balance/balance';
+import { Rebirth } from '../rebirth/rebirth';
 import { CLOCK } from '../shared/clock';
 
 import { readStorage, writeStorage } from '../shared/local-storage';
@@ -51,7 +52,10 @@ export interface HitResult {
 @Injectable({ providedIn: 'root' })
 export class Progression {
   private readonly clock = inject(CLOCK);
-  private readonly state = signal<Progress>(loadProgress());
+  /** Dureté de la vie en cours : les filons gagnent des PV à chaque renaissance. */
+  private readonly hardness = computed(() => this.rebirth.effects().hardness);
+  private readonly rebirth = inject(Rebirth);
+  private readonly state = signal<Progress>(loadProgress(this.rebirth.effects().hardness));
   private readonly farmState = signal<Farm | null>(loadFarm(this.state()));
   /** Gardien raté : le filon d'avant se reforme sans fin jusqu'à ce que le joueur le défie à nouveau. */
   private readonly blockedState = signal(loadBlocked(this.state()));
@@ -74,11 +78,11 @@ export class Progression {
   readonly label = computed(() => stageLabel(this.state()));
   readonly health = computed(() => {
     const farm = this.farmState();
-    return farm === null ? rockHealth(this.state()) : 1 - farm.damage / farmHp(farm);
+    return farm === null ? rockHealth(this.state(), this.hardness()) : 1 - farm.damage / farmHp(farm);
   });
   readonly remainingHp = computed(() => {
     const farm = this.farmState();
-    return farm === null ? remainingHp(this.state()) : farmHp(farm) - farm.damage;
+    return farm === null ? remainingHp(this.state(), this.hardness()) : farmHp(farm) - farm.damage;
   });
   readonly stagesReached = computed(() => stagesReached(this.state()));
   /** Combat en cours contre le gardien de la zone (pas en zone passée). */
@@ -90,7 +94,7 @@ export class Progression {
   });
   readonly blocked = this.blockedState.asReadonly();
   /** Puissance qui casse le gardien de la zone juste à temps. */
-  readonly guardianPower = computed(() => guardianPower(this.state().zone));
+  readonly guardianPower = computed(() => Math.round(guardianPower(this.state().zone) * this.hardness()));
 
   constructor() {
     // Une partie rechargée devant le gardien repart d'un combat neuf : le chrono ne survit pas à la fermeture
@@ -110,7 +114,7 @@ export class Progression {
     }
     this.checkGuardianTimeout();
     const before = this.state();
-    const result = applyDamage(before, damage, this.blockedState());
+    const result = applyDamage(before, damage, this.blockedState(), this.hardness());
     this.saveProgress(result.progress);
     if (isGuardian(result.progress) && !isGuardian(before)) {
       this.startGuardianFight();
@@ -197,14 +201,14 @@ export class Progression {
   }
 }
 
-function loadProgress(): Progress {
+function loadProgress(hardness: number): Progress {
   const raw = readStorage(STORAGE_KEY);
   if (raw === null) {
     return START_PROGRESS;
   }
   try {
-    const value = migrateProgress(JSON.parse(raw));
-    if (isValidProgress(value)) {
+    const value = migrateProgress(JSON.parse(raw), hardness);
+    if (isValidProgress(value, hardness)) {
       return value;
     }
   } catch {

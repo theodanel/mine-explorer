@@ -5,6 +5,7 @@ import type { StrikeOutcome } from '../mining/mining';
 import type { PowerGain } from './power-gain';
 import { compactNumber } from '../shared/format-number';
 import { ESSENCE_LABELS } from '../balance/heart-forge';
+import type { RebirthAura } from '../rebirth/rebirth-visuals';
 
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
@@ -159,8 +160,16 @@ class Pulse implements Effect {
 /** Effets visuels d'un coup de pioche : éclats de roche, dégâts infligés et butin quand le rocher casse. */
 export class HitEffects {
   private readonly effects: Effect[] = [];
+  /** Couleur et taille des dégâts : celles de la Renaissance, qui grossissent de vie en vie. */
+  private damageColor = DAMAGE_COLOR;
+  private damageScale = 1;
 
   constructor(private readonly layer: Container) {}
+
+  setRebirthAura(aura: RebirthAura | null): void {
+    this.damageColor = aura?.color ?? DAMAGE_COLOR;
+    this.damageScale = aura?.textScale ?? 1;
+  }
 
   spawn(x: number, y: number, outcome: StrikeOutcome): void {
     for (let i = 0; i < CHIP_COUNT; i++) {
@@ -169,8 +178,8 @@ export class HitEffects {
     // Format court, comme les stats : « 4,9 M » se lit d'un coup d'œil, « 4980692 » non (demande de Théo)
     const damage = compactNumber(outcome.damage);
     const damageLabel = outcome.critical ? `${damage} !` : damage;
-    const damageColor = outcome.critical ? CRITICAL_COLOR : DAMAGE_COLOR;
-    const damageSize = outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE;
+    const damageColor = outcome.critical ? CRITICAL_COLOR : this.damageColor;
+    const damageSize = Math.round((outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE) * this.damageScale);
     this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
 
     // Pas d'or affiché à chaque coup (demande de Théo) : seul le compteur du haut le montre

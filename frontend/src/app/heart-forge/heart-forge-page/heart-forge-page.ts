@@ -83,10 +83,24 @@ export class HeartForgePage {
         rune,
         icon: runeIconUrl(rune.type),
         label: `${RUNE_LABELS[rune.type]} rang ${rune.rank}`,
+        owned: runeCount(state, rune),
         ready: !filled && runeCount(state, rune) > 0,
         angle: RUNE_SOCKET_ANGLES[index],
       };
     });
+  });
+
+  /**
+   * Prochaine étoile à éveiller et ses deux runes, nommées en clair : sur l'anneau, une rune d'alliance (Éclipse) se
+   * confondait avec un élément (Ombre), signalé par un joueur le 25/10/2026.
+   */
+  protected readonly nextStar = computed(() => {
+    const sockets = this.sockets();
+    const open = sockets.find((socket) => !socket.filled);
+    if (open === undefined) {
+      return null;
+    }
+    return { star: open.star, runes: sockets.filter((socket) => socket.star === open.star) };
   });
 
   /** Les 5 ressources, avec leur réserve moins ce qui est déjà posé dans le Creuset. */
@@ -206,10 +220,17 @@ export class HeartForgePage {
     this.forge.fuse({ type, rank });
   }
 
+  /** Sertit la rune attendue ; sinon, dit laquelle il faut et combien le joueur en a. */
   protected setRune(index: number): void {
+    const socket = this.sockets()[index];
+    if (socket === undefined || socket.filled) {
+      return;
+    }
     if (this.forge.socket(index)) {
       this.sound.play('upgrade');
+      return;
     }
+    this.message.set({ text: `Cet emplacement attend : ${socket.label} (tu en as ${socket.owned}).`, success: false });
   }
 
   protected openGearRunes(): void {

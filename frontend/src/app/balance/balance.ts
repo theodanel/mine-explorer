@@ -426,28 +426,35 @@ export interface EvolutionForm {
  */
 const HEART_STAR_BONUS = 1;
 /**
- * Zone à atteindre, zone à terminer, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la
- * zone atteinte). La 5e étoile ne demande pas de terminer la zone 20 : c'est elle qui donne la Frappe pour son gardien ;
- * à la place, il faut y épuiser quelques filons.
+ * Zone à atteindre, pioche, objets forgés et filons épuisés de chaque étoile (les filons suivent la zone atteinte).
+ * Seule la 1re étoile demande en plus de terminer sa zone (battre le gardien de la 12). Dès la 2e, « terminer la zone »
+ * doublait « atteindre la zone » (la 5e demandait d'atteindre la 20 et de terminer la 19 : la même chose, signalé par
+ * un joueur le 25/10/2026) ; ce sont les objets forgés qui espacent les étoiles (simulateur : mêmes jours qu'avant).
  */
-const HEART_STAR_GOALS: readonly (readonly [zone: number, cleared: number, pickaxe: number, items: number, rocks: number])[] = [
-  [12, 12, 25, 11500, 190],
-  [14, 14, 26, 17000, 215],
-  [16, 16, 28, 23500, 245],
-  [18, 18, 30, 32500, 275],
-  [20, 19, 30, 44000, 292],
+const HEART_STAR_GOALS: readonly (readonly [zone: number, pickaxe: number, items: number, rocks: number])[] = [
+  [12, 25, 11500, 190],
+  [14, 26, 17000, 215],
+  [16, 28, 23500, 245],
+  [18, 30, 32500, 275],
+  [20, 30, 44000, 292],
 ];
+/** Zone que la 1re étoile demande de terminer. */
+const FIRST_STAR_CLEARED_ZONE = 12;
 
-const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, cleared, pickaxe, items, rocks], index) => ({
+const HEART_STARS: readonly EvolutionForm[] = HEART_STAR_GOALS.map(([zone, pickaxe, items, rocks], index) => ({
   id: 'heart',
   label: 'Légende du Cœur du monde',
   stars: index + 1,
-  // Palier 1 : atteindre la zone ; palier 2 : le chemin ; palier 3 : la terminer (battre son gardien), et tout le reste.
-  // Plus exigeant qu'atteindre la zone (demande de Théo, 18/10/2026) ; le gardien reste battable sans l'étoile.
+  // Palier 1 : atteindre la zone ; palier 2 : le chemin ; palier 3 : tout le reste, et pour la 1re étoile seulement,
+  // terminer la zone 12 (demande de Théo, 18/10/2026 ; le gardien reste battable sans l'étoile).
   objectives: tiered(12 + 2 * index, [
     [['zone', zone], ['itemsForged', Math.round(items * 0.75)]],
     [['pickaxeLevel', pickaxe], ['itemsForged', Math.round(items * 0.85)], ['rocksBroken', rocks - 10]],
-    [['zoneCleared', cleared], ['itemsForged', items], ['rocksBroken', rocks]],
+    [
+      ...(index === 0 ? [['zoneCleared', FIRST_STAR_CLEARED_ZONE] as const] : []),
+      ['itemsForged', items],
+      ['rocksBroken', rocks],
+    ],
   ]),
   strikeBonus: HEART_STAR_BONUS,
 }));

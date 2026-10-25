@@ -19,7 +19,6 @@
           [class.filled]="socket.filled"
           [class.ready]="socket.ready"
           [style.--angle.deg]="socket.angle"
-          [disabled]="!socket.ready"
           [attr.aria-label]="(socket.filled ? 'Sertie : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
           (click)="setRune(socket.index)"
         >
@@ -28,7 +27,21 @@
         </button>
       }
     </div>
-    <p class="hint">Chaque étoile demande 2 runes serties. Une rune qui brille peut être sertie : touche-la.</p>
+    @if (nextStar(); as next) {
+      <div class="next-star">
+        <strong>Étoile {{ next.star }} : sertis ces 2 runes</strong>
+        <ul>
+          @for (rune of next.runes; track rune.index) {
+            <li [class.done]="rune.filled">
+              <img [src]="rune.icon" alt="" width="128" height="128" />
+              {{ rune.label }}
+              <span>{{ rune.filled ? 'Sertie ✓' : 'Tu en as ' + rune.owned }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+    <p class="hint">Une rune qui brille peut être sertie : touche-la. Touche un emplacement pour savoir ce qu'il attend.</p>
     <button type="button" class="game-button gear-runes" (click)="openGearRunes()">Sertir mon équipement</button>
 
     @if (message(); as note) {

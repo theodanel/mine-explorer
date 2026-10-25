@@ -12,26 +12,26 @@ Retour à [[Accueil]]. Décidé le 21/10/2026 par Théo, sur une proposition du 
 
 | Palier | Doublons | Ressources du Cœur | Stats de la pièce | Châsse de rune |
 |---|---|---|---|---|
-| Éveil 1 | 50 | 25 | +5 % | |
-| Éveil 2 | 150 | 60 | +12 % | +1 |
-| Éveil 3 | 400 | 120 | +20 % | |
-| Éveil 4 | 900 | 220 | +30 % | +1 (5 en tout) |
-| Éveil 5 | 1 800 | 375 | +40 % | |
+| Éveil 1 | 300 | 25 | +5 % | |
+| Éveil 2 | 900 | 60 | +12 % | +1 |
+| Éveil 3 | 2 400 | 120 | +20 % | |
+| Éveil 4 | 5 400 | 220 | +30 % | +1 (5 en tout) |
+| Éveil 5 | 10 800 | 375 | +40 % | |
 
 - **Panoplie** : avec les 5 pièces en Divin, le bonus de panoplie (+8 % de Frappe) gagne +2 % par palier de la pièce **la moins éveillée** (+18 % quand tout est à l'Éveil 5).
 - **Résonance des runes** : avec 5 châsses, il suffit de 3 runes du même type sur une pièce ; seules ces runes résonnent.
 
 ## Calibrage (simulateur, joueur régulier, 200 jours)
 
-En fin de partie, la Forge sort environ 850 pièces Divin par jour (170 par emplacement) : les doublons rythment les premiers paliers, les ressources du Cœur les derniers. Le joueur simulé passe 10 minutes par jour dans les Échos pour l'Éveil, après les runes.
+En fin de partie, la Forge sort environ 850 pièces Divin par jour (170 par emplacement). Les doublons ont été multipliés par 6 le 25/10/2026 (Théo les trouvait trop faciles) : ils freinent maintenant les derniers paliers, avec les ressources du Cœur. Depuis l'anneau dans l'ordre des étoiles, les ressources ne partent plus d'avance dans les runes : les premiers paliers arrivent plus tôt. Le joueur simulé passe 10 minutes par jour dans les Échos pour l'Éveil, après les runes.
 
 | Les 5 pièces à | Jour |
 |---|---|
-| Éveil 1 | 44 |
-| Éveil 2 | 50 |
-| Éveil 3 | 63 |
-| Éveil 4 | 86 |
-| Éveil 5 | 119 |
+| Éveil 1 | 23 |
+| Éveil 2 | 30 |
+| Éveil 3 | 69 |
+| Éveil 4 | 91 |
+| Éveil 5 | 137 |
 
 Au jour 200 : Puissance ×2,9 par rapport à une partie sans Éveil, une zone de plus (23 au lieu de 22). Lancement : `node --import ./tools/register-ts.mjs tools/simulate.mts regulier 200` (et `--sans-eveil` pour comparer).
 

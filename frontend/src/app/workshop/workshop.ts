@@ -8,6 +8,7 @@ import { EquippedItems, SLOT_IDS, SlotId, StatId, TierId } from '../equipment/eq
 import { Inventory } from '../equipment/inventory';
 import { Evolution } from '../evolution/evolution';
 import { Ores } from '../ores/ores';
+import { Progression } from '../progression/progression';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { Wallet } from '../wallet/wallet';
 import { isValidLevels, migrateSlotLevels, pieceLevel, upgradeCost, withLevel, WorkshopCost } from './workshop-rules';
@@ -33,6 +34,7 @@ export class Workshop {
   private readonly inventory = inject(Inventory);
   private readonly missionCounters = inject(MissionCounters);
   private readonly random = inject(RANDOM);
+  private readonly progression = inject(Progression);
   private readonly state = signal<WorkshopLevels>(loadLevels(this.inventory.equipped()));
 
   readonly levels = this.state.asReadonly();
@@ -53,7 +55,8 @@ export class Workshop {
 
   cost(slot: SlotId): WorkshopCost | null {
     const tier = this.tier(slot);
-    return tier === null ? null : upgradeCost(tier, this.level(slot));
+    const cost = tier === null ? null : upgradeCost(tier, this.level(slot));
+    return cost === null ? null : { ...cost, gold: Math.round(cost.gold * this.progression.goldPriceScale()) };
   }
 
   check(slot: SlotId): UpgradeCheck {
@@ -96,7 +99,7 @@ export class Workshop {
       return null;
     }
     const material = workshopMaterial(tier);
-    return { gold: reforgeGoldCost(tier), ores: material === null ? {} : { [material]: REFORGE_ORES } };
+    return { gold: Math.round(reforgeGoldCost(tier) * this.progression.goldPriceScale()), ores: material === null ? {} : { [material]: REFORGE_ORES } };
   }
 
   /** Ce qui empêche de reforger la pièce portée, ou 'ok'. */

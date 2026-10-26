@@ -1,6 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 
-import { guardianPower } from '../balance/balance';
+import { goldPriceScale, guardianPower } from '../balance/balance';
 import { Rebirth } from '../rebirth/rebirth';
 import { CLOCK } from '../shared/clock';
 
@@ -54,6 +54,8 @@ export class Progression {
   private readonly clock = inject(CLOCK);
   /** Dureté de la vie en cours : les filons gagnent des PV à chaque renaissance. */
   private readonly hardness = computed(() => this.rebirth.effects().hardness);
+  /** Multiplicateur des prix en or (pioche, Atelier, Campement) : ils suivent l'or que rapporte la zone atteinte. */
+  readonly goldPriceScale = computed(() => goldPriceScale(this.state().zone, this.hardness()));
   private readonly rebirth = inject(Rebirth);
   private readonly state = signal<Progress>(loadProgress(this.rebirth.effects().hardness));
   private readonly farmState = signal<Farm | null>(loadFarm(this.state()));

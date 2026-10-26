@@ -124,3 +124,17 @@ export const REBIRTH_GEAR_STATS = ['strikePower', 'critDamage', 'goldBonus'] as 
 export function rebirthGearPower(rebirths: number): number {
   return REBIRTH_GEAR_POWER ** Math.max(rebirths, 0);
 }
+
+/**
+ * Offrande au Cœur (choix de Théo, 27/10/2026) : l'or s'échange contre des Braises. Le prix se compte en filons de la
+ * zone atteinte (dureté comprise), comme le revenu, et grimpe de 50 % à chaque offrande de la vie : un puits sans fond qui
+ * redonne de la valeur à l'or en fin de jeu. 10 Braises valent un palier de Frappe au début de l'arbre.
+ */
+export const OFFERING_EMBERS = 10;
+const OFFERING_FIRST_ROCKS = 200;
+const OFFERING_GROWTH = 1.5;
+
+/** Or demandé pour l'offrande suivante, `offerings` étant le nombre déjà faites dans cette vie. */
+export function offeringCost(rockGold: number, offerings: number): number {
+  return Math.round(rockGold * OFFERING_FIRST_ROCKS * OFFERING_GROWTH ** offerings);
+}

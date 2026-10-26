@@ -2,6 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 
 import { MAX_PICKAXE_LEVEL, SEGMENTS_PER_LEVEL, segmentCost, tierChances, upgradeDurationMs } from '../balance/balance';
 import { MissionCounters } from '../missions/mission-counters';
+import { Progression } from '../progression/progression';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { Wallet } from '../wallet/wallet';
@@ -30,6 +31,7 @@ export class Forge {
   private readonly wallet = inject(Wallet);
   private readonly clock = inject(CLOCK);
   private readonly missionCounters = inject(MissionCounters);
+  private readonly progression = inject(Progression);
   private readonly state = signal<PickaxeState>(loadState());
   private readonly now = signal(this.clock());
 
@@ -43,7 +45,10 @@ export class Forge {
   readonly nextUpgradeDurationMs = computed(() =>
     this.level() < MAX_PICKAXE_LEVEL ? upgradeDurationMs(this.level()) : null,
   );
-  readonly segmentCost = computed(() => (canBuySegment(this.state()) ? segmentCost(this.level()) : null));
+  readonly segmentCost = computed(() => {
+    const cost = canBuySegment(this.state()) ? segmentCost(this.level()) : null;
+    return cost === null ? null : Math.round(cost * this.progression.goldPriceScale());
+  });
   readonly canPaySegment = computed(() => {
     const cost = this.segmentCost();
     return cost !== null && this.wallet.coins() >= cost;

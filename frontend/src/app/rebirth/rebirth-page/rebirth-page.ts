@@ -1,7 +1,18 @@
 import { Component, computed, DOCUMENT, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
-import { REBIRTH_BRANCHES, REBIRTH_MIN_ZONE, REBIRTH_TREE, RebirthBranch, rebirthEmbers, rebirthHardness } from '../../balance/rebirth';
+import { rockGold } from '../../balance/balance';
+import {
+  OFFERING_EMBERS,
+  offeringCost,
+  REBIRTH_BRANCHES,
+  REBIRTH_MIN_ZONE,
+  REBIRTH_TREE,
+  RebirthBranch,
+  rebirthEmbers,
+  rebirthHardness,
+} from '../../balance/rebirth';
+import { compactNumber } from '../../shared/format-number';
 import { Navigation } from '../../navigation/navigation';
 import { Progression } from '../../progression/progression';
 import { Wallet } from '../../wallet/wallet';
@@ -53,6 +64,18 @@ export class RebirthPage {
     return `zone ${effects.startZone}, pioche niveau ${effects.startPickaxe}, ${Math.round(effects.goldKept * 100)} % de l'or`;
   });
 
+  /** Offrande au Cœur : de l'or contre des Braises, plus cher à chaque fois dans la vie. Pas pendant une renaissance. */
+  protected readonly offering = computed(() => {
+    const state = this.rebirth.snapshot();
+    const cost = offeringCost(rockGold(this.zone(), rebirthHardness(state.count)), state.offerings);
+    return {
+      embers: OFFERING_EMBERS,
+      cost: compactNumber(cost),
+      affordable: this.draft() === null && this.wallet.coins() >= cost,
+      price: cost,
+    };
+  });
+
   protected readonly branches = computed(() => {
     const state = this.shown();
     return REBIRTH_BRANCHES.map((branch) => {
@@ -80,6 +103,14 @@ export class RebirthPage {
         this.sound.play('upgrade');
       }
     } else if (this.rebirth.buy(branch)) {
+      this.sound.play('upgrade');
+    }
+  }
+
+  protected makeOffering(): void {
+    const { price, affordable } = this.offering();
+    if (affordable && this.wallet.spend(price)) {
+      this.rebirth.offer();
       this.sound.play('upgrade');
     }
   }

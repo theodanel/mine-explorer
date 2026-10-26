@@ -57,7 +57,7 @@ import {
   stagesReached,
   type Progress,
 } from '../src/app/progression/progression-rules.ts';
-import { GUARDIAN_SECONDS } from '../src/app/balance/balance.ts';
+import { GUARDIAN_SECONDS, goldPriceScale, rockGold } from '../src/app/balance/balance.ts';
 import { learn, learnCheck, passiveBonuses, pointsEarned, pointsSpent, spellRank, type SkillRanks } from '../src/app/skills/skill-rules.ts';
 import {
   addArtifact,
@@ -143,8 +143,8 @@ import { gearRuneBonuses, OpenSockets } from '../src/app/heart-forge/gear-runes-
 import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets, MAX_AWAKENING } from '../src/app/balance/awakening.ts';
 import { activeAwakening, awaken, AwakeningState, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
 import { spendEssences } from '../src/app/heart-forge/heart-forge-rules.ts';
-import { REBIRTH_MIN_ZONE, type RebirthBranch } from '../src/app/balance/rebirth.ts';
-import { buy, canBuy, EMPTY_REBIRTH, rebirth, rebirthEffects, type RebirthState } from '../src/app/rebirth/rebirth-rules.ts';
+import { offeringCost, REBIRTH_MIN_ZONE, type RebirthBranch } from '../src/app/balance/rebirth.ts';
+import { buy, canBuy, EMPTY_REBIRTH, offer, rebirth, rebirthEffects, type RebirthState } from '../src/app/rebirth/rebirth-rules.ts';
 import { GEAR_SOCKETS_TOTAL, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -354,6 +354,7 @@ let pickaxe = { level: 1, segments: 0, upgradeEndsAt: null as number | null };
 let formIndex = 0;
 /** Renaissance (25/10/2026) : arbre des Braises et dureté des filons de la vie en cours. */
 let rebirthState: RebirthState = EMPTY_REBIRTH;
+let offeringsMade = 0;
 const withRebirth = withNewSystems && !process.argv.includes('--sans-renaissance');
 /** Le joueur renaît quand il n'a pas changé de zone depuis ce nombre de jours, au-delà de la zone 20. */
 const REBIRTH_STALL_DAYS = Number(process.env.REBIRTH_STALL ?? 2);
@@ -542,13 +543,33 @@ function payPickaxe(now: number): void {
     if ([5, 10, 15, 20, 25, 30].includes(pickaxe.level)) milestones.push(`${fmt(now)} : pioche ${pickaxe.level}`);
   }
   if (pickaxe.upgradeEndsAt !== null || pickaxe.level >= MAX_PICKAXE_LEVEL) return;
-  const cost = segmentCost(pickaxe.level) ?? Infinity;
+  const cost = scaledSegmentCost() ?? Infinity;
   while (gold >= cost && pickaxe.segments < SEGMENTS_PER_LEVEL) {
     gold -= cost;
     pickaxe.segments++;
     record('segmentsPaid');
   }
   if (pickaxe.segments === SEGMENTS_PER_LEVEL) pickaxe.upgradeEndsAt = now + upgradeDurationMs(pickaxe.level) / 1000;
+}
+
+/** Prix en or qui suivent la zone atteinte et la dureté, comme Progression.goldPriceScale. */
+function priceScale(): number {
+  return goldPriceScale(progress.zone, rebirthEffects(rebirthState).hardness);
+}
+
+function scaledSegmentCost(): number | null {
+  const cost = segmentCost(pickaxe.level);
+  return cost === null ? null : Math.round(cost * priceScale());
+}
+
+function scaledUpgradeCost(tier: TierId, level: number): ReturnType<typeof upgradeCost> {
+  const cost = upgradeCost(tier, level);
+  return cost === null ? null : { ...cost, gold: Math.round(cost.gold * priceScale()) };
+}
+
+function scaledBuildingCost(level: number): ReturnType<typeof buildingCost> {
+  const cost = buildingCost(level, progress.zone);
+  return { ...cost, gold: Math.round(cost.gold * priceScale()) };
 }
 
 /** Promotion dès que les objectifs de la forme suivante sont remplis ; leurs éclats sont touchés au passage. */
@@ -572,7 +593,7 @@ function payWorkshop(now: number): void {
   const unlockIndex = EVOLUTION_FORMS.findIndex((form) => form.id === WORKSHOP_UNLOCK_FORM);
   if (!withWorkshop || formIndex < unlockIndex) return;
   const pickaxeDone = pickaxe.level >= MAX_PICKAXE_LEVEL;
-  const budget = pickaxeDone ? Infinity : (segmentCost(pickaxe.level) ?? 0) * WORKSHOP_SHARE_OF_SEGMENT;
+  const budget = pickaxeDone ? Infinity : (scaledSegmentCost() ?? 0) * WORKSHOP_SHARE_OF_SEGMENT;
   for (let guard = 0; guard < 200; guard++) {
     const value = (levels: WorkshopLevels): number => {
       const saved = workshop;
@@ -587,14 +608,14 @@ function payWorkshop(now: number): void {
       const tier = equipped[slot]?.tier;
       if (tier === undefined) continue;
       const level = pieceLevel(workshop, slot, tier);
-      const cost = upgradeCost(tier, level);
+      const cost = scaledUpgradeCost(tier, level);
       if (cost === null || cost.gold > gold || cost.gold > budget) continue;
       if (Object.entries(cost.ores).some(([ore, need]) => ores[ore as TierId] < (need ?? 0))) continue;
       const gain = (value(withLevel(workshop, slot, tier, level + 1)) - current) / cost.gold;
       if (best === null || gain > best.gain) best = { slot, tier, level, gain };
     }
     if (best === null) break;
-    const cost = upgradeCost(best.tier, best.level)!;
+    const cost = scaledUpgradeCost(best.tier, best.level)!;
     for (const [tier, need] of Object.entries(cost.ores)) ores[tier as TierId] -= need ?? 0;
     gold -= cost.gold;
     goldWorkshop += cost.gold;
@@ -606,10 +627,10 @@ function payWorkshop(now: number): void {
 /** Construit le bâtiment le moins cher, tant que c'est abordable : le joueur fait grandir son camp au fil de l'eau. */
 function payCamp(now: number): void {
   if (!withCamp || progress.zone < CAMP_UNLOCK_ZONE) return;
-  const budget = pickaxe.level >= MAX_PICKAXE_LEVEL ? Infinity : (segmentCost(pickaxe.level) ?? 0) * CAMP_SHARE_OF_SEGMENT;
+  const budget = pickaxe.level >= MAX_PICKAXE_LEVEL ? Infinity : (scaledSegmentCost() ?? 0) * CAMP_SHARE_OF_SEGMENT;
   for (let guard = 0; guard < 10; guard++) {
     const options = BUILDING_IDS.filter((id) => !isMaxLevel(camp.levels, id))
-      .map((id) => ({ id, cost: buildingCost(buildingLevel(camp.levels, id), progress.zone) }))
+      .map((id) => ({ id, cost: scaledBuildingCost(buildingLevel(camp.levels, id)) }))
       .filter(({ cost }) => {
         const [[tier, need]] = Object.entries(cost.ores) as [TierId, number][];
         return cost.gold <= gold && cost.gold <= budget && ores[tier] >= need;
@@ -885,6 +906,13 @@ const REBIRTH_PRIORITY: readonly RebirthBranch[] = ['strike', 'shortcut', 'picka
 function maybeRebirth(now: number): void {
   if (!withRebirth || progress.zone < REBIRTH_MIN_ZONE || now / DAY - lastZoneChangeDay < REBIRTH_STALL_DAYS) return;
   const reachedZone = progress.zone;
+  // Avant de renaître, l'or restant part en Offrandes au Cœur
+  const unitGold = rockGold(progress.zone, rebirthEffects(rebirthState).hardness);
+  for (let guard = 0; guard < 100 && gold >= offeringCost(unitGold, rebirthState.offerings); guard++) {
+    gold -= offeringCost(unitGold, rebirthState.offerings);
+    rebirthState = offer(rebirthState);
+    offeringsMade++;
+  }
   rebirthState = rebirth(rebirthState, reachedZone, stagesReached(progress));
   for (let guard = 0; guard < 500; guard++) {
     const branch = REBIRTH_PRIORITY.find((id) => canBuy(rebirthState, id));
@@ -1206,6 +1234,7 @@ console.log(milestones.join('\n'));
 console.log('');
 console.log(daily.join('\n'));
 if (withRebirth) {
+  console.log(`\nOffrandes au Cœur : ${offeringsMade}`);
   console.log(`\nRenaissances (${rebirthState.count}) :\n  ${lives.join('\n  ') || 'aucune'}`);
 }
 if (withAwakening) {

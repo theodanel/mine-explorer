@@ -122,6 +122,26 @@
   font-size: 4.4cqw;
 }
 
+.offering {
+  display: grid;
+  gap: 1.5cqw;
+  justify-items: center;
+  padding: 3cqw;
+  border-radius: 3cqw;
+  background: rgb(0 0 0 / 25%);
+  text-align: center;
+
+  h3 {
+    margin: 0;
+    font-size: 4.4cqw;
+  }
+
+  p {
+    margin: 0;
+    font-size: 3cqw;
+  }
+}
+
 .tree {
   display: grid;
   gap: 1.6cqw;

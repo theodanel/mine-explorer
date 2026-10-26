@@ -1,6 +1,13 @@
-import { REBIRTH_STRIKE_PER_LEVEL, REBIRTH_TREE, rebirthEmbers, rebirthHardness } from '../balance/rebirth';
+import {
+  OFFERING_EMBERS,
+  offeringCost,
+  REBIRTH_STRIKE_PER_LEVEL,
+  REBIRTH_TREE,
+  rebirthEmbers,
+  rebirthHardness,
+} from '../balance/rebirth';
 import { stageHp } from '../progression/progression-rules';
-import { buy, canBuy, canRebirth, EMPTY_REBIRTH, nextCost, parseRebirth, rebirth, rebirthEffects } from './rebirth-rules';
+import { buy, canBuy, canRebirth, EMPTY_REBIRTH, nextCost, offer, parseRebirth, rebirth, rebirthEffects } from './rebirth-rules';
 import { auraCss, rebirthAura, romanNumeral } from './rebirth-visuals';
 
 describe('Renaissance', () => {
@@ -14,7 +21,7 @@ describe('Renaissance', () => {
 
   it('compte la vie, ses Braises et garde la meilleure profondeur', () => {
     const once = rebirth(EMPTY_REBIRTH, 21, 305);
-    expect(once).toEqual({ count: 1, embers: rebirthEmbers(21), tree: {}, bestStages: 305 });
+    expect(once).toEqual({ count: 1, embers: rebirthEmbers(21), tree: {}, bestStages: 305, offerings: 0 });
     expect(rebirth(once, 20, 290).bestStages).toBe(305);
   });
 
@@ -30,18 +37,18 @@ describe('Renaissance', () => {
   });
 
   it('donne de grosses hausses de Frappe, un meilleur départ, et durcit les filons à chaque vie', () => {
-    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, shortcut: 2, pickaxe: 1 }, bestStages: 30 * 15 });
+    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, shortcut: 2, pickaxe: 1 }, bestStages: 30 * 15, offerings: 0 });
     expect(effects.strikeMultiplier).toBeCloseTo((1 + REBIRTH_STRIKE_PER_LEVEL) ** 3);
     // Record en zone 30, raccourci au palier 2 : 8 zones avant
     expect(effects.startZone).toBe(22);
-    expect(rebirthEffects({ count: 1, embers: 0, tree: {}, bestStages: 5 }).startZone).toBe(1);
+    expect(rebirthEffects({ count: 1, embers: 0, tree: {}, bestStages: 5, offerings: 0 }).startZone).toBe(1);
     expect(effects.startPickaxe).toBeGreaterThan(1);
     expect(effects.hardness).toBeCloseTo(rebirthHardness(2));
     expect(stageHp(20, 3, effects.hardness)).toBeGreaterThan(stageHp(20, 3));
   });
 
   it('relit une sauvegarde, et refuse un palier impossible', () => {
-    const state = { count: 3, embers: 40, tree: { strike: 5 }, bestStages: 400 };
+    const state = { count: 3, embers: 40, tree: { strike: 5 }, bestStages: 400, offerings: 0 };
     expect(parseRebirth(JSON.stringify(state))).toEqual(state);
     expect(parseRebirth(JSON.stringify({ ...state, tree: { gold: 99 } }))).toBeNull();
     expect(parseRebirth('{abîmé')).toBeNull();
@@ -55,5 +62,12 @@ describe('Renaissance', () => {
     expect(auraCss(rebirthAura(1))).toBe(auraCss(rebirthAura(3)));
     expect(auraCss(rebirthAura(4))).not.toBe(auraCss(rebirthAura(3)));
     expect(rebirthAura(10)?.textScale).toBeGreaterThan(rebirthAura(1)?.textScale ?? 0);
+  });
+
+  it('échange de l’or contre des Braises, et remet les offrandes à zéro en renaissant', () => {
+    const gifted = offer(EMPTY_REBIRTH);
+    expect(gifted).toEqual({ ...EMPTY_REBIRTH, embers: OFFERING_EMBERS, offerings: 1 });
+    expect(rebirth(gifted, 20, 300).offerings).toBe(0);
+    expect(offeringCost(100, 1)).toBe(1.5 * offeringCost(100, 0));
   });
 });

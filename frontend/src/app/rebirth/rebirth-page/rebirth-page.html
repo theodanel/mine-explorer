@@ -44,6 +44,16 @@
       </article>
     }
 
+    <!-- Offrande au Cœur : l'or de fin de jeu s'échange contre des Braises, de plus en plus cher dans la vie -->
+    @let gift = offering();
+    <article class="offering">
+      <h3>Offrande au Cœur</h3>
+      <p>Offre ton or au Cœur du monde contre {{ gift.embers }} Braises. Le prix grimpe de 50 % à chaque offrande de la vie.</p>
+      <button type="button" class="game-button" [disabled]="!gift.affordable" (click)="makeOffering()">
+        Offrir {{ gift.cost }} or
+      </button>
+    </article>
+
     <h3 class="section-title">Arbre des Braises</h3>
     <ul class="tree">
       @for (entry of branches(); track entry.branch) {

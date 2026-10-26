@@ -16,9 +16,9 @@ import { Progression } from '../../progression/progression';
 import { Wallet } from '../../wallet/wallet';
 import { UpgradeCheck, Workshop } from '../workshop';
 import { Echoes } from '../../heart-forge/echoes';
+import { compactNumber } from '../../shared/format-number';
 
 const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 const BLOCKED_TEXT: Readonly<Record<Exclude<UpgradeCheck, 'ok'>, string>> = {
   locked: 'Atelier fermé',
@@ -57,7 +57,7 @@ export class WorkshopPage {
     const owned = this.artifacts.owned();
     return ARTIFACT_IDS.some((id) => owned[id] === ARTIFACT_MAX_LEVEL);
   });
-  protected readonly coins = computed(() => COMPACT.format(this.wallet.coins()));
+  protected readonly coins = computed(() => compactNumber(this.wallet.coins()));
 
   protected readonly rows = computed(() =>
     SLOT_IDS.map((slot) => {
@@ -74,7 +74,7 @@ export class WorkshopPage {
         level,
         effect: `+${PERCENT.format(level * WORKSHOP_STEP * 100)} % à toutes les stats`,
         next: level < WORKSHOP_MAX_LEVEL ? `+${PERCENT.format((level + 1) * WORKSHOP_STEP * 100)} %` : null,
-        gold: cost === null ? null : COMPACT.format(cost.gold),
+        gold: cost === null ? null : compactNumber(cost.gold),
         ore:
           cost === null || material === null
             ? null
@@ -105,7 +105,7 @@ export class WorkshopPage {
     const [material, need] = Object.entries(cost.ores)[0] ?? [null, 0];
     return {
       affixes: reforgeableAffixes(item).map((stat) => ({ stat, text: `${STATS[stat].label} ${formatStat(stat, item.stats[stat] ?? 0)}` })),
-      gold: COMPACT.format(cost.gold),
+      gold: compactNumber(cost.gold),
       ore: material === null ? null : { icon: materialIconUrl(material as TierId), need },
       check,
       full: check === 'max',

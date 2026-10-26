@@ -12,9 +12,9 @@ import { holdUserDialog } from '../../shared/overlays';
 import { Skills } from '../../skills/skills';
 import { Workshop } from '../../workshop/workshop';
 import { StatsPanel } from '../stats-panel/stats-panel';
+import { compactNumber } from '../../shared/format-number';
 
 const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
-const POWER_FORMAT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 2 });
 
 /** Fenêtre « Détails des stats » : les stats du mineur, puis d'où viennent ses bonus. */
 @Component({
@@ -31,7 +31,7 @@ export class StatsDetails {
   private readonly galleries = inject(Galleries);
   private readonly miner = inject(Miner);
 
-  protected readonly power = computed(() => POWER_FORMAT.format(powerOf(this.miner.current().stats)));
+  protected readonly power = computed(() => compactNumber(powerOf(this.miner.current().stats)));
 
   constructor() {
     // Ouverte par le joueur : les fenêtres automatiques attendent sa fermeture

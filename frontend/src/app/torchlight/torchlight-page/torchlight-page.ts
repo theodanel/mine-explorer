@@ -6,8 +6,8 @@ import { pageBackground, TORCHLIGHT_IMAGES } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Torchlight } from '../torchlight';
 import { canStep, CellContent, distance, Expedition, isLit, StepEvent } from '../torchlight-game';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 /** Durée de la petite annonce au-dessus de la grotte (« +1 pierre », « −2 pas »…). */
 const TOAST_MS = 1100;
 /** Au-dessous, le compteur de pas passe au rouge. */
@@ -95,7 +95,7 @@ export class TorchlightPage implements OnDestroy {
   }
 
   protected compact(value: number): string {
-    return COMPACT.format(value);
+    return compactNumber(value);
   }
 
   protected back(): void {

@@ -9,8 +9,8 @@ import { Navigation } from '../../navigation/navigation';
 import { Progression } from '../../progression/progression';
 import { Minehunt } from '../minehunt';
 import { nextRisk, RockOutcome } from '../minehunt-game';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 /** Le rocher tremble un instant sous la pioche avant de livrer ce qu'il cache. */
 const STRIKE_MS = 320;
 /** Durée de l'annonce (butin, étai, éboulement) avant que le rocher suivant ne s'avance. */
@@ -111,7 +111,7 @@ export class MinehuntPage implements OnDestroy {
   }
 
   protected compact(value: number): string {
-    return COMPACT.format(value);
+    return compactNumber(value);
   }
 
   protected percent(value: number): string {

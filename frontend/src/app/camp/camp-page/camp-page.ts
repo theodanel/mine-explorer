@@ -18,9 +18,9 @@ import { Navigation } from '../../navigation/navigation';
 import { formatDuration } from '../../shared/format-duration';
 import { Wallet } from '../../wallet/wallet';
 import { BuildCheck, Camp } from '../camp';
+import { compactNumber } from '../../shared/format-number';
 
 const PERCENT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const DECIMAL = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
 
 const BLOCKED_TEXT: Readonly<Record<Exclude<BuildCheck, 'ok'>, string>> = {
@@ -81,7 +81,7 @@ export class CampPage {
 
   protected readonly scene = `url(${ADVENTURE_IMAGES.campBackground})`;
   protected readonly selected = signal<BuildingId>('tavern');
-  protected readonly coins = computed(() => COMPACT.format(this.wallet.coins()));
+  protected readonly coins = computed(() => compactNumber(this.wallet.coins()));
   protected readonly material = computed(() => {
     const tier = this.camp.material();
     return { tier, label: TIER_LABELS[tier], icon: materialIconUrl(tier) };
@@ -124,7 +124,7 @@ function rowsFor(levels: CampLevels, camp: Camp) {
       maxLevel: BUILDING_MAX_LEVEL[building],
       effect: text.effect(level),
       next: max ? null : text.effect(level + 1),
-      gold: COMPACT.format(cost.gold),
+      gold: compactNumber(cost.gold),
       ores: cost.ores[camp.material()] ?? 0,
       check,
       action: level === 0 ? 'Construire' : 'Agrandir',

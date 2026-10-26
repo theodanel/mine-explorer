@@ -5,8 +5,8 @@ import { CRYSTAL_RAIN_COUNT, GEODE_TAPS, MineEventId } from '../../balance/mine-
 import { TIER_LABELS } from '../../equipment/equipment.model';
 import { EVENT_IMAGES } from '../../loading/game-assets';
 import { MineEvents } from '../mine-events';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 /** Écart entre la chute de deux cristaux de la pluie. */
 const CRYSTAL_STAGGER_MS = 900;
@@ -64,7 +64,7 @@ export class MineEventLayer {
     }
     const parts: string[] = [];
     if (loot.gold > 0) {
-      parts.push(`+${COMPACT.format(loot.gold)} or`);
+      parts.push(`+${compactNumber(loot.gold)} or`);
     }
     if (loot.shards > 0) {
       parts.push(`+${loot.shards} éclat${loot.shards > 1 ? 's' : ''}`);

@@ -51,21 +51,17 @@ export function astreBonuses(fed: AstreFed): Bonuses {
 
 /** Couleur de l'Astre : le mélange des couleurs de sa nourriture, pondéré par la part de chacune. */
 export function astreColor(fed: AstreFed): number {
-  const total = totalFed(fed);
-  if (total === 0) {
+  // Seules les deux ressources principales colorent l'Astre : mélanger les cinq donnait un gris terne
+  const [first, second] = [...ESSENCES].sort((a, b) => fed[b] - fed[a]);
+  if (fed[first] === 0) {
     return ASTRE_COLORS.dawn;
   }
-  let red = 0;
-  let green = 0;
-  let blue = 0;
-  for (const id of ESSENCES) {
-    const share = fed[id] / total;
-    const color = ASTRE_COLORS[id];
-    red += ((color >> 16) & 0xff) * share;
-    green += ((color >> 8) & 0xff) * share;
-    blue += (color & 0xff) * share;
-  }
-  return (Math.round(red) << 16) | (Math.round(green) << 8) | Math.round(blue);
+  const secondShare = fed[second] / (fed[first] + fed[second]);
+  const mix = (shift: number): number => {
+    const channel = (color: number): number => (color >> shift) & 0xff;
+    return Math.round(channel(ASTRE_COLORS[first]) * (1 - secondShare) + channel(ASTRE_COLORS[second]) * secondShare);
+  };
+  return (mix(16) << 16) | (mix(8) << 8) | mix(0);
 }
 
 export function feedAstre(fed: AstreFed, essence: EssenceId, amount: number): AstreFed {

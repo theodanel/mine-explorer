@@ -20,6 +20,15 @@ describe("Bonus et couleur de l'Astre", () => {
     expect(astreColor(feedAstre(EMPTY_ASTRE, 'frost', 5))).toBe(ASTRE_COLORS.frost);
   });
 
+  it('reste vive quand on lui donne de tout : seules ses deux ressources principales la colorent', () => {
+    let fed = EMPTY_ASTRE;
+    for (const [essence, amount] of [['ember', 30], ['dawn', 10], ['frost', 9], ['mist', 9], ['sap', 9]] as const) {
+      fed = feedAstre(fed, essence, amount);
+    }
+    const twoOnly = feedAstre(feedAstre(EMPTY_ASTRE, 'ember', 30), 'dawn', 10);
+    expect(astreColor(fed)).toBe(astreColor(twoOnly));
+  });
+
   it('montre où il en est vers le stade suivant', () => {
     expect(nextStageProgress(feedAstre(EMPTY_ASTRE, 'sap', ASTRE_STAGE_TOTALS[0] + 5))).toEqual({
       given: 5,

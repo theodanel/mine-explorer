@@ -1,5 +1,6 @@
-// Règles pures de l'Éveil (le « Divin corrompu ») : l'Éveil appartient à l'emplacement, comme les runes serties, et
-// ne compte que tant que la pièce portée est Divin. Une meilleure pièce Divin garde donc l'Éveil de l'ancienne.
+// Règles pures de l'Éveil (le « Divin corrompu ») : l'Éveil appartient à l'emplacement, comme les runes serties. On
+// éveille une pièce Divin, mais l'Éveil compte ensuite sur toute pièce portée à cet emplacement (26/10/2026) : après une
+// renaissance, la première pièce forgée en profite déjà, et une pièce Divin reforgée est aussitôt corrompue.
 import { awakeningCost, awakeningStatBonus, MAX_AWAKENING } from '../balance/awakening';
 import { EquippedItems, Item, MiningStats, SLOT_IDS, SlotId, STAT_IDS } from './equipment.model';
 
@@ -18,20 +19,20 @@ export function isDivine(item: Item | undefined | null): item is Item {
   return item?.tier === 'divine';
 }
 
-/** Palier qui compte vraiment : celui de l'emplacement, si la pièce portée est Divin. */
+/** Palier qui compte vraiment : celui de l'emplacement, dès qu'une pièce y est portée. */
 export function activeAwakening(equipped: EquippedItems, levels: AwakeningLevels, slot: SlotId): number {
-  return isDivine(equipped[slot]) ? (levels[slot] ?? 0) : 0;
+  return equipped[slot] === undefined ? 0 : (levels[slot] ?? 0);
 }
 
-/** Équipement avec les stats des pièces éveillées multipliées. */
-export function applyAwakening(equipped: EquippedItems, levels: AwakeningLevels): EquippedItems {
+/** Équipement avec les stats des pièces éveillées multipliées ; le bonus grandit avec les renaissances. */
+export function applyAwakening(equipped: EquippedItems, levels: AwakeningLevels, rebirths = 0): EquippedItems {
   const result: Partial<Record<SlotId, Item>> = {};
   for (const slot of SLOT_IDS) {
     const item = equipped[slot];
     if (item === undefined) {
       continue;
     }
-    const bonus = awakeningStatBonus(activeAwakening(equipped, levels, slot));
+    const bonus = awakeningStatBonus(activeAwakening(equipped, levels, slot), rebirths);
     result[slot] = bonus === 0 ? item : { ...item, stats: scaledStats(item.stats, 1 + bonus) };
   }
   return result;
@@ -61,15 +62,23 @@ export function recordDuplicate(state: AwakeningState, item: Item): AwakeningSta
 }
 
 /** Ce qui manque pour éveiller la pièce portée, ou null si c'est possible. */
-export type AwakeningBlocker = 'not-divine' | 'max' | 'duplicates' | 'essences';
+export type AwakeningBlocker = 'not-divine' | 'max' | 'rebirths' | 'duplicates' | 'essences';
 
-export function awakeningBlocker(state: AwakeningState, item: Item | undefined, essencesOwned: number): AwakeningBlocker | null {
+export function awakeningBlocker(
+  state: AwakeningState,
+  item: Item | undefined,
+  essencesOwned: number,
+  rebirths = 0,
+): AwakeningBlocker | null {
   if (!isDivine(item)) {
     return 'not-divine';
   }
   const cost = awakeningCost(item.slot, state.levels[item.slot] ?? 0);
   if (cost === null) {
     return 'max';
+  }
+  if (rebirths < cost.rebirths) {
+    return 'rebirths';
   }
   if ((state.duplicates[item.slot] ?? 0) < cost.duplicates) {
     return 'duplicates';

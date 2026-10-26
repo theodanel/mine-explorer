@@ -21,6 +21,13 @@ Retour à [[Accueil]]. Décidé le 21/10/2026 par Théo, sur une proposition du 
 - **Panoplie** : avec les 5 pièces en Divin, le bonus de panoplie (+8 % de Frappe) gagne +2 % par palier de la pièce **la moins éveillée** (+18 % quand tout est à l'Éveil 5).
 - **Résonance des runes** : avec 5 châsses, il suffit de 3 runes du même type sur une pièce ; seules ces runes résonnent.
 
+## Avec la Renaissance (26/10/2026)
+
+Idée de Théo : le Divin corrompu avance de vie en vie au lieu de se perdre.
+- **Paliers liés aux renaissances** : l'Éveil 1 se fait dès la première vie, l'Éveil 2 demande d'avoir renaît 1 fois, l'Éveil 3 2 fois, l'Éveil 4 3 fois, l'Éveil 5 4 fois (en plus des doublons et des ressources).
+- **L'Éveil compte sur toute pièce portée à l'emplacement** : après une renaissance, la première pièce forgée en profite déjà, et une pièce Divin reforgée est aussitôt corrompue. On éveille toujours depuis une pièce Divin.
+- **Le bonus grandit avec les renaissances**, comme la dureté des filons : ×1,3 par renaissance (+40 % à l'Éveil 5, +114 % après 4 renaissances).
+
 ## Calibrage (simulateur, joueur régulier, 200 jours)
 
 En fin de partie, la Forge sort environ 850 pièces Divin par jour (170 par emplacement). Les doublons ont été multipliés par 6 le 25/10/2026 (Théo les trouvait trop faciles) : ils freinent maintenant les derniers paliers, avec les ressources du Cœur. Depuis l'anneau dans l'ordre des étoiles, les ressources ne partent plus d'avance dans les runes : les premiers paliers arrivent plus tôt. Le joueur simulé passe 10 minutes par jour dans les Échos pour l'Éveil, après les runes.

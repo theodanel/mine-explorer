@@ -55,6 +55,9 @@
                 <img [src]="cost.essenceIcon" alt="" width="128" height="128" />
                 {{ cost.essence }} <strong>{{ cost.essences }}</strong>
               </li>
+              @if (cost.rebirths; as rebirths) {
+                <li><span class="rebirth-mark" aria-hidden="true">✦</span> Renaissances <strong>{{ rebirths }}</strong></li>
+              }
             </ul>
           }
           @if (panel.hint) {

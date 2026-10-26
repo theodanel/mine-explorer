@@ -67,7 +67,7 @@ export class EquipmentColumn {
     const gear = this.gearRunes.gear();
     // Panoplie active : les pièces du palier qui donne le bonus s'illuminent
     const awakening = this.awakening.levels();
-    const awakened = applyAwakening(equipped, awakening);
+    const awakened = applyAwakening(equipped, awakening, this.awakening.rebirths());
     const set = gearSet(equipped, awakening);
     const setTier = set !== null && set.strikePct > 0 ? set.tier : null;
     const openSockets = this.gearRunes.openSockets();

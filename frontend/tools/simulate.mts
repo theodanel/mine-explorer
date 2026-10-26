@@ -425,7 +425,7 @@ let filonSecondsInZone = 0;
 let filonsInZone = 0;
 
 function gearStats(): MiningStats {
-  const base = computeStats(equipped, awakeningState.levels);
+  const base = computeStats(equipped, awakeningState.levels, rebirthState.count);
   return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
@@ -898,6 +898,7 @@ function awakenGear(now: number): void {
       return (
         equipped[id]?.tier === 'divine' &&
         next !== null &&
+        rebirthState.count >= next.rebirths &&
         (awakeningState.duplicates[id] ?? 0) >= next.duplicates &&
         heartForge.essences[next.essence] >= next.essences
       );

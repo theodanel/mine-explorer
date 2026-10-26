@@ -4,18 +4,26 @@
 import type { SlotId } from '../equipment/equipment.model';
 import type { EvolutionId } from './balance';
 import type { EssenceId } from './heart-forge';
+import { rebirthHardness } from './rebirth';
 
 /** L'Éveil s'ouvre avec la Légende du Cœur du monde, quand l'équipement est déjà presque tout en Divin. */
 export const AWAKENING_UNLOCK_FORM: EvolutionId = 'heart';
 
 export const MAX_AWAKENING = 5;
 
-/** Coût d'un palier : des doublons Divin de cette pièce et une ressource du Cœur. */
+/** Coût d'un palier : des doublons Divin de cette pièce, une ressource du Cœur et des renaissances déjà faites. */
 export interface AwakeningCost {
   readonly duplicates: number;
   readonly essence: EssenceId;
   readonly essences: number;
+  readonly rebirths: number;
 }
+
+/**
+ * Renaissances déjà faites pour atteindre chaque palier (idée de Théo, 26/10/2026) : l'Éveil 1 se fait dans la
+ * première vie, puis chaque renaissance débloque le palier suivant. Le Divin corrompu avance de vie en vie.
+ */
+const REBIRTHS_NEEDED = [0, 1, 2, 3, 4] as const;
 
 /**
  * Doublons Divin de la pièce pour passer chaque palier (index 0 : vers l'Éveil 1). En fin de partie, la Forge sort
@@ -41,14 +49,23 @@ export function awakeningCost(slot: SlotId, level: number): AwakeningCost | null
   if (level < 0 || level >= MAX_AWAKENING) {
     return null;
   }
-  return { duplicates: DUPLICATE_COSTS[level], essence: AWAKENING_ESSENCE[slot], essences: ESSENCE_COSTS[level] };
+  return {
+    duplicates: DUPLICATE_COSTS[level],
+    essence: AWAKENING_ESSENCE[slot],
+    essences: ESSENCE_COSTS[level],
+    rebirths: REBIRTHS_NEEDED[level],
+  };
 }
 
 /** Bonus sur toutes les stats de la pièce, par palier (index 0 : Éveil 1) : +40 % à l'Éveil 5. Calé au simulateur. */
 const STAT_BONUSES = [0.05, 0.12, 0.2, 0.3, 0.4] as const;
 
-export function awakeningStatBonus(level: number): number {
-  return level <= 0 ? 0 : STAT_BONUSES[Math.min(level, MAX_AWAKENING) - 1];
+/**
+ * Bonus d'un palier, qui grandit avec les renaissances comme la dureté des filons (Théo, 26/10/2026 : « plus tu
+ * renais, plus les zones sont dures ») : ×1,3 par renaissance, le Divin corrompu suit la difficulté.
+ */
+export function awakeningStatBonus(level: number, rebirths = 0): number {
+  return level <= 0 ? 0 : STAT_BONUSES[Math.min(level, MAX_AWAKENING) - 1] * rebirthHardness(rebirths);
 }
 
 /** Les paliers 2 et 4 ouvrent chacun une châsse de rune de plus sur l'emplacement. */

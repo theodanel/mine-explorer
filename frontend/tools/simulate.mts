@@ -119,26 +119,26 @@ import {
   ALLIANCE_RECIPES,
   ESSENCE_ELEMENTS,
   ESSENCES,
-  RING_SOCKETS,
   type EssenceId,
   type RuneType,
 } from '../src/app/balance/heart-forge.ts';
 import {
   addEssences,
-  canCreate,
-  canGrow,
-  canSocket,
-  createRune,
+  canCreateGearRune,
+  canGrowGearRune,
+  createGearRune,
   EMPTY_HEART_FORGE,
+  feedAstreWith,
   growCost,
-  growRune,
-  runeCount,
-  socketRune,
-  socketRuneIn,
-  starRunesSet,
+  growGearRune,
+  starReady,
   type HeartForgeState,
 } from '../src/app/heart-forge/heart-forge-rules.ts';
-import { gearRuneBonuses, OpenSockets, setGearRune } from '../src/app/heart-forge/gear-runes-rules.ts';
+import { astreBonuses, stageOf } from '../src/app/heart-forge/astre-rules.ts';
+import { ASTRE_STAGE_TOTALS, ASTRE_STRIKE_MS, ASTRE_STRIKE_SHARE } from '../src/app/balance/astre.ts';
+const ASTRE_STRIKE_SECONDS = ASTRE_STRIKE_MS / 1000;
+const LEGEND_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === 'legend');
+import { gearRuneBonuses, OpenSockets } from '../src/app/heart-forge/gear-runes-rules.ts';
 import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets, MAX_AWAKENING } from '../src/app/balance/awakening.ts';
 import { activeAwakening, awaken, AwakeningState, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
 import { spendEssences } from '../src/app/heart-forge/heart-forge-rules.ts';
@@ -406,8 +406,6 @@ let heartForge: HeartForgeState = EMPTY_HEART_FORGE;
 /** Jour où la pièce la moins éveillée atteint chaque palier d'Éveil. */
 const awakeningDays: string[] = [];
 let essencesEarned = 0;
-let runesCreated = 0;
-let runesGrown = 0;
 const heartRandom = mulberryForAbyss(Number(process.env.SEED ?? 1) + 11);
 /** Minutes passées chaque jour dans les Échos, dès la Légende (le reste du temps actif va à la zone en cours). */
 const ECHO_MINUTES_PER_DAY = Number(process.env.ECHO_MINUTES ?? 20);
@@ -455,6 +453,8 @@ function families() {
         // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
         withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, openSockets()) : NO_BONUSES,
         rebirthBonuses(),
+        // Avant la Légende, pas d'Astre (et heartForge n'est pas encore déclaré au premier calcul)
+        formIndex >= LEGEND_INDEX ? astreBonuses(heartForge.astre) : NO_BONUSES,
       ]
     : [NO_BONUSES];
 }
@@ -557,7 +557,7 @@ function tryEvolve(now: number): void {
   const progressNow = { zone: progress.zone, zoneCleared: progress.zone - 1, pickaxeLevel: pickaxe.level, itemsForged: counters.itemsForged, rocksBroken: counters.rocksBroken };
   const objectives = objectivesFor(next, progressNow, []);
   if (!canEvolve(objectives)) return;
-  if (next.id === 'heart' && !starRunesSet(heartForge, next.stars)) return;
+  if (next.id === 'heart' && !starReady(heartForge, next.stars)) return;
   const reward = unclaimedShards(objectives);
   shards += reward;
   shardSources.evolution += reward;
@@ -766,70 +766,26 @@ function echoGain(): number {
   return 1 + rebirthEffects(rebirthState).essencesPerRock;
 }
 
-/** Avance d'un pas vers une rune visée : fait grandir la plus haute en dessous de son rang, sinon en crée une. */
-function stepTowards(target: { type: RuneType; rank: number }): boolean {
-  for (let rank = target.rank - 1; rank >= 1; rank--) {
-    const rune = { type: target.type, rank };
-    if (runeCount(heartForge, rune) > 0) {
-      if (!canGrow(heartForge, rune)) return false;
-      heartForge = growRune(heartForge, rune);
-      runesGrown++;
-      return true;
-    }
-  }
-  const stars = EVOLUTION_FORMS[formIndex].stars;
-  if (!canCreate(heartForge, target.type, stars)) return false;
-  heartForge = createRune(heartForge, target.type, stars);
-  runesCreated++;
-  return true;
-}
-
-/** Ressource qui manque le plus pour le prochain pas vers cette rune. */
-function lackingFor(target: { type: RuneType; rank: number }): EssenceId {
-  const owned = [...Array(target.rank - 1).keys()].map((index) => target.rank - 1 - index).find((rank) => runeCount(heartForge, { type: target.type, rank }) > 0);
-  const cost = owned === undefined ? null : growCost({ type: target.type, rank: owned });
-  const needs = cost === null ? recipeOf(target.type) : (Object.keys(cost) as EssenceId[]);
-  return [...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0];
-}
-
 /**
- * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos à récolter ce qui manque, puis
- * crée, fait grandir et sertit les runes de la prochaine étoile.
+ * Une fois par jour, dès la Légende : le joueur passe quelques minutes dans les Échos, puis nourrit l'Astre du Cœur
+ * jusqu'au stade de l'étoile suivante, à parts égales des 5 ressources (un Astre équilibré).
  */
-function craftRunes(): void {
+function feedAstre(): void {
   if (formIndex < EVOLUTION_FORMS.findIndex((form) => form.id === 'legend')) return;
-  const socketsFree = Array.from({ length: RING_SOCKETS }, (_, index) => index).filter((index) => !heartForge.sockets[index]);
-  if (socketsFree.length === 0) return;
-  const star = Math.floor(socketsFree[0] / 2);
-  const targets = [star * 2, star * 2 + 1].filter((index) => !heartForge.sockets[index]);
-  // Récolte du jour : un filon d'Écho toutes les 2 minutes, dans l'Écho de la ressource qui manque le plus
+  const target = Math.min(EVOLUTION_FORMS[formIndex].stars + 1, ASTRE_STAGE_TOTALS.length);
   let rocks = Math.round((ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
-  while (rocks > 0) {
-    const unfilled = targets.filter((socket) => !heartForge.sockets[socket] && runeCount(heartForge, socketRune(socket)) === 0);
-    if (unfilled.length === 0) break;
-    earnEssences({ [lackingFor(socketRune(unfilled[rocks % unfilled.length]))]: echoGain() });
-    rocks--;
-  }
-  for (let guard = 0; guard < 5000; guard++) {
-    let progressMade = false;
-    for (const socket of targets) {
-      if (canSocket(heartForge, socket, EVOLUTION_FORMS[formIndex].stars)) {
-        heartForge = socketRuneIn(heartForge, socket, EVOLUTION_FORMS[formIndex].stars);
-        progressMade = true;
-      }
-    }
-    for (const socket of targets.filter((index) => !heartForge.sockets[index])) {
-      const target = socketRune(socket);
-      if (runeCount(heartForge, target) === 0 && stepTowards(target)) progressMade = true;
-    }
-    if (!progressMade) break;
+  while (rocks-- > 0) earnEssences({ [ESSENCES[rocks % ESSENCES.length]]: echoGain() });
+  for (let guard = 0; guard < 10_000 && stageOf(heartForge.astre) < target; guard++) {
+    const richest = [...ESSENCES].sort((a, b) => heartForge.essences[b] - heartForge.essences[a])[0];
+    if (heartForge.essences[richest] === 0) break;
+    heartForge = feedAstreWith(heartForge, richest, 1);
   }
 }
 
 /**
  * Runes d'équipement (dès la 1re étoile) : le joueur passe GEAR_ECHO_MINUTES par jour dans les Échos pour elles, et
  * sertit sur chaque emplacement la rune de son esprit (Feu sur la pioche, Glace sur les gants…) au rang visé.
- * Les runes des étoiles passent avant : craftRunes() tourne d'abord.
+ * L'Astre du Cœur passe avant : feedAstre() tourne d'abord.
  */
 const GEAR_ECHO_MINUTES_PER_DAY = Number(process.env.GEAR_ECHO_MINUTES ?? 10);
 const GEAR_TARGET_RANK = Number(process.env.GEAR_RANK ?? 2);
@@ -861,15 +817,21 @@ function craftGearRunes(): void {
   for (let guard = 0; guard < 5000; guard++) {
     const target = gearTargets()[0];
     if (target === undefined) return;
-    const wanted = { type: target.type, rank: GEAR_TARGET_RANK };
-    if (runeCount(heartForge, wanted) > 0) {
-      heartForge = setGearRune(heartForge, target.slot, target.socket, wanted, openSockets()[target.slot]);
+    const current = heartForge.gear[target.slot][target.socket];
+    const open = openSockets()[target.slot];
+    if (current === null && canCreateGearRune(heartForge, target.slot, target.socket, target.type, open)) {
+      heartForge = createGearRune(heartForge, target.slot, target.socket, target.type, open);
       gearRunesSet++;
       continue;
     }
-    if (stepTowards(wanted)) continue;
+    if (current !== null && canGrowGearRune(heartForge, target.slot, target.socket)) {
+      heartForge = growGearRune(heartForge, target.slot, target.socket);
+      continue;
+    }
     if (rocks <= 0) return;
-    earnEssences({ [lackingFor(wanted)]: echoGain() });
+    const cost = current === null ? null : growCost(current);
+    const needs = cost === null ? recipeOf(target.type) : (Object.keys(cost) as EssenceId[]);
+    earnEssences({ [[...needs].sort((a, b) => heartForge.essences[a] - heartForge.essences[b])[0]]: echoGain() });
     rocks--;
   }
 }
@@ -1186,10 +1148,16 @@ for (let day = 0; day < days; day++) {
     let nextDecision = now;
     // Le compte à rebours des événements ne tourne qu'en jeu : il repart à chaque session
     let nextEventAt = now + nextEventDelayMs(eventRandom) / 1000;
+    let nextAstreAt = now + ASTRE_STRIKE_SECONDS;
     while (now < end) {
       const interval = 1 / hitsPerSecond(profileNow.stats);
       strike(now, interval);
       now += interval;
+      if (now >= nextAstreAt) {
+        const stage = stageOf(heartForge.astre);
+        if (stage > 0) dealDamage(now, Math.round(profileNow.stats.strikePower * ASTRE_STRIKE_SHARE[stage - 1]));
+        nextAstreAt = now + ASTRE_STRIKE_SECONDS;
+      }
       if (withEvents && now >= nextEventAt) {
         mineEvent(now);
         nextEventAt = now + nextEventDelayMs(eventRandom) / 1000;
@@ -1211,7 +1179,7 @@ for (let day = 0; day < days; day++) {
     lastSeen = end;
   }
   reforgeArtifacts(lastSeen);
-  craftRunes();
+  feedAstre();
   craftGearRunes();
   awakenGear(lastSeen);
   maybeRebirth(lastSeen);
@@ -1257,8 +1225,7 @@ if (withNewSystems) {
       `explosions ${pct(blastDamage / totalDamage)} des dégâts, compétence du familier ${pct(abilityDamage / totalDamage)}, sorts équipés ${spellSlots.map((slot) => slot.spell).join(', ')}, ` +
       `artefacts portés ${artifacts.slots.filter((id) => id !== null).map((id) => `${id} niv. ${artifacts.owned[id as ArtifactId]}`).join(', ') || 'aucun'}, ` +
       `réforges ${artifactReforges} (${artifactReforgesKept} gardées), ` +
-      `ressources du Cœur ${essencesEarned} récoltées, ${runesCreated} runes créées, ${runesGrown} croissances, ` +
-      `anneau ${heartForge.sockets.filter(Boolean).length}/${RING_SOCKETS}, ` +
+      `ressources du Cœur ${essencesEarned} récoltées, Astre au stade ${stageOf(heartForge.astre)}, ${gearRunesSet} runes d'équipement, ` +
       `${artifactsFound} trouvés, ${Object.keys(artifacts.owned).length} différents`,
   );
 }

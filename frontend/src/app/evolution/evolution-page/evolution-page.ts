@@ -43,7 +43,7 @@ export class EvolutionPage {
   protected readonly revealing = signal(false);
   protected readonly helpOpen = signal(false);
   protected readonly runesText = computed(() =>
-    this.evolution.runesSet() ? "✓ Runes de l'étoile serties" : 'Sertis les 2 runes de cette étoile à la Forge du Cœur',
+    this.evolution.runesSet() ? "✓ L'Astre du Cœur a atteint ce stade" : "Nourris l'Astre du Cœur jusqu'au stade de cette étoile (Forge du Cœur)",
   );
 
   constructor() {

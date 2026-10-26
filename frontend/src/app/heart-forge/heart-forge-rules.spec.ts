@@ -1,24 +1,18 @@
-import { RING_SOCKETS, RUNE_GROW_ESSENCES, STAR_RUNES } from '../balance/heart-forge';
+import { RUNE_GROW_ESSENCES } from '../balance/heart-forge';
+import { EMPTY_ASTRE, stageOf, totalFed } from './astre-rules';
 import {
   addEssences,
-  canCreate,
-  canGrow,
-  canSocket,
   createCost,
-  createRune,
   echoEssence,
   EMPTY_HEART_FORGE,
   essencesFor,
+  feedAstreWith,
   growCost,
-  growRune,
   HeartForgeState,
   parseHeartForgeState,
-  revealedRecipes,
-  runeCount,
-  socketOpen,
   socketRune,
-  socketRuneIn,
-  starRunesSet,
+  spendEssences,
+  starReady,
 } from './heart-forge-rules';
 
 describe('Échos', () => {
@@ -30,74 +24,46 @@ describe('Échos', () => {
   });
 });
 
-describe('Création et croissance des runes', () => {
-  it("crée une rune d'élément pour 3 ressources de son élément", () => {
+describe('Ressources du Cœur', () => {
+  it('paie une rune : 3 de son élément, 2 de plus pour une alliance, puis sa croissance', () => {
     expect(createCost('fire')).toEqual({ ember: 3 });
-    const state = createRune(addEssences(EMPTY_HEART_FORGE, { ember: 3 }), 'fire', 0);
-    expect(runeCount(state, { type: 'fire', rank: 1 })).toBe(1);
-    expect(state.essences.ember).toBe(0);
-    expect(state.recipes).toEqual(['fire']);
-  });
-
-  it("ne crée une alliance que si une étoile a révélé sa recette, pour 2 ressources de plus", () => {
-    const stocked = addEssences(EMPTY_HEART_FORGE, { ember: 4, sap: 1 });
     expect(createCost('magma')).toEqual({ ember: 4, sap: 1 });
-    expect(canCreate(stocked, 'magma', 0)).toBe(false);
-    expect(canCreate(stocked, 'magma', 1)).toBe(true);
-    expect(canCreate(addEssences(EMPTY_HEART_FORGE, { ember: 3, sap: 1 }), 'magma', 1)).toBe(false);
-  });
-
-  it('fait grandir une rune de ses ressources, réparties comme sa recette, sans hasard', () => {
     expect(growCost({ type: 'ice', rank: 1 })).toEqual({ frost: RUNE_GROW_ESSENCES[2] });
-    expect(growCost({ type: 'magma', rank: 1 })).toEqual({ ember: 4, sap: 2 });
-    const state: HeartForgeState = { ...addEssences(EMPTY_HEART_FORGE, { frost: 6 }), runes: { 'ice:1': 2 } };
-    const grown = growRune(state, { type: 'ice', rank: 1 });
-    expect(runeCount(grown, { type: 'ice', rank: 1 })).toBe(1);
-    expect(runeCount(grown, { type: 'ice', rank: 2 })).toBe(1);
-    expect(grown.essences.frost).toBe(0);
-    expect(canGrow(grown, { type: 'ice', rank: 1 })).toBe(false);
+    expect(growCost({ type: 'heart', rank: 5 })).toBeNull();
+    expect(essencesFor(2)).toBe(3 + RUNE_GROW_ESSENCES[2]);
   });
 
-  it('ne fait pas grandir au-delà du rang 5', () => {
-    expect(growCost({ type: 'heart', rank: 5 })).toBeNull();
-    expect(canGrow({ ...EMPTY_HEART_FORGE, runes: { 'heart:5': 1 } }, { type: 'heart', rank: 5 })).toBe(false);
+  it("ne paie rien s'il manque une ressource", () => {
+    expect(spendEssences(addEssences(EMPTY_HEART_FORGE, { ember: 2 }), { ember: 3 })).toBeNull();
   });
 });
 
-describe('Anneau', () => {
-  it('demande des étoiles de plus en plus complexes, dans un anneau de 10', () => {
-    expect(RING_SOCKETS).toBe(10);
-    const essences = STAR_RUNES.map(([first, second]) => essencesFor(first.rank) + essencesFor(second.rank));
-    essences.slice(1).forEach((count, index) => expect(count).toBeGreaterThanOrEqual(essences[index]));
-    expect(socketRune(3)).toEqual({ type: 'magma', rank: 1 });
+describe('Astre du Cœur', () => {
+  it('se nourrit des ressources de la réserve, et ses stades sont les étoiles', () => {
+    let state = addEssences(EMPTY_HEART_FORGE, { ember: 40 });
+    expect(starReady(state, 1)).toBe(false);
+    state = feedAstreWith(state, 'ember', 35);
+    expect(state.essences.ember).toBe(5);
+    expect(stageOf(state.astre)).toBe(2);
+    expect(starReady(state, 2)).toBe(true);
+    expect(starReady(state, 3)).toBe(false);
+    expect(feedAstreWith(state, 'ember', 6)).toBe(state);
   });
 
-  it("sertit la rune attendue et éveille l'étoile quand ses deux runes sont serties", () => {
-    let state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'fire:1': 1, 'earth:1': 1 } };
-    expect(canSocket(state, 2, 0)).toBe(false);
-    state = socketRuneIn(socketRuneIn(state, 0, 0), 1, 0);
-    expect(starRunesSet(state, 1)).toBe(true);
-    expect(runeCount(state, { type: 'fire', rank: 1 })).toBe(0);
+  it("reprend une sauvegarde de l'anneau : les runes serties deviennent sa nourriture, la réserve est rendue", () => {
+    const old = { ...EMPTY_HEART_FORGE, runes: { 'fire:2': 1 }, sockets: [true, true, ...Array<boolean>(8).fill(false)] };
+    const { astre, ...withoutAstre } = old;
+    expect(astre).toEqual(EMPTY_ASTRE);
+    const migrated = parseHeartForgeState(withoutAstre) as HeartForgeState;
+    const ring = essencesFor(socketRune(0).rank) + essencesFor(socketRune(1).rank);
+    expect(totalFed(migrated.astre)).toBe(ring);
+    expect(migrated.runes).toEqual({});
+    expect(migrated.essences.ember).toBe(essencesFor(2));
   });
 
-  it("n'ouvre les emplacements d'une étoile qu'une fois la précédente obtenue", () => {
-    const state: HeartForgeState = { ...EMPTY_HEART_FORGE, runes: { 'ice:2': 1 } };
-    expect(socketOpen(2, 0)).toBe(false);
-    expect(canSocket(state, 2, 0)).toBe(false);
-    expect(socketRuneIn(state, 2, 0)).toBe(state);
-    expect(canSocket(state, 2, 1)).toBe(true);
-  });
-
-  it("révèle les recettes d'alliance des étoiles obtenues et de la suivante", () => {
-    expect(revealedRecipes(0)).toEqual([]);
-    expect(revealedRecipes(1)).toEqual(['magma']);
-    expect(revealedRecipes(4)).toEqual(['magma', 'storm', 'grove', 'eclipse', 'heart']);
-  });
-
-  it('relit une sauvegarde valide et refuse une rune inconnue', () => {
-    const state = createRune(addEssences(EMPTY_HEART_FORGE, { mist: 2, dawn: 3 }), 'eclipse', 3);
+  it('relit une sauvegarde valide et refuse un Astre abîmé', () => {
+    const state = feedAstreWith(addEssences(EMPTY_HEART_FORGE, { mist: 12 }), 'mist', 12);
     expect(parseHeartForgeState(JSON.parse(JSON.stringify(state)))).toEqual(state);
-    expect(parseHeartForgeState({ ...state, runes: { 'water:1': 1 } })).toBeNull();
-    expect(parseHeartForgeState({ ...state, sockets: [true] })).toBeNull();
+    expect(parseHeartForgeState({ ...state, astre: { ...state.astre, mist: -1 } })).toBeNull();
   });
 });

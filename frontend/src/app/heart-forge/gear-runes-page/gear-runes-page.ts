@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Sound } from '../../audio/sound';
 import { AWAKENING_SOCKET_LEVELS } from '../../balance/awakening';
 import { GEAR_SOCKETS_MAX } from '../../balance/gear-runes';
-import { MAX_RUNE_RANK, RUNE_LABELS, RUNE_TYPES } from '../../balance/heart-forge';
+import { ESSENCE_LABELS, ESSENCES, EssenceId, RUNE_ELEMENTS, RUNE_LABELS, RuneType } from '../../balance/heart-forge';
 import { BONUS_IDS, BonusId, NO_BONUSES } from '../../balance/skill-tree';
 import { SLOT_IDS, SLOTS, SlotId } from '../../equipment/equipment.model';
 import { describeBonus, describeBonuses } from '../../miner/bonus-format';
@@ -11,13 +11,20 @@ import { Navigation } from '../../navigation/navigation';
 import { GearRunes } from '../gear-runes';
 import { resonantType, runeEffects } from '../gear-runes-rules';
 import { HeartForge } from '../heart-forge';
-import { Rune, runeCount } from '../heart-forge-rules';
+import { createCost, growCost, Rune } from '../heart-forge-rules';
 import { runeIconUrl } from '../heart-forge-page/heart-forge-page';
 
 /** Châsse choisie, dont on affiche les runes à sertir. */
 interface Selection {
   readonly slot: SlotId;
   readonly socket: number;
+}
+
+/** Coût en ressources, en toutes lettres : « 25 Braise vive ». */
+function describeCost(cost: Partial<Record<EssenceId, number>>): string {
+  return ESSENCES.filter((id) => (cost[id] ?? 0) > 0)
+    .map((id) => `${cost[id]} ${ESSENCE_LABELS[id]}`)
+    .join(' et ');
 }
 
 function runeLabel(rune: Rune): string {
@@ -34,8 +41,9 @@ function effectLines(effects: readonly { bonus: BonusId; value: number }[]): str
 }
 
 /**
- * Runes d'équipement : chaque emplacement a des châsses (une par étoile du Cœur du monde, trois au plus) où sertir
- * les runes de la réserve. Toucher une châsse ouvre le choix de la rune ; retirer est gratuit.
+ * Runes d'équipement : chaque emplacement a des châsses (une par étoile du Cœur du monde, deux de plus par l'Éveil).
+ * Toucher une châsse vide y crée la rune d'un élément ; toucher une rune la fait grandir avec ses ressources
+ * (26/10/2026 : plus de réserve de runes). Retirer rend ce qu'elle a coûté.
  */
 @Component({
   selector: 'app-gear-runes-page',
@@ -93,30 +101,47 @@ export class GearRunesPage {
     });
   });
 
-  /** Runes de la réserve qu'on peut sertir dans la châsse choisie, avec ce qu'elles y donneraient. */
+  /** Éléments qu'on peut créer dans la châsse choisie (vide), avec leur coût et ce qu'ils y donneraient. */
   protected readonly choices = computed(() => {
     const selection = this.selection();
-    if (selection === null) {
+    if (selection === null || this.gearRunes.gear()[selection.slot][selection.socket] !== null) {
       return [];
     }
-    const state = this.forge.snapshot();
-    return RUNE_TYPES.flatMap((type) =>
-      Array.from({ length: MAX_RUNE_RANK }, (_, index) => ({ type, rank: MAX_RUNE_RANK - index })),
-    )
-      .filter((rune) => runeCount(state, rune) > 0)
-      .map((rune) => ({
-        rune,
-        key: `${rune.type}:${rune.rank}`,
-        icon: runeIconUrl(rune.type),
-        label: runeLabel(rune),
-        count: runeCount(state, rune),
+    this.forge.essences();
+    return RUNE_ELEMENTS.map((type) => {
+      const rune = { type, rank: 1 };
+      return {
+        type,
+        icon: runeIconUrl(type),
+        label: RUNE_LABELS[type],
+        cost: describeCost(createCost(type)),
+        affordable: this.gearRunes.canCreate(selection.slot, selection.socket, type),
         lines: effectLines(runeEffects(rune, selection.slot, false)),
-      }));
+      };
+    });
   });
 
-  protected readonly selectedRune = computed(() => {
+  /** Croissance de la rune de la châsse choisie : son coût et ce qu'elle donnera au rang suivant. */
+  protected readonly growth = computed(() => {
     const selection = this.selection();
-    return selection === null ? null : this.gearRunes.gear()[selection.slot][selection.socket];
+    const rune = selection === null ? null : this.gearRunes.gear()[selection.slot][selection.socket];
+    if (selection === null || rune === null) {
+      return null;
+    }
+    this.forge.essences();
+    const cost = growCost(rune);
+    return {
+      cost: cost === null ? null : describeCost(cost),
+      affordable: this.gearRunes.canGrow(selection.slot, selection.socket),
+      next: cost === null ? [] : effectLines(runeEffects({ type: rune.type, rank: rune.rank + 1 }, selection.slot, false)),
+    };
+  });
+
+  /** Icône de la rune de la châsse choisie, ou chaîne vide si elle est vide. */
+  protected readonly selectedIcon = computed(() => {
+    const selection = this.selection();
+    const rune = selection === null ? null : this.gearRunes.gear()[selection.slot][selection.socket];
+    return rune === null ? '' : runeIconUrl(rune.type);
   });
 
   protected readonly selectedLabel = computed(() => {
@@ -132,11 +157,17 @@ export class GearRunesPage {
     this.selection.set(current?.slot === slot && current.socket === socket ? null : { slot, socket });
   }
 
-  protected setRune(rune: Rune): void {
+  protected createRune(type: RuneType): void {
     const selection = this.selection();
-    if (selection !== null && this.gearRunes.set(selection.slot, selection.socket, rune)) {
+    if (selection !== null && this.gearRunes.create(selection.slot, selection.socket, type)) {
       this.sound.play('upgrade');
-      this.selection.set(null);
+    }
+  }
+
+  protected growRune(): void {
+    const selection = this.selection();
+    if (selection !== null && this.gearRunes.grow(selection.slot, selection.socket)) {
+      this.sound.play('upgrade');
     }
   }
 
@@ -146,10 +177,6 @@ export class GearRunesPage {
       this.gearRunes.remove(selection.slot, selection.socket);
       this.selection.set(null);
     }
-  }
-
-  protected openForge(): void {
-    this.navigation.open('heart-forge');
   }
 
   protected close(): void {

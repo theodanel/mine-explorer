@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { ARTIFACT_FIND_CHANCE, ARTIFACTS_UNLOCK_ZONE } from '../balance/artifacts';
 import { ORE_FIND_CHANCE, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
 import { SpellId } from '../balance/skill-tree';
+import { ASTRE_ECHO_BONUS_CHANCE, ASTRE_GUARDIAN_STRIKES, ASTRE_STRIKE_SHARE } from '../balance/astre';
 import { Artifacts } from '../artifacts/artifacts';
 import { Companions } from '../companions/companions';
 import { HitResult, resolveHit } from '../equipment/equipment-rules';
@@ -81,6 +82,26 @@ export class Mining {
     return this.dealDamage(hit, foundShard, foundOre);
   }
 
+  /** Coup de l'Astre du Cœur, qui frappe avec le mineur : une part de sa Frappe selon son stade, ou null s'il dort. */
+  astreStrike(): StrikeOutcome | null {
+    const stage = this.heartForge.astreStage();
+    if (stage === 0) {
+      return null;
+    }
+    const damage = Math.round(this.miner.permanent().stats.strikePower * ASTRE_STRIKE_SHARE[stage - 1]);
+    return damage > 0 ? this.dealDamage({ damage, critical: false }, false, false) : null;
+  }
+
+  /** Pluie d'étoiles de l'Astre (stades 4 et 5) au début d'un combat contre le gardien, ou null avant. */
+  astreStarRain(): StrikeOutcome | null {
+    const stage = this.heartForge.astreStage();
+    const strikes = stage === 0 ? 0 : ASTRE_GUARDIAN_STRIKES[stage - 1];
+    if (strikes === 0) {
+      return null;
+    }
+    return this.dealDamage({ damage: Math.round(this.miner.permanent().stats.strikePower * strikes), critical: false }, false, false);
+  }
+
   /** Explosion d'un sort : un multiple de la Frappe permanente, sans critique ni trouvaille au hasard. */
   blast(spell: SpellId, strikeMultiplier: number): StrikeOutcome {
     const damage = Math.round(this.miner.permanent().stats.strikePower * strikeMultiplier * this.galleries.modifiers().blast);
@@ -103,7 +124,10 @@ export class Mining {
     // Un filon d'Écho donne sa ressource, sans tirage
     const essence = rockBroken && struck.echoZone !== null ? echoEssence(struck.echoZone) : null;
     if (essence !== null && struck.echoZone !== null) {
-      this.heartForge.onEchoRock(struck.echoZone, this.rebirth.effects().essencesPerRock);
+      // L'Astre (dès le stade 2) ramasse parfois une ressource de plus
+      const stage = this.heartForge.astreStage();
+      const astreBonus = stage > 0 && this.random() < ASTRE_ECHO_BONUS_CHANCE[stage - 1] ? 1 : 0;
+      this.heartForge.onEchoRock(struck.echoZone, this.rebirth.effects().essencesPerRock + astreBonus);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
     // parfois un au coup de pioche, plus le lot de fin de zone

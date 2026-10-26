@@ -73,27 +73,35 @@
     <div class="picker-backdrop" (click)="selection.set(null)"></div>
     <div class="picker" role="dialog" aria-modal="true" aria-labelledby="picker-title">
       <h3 id="picker-title">{{ selectedLabel() }}</h3>
-      @if (selectedRune() !== null) {
-        <button type="button" class="game-button red remove" (click)="removeRune()">Retirer la rune</button>
-      }
-      @if (choices().length > 0) {
+      @if (growth(); as grow) {
+        @if (grow.cost; as cost) {
+          <button type="button" class="choice" [disabled]="!grow.affordable" (click)="growRune()">
+            <img [src]="selectedIcon()" alt="" width="128" height="128" />
+            <span class="choice-text">
+              <strong>Faire grandir : {{ cost }}</strong>
+              <small>{{ grow.next.join(' · ') }}</small>
+            </span>
+          </button>
+        } @else {
+          <p class="hint">Rune au rang maximum.</p>
+        }
+        <button type="button" class="game-button red remove" (click)="removeRune()">Retirer (ressources rendues)</button>
+      } @else {
         <ul class="choices">
-          @for (choice of choices(); track choice.key) {
+          @for (choice of choices(); track choice.type) {
             <li>
-              <button type="button" class="choice" (click)="setRune(choice.rune)">
+              <button type="button" class="choice" [disabled]="!choice.affordable" (click)="createRune(choice.type)">
                 <img [src]="choice.icon" alt="" width="128" height="128" />
                 <span class="choice-text">
                   <strong>{{ choice.label }}</strong>
                   <small>{{ choice.lines.join(' · ') }}</small>
                 </span>
-                <span class="choice-count">×{{ choice.count }}</span>
+                <span class="choice-count">{{ choice.cost }}</span>
               </button>
             </li>
           }
         </ul>
-      } @else {
-        <p class="hint">Aucune rune en réserve.</p>
-        <button type="button" class="game-button" (click)="openForge()">Aller au Creuset</button>
+        <p class="hint">Les ressources se récoltent dans les Échos des zones 1 à 11.</p>
       }
     </div>
   }

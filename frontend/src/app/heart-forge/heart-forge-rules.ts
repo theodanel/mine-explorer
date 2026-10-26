@@ -16,7 +16,9 @@ import {
   RuneType,
   STAR_RUNES,
 } from '../balance/heart-forge';
-import { EMPTY_GEAR_RUNES, GearRunes, parseGearRunes } from './gear-runes-rules';
+import type { SlotId } from '../equipment/equipment.model';
+import { AstreFed, EMPTY_ASTRE, feedAstre, parseAstre, stageOf } from './astre-rules';
+import { EMPTY_GEAR_RUNES, GearRunes, parseGearRunes, withGearSocket } from './gear-runes-rules';
 
 /** Une rune : son type (élément ou alliance) et son rang (1 à 5). */
 export interface Rune {
@@ -38,6 +40,8 @@ export interface HeartForgeState {
   readonly recipes: readonly RuneType[];
   /** Runes serties sur les emplacements d'équipement, dès la 1re étoile. */
   readonly gear: GearRunes;
+  /** Ressources données à l'Astre du Cœur, qui remplace l'anneau de runes (26/10/2026). */
+  readonly astre: AstreFed;
 }
 
 const NO_ESSENCES = Object.fromEntries(ESSENCES.map((id) => [id, 0])) as Record<EssenceId, number>;
@@ -48,19 +52,8 @@ export const EMPTY_HEART_FORGE: HeartForgeState = {
   sockets: Array.from({ length: RING_SOCKETS }, () => false),
   recipes: [],
   gear: EMPTY_GEAR_RUNES,
+  astre: EMPTY_ASTRE,
 };
-
-export function runeKey({ type, rank }: Rune): RuneKey {
-  return `${type}:${rank}`;
-}
-
-export function runeCount(state: HeartForgeState, rune: Rune): number {
-  return state.runes[runeKey(rune)] ?? 0;
-}
-
-function withRunes(state: HeartForgeState, rune: Rune, delta: number): HeartForgeState {
-  return { ...state, runes: { ...state.runes, [runeKey(rune)]: runeCount(state, rune) + delta } };
-}
 
 /** Ressource de l'Écho d'une zone (1 à 11), ou null pour une zone sans Écho. */
 export function echoEssence(zone: number): EssenceId | null {
@@ -101,7 +94,7 @@ export function recipeOf(type: RuneType): readonly [EssenceId, EssenceId, Essenc
 }
 
 /** Ressources pour une quantité donnée, réparties comme la recette (2 Braise pour 1 Sève, pour Magma). */
-function spread(type: RuneType, amount: number): Partial<Record<EssenceId, number>> {
+export function spreadEssences(type: RuneType, amount: number): Partial<Record<EssenceId, number>> {
   const recipe = recipeOf(type);
   const cost: Partial<Record<EssenceId, number>> = {};
   let given = 0;
@@ -129,55 +122,11 @@ export function createCost(type: RuneType): Partial<Record<EssenceId, number>> {
 /** Ressources pour faire grandir une rune de son rang au suivant, ou null au rang maximum. */
 export function growCost(rune: Rune): Partial<Record<EssenceId, number>> | null {
   const amount = RUNE_GROW_ESSENCES[rune.rank + 1];
-  return rune.rank >= MAX_RUNE_RANK || amount === undefined ? null : spread(rune.type, amount);
+  return rune.rank >= MAX_RUNE_RANK || amount === undefined ? null : spreadEssences(rune.type, amount);
 }
 
 function canPay(state: HeartForgeState, cost: Partial<Record<EssenceId, number>>): boolean {
   return ESSENCES.every((id) => state.essences[id] >= (cost[id] ?? 0));
-}
-
-/**
- * Recettes d'alliance révélées par les étoiles : celles des runes que demandent les étoiles déjà éveillées et la
- * suivante. On ne peut créer une alliance que si sa recette est connue (révélée, ou trouvée avant le 25/10/2026).
- */
-export function revealedRecipes(stars: number): readonly RuneType[] {
-  return STAR_RUNES.slice(0, Math.min(stars + 1, STAR_RUNES.length))
-    .flat()
-    .map((rune) => rune.type)
-    .filter((type, index, all) => isAllianceRune(type) && all.indexOf(type) === index);
-}
-
-export function knowsRecipe(state: HeartForgeState, type: RuneType, stars: number): boolean {
-  return !isAllianceRune(type) || state.recipes.includes(type) || revealedRecipes(stars).includes(type);
-}
-
-export function canCreate(state: HeartForgeState, type: RuneType, stars: number): boolean {
-  return knowsRecipe(state, type, stars) && canPay(state, createCost(type));
-}
-
-/** Crée une rune de rang 1 ; elle s'inscrit au livre. Sans effet si la recette est inconnue ou les ressources manquent. */
-export function createRune(state: HeartForgeState, type: RuneType, stars: number): HeartForgeState {
-  const paid = canCreate(state, type, stars) ? spendEssences(state, createCost(type)) : null;
-  if (paid === null) {
-    return state;
-  }
-  const recipes = paid.recipes.includes(type) ? paid.recipes : [...paid.recipes, type];
-  return withRunes({ ...paid, recipes }, { type, rank: 1 }, 1);
-}
-
-export function canGrow(state: HeartForgeState, rune: Rune): boolean {
-  const cost = growCost(rune);
-  return cost !== null && runeCount(state, rune) > 0 && canPay(state, cost);
-}
-
-/** Nourrit une rune de la réserve : elle passe au rang suivant. */
-export function growRune(state: HeartForgeState, rune: Rune): HeartForgeState {
-  const cost = growCost(rune);
-  const paid = cost !== null && canGrow(state, rune) ? spendEssences(state, cost) : null;
-  if (paid === null) {
-    return state;
-  }
-  return withRunes(withRunes(paid, rune, -1), { type: rune.type, rank: rune.rank + 1 }, 1);
 }
 
 /** Rune qu'attend un emplacement de l'anneau : les emplacements 0 et 1 sont ceux de la 1re étoile, etc. */
@@ -185,42 +134,79 @@ export function socketRune(socket: number): Rune {
   return STAR_RUNES[Math.floor(socket / 2)][socket % 2];
 }
 
-/** Étoile (1 à 5) dont l'emplacement attend une rune. */
-export function socketStar(socket: number): number {
-  return Math.floor(socket / 2) + 1;
+/**
+ * Châsses d'équipement nourries directement (26/10/2026) : on y crée la rune d'un élément avec 3 de ses ressources,
+ * puis on la fait grandir avec d'autres, sans passer par une réserve. `open` : châsses ouvertes sur l'emplacement.
+ */
+export function canCreateGearRune(state: HeartForgeState, slot: SlotId, socket: number, type: RuneType, open: number): boolean {
+  return socket >= 0 && socket < open && state.gear[slot][socket] === null && !isAllianceRune(type) && canPay(state, createCost(type));
+}
+
+export function createGearRune(state: HeartForgeState, slot: SlotId, socket: number, type: RuneType, open: number): HeartForgeState {
+  const paid = canCreateGearRune(state, slot, socket, type, open) ? spendEssences(state, createCost(type)) : null;
+  return paid === null ? state : { ...paid, gear: withGearSocket(paid.gear, slot, socket, { type, rank: 1 }) };
+}
+
+export function canGrowGearRune(state: HeartForgeState, slot: SlotId, socket: number): boolean {
+  const rune = state.gear[slot][socket] ?? null;
+  const cost = rune === null ? null : growCost(rune);
+  return cost !== null && canPay(state, cost);
+}
+
+export function growGearRune(state: HeartForgeState, slot: SlotId, socket: number): HeartForgeState {
+  const rune = state.gear[slot][socket] ?? null;
+  const cost = rune === null ? null : growCost(rune);
+  const paid = cost === null ? null : spendEssences(state, cost);
+  return paid === null || rune === null
+    ? state
+    : { ...paid, gear: withGearSocket(paid.gear, slot, socket, { type: rune.type, rank: rune.rank + 1 }) };
+}
+
+/** Retire la rune d'une châsse : ce qu'elle a coûté revient en ressources, prêtes à nourrir autre chose. */
+export function removeGearRune(state: HeartForgeState, slot: SlotId, socket: number): HeartForgeState {
+  const rune = state.gear[slot][socket] ?? null;
+  if (rune === null) {
+    return state;
+  }
+  const refunded = addEssences(state, spreadEssences(rune.type, essencesFor(rune.rank)));
+  return { ...refunded, gear: withGearSocket(refunded.gear, slot, socket, null) };
+}
+
+/** L'Astre du Cœur a atteint le stade de cette étoile (1 à 5) : c'est ce qu'elle demande, en plus de ses missions. */
+export function starReady(state: HeartForgeState, star: number): boolean {
+  return star >= 1 && stageOf(state.astre) >= star;
+}
+
+/** Nourrit l'Astre avec des ressources de la réserve ; sans effet s'il en manque. */
+export function feedAstreWith(state: HeartForgeState, essence: EssenceId, amount: number): HeartForgeState {
+  const paid = amount > 0 ? spendEssences(state, { [essence]: amount }) : null;
+  return paid === null ? state : { ...paid, astre: feedAstre(paid.astre, essence, amount) };
 }
 
 /**
- * Les emplacements d'une étoile ne s'ouvrent qu'une fois l'étoile précédente obtenue (25/10/2026) : on ne prépare plus
- * tout l'anneau d'avance, chaque étoile est une étape. `stars` : étoiles déjà obtenues.
+ * Sauvegarde d'avant l'Astre (26/10/2026) : ce que coûtaient les runes serties dans l'anneau devient sa nourriture
+ * (il garde ainsi leur couleur et son avance), et les runes en réserve sont rendues en ressources.
  */
-export function socketOpen(socket: number, stars: number): boolean {
-  return socketStar(socket) <= stars + 1;
-}
-
-export function canSocket(state: HeartForgeState, socket: number, stars: number): boolean {
-  return (
-    socket >= 0 &&
-    socket < RING_SOCKETS &&
-    socketOpen(socket, stars) &&
-    !state.sockets[socket] &&
-    runeCount(state, socketRune(socket)) > 0
-  );
-}
-
-/** Sertit la rune attendue : elle quitte la réserve et reste dans l'anneau. */
-export function socketRuneIn(state: HeartForgeState, socket: number, stars: number): HeartForgeState {
-  if (!canSocket(state, socket, stars)) {
-    return state;
+function migrateToAstre(state: HeartForgeState): HeartForgeState {
+  let astre = EMPTY_ASTRE;
+  state.sockets.forEach((filled, socket) => {
+    if (filled) {
+      const rune = socketRune(socket);
+      for (const [id, amount] of Object.entries(spreadEssences(rune.type, essencesFor(rune.rank)))) {
+        astre = feedAstre(astre, id as EssenceId, amount ?? 0);
+      }
+    }
+  });
+  let refunded = state;
+  for (const [key, count] of Object.entries(state.runes)) {
+    const [type, rank] = key.split(':');
+    refunded = addEssences(refunded, scaleCost(spreadEssences(type as RuneType, essencesFor(Number(rank))), count ?? 0));
   }
-  const sockets = state.sockets.map((filled, index) => filled || index === socket);
-  return withRunes({ ...state, sockets }, socketRune(socket), -1);
+  return { ...refunded, runes: {}, astre };
 }
 
-/** Les deux runes de l'étoile (1 à 5) sont serties. */
-export function starRunesSet(state: HeartForgeState, star: number): boolean {
-  const first = (star - 1) * 2;
-  return star >= 1 && star <= STAR_RUNES.length && state.sockets[first] && state.sockets[first + 1];
+function scaleCost(cost: Partial<Record<EssenceId, number>>, factor: number): Partial<Record<EssenceId, number>> {
+  return Object.fromEntries(Object.entries(cost).map(([id, amount]) => [id, (amount ?? 0) * factor]));
 }
 
 /** Ressources que demande une rune d'un rang donné, de sa création à ce rang (3 au rang 1, 674 au rang 5). */
@@ -248,7 +234,7 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   if (typeof value !== 'object' || value === null) {
     return null;
   }
-  const { essences, runes, sockets, recipes, gear: rawGear } = value as Record<string, unknown>;
+  const { essences, runes, sockets, recipes, gear: rawGear, astre: rawAstre } = value as Record<string, unknown>;
   const essencesValid =
     typeof essences === 'object' && essences !== null && ESSENCES.every((id) => isCount((essences as Record<string, unknown>)[id]));
   const runesValid =
@@ -264,11 +250,17 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   if (!essencesValid || !runesValid || !socketsValid || !recipesValid || gear === null) {
     return null;
   }
-  return {
+  const state: HeartForgeState = {
     essences: essences as HeartForgeState['essences'],
     runes: runes as HeartForgeState['runes'],
     sockets: sockets as boolean[],
     recipes: recipes as RuneType[],
     gear,
+    astre: EMPTY_ASTRE,
   };
+  if (rawAstre === undefined) {
+    return migrateToAstre(state);
+  }
+  const astre = parseAstre(rawAstre);
+  return astre === null ? null : { ...state, astre };
 }

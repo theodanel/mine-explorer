@@ -118,7 +118,7 @@
 
       <button type="button" class="game-button promote" [class.green]="evolution.ready()" [disabled]="!evolution.ready()" (click)="promote()">
         {{ heartMode() ? "Éveiller l'étoile" : 'Promotion' }}
-        <small>{{ evolution.ready() ? 'Devenir ' + next.title : heartMode() && !evolution.runesSet() ? 'Paliers et runes à compléter' : 'Remplis les trois paliers' }}</small>
+        <small>{{ evolution.ready() ? 'Devenir ' + next.title : heartMode() && !evolution.runesSet() ? 'Paliers et Astre à compléter' : 'Remplis les trois paliers' }}</small>
       </button>
     } @else {
       <p class="ultimate">Ton mineur a atteint sa forme ultime : {{ current().title }}.</p>

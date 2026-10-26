@@ -53,7 +53,7 @@ export class Evolution {
     const form = this.next();
     return form === null ? [] : objectivesFor(form, this.progress(), this.claimed());
   });
-  /** Runes de l'étoile suivante serties dans l'anneau (toujours vrai hors Cœur du monde). */
+  /** L'Astre du Cœur a atteint le stade de l'étoile suivante (toujours vrai hors Cœur du monde). */
   readonly runesSet = computed(() => {
     const next = this.next();
     return next === null || next.id !== 'heart' || this.heartForge.starReady(next.stars);

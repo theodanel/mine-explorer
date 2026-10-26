@@ -1,7 +1,7 @@
 <div class="backdrop" (click)="closed.emit()">
   <section class="dialog game-panel" role="dialog" aria-modal="true" aria-labelledby="heart-forge-help-title" (click)="$event.stopPropagation()">
     <h2 id="heart-forge-help-title">Éveiller les étoiles</h2>
-    <p class="intro">Chaque étoile du Cœur du monde demande ses missions <strong>et</strong> 2 runes serties dans l'anneau.</p>
+    <p class="intro">Chaque étoile du Cœur du monde demande ses missions <strong>et</strong> que l'Astre du Cœur ait atteint son stade.</p>
     <ol class="steps">
       @for (step of steps; track step.title; let index = $index) {
         <li class="step">

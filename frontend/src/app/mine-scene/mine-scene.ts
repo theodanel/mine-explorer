@@ -17,6 +17,10 @@ import { GUARDIAN_STAGE } from '../progression/progression-rules';
 import { hasCrossedFrame } from './frame-crossing';
 import { HitEffects } from './hit-effects';
 import { RebirthAuraView } from './rebirth-aura-view';
+import { AstreView } from './astre-view';
+import { ASTRE_STRIKE_MS } from '../balance/astre';
+import { astreColor } from '../heart-forge/astre-rules';
+import { HeartForge } from '../heart-forge/heart-forge';
 import { Rebirth } from '../rebirth/rebirth';
 import { rebirthAura } from '../rebirth/rebirth-visuals';
 import { MineRock, RockTop } from './mine-rock';
@@ -68,6 +72,8 @@ const ROCK_BREAK_SHAKE_SHARE = 0.2;
 const POWER_GAIN_ABOVE_FEET = 330;
 const POWER_GLOW_MS = 600;
 const POWER_GLOW_TINT = 0xffe08a;
+/** L'éclat de l'Astre frappe le filon un peu sous son sommet. */
+const ASTRE_SHOT_BELOW_TOP = 60;
 
 @Component({
   selector: 'app-mine-scene',
@@ -101,6 +107,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
   /** Lueur de la Renaissance derrière le mineur, et couleur des chiffres de dégâts. */
   private readonly aura = new RebirthAuraView();
   private readonly rebirth = inject(Rebirth);
+  private readonly heartForge = inject(HeartForge);
+  /** L'Astre du Cœur, qui flotte derrière le mineur et lance ses éclats d'étoile. */
+  private astre: AstreView | null = null;
+  private astreClockMs = 0;
   private readonly rebirthAura = computed(() => rebirthAura(this.rebirth.count()));
   private initialized = false;
   /**
@@ -130,6 +140,24 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private glowMs = 0;
 
   constructor() {
+    // L'Astre du Cœur : son stade allume ses pointes, sa nourriture fait sa couleur
+    effect(() => {
+      const stage = this.heartForge.astreStage();
+      const color = astreColor(this.heartForge.astre());
+      this.astre?.set(stage, color);
+    });
+    // Pluie d'étoiles de l'Astre (stades 4 et 5) dès que le gardien apparaît
+    effect(() => {
+      if (this.progression.guardianFight()) {
+        untracked(() => {
+          const outcome = this.mining.astreStarRain();
+          if (outcome !== null && this.effects) {
+            const top = this.rockTop();
+            this.effects.spawnBlast(top.x, top.y, outcome, true);
+          }
+        });
+      }
+    });
     // Chaque renaissance change la lueur du mineur et la couleur de ses dégâts
     effect(() => {
       const aura = this.rebirthAura();
@@ -286,16 +314,20 @@ export class MineScene implements AfterViewInit, OnDestroy {
     miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
     this.strike = strike;
-    this.placeMiner(strike);
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
     effects.setRebirthAura(this.rebirthAura());
     this.effects = effects;
+    const astre = new AstreView(effectsLayer);
+    astre.set(this.heartForge.astreStage(), astreColor(this.heartForge.astre()));
+    this.astre = astre;
+    // Après l'Astre, que placeMiner cale derrière le mineur
+    this.placeMiner(strike);
     this.staticBody = new Sprite();
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.app.stage.addChild(this.aura.view, miner, this.staticBody, effectsLayer);
+    this.app.stage.addChild(astre.view, this.aura.view, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -323,6 +355,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.updateShake(ticker.deltaMS);
       this.updateGlow(ticker.deltaMS);
       this.aura.update(ticker.deltaMS);
+      astre.update(ticker.deltaMS);
+      this.updateAstreStrikes(ticker.deltaMS);
     });
     miner.play();
   }
@@ -386,8 +420,30 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
     // Centré sur le corps dessiné (l'image fixe des formes évoluées est au centre de la scène)
     this.aura.place(SCENE_WIDTH / 2, MINER_FEET_Y);
+    this.astre?.place(SCENE_WIDTH / 2, MINER_FEET_Y);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
+  }
+
+  /** Toutes les 2 s, l'Astre lance un éclat d'étoile ; le coup part à l'impact sur le filon. */
+  private updateAstreStrikes(deltaMs: number): void {
+    if (this.heartForge.astreStage() === 0 || !this.astre || !this.effects) {
+      return;
+    }
+    this.astreClockMs += deltaMs;
+    if (this.astreClockMs < ASTRE_STRIKE_MS) {
+      return;
+    }
+    this.astreClockMs -= ASTRE_STRIKE_MS;
+    const top = this.rockTop();
+    const effects = this.effects;
+    this.astre.shoot(top.x, top.y + ASTRE_SHOT_BELOW_TOP, () => {
+      const outcome = this.mining.astreStrike();
+      if (outcome !== null) {
+        effects.spawn(top.x, top.y + ASTRE_SHOT_BELOW_TOP, outcome);
+        this.rock.hit(outcome.rockBroken);
+      }
+    });
   }
 
   /** Le coup, puis ce qu'il a fait : éclat déterré, filon qui cède. */

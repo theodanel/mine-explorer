@@ -5,6 +5,8 @@ import { Inventory } from '../equipment/inventory';
 import { Companions } from '../companions/companions';
 import { Galleries } from '../galleries/galleries';
 import { GearRunes } from '../heart-forge/gear-runes';
+import { astreBonuses } from '../heart-forge/astre-rules';
+import { HeartForge } from '../heart-forge/heart-forge';
 import { Skills } from '../skills/skills';
 import { Spells } from '../spells/spells';
 import { reinforce } from '../workshop/workshop-rules';
@@ -29,12 +31,15 @@ export class Miner {
   private readonly companions = inject(Companions);
   private readonly gearRunes = inject(GearRunes);
   private readonly rebirth = inject(Rebirth);
+  private readonly heartForge = inject(HeartForge);
 
   private readonly families = computed(() => [
     this.skills.bonuses(),
     this.artifacts.bonuses(),
     this.companions.bonuses(),
     this.gearRunes.bonuses(),
+    // L'Astre du Cœur : ses bonus suivent la nourriture qu'on lui a donnée
+    astreBonuses(this.heartForge.astre()),
     // L'arbre des Braises : une famille à part, qui multiplie les autres (la grosse hausse d'une vie à l'autre)
     { ...NO_BONUSES, strikePct: this.rebirth.effects().strikeMultiplier - 1, speed: this.rebirth.effects().speed },
   ]);

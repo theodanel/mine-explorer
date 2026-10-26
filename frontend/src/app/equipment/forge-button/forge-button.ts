@@ -9,6 +9,8 @@ import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { ForgeFiltersDialog } from '../../forge/forge-filters/forge-filters';
 import { Missions } from '../../missions/missions';
+import { rebirthGearPower } from '../../balance/rebirth';
+import { Rebirth } from '../../rebirth/rebirth';
 import { RevealDirective } from '../../onboarding/reveal.directive';
 import { Overlays } from '../../shared/overlays';
 import { MissionsDialog } from '../../missions/missions-dialog/missions-dialog';
@@ -44,6 +46,7 @@ export class ForgeButton {
   protected readonly autoForge = inject(AutoForge);
   protected readonly filtersOpen = signal(false);
   private readonly sound = inject(Sound);
+  private readonly rebirth = inject(Rebirth);
   private readonly overlays = inject(Overlays);
 
   /**
@@ -120,9 +123,16 @@ export class ForgeButton {
 
   protected readonly jackpotChance = formatPercent(JACKPOT_CHANCE);
 
+  /** Forge renforcée par les renaissances : chaque pièce sort « ✦N », avec ses stats sans plafond multipliées. */
+  protected readonly rebirthForge = computed(() => {
+    const count = this.rebirth.count();
+    return count === 0 ? null : { count, power: rebirthGearPower(count).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) };
+  });
+
   /** Table des chances : niveau actuel et niveau suivant côte à côte, un palier par ligne. */
   protected readonly odds = computed(() => {
     const level = this.forge.level();
+    const mark = this.rebirth.count() > 0 ? ` ✦${this.rebirth.count()}` : '';
     const nextLevel = level < MAX_PICKAXE_LEVEL ? level + 1 : null;
     const current = tierChances(level);
     const next = nextLevel === null ? null : tierChances(nextLevel);
@@ -131,7 +141,7 @@ export class ForgeButton {
       nextLevel,
       rows: TIER_IDS.map((tier) => ({
         tier,
-        label: TIER_LABELS[tier],
+        label: `${TIER_LABELS[tier]}${mark}`,
         current: formatPercent(current[tier]),
         next: next === null ? null : formatPercent(next[tier]),
         // Les paliers hors de portée aux deux niveaux sont atténués, comme dans la référence

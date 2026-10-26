@@ -121,6 +121,13 @@
         </li>
       </ul>
 
+      @if (rebirthForge(); as reborn) {
+        <p class="rebirth-forge">
+          Renaissance {{ reborn.count }} : tes pièces sortent ✦{{ reborn.count }}, avec Frappe, dégâts critiques et or
+          ×{{ reborn.power }}.
+        </p>
+      }
+
       <table class="odds">
         <thead>
           <tr>

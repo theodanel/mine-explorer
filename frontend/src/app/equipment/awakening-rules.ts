@@ -61,6 +61,11 @@ export function recordDuplicate(state: AwakeningState, item: Item): AwakeningSta
   return { ...state, duplicates: { ...state.duplicates, [item.slot]: (state.duplicates[item.slot] ?? 0) + 1 } };
 }
 
+/** Des doublons de plus sur chaque emplacement (outils de test). */
+export function addDuplicates(state: AwakeningState, amount: number): AwakeningState {
+  return { ...state, duplicates: Object.fromEntries(SLOT_IDS.map((slot) => [slot, (state.duplicates[slot] ?? 0) + amount])) };
+}
+
 /** Ce qui manque pour éveiller la pièce portée, ou null si c'est possible. */
 export type AwakeningBlocker = 'not-divine' | 'max' | 'rebirths' | 'duplicates' | 'essences';
 

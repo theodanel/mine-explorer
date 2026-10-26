@@ -5,6 +5,7 @@ import { Sound } from '../../audio/sound';
 import { itemIconUrl } from '../../loading/game-assets';
 import { CLOCK } from '../../shared/clock';
 import { EquippedItems, Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
+import { compactNumber } from '../../shared/format-number';
 import { formatStat, formatStatDelta } from '../equipment-format';
 import { compareItems, computePower, rebirthMark, sellPrice } from '../equipment-rules';
 import { reinforce } from '../../workshop/workshop-rules';
@@ -84,9 +85,10 @@ export class ItemCompare {
     const delta = power - powerBefore;
     return {
       isPrevious: this.inventory.pendingWasEquipped(),
-      powerBefore,
-      power,
+      powerBefore: compactNumber(powerBefore),
+      power: compactNumber(power),
       powerDelta: delta,
+      powerDeltaLabel: compactNumber(Math.abs(delta)),
       powerTrend: trendOf(delta),
       slot: SLOTS[candidate.slot],
       iconUrl: itemIconUrl(candidate.slot, candidate.tier, SLOTS[candidate.slot].iconUrl),
@@ -100,7 +102,7 @@ export class ItemCompare {
         delta: formatStatDelta(stat, after - before),
         trend: trendOf(after - before),
       })),
-      sellPrice: sellPrice(candidate),
+      sellPrice: compactNumber(sellPrice(candidate)),
     };
   });
 }

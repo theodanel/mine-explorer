@@ -7,8 +7,8 @@ import { galleryIconUrl } from '../../loading/game-assets';
 import { Navigation } from '../../navigation/navigation';
 import { Tooltip } from '../../shared/tooltip/tooltip';
 import { Progression } from '../progression';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 @Component({
   selector: 'app-zone-banner',
@@ -25,7 +25,7 @@ export class ZoneBanner {
   protected readonly galleryTooltip = computed(() => `${this.galleries.gallery().label} pour toute la zone : ${this.galleries.gallery().effects.join(', ')}.`);
   protected readonly stagesPerZone = STAGES_PER_ZONE;
   /** Puissance qui casse le gardien raté à temps, en notation courte. */
-  protected readonly guardianPower = computed(() => COMPACT.format(this.progression.guardianPower()));
+  protected readonly guardianPower = computed(() => compactNumber(this.progression.guardianPower()));
 
   protected challengeGuardian(): void {
     if (this.progression.challengeGuardian()) {

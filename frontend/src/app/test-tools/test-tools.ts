@@ -11,6 +11,7 @@ import { Rebirth, REBIRTH_STORAGE_KEY } from '../rebirth/rebirth';
 import { writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
+import { compactNumber } from '../shared/format-number';
 
 /** Clés de sauvegarde du jeu : toutes commencent ainsi. */
 const SAVE_PREFIX = 'mine-explorer.';
@@ -20,7 +21,6 @@ const COIN_GIFTS = [10_000, 1_000_000, 1_000_000_000] as const;
 const SHARD_GIFT = 1_000;
 const ORE_GIFT = 100;
 const ESSENCE_GIFT = 50;
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact' });
 
 /**
  * Outils du site de test (staging) seulement : se donner de l'or, des éclats, des minerais, une renaissance, sauter à
@@ -44,7 +44,7 @@ export class TestTools {
 
   protected readonly coinGifts = COIN_GIFTS.map((amount) => ({
     amount,
-    label: COMPACT.format(amount),
+    label: compactNumber(amount),
   }));
   protected readonly zones = Array.from({ length: LAST_ZONE }, (_, index) => index + 1);
   protected readonly forms = EVOLUTION_FORMS.map((form, index) => ({
@@ -63,7 +63,7 @@ export class TestTools {
 
   protected addCoins(amount: number): void {
     this.wallet.add(amount);
-    this.done.set(`+${COMPACT.format(amount)} d'or`);
+    this.done.set(`+${compactNumber(amount)} d'or`);
   }
 
   protected addShards(): void {

@@ -7,8 +7,8 @@ import { RewardFlight } from '../../reward-flight/reward-flight';
 import { holdUserDialog } from '../../shared/overlays';
 import { Lottery, LotteryDraw } from '../lottery';
 import { LotteryPrize } from '../lottery-rules';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const PERCENT = new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 0 });
 /** La lumière fait au moins deux tours avant de ralentir sur le lot gagné. */
 const SPIN_LAPS = 2;
@@ -28,7 +28,7 @@ function prizeIcon(prize: LotteryPrize): string {
 function prizeLabel(prize: LotteryPrize): string {
   switch (prize.kind) {
     case 'gold':
-      return `${COMPACT.format(prize.amount)} or`;
+      return `${compactNumber(prize.amount)} or`;
     case 'shards':
       return `${prize.amount} éclats`;
     case 'stones':

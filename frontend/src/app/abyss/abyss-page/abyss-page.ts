@@ -10,11 +10,11 @@ import { Progression } from '../../progression/progression';
 import { Abyss } from '../abyss';
 import { comboMultiplier, GameEvent } from '../abyss-game';
 import { MinerSprite } from '../miner-sprite/miner-sprite';
+import { compactNumber } from '../../shared/format-number';
 
 const PERCENT = 100;
 const SECONDS = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
 const MULTIPLIER = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 /** Durée d'affichage d'un chiffre de dégâts ou d'un gain qui s'envole. */
 const POP_MS = 700;
 /** Le décor du puits remonte un peu à chaque étage : la descente se voit. */
@@ -135,7 +135,7 @@ export class AbyssPage {
     switch (event.kind) {
       case 'hit':
         this.sound.play(event.critical || event.weak ? 'crit' : 'strike');
-        this.pop(COMPACT.format(event.damage), event.weak ? 'weak' : event.critical ? 'crit' : 'hit');
+        this.pop(compactNumber(event.damage), event.weak ? 'weak' : event.critical ? 'crit' : 'hit');
         break;
       case 'floorCleared':
         this.sound.play(event.floor % 10 === 0 ? 'blast' : 'rockBreak');

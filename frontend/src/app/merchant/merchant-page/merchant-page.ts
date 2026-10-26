@@ -10,8 +10,8 @@ import { Navigation } from '../../navigation/navigation';
 import { Progression } from '../../progression/progression';
 import { Merchant, MerchantAction } from '../merchant';
 import { Outcome } from '../merchant-rules';
+import { compactNumber } from '../../shared/format-number';
 
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const BUBBLE_MS = 2600;
 
 /** Ce que dit le marchand selon ce qu'on vient de tenter, et comment ça s'est passé. */
@@ -51,7 +51,7 @@ export class MerchantPage {
   protected readonly scene = pageBackground(MERCHANT_IMAGES.stall);
   protected readonly moodLabel = computed(() => moodLabel(this.merchant.mood()));
   protected readonly offers = computed(() =>
-    this.merchant.offers().map((offer) => ({ ...offer, ...this.describe(offer.goods), priceLabel: COMPACT.format(offer.price) })),
+    this.merchant.offers().map((offer) => ({ ...offer, ...this.describe(offer.goods), priceLabel: compactNumber(offer.price) })),
   );
   protected readonly bubble = signal<{ text: string; mood: Outcome } | null>(null);
   private bubbleTimer: ReturnType<typeof setTimeout> | undefined;

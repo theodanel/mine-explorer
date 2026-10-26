@@ -64,13 +64,13 @@ import { RewardFlightLayer } from './reward-flight/reward-flight-layer';
 import { GeodeShards } from './wallet/geode-shards';
 import { Wallet } from './wallet/wallet';
 import { RankStars } from './evolution/rank-stars/rank-stars';
+import { compactNumber } from './shared/format-number';
 
 /** En dessous de 100 000, le nombre exact ; au-delà, la forme courte. */
 const COMPACT_FROM = 100_000;
-const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 
 function resourceLabel(amount: number): string {
-  return amount < COMPACT_FROM ? String(amount) : COMPACT.format(amount);
+  return amount < COMPACT_FROM ? String(amount) : compactNumber(amount);
 }
 
 @Component({

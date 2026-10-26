@@ -1,10 +1,14 @@
 // Règles pures de l'Astre du Cœur : ce qu'on lui a donné, son stade, ses bonus et sa couleur.
 import {
   ASTRE_COLORS,
+  ASTRE_CONSTELLATION_POWER,
   ASTRE_ELEMENT_BONUS,
   ASTRE_STAGE_POWER,
   ASTRE_STAGE_TOTALS,
+  ASTRE_STAGES,
   astreStage,
+  constellationCost,
+  constellationZone,
 } from '../balance/astre';
 import { ESSENCES, EssenceId } from '../balance/heart-forge';
 import { BonusId, Bonuses, NO_BONUSES } from '../balance/skill-tree';
@@ -22,26 +26,72 @@ export function stageOf(fed: AstreFed): number {
   return astreStage(totalFed(fed));
 }
 
-/** Où en est l'Astre vers son stade suivant : ressources données et à donner, ou null au stade 5. */
-export function nextStageProgress(fed: AstreFed): { readonly given: number; readonly needed: number } | null {
-  const stage = stageOf(fed);
-  const target = ASTRE_STAGE_TOTALS[stage];
-  if (target === undefined) {
-    return null;
-  }
-  const from = stage === 0 ? 0 : ASTRE_STAGE_TOTALS[stage - 1];
-  return { given: totalFed(fed) - from, needed: target - from };
+/** Multiplicateur de l'Astre (bonus, frappe, pluie d'étoiles) pour ce niveau de Constellation. */
+export function astrePower(constellation: number): number {
+  return 1 + ASTRE_CONSTELLATION_POWER * constellation;
 }
 
-/** Bonus de l'Astre : chaque ressource renforce son domaine selon sa part dans la nourriture, et selon le stade. */
-export function astreBonuses(fed: AstreFed): Bonuses {
+/** Ressources données au-delà de Supernova et des niveaux de Constellation déjà allumés. */
+function constellationSurplus(fed: AstreFed, constellation: number): number {
+  let surplus = totalFed(fed) - ASTRE_STAGE_TOTALS[ASTRE_STAGES - 1];
+  for (let level = 1; level <= constellation; level++) {
+    surplus -= constellationCost(level);
+  }
+  return surplus;
+}
+
+/**
+ * Où en est l'Astre vers son stade suivant, puis vers son niveau de Constellation suivant : ressources données et à
+ * donner.
+ */
+export function nextStageProgress(fed: AstreFed, constellation = 0): { readonly given: number; readonly needed: number } {
+  const stage = stageOf(fed);
+  if (stage < ASTRE_STAGES) {
+    const from = stage === 0 ? 0 : ASTRE_STAGE_TOTALS[stage - 1];
+    return { given: totalFed(fed) - from, needed: ASTRE_STAGE_TOTALS[stage] - from };
+  }
+  return { given: constellationSurplus(fed, constellation), needed: constellationCost(constellation + 1) };
+}
+
+/** Ce qui manque pour allumer le niveau de Constellation suivant. */
+export interface ConstellationNeeds {
+  readonly level: number;
+  readonly supernova: boolean;
+  readonly rebirth: boolean;
+  readonly fed: boolean;
+  /** Zone de l'épreuve, à atteindre dans la vie en cours. */
+  readonly zone: number;
+  readonly zoneReached: boolean;
+}
+
+export function constellationNeeds(fed: AstreFed, constellation: number, rebirths: number, zone: number): ConstellationNeeds {
+  const level = constellation + 1;
+  return {
+    level,
+    supernova: stageOf(fed) === ASTRE_STAGES,
+    rebirth: rebirths >= level,
+    fed: stageOf(fed) === ASTRE_STAGES && constellationSurplus(fed, constellation) >= constellationCost(level),
+    zone: constellationZone(level),
+    zoneReached: zone >= constellationZone(level),
+  };
+}
+
+export function canRaiseConstellation(needs: ConstellationNeeds): boolean {
+  return needs.supernova && needs.rebirth && needs.fed && needs.zoneReached;
+}
+
+/**
+ * Bonus de l'Astre : chaque ressource renforce son domaine selon sa part dans la nourriture, selon le stade, et selon
+ * la Constellation en fin de jeu.
+ */
+export function astreBonuses(fed: AstreFed, constellation = 0): Bonuses {
   const totals: Record<BonusId, number> = { ...NO_BONUSES };
   const total = totalFed(fed);
   const stage = stageOf(fed);
   if (stage === 0 || total === 0) {
     return totals;
   }
-  const power = ASTRE_STAGE_POWER[stage - 1];
+  const power = ASTRE_STAGE_POWER[stage - 1] * astrePower(constellation);
   for (const id of ESSENCES) {
     const { bonus, full } = ASTRE_ELEMENT_BONUS[id];
     totals[bonus] += full * (fed[id] / total) * power;
@@ -49,7 +99,7 @@ export function astreBonuses(fed: AstreFed): Bonuses {
   return totals;
 }
 
-/** Couleur de l'Astre : le mélange des couleurs de sa nourriture, pondéré par la part de chacune. */
+/** Couleur de l'Astre : le mélange des couleurs de ses deux ressources principales. */
 export function astreColor(fed: AstreFed): number {
   // Seules les deux ressources principales colorent l'Astre : mélanger les cinq donnait un gris terne
   const [first, second] = [...ESSENCES].sort((a, b) => fed[b] - fed[a]);

@@ -454,7 +454,7 @@ function families() {
         withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, openSockets()) : NO_BONUSES,
         rebirthBonuses(),
         // Avant la Légende, pas d'Astre (et heartForge n'est pas encore déclaré au premier calcul)
-        formIndex >= LEGEND_INDEX ? astreBonuses(heartForge.astre) : NO_BONUSES,
+        formIndex >= LEGEND_INDEX ? astreBonuses(heartForge.astre, heartForge.constellation) : NO_BONUSES,
       ]
     : [NO_BONUSES];
 }

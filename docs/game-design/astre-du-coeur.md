@@ -47,3 +47,13 @@ Les châsses d'équipement restent (une par étoile, deux de plus par l'Éveil d
 ## Visuel : dessiné en code
 
 Choix de Théo (26/10/2026) après des essais d'images refusés : un cercle à 5 pointes dessiné en PixiJS (`mine-scene/astre-view.ts`), qui flotte en haut à gauche du mineur, derrière lui, tourne lentement et monte et descend. Chaque pointe s'allume à un stade ; terne au stade 1, il brille de plus en plus. Sa couleur est le mélange de ses ressources. Toutes les 2 s il lance un éclat d'étoile sur le filon ; aux stades 4 et 5, une pluie d'étoiles frappe le gardien dès le début du combat. La page de la Forge du Cœur reprend le même cercle en SVG.
+
+## Constellation (fin de jeu)
+
+Choix de Théo (26/10/2026) : en fin de jeu, l'Astre doit apporter de vraies stats et demander un vrai effort. Après Supernova, chaque renaissance ouvre un niveau de Constellation. Pour l'allumer, il faut trois choses :
+
+- l'avoir nourri : 120 ressources pour le 1er niveau, puis 20 % de plus à chaque niveau ;
+- réussir son épreuve : atteindre la zone 20 + 2 × niveau dans la vie en cours, alors que les filons durcissent à chaque renaissance ;
+- appuyer sur « Allumer ».
+
+Chaque niveau ajoute +50 % de la puissance de Supernova à ses bonus, à sa frappe et à sa pluie d'étoiles. Le niveau est gardé dans la sauvegarde et ne se perd pas à la renaissance. En mine, chaque niveau ajoute une petite étoile en orbite (12 au plus). Le visuel est devenu une constellation : chaque stade allume une étoile et le trait vers sa voisine, puis l'étoile intérieure s'illumine à Supernova.

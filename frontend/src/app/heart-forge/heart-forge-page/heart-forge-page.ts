@@ -7,7 +7,8 @@ import { Evolution } from '../../evolution/evolution';
 import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { readStorage, writeStorage } from '../../shared/local-storage';
-import { astreBonuses, astreColor, nextStageProgress } from '../astre-rules';
+import { astreBonuses, astreColor, canRaiseConstellation, nextStageProgress } from '../astre-rules';
+import { astreLayout, orbitStars } from '../astre-shape';
 import { HeartForge } from '../heart-forge';
 import { HeartForgeHelp } from '../heart-forge-help/heart-forge-help';
 
@@ -28,9 +29,25 @@ export function essenceIconUrl(id: EssenceId): string {
   return `assets/ui/forge-du-coeur/essence-${id}.webp`;
 }
 
-/** Pointes de l'Astre dessiné : 5, une par stade, sur un cercle (angles en degrés, la première en haut). */
-const POINT_ANGLES = Array.from({ length: ASTRE_STAGES }, (_, index) => -90 + (index * 360) / ASTRE_STAGES);
-const POINT_RADIUS = 40;
+/** Astre dessiné en SVG (repère de 100 × 100, centre à 50), comme dans la mine : voir astre-shape.ts. */
+const CENTER = 50;
+const LAYOUT_RADIUS = 34;
+const ORBIT_RADIUS = 47;
+const STAR_RADIUS = 7;
+const CORE_RADIUS = 11;
+const ORBIT_STAR_RADIUS = 3;
+const STAR_INNER_RATIO = 0.3;
+
+/** Étoile à 4 branches centrée en (x, y), en chemin SVG. */
+function sparklePath(x: number, y: number, radius: number): string {
+  const inner = radius * STAR_INNER_RATIO;
+  const corners = Array.from({ length: 8 }, (_, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 4;
+    const length = index % 2 === 0 ? radius : inner;
+    return `${(x + length * Math.cos(angle)).toFixed(2)} ${(y + length * Math.sin(angle)).toFixed(2)}`;
+  });
+  return `M${corners.join('L')}Z`;
+}
 
 /**
  * Forge du Cœur : l'Astre du Cœur, nourri des ressources des Échos (ses 5 stades sont les 5 étoiles de la Légende du
@@ -54,22 +71,40 @@ export class HeartForgePage {
   protected readonly astre = computed(() => {
     const fed = this.forge.astre();
     const stage = this.forge.astreStage();
-    const progress = nextStageProgress(fed);
+    const constellation = this.forge.astreConstellation();
+    const progress = nextStageProgress(fed, constellation);
     const color = `#${astreColor(fed).toString(16).padStart(6, '0')}`;
+    const { points, lines } = astreLayout(stage, LAYOUT_RADIUS);
     return {
       stage,
+      constellation,
       name: ASTRE_STAGE_NAMES[stage],
       color,
-      // Plus l'Astre grandit, plus il brille : terne au début, éclatant au stade 5
-      glow: 0.25 + (0.75 * stage) / ASTRE_STAGES,
-      points: POINT_ANGLES.map((angle, index) => ({
-        x: 50 + POINT_RADIUS * Math.cos((angle * Math.PI) / 180),
-        y: 50 + POINT_RADIUS * Math.sin((angle * Math.PI) / 180),
-        lit: index < stage,
+      // Plus l'Astre grandit, plus il brille : terne au début, éclatant à Supernova
+      glow: 0.3 + (0.7 * stage) / ASTRE_STAGES,
+      points: points.map((point) => ({
+        lit: point.lit,
+        x: CENTER + point.x,
+        y: CENTER + point.y,
+        path: sparklePath(CENTER + point.x, CENTER + point.y, STAR_RADIUS),
       })),
-      progress: progress === null ? null : { ...progress, percent: Math.round((progress.given / progress.needed) * PERCENT) },
-      bonuses: describeBonuses(astreBonuses(fed)),
+      lines: lines.map(({ from, to }) => ({ x1: CENTER + from.x, y1: CENTER + from.y, x2: CENTER + to.x, y2: CENTER + to.y })),
+      core: sparklePath(CENTER, CENTER, CORE_RADIUS),
+      orbit: orbitStars(constellation, ORBIT_RADIUS).map((star) => sparklePath(CENTER + star.x, CENTER + star.y, ORBIT_STAR_RADIUS)),
+      // Ce qui est donné en avance compte pour la suite, mais la jauge s'arrête au niveau à allumer
+      progress: {
+        given: Math.min(progress.given, progress.needed),
+        needed: progress.needed,
+        percent: Math.min(Math.round((progress.given / progress.needed) * PERCENT), PERCENT),
+      },
+      bonuses: describeBonuses(astreBonuses(fed, constellation)),
     };
+  });
+
+  /** Niveau de Constellation suivant (fin de jeu, après Supernova) : ce qu'il demande et si tout est réuni. */
+  protected readonly constellation = computed(() => {
+    const needs = this.forge.constellationNeeds();
+    return needs.supernova ? { ...needs, ready: canRaiseConstellation(needs) } : null;
   });
 
   /** Ce que demande l'étoile suivante, côté Astre. */
@@ -96,7 +131,11 @@ export class HeartForgePage {
         return;
       }
       untracked(() => {
-        this.message.set(`L'Astre atteint le stade ${ASTRE_STAGE_NAMES[event.stage]} !`);
+        this.message.set(
+          event.constellation > 0 && event.stage === ASTRE_STAGES
+            ? `Constellation ${event.constellation} allumée !`
+            : `L'Astre atteint le stade ${ASTRE_STAGE_NAMES[event.stage]} !`,
+        );
         this.sound.play('forgeLegendary');
       });
       if (timer !== null) {
@@ -107,9 +146,13 @@ export class HeartForgePage {
   }
 
   protected feed(id: EssenceId, amount: number): void {
-    if (this.forge.feedAstre(id, amount) === null && amount > 0) {
+    if (!this.forge.feedAstre(id, amount) && amount > 0) {
       this.sound.play('upgrade');
     }
+  }
+
+  protected raiseConstellation(): void {
+    this.forge.raiseConstellation();
   }
 
   protected openGearRunes(): void {

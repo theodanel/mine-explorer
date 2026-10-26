@@ -42,6 +42,8 @@ export interface HeartForgeState {
   readonly gear: GearRunes;
   /** Ressources données à l'Astre du Cœur, qui remplace l'anneau de runes (26/10/2026). */
   readonly astre: AstreFed;
+  /** Niveaux de Constellation allumés (fin de jeu, 26/10/2026). */
+  readonly constellation: number;
 }
 
 const NO_ESSENCES = Object.fromEntries(ESSENCES.map((id) => [id, 0])) as Record<EssenceId, number>;
@@ -53,6 +55,7 @@ export const EMPTY_HEART_FORGE: HeartForgeState = {
   recipes: [],
   gear: EMPTY_GEAR_RUNES,
   astre: EMPTY_ASTRE,
+  constellation: 0,
 };
 
 /** Ressource de l'Écho d'une zone (1 à 11), ou null pour une zone sans Écho. */
@@ -177,6 +180,11 @@ export function starReady(state: HeartForgeState, star: number): boolean {
   return star >= 1 && stageOf(state.astre) >= star;
 }
 
+/** Allume le niveau de Constellation suivant, déjà payé en nourriture : le joueur a vérifié ce qu'il demande. */
+export function raiseConstellation(state: HeartForgeState): HeartForgeState {
+  return { ...state, constellation: state.constellation + 1 };
+}
+
 /** Nourrit l'Astre avec des ressources de la réserve ; sans effet s'il en manque. */
 export function feedAstreWith(state: HeartForgeState, essence: EssenceId, amount: number): HeartForgeState {
   const paid = amount > 0 ? spendEssences(state, { [essence]: amount }) : null;
@@ -234,7 +242,7 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   if (typeof value !== 'object' || value === null) {
     return null;
   }
-  const { essences, runes, sockets, recipes, gear: rawGear, astre: rawAstre } = value as Record<string, unknown>;
+  const { essences, runes, sockets, recipes, gear: rawGear, astre: rawAstre, constellation } = value as Record<string, unknown>;
   const essencesValid =
     typeof essences === 'object' && essences !== null && ESSENCES.every((id) => isCount((essences as Record<string, unknown>)[id]));
   const runesValid =
@@ -247,7 +255,9 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
   const socketsValid = Array.isArray(sockets) && sockets.length === RING_SOCKETS && sockets.every((filled) => typeof filled === 'boolean');
   const recipesValid = Array.isArray(recipes) && recipes.every((type) => (RUNE_TYPES as readonly unknown[]).includes(type));
   const gear = parseGearRunes(rawGear, isRune);
-  if (!essencesValid || !runesValid || !socketsValid || !recipesValid || gear === null) {
+  // Sauvegarde d'avant la Constellation (26/10/2026) : aucun niveau allumé
+  const constellationValid = constellation === undefined || isCount(constellation);
+  if (!essencesValid || !runesValid || !socketsValid || !recipesValid || gear === null || !constellationValid) {
     return null;
   }
   const state: HeartForgeState = {
@@ -257,6 +267,7 @@ export function parseHeartForgeState(value: unknown): HeartForgeState | null {
     recipes: recipes as RuneType[],
     gear,
     astre: EMPTY_ASTRE,
+    constellation: (constellation as number | undefined) ?? 0,
   };
   if (rawAstre === undefined) {
     return migrateToAstre(state);

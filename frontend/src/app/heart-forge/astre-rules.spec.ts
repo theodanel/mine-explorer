@@ -1,5 +1,14 @@
-import { ASTRE_COLORS, ASTRE_ELEMENT_BONUS, ASTRE_STAGE_TOTALS } from '../balance/astre';
-import { astreBonuses, astreColor, EMPTY_ASTRE, feedAstre, nextStageProgress, stageOf } from './astre-rules';
+import { ASTRE_COLORS, ASTRE_ELEMENT_BONUS, ASTRE_STAGE_TOTALS, constellationCost, constellationZone } from '../balance/astre';
+import {
+  astreBonuses,
+  astreColor,
+  canRaiseConstellation,
+  constellationNeeds,
+  EMPTY_ASTRE,
+  feedAstre,
+  nextStageProgress,
+  stageOf,
+} from './astre-rules';
 
 describe("Bonus et couleur de l'Astre", () => {
   it('ne donne rien tant qu’il dort, puis renforce le domaine de sa nourriture', () => {
@@ -34,6 +43,27 @@ describe("Bonus et couleur de l'Astre", () => {
       given: 5,
       needed: ASTRE_STAGE_TOTALS[1] - ASTRE_STAGE_TOTALS[0],
     });
-    expect(nextStageProgress(feedAstre(EMPTY_ASTRE, 'sap', ASTRE_STAGE_TOTALS[4]))).toBeNull();
+    expect(nextStageProgress(feedAstre(EMPTY_ASTRE, 'sap', ASTRE_STAGE_TOTALS[4]))).toEqual({ given: 0, needed: constellationCost(1) });
+  });
+});
+
+describe('Constellation (fin de jeu)', () => {
+  const supernova = feedAstre(EMPTY_ASTRE, 'ember', ASTRE_STAGE_TOTALS[4] + constellationCost(1));
+
+  it('demande Supernova, une renaissance par niveau, la nourriture et une zone atteinte dans la vie', () => {
+    expect(canRaiseConstellation(constellationNeeds(supernova, 0, 1, constellationZone(1)))).toBe(true);
+    expect(canRaiseConstellation(constellationNeeds(supernova, 0, 0, constellationZone(1)))).toBe(false);
+    expect(canRaiseConstellation(constellationNeeds(supernova, 0, 1, constellationZone(1) - 1))).toBe(false);
+    expect(canRaiseConstellation(constellationNeeds(supernova, 1, 2, constellationZone(2)))).toBe(false);
+    expect(constellationZone(2)).toBeGreaterThan(constellationZone(1));
+  });
+
+  it('compte ce qui est donné en avance pour le niveau suivant', () => {
+    const ahead = feedAstre(supernova, 'ember', 15);
+    expect(nextStageProgress(ahead, 1)).toEqual({ given: 15, needed: constellationCost(2) });
+  });
+
+  it('renforce les bonus de moitié par niveau', () => {
+    expect(astreBonuses(supernova, 2).strikePct).toBeCloseTo(ASTRE_ELEMENT_BONUS.ember.full * 2);
   });
 });

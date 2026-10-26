@@ -39,7 +39,7 @@ export class Miner {
     this.companions.bonuses(),
     this.gearRunes.bonuses(),
     // L'Astre du Cœur : ses bonus suivent la nourriture qu'on lui a donnée
-    astreBonuses(this.heartForge.astre()),
+    astreBonuses(this.heartForge.astre(), this.heartForge.astreConstellation()),
     // L'arbre des Braises : une famille à part, qui multiplie les autres (la grosse hausse d'une vie à l'autre)
     { ...NO_BONUSES, strikePct: this.rebirth.effects().strikeMultiplier - 1, speed: this.rebirth.effects().speed },
   ]);

@@ -140,11 +140,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private glowMs = 0;
 
   constructor() {
-    // L'Astre du Cœur : son stade allume ses pointes, sa nourriture fait sa couleur
+    // L'Astre du Cœur : son stade allume ses étoiles, sa nourriture fait sa couleur, sa Constellation ses étoiles en orbite
     effect(() => {
       const stage = this.heartForge.astreStage();
       const color = astreColor(this.heartForge.astre());
-      this.astre?.set(stage, color);
+      this.astre?.set(stage, color, this.heartForge.astreConstellation());
     });
     // Pluie d'étoiles de l'Astre (stades 4 et 5) dès que le gardien apparaît
     effect(() => {
@@ -319,7 +319,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     effects.setRebirthAura(this.rebirthAura());
     this.effects = effects;
     const astre = new AstreView(effectsLayer);
-    astre.set(this.heartForge.astreStage(), astreColor(this.heartForge.astre()));
+    astre.set(this.heartForge.astreStage(), astreColor(this.heartForge.astre()), this.heartForge.astreConstellation());
     this.astre = astre;
     // Après l'Astre, que placeMiner cale derrière le mineur
     this.placeMiner(strike);

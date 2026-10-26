@@ -33,6 +33,7 @@ import {
 } from '../src/app/balance/balance.ts';
 import { ARTIFACT_FIND_CHANCE, ARTIFACT_SLOT_FORMS, ARTIFACTS, type ArtifactId } from '../src/app/balance/artifacts.ts';
 import {
+  blastCritFactor,
   blastStrikeMultiplier,
   NO_BONUSES,
   shardEchoChance,
@@ -1039,6 +1040,12 @@ function updateGuardian(now: number): void {
   }
 }
 
+/** Coup de base d'une explosion, comme Mining.blast : la Frappe permanente et une part du bonus de critique. */
+function blastBase(): number {
+  const { strikePower, critChance, critDamage } = profileNow.stats;
+  return strikePower * blastCritFactor(critChance, critDamage);
+}
+
 function castReadySpells(now: number): void {
   for (const slot of spellSlots) {
     if (now < slot.readyAt) continue;
@@ -1046,7 +1053,7 @@ function castReadySpells(now: number): void {
     const rank = spellRank(ranks, slot.spell);
     slot.readyAt = now + spellCooldownMs(spell, profileNow.cooldownPct) / 1000;
     if (spell.effect.kind === 'blast') {
-      const damage = Math.round(gear.strikePower * (1 + passiveBonuses(ranks).strikePct) * blastStrikeMultiplier(spell, rank, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
+      const damage = Math.round(blastBase() * blastStrikeMultiplier(spell, rank, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
       blastDamage += damage;
       dealDamage(now, damage);
     } else {
@@ -1064,7 +1071,7 @@ function castCompanionAbility(now: number): void {
   const stars = companions.owned[active]?.stars ?? 1;
   companionAbilityTimer.readyAt = now + abilityCooldownMs(ability, profileNow.cooldownPct) / 1000;
   if (ability.effect.kind === 'blast') {
-    const damage = Math.round(gear.strikePower * (1 + passiveBonuses(ranks).strikePct) * abilityBlastMultiplier(ability, stars, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
+    const damage = Math.round(blastBase() * abilityBlastMultiplier(ability, stars, profileNow.blastPct) * GALLERIES[gallery].modifiers.blast);
     abilityDamage += damage;
     dealDamage(now, damage);
   } else {

@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 
 import { ARTIFACT_FIND_CHANCE, ARTIFACTS_UNLOCK_ZONE } from '../balance/artifacts';
 import { ORE_FIND_CHANCE, ZONE_CLEAR_ORES, zoneMaterial } from '../balance/balance';
-import { SpellId } from '../balance/skill-tree';
+import { blastCritFactor, SpellId } from '../balance/skill-tree';
 import { ASTRE_ECHO_BONUS_CHANCE, ASTRE_GUARDIAN_STRIKES, ASTRE_STRIKE_SHARE } from '../balance/astre';
 import { Artifacts } from '../artifacts/artifacts';
 import { Companions } from '../companions/companions';
@@ -105,7 +105,8 @@ export class Mining {
 
   /** Explosion d'un sort : un multiple de la Frappe permanente, sans critique ni trouvaille au hasard. */
   blast(spell: SpellId, strikeMultiplier: number): StrikeOutcome {
-    const damage = Math.round(this.miner.permanent().stats.strikePower * strikeMultiplier * this.galleries.modifiers().blast);
+    const { strikePower, critChance, critDamage } = this.miner.permanent().stats;
+    const damage = Math.round(strikePower * strikeMultiplier * blastCritFactor(critChance, critDamage) * this.galleries.modifiers().blast);
     const outcome = this.dealDamage({ damage, critical: false }, false, false);
     this.lastBlast.set({ id: ++this.blastCount, spell, outcome });
     return outcome;

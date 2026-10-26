@@ -6,123 +6,61 @@
   </header>
 
   <div class="scroll">
-    <!-- L'anneau : 10 emplacements, 2 par étoile, à sertir avec la rune qu'ils attendent -->
-    <div class="ring" role="group" aria-label="Anneau du Cœur du monde">
-      <img class="portrait" [src]="portraitUrl" alt="" width="160" height="160" />
-      @for (angle of gemAngles; track angle) {
-        <img class="gem" [style.--angle.deg]="angle" src="assets/ui/forge-du-coeur/eclat-coeur.webp" alt="" width="128" height="128" />
-      }
-      @for (socket of sockets(); track socket.index) {
-        <button
-          type="button"
-          class="socket"
-          [class.filled]="socket.filled"
-          [class.ready]="socket.ready"
-          [class.locked]="!socket.open"
-          [style.--angle.deg]="socket.angle"
-          [attr.aria-label]="(socket.filled ? 'Sertie : ' : !socket.open ? 'Fermé : ' : socket.ready ? 'Sertir : ' : 'À fabriquer : ') + socket.label + ', étoile ' + socket.star"
-          (click)="setRune(socket.index)"
-        >
-          <img [src]="socket.icon" alt="" width="128" height="128" />
-          <span class="socket-rank">{{ socket.rune.rank }}</span>
-        </button>
-      }
-    </div>
-    @if (nextStar(); as next) {
-      <div class="next-star">
-        <strong>Étoile {{ next.star }} : sertis ces 2 runes</strong>
-        <ul>
-          @for (rune of next.runes; track rune.index) {
-            <li [class.done]="rune.filled">
-              <img [src]="rune.icon" alt="" width="128" height="128" />
-              {{ rune.label }}
-              <span>{{ rune.filled ? 'Sertie ✓' : 'Tu en as ' + rune.owned }}</span>
-            </li>
-          }
-        </ul>
+    <!-- L'Astre du Cœur : un cercle à 5 pointes, une par stade, qui brille de plus en plus -->
+    @let view = astre();
+    <article class="astre" [style.--astre-color]="view.color" [style.--astre-glow]="view.glow">
+      <svg class="astre-art" viewBox="0 0 100 100" role="img" [attr.aria-label]="'Astre du Cœur, stade ' + view.name">
+        <circle class="astre-halo" cx="50" cy="50" r="46" />
+        <circle class="astre-ring" cx="50" cy="50" r="40" />
+        <circle class="astre-core" cx="50" cy="50" r="12" />
+        @for (point of view.points; track $index) {
+          <circle class="astre-point" [class.lit]="point.lit" [attr.cx]="point.x" [attr.cy]="point.y" r="6" />
+        }
+      </svg>
+      <div class="astre-text">
+        <h3>{{ view.name }} <span class="stage">stade {{ view.stage }} / 5</span></h3>
+        @if (view.progress; as progress) {
+          <span class="gauge" aria-hidden="true"><span [style.width.%]="progress.percent"></span></span>
+          <small>{{ progress.given }} / {{ progress.needed }} ressources vers le stade suivant</small>
+        } @else {
+          <small>Astre au sommet de sa puissance.</small>
+        }
+        @if (view.bonuses.length > 0) {
+          <p class="bonuses">{{ view.bonuses.join(' · ') }}</p>
+        }
       </div>
+    </article>
+
+    @if (nextStar(); as next) {
+      <p class="hint" [class.ready]="next.ready">
+        Étoile {{ next.star }} : l'Astre doit atteindre le stade {{ next.name }}{{ next.ready ? ' ✓' : '' }}, en plus des missions.
+      </p>
     }
-    <p class="hint">Une rune qui brille peut être sertie : touche-la. Touche un emplacement pour savoir ce qu'il attend.</p>
+
+    @if (message(); as text) {
+      <p class="message" role="status">{{ text }}</p>
+    }
+
+    <!-- Nourrir l'Astre : chaque ressource le teinte et le renforce dans son domaine -->
+    <ul class="essences" aria-label="Nourrir l'Astre">
+      @for (essence of essences(); track essence.id) {
+        <li class="essence">
+          <img [src]="essence.icon" alt="" width="128" height="128" />
+          <strong>{{ essence.left }}</strong>
+          <small>{{ essence.label }}</small>
+          <span class="feed">
+            <button type="button" [disabled]="essence.left === 0" (click)="feed(essence.id, feedStep)">+{{ feedStep }}</button>
+            <button type="button" [disabled]="essence.left === 0" (click)="feed(essence.id, essence.left)">Tout</button>
+          </span>
+        </li>
+      }
+    </ul>
+    <p class="hint">
+      Braise : Frappe · Givre : critique · Brume : dégâts critiques · Sève : vitesse · Aurore : or. Les ressources se
+      récoltent dans les Échos des zones 1 à 11 et au Puits sans fond.
+    </p>
+
     <button type="button" class="game-button gear-runes" (click)="openGearRunes()">Sertir mon équipement</button>
-
-    @if (message(); as note) {
-      <p class="message" [class.failed]="!note.success" role="status">{{ note.text }}</p>
-    }
-
-    <!-- Le Creuset : les ressources des Échos créent des runes de rang 1 -->
-    <article class="crucible">
-      <h3>Creuset du Cœur</h3>
-      <img class="machine" src="assets/ui/forge-du-coeur/creuset.webp" alt="" width="400" height="373" />
-      <ul class="essences" aria-label="Ressources des Échos">
-        @for (essence of essences(); track essence.id) {
-          <li class="essence">
-            <img [src]="essence.icon" alt="" width="128" height="128" />
-            <strong>{{ essence.left }}</strong>
-            <small>{{ essence.label }}</small>
-          </li>
-        }
-      </ul>
-      <p class="hint">Les ressources se récoltent dans les Échos des zones 1 à 11, depuis la carte des zones.</p>
-    </article>
-
-    <!-- Créer une rune de rang 1 : les éléments, et les alliances dont une étoile a révélé la recette -->
-    <article class="book">
-      <h3>Créer une rune</h3>
-      <ul>
-        @for (entry of creations(); track entry.type) {
-          <li [class.known]="entry.known">
-            <img [src]="entry.icon" alt="" width="128" height="128" />
-            <span class="name">{{ entry.label }}</span>
-            <span class="recipe">{{ entry.cost }}</span>
-            @if (entry.known) {
-              <button type="button" class="create" [disabled]="!entry.canCreate" (click)="create(entry.type)">Créer</button>
-            }
-          </li>
-        }
-      </ul>
-    </article>
-
-    <!-- Réserve : nourrir une rune de ses ressources pour la faire grandir d'un rang -->
-    @if (rows().length > 0) {
-      <table class="runes">
-        <thead>
-          <tr>
-            <th scope="col">Rune</th>
-            @for (rank of ranks; track rank) {
-              <th scope="col">Rang {{ rank }}</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of rows(); track row.type) {
-            <tr>
-              <th scope="row">
-                <img class="rune-icon" [src]="row.icon" alt="" width="128" height="128" />
-                <span class="rune-label">{{ row.label }}</span>
-              </th>
-              @for (cell of row.cells; track cell.rank) {
-                <td>
-                  <span class="count" [class.zero]="cell.count === 0">{{ cell.count }}</span>
-                  @if (cell.growCost; as cost) {
-                    <span class="gauge" aria-hidden="true"><span [style.width.%]="cell.progress"></span></span>
-                    <button
-                      type="button"
-                      class="fuse"
-                      [disabled]="!cell.canGrow"
-                      (click)="grow(row.type, cell.rank)"
-                      [attr.aria-label]="'Faire grandir une rune ' + row.label + ' de rang ' + cell.rank + ' : ' + cost"
-                    >
-                      Grandir
-                      <small>{{ cost }}</small>
-                    </button>
-                  }
-                </td>
-              }
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
   </div>
 
   @if (helpOpen()) {

@@ -9,7 +9,7 @@ import { Inventory } from '../equipment/inventory';
 import { Evolution } from '../evolution/evolution';
 import { gearRuneBonuses, OpenSockets } from './gear-runes-rules';
 import { HeartForge } from './heart-forge';
-import type { Rune } from './heart-forge-rules';
+import type { RuneType } from '../balance/heart-forge';
 
 /**
  * Runes d'équipement : dès la 1re étoile du Cœur du monde, chaque emplacement gagne une châsse par étoile (trois au
@@ -38,10 +38,25 @@ export class GearRunes {
   readonly gear = this.forge.gear;
   readonly bonuses = computed(() => gearRuneBonuses(this.forge.gear(), this.openSockets()));
 
-  set(slot: SlotId, socket: number, rune: Rune): boolean {
-    return this.forge.setGearRune(slot, socket, rune, this.openSockets()[slot]);
+  /** Crée dans la châsse vide la rune d'un élément, avec 3 de ses ressources. */
+  create(slot: SlotId, socket: number, type: RuneType): boolean {
+    return this.forge.createGearRune(slot, socket, type, this.openSockets()[slot]);
   }
 
+  canCreate(slot: SlotId, socket: number, type: RuneType): boolean {
+    return this.forge.canCreateGearRune(slot, socket, type, this.openSockets()[slot]);
+  }
+
+  /** Nourrit la rune de la châsse : elle passe au rang suivant. */
+  grow(slot: SlotId, socket: number): boolean {
+    return this.forge.growGearRune(slot, socket);
+  }
+
+  canGrow(slot: SlotId, socket: number): boolean {
+    return this.forge.canGrowGearRune(slot, socket);
+  }
+
+  /** Retire la rune : ce qu'elle a coûté revient en ressources. */
   remove(slot: SlotId, socket: number): void {
     this.forge.removeGearRune(slot, socket);
   }

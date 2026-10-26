@@ -14,7 +14,7 @@ import {
 import { AllianceRune, RUNE_ELEMENTS, RuneElement } from '../balance/heart-forge';
 import { BonusId, Bonuses, NO_BONUSES } from '../balance/skill-tree';
 import { SLOT_IDS, SLOTS, SlotId } from '../equipment/equipment.model';
-import type { HeartForgeState, Rune } from './heart-forge-rules';
+import type { Rune } from './heart-forge-rules';
 
 /** Runes serties sur chaque emplacement, châsse par châsse (null : châsse vide). */
 export type GearRunes = Readonly<Record<SlotId, readonly (Rune | null)[]>>;
@@ -94,41 +94,10 @@ export function gearRuneBonuses(gear: GearRunes, openSockets: OpenSockets): Bonu
   return totals;
 }
 
-function runeKeyOf({ type, rank }: Rune): `${Rune['type']}:${number}` {
-  return `${type}:${rank}`;
-}
-
-function countOf(state: HeartForgeState, rune: Rune): number {
-  return state.runes[runeKeyOf(rune)] ?? 0;
-}
-
-function withRune(state: HeartForgeState, rune: Rune, delta: number): HeartForgeState {
-  return { ...state, runes: { ...state.runes, [runeKeyOf(rune)]: countOf(state, rune) + delta } };
-}
-
-function withSocket(state: HeartForgeState, slot: SlotId, socket: number, rune: Rune | null): HeartForgeState {
-  const runes = state.gear[slot].map((current, index) => (index === socket ? rune : current));
-  return { ...state, gear: { ...state.gear, [slot]: runes } };
-}
-
-export function canSetGearRune(state: HeartForgeState, socket: number, rune: Rune, socketCount: number): boolean {
-  return socket >= 0 && socket < socketCount && countOf(state, rune) > 0;
-}
-
-/** Sertit une rune de la réserve ; celle qui occupait la châsse retourne dans la réserve. */
-export function setGearRune(state: HeartForgeState, slot: SlotId, socket: number, rune: Rune, socketCount: number): HeartForgeState {
-  if (!canSetGearRune(state, socket, rune, socketCount)) {
-    return state;
-  }
-  const previous = state.gear[slot][socket];
-  const freed = previous === null ? state : withRune(state, previous, 1);
-  return withSocket(withRune(freed, rune, -1), slot, socket, rune);
-}
-
-/** Retire la rune d'une châsse, gratuitement : elle retourne dans la réserve, prête à être sertie ailleurs. */
-export function removeGearRune(state: HeartForgeState, slot: SlotId, socket: number): HeartForgeState {
-  const rune = state.gear[slot][socket] ?? null;
-  return rune === null ? state : withSocket(withRune(state, rune, 1), slot, socket, null);
+/** La châsse avec cette rune (ou vide) ; le reste de l'équipement ne bouge pas. */
+export function withGearSocket(gear: GearRunes, slot: SlotId, socket: number, rune: Rune | null): GearRunes {
+  const runes = gear[slot].map((current, index) => (index === socket ? rune : current));
+  return { ...gear, [slot]: runes };
 }
 
 /**

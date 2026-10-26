@@ -5,34 +5,32 @@ import type { SlotId } from '../equipment/equipment.model';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import {
   addEssences,
-  canCreate,
-  canGrow,
-  canSocket,
-  createRune,
+  canCreateGearRune,
+  canGrowGearRune,
+  createGearRune,
   echoEssence,
   EMPTY_HEART_FORGE,
-  growRune,
+  feedAstreWith,
+  growGearRune,
   HeartForgeState,
   parseHeartForgeState,
-  Rune,
-  socketRuneIn,
+  removeGearRune,
   spendEssences,
-  starRunesSet,
+  starReady,
 } from './heart-forge-rules';
-import { canSetGearRune, removeGearRune, setGearRune } from './gear-runes-rules';
+import { stageOf } from './astre-rules';
 
 const STORAGE_KEY = 'mine-explorer.forge-du-coeur';
 
-/** Rune tout juste créée ou grandie, pour l'afficher au joueur. */
+/** L'Astre vient de passer un stade, pour le fêter à l'écran. */
 export interface ForgeEvent {
   readonly id: number;
-  readonly kind: 'create' | 'grow';
-  readonly rune: Rune;
+  readonly stage: number;
 }
 
 /**
- * Forge du Cœur : ressources récoltées dans les Échos, qui créent des runes puis les font grandir jusqu'au rang 5,
- * avant de les sertir dans l'anneau du Cœur du monde. Les deux runes d'une étoile doivent être serties pour l'éveiller.
+ * Forge du Cœur : ressources récoltées dans les Échos, qui nourrissent l'Astre du Cœur (ses 5 stades sont les 5 étoiles
+ * de la Légende du Cœur du monde) et les runes des châsses d'équipement.
  */
 @Injectable({ providedIn: 'root' })
 export class HeartForge {
@@ -41,9 +39,9 @@ export class HeartForge {
   private eventCount = 0;
 
   readonly essences = computed(() => this.state().essences);
-  readonly runes = computed(() => this.state().runes);
-  readonly sockets = computed(() => this.state().sockets);
-  readonly recipes = computed(() => this.state().recipes);
+  /** Ressources données à l'Astre du Cœur, et son stade (0 à 5). */
+  readonly astre = computed(() => this.state().astre);
+  readonly astreStage = computed(() => stageOf(this.state().astre));
   /** Runes serties sur l'équipement, par emplacement. */
   readonly gear = computed(() => this.state().gear);
   readonly event = this.lastEvent.asReadonly();
@@ -77,53 +75,44 @@ export class HeartForge {
     return true;
   }
 
-  /** `stars` : étoiles obtenues, qui révèlent les recettes d'alliance. */
-  canCreate(type: RuneType, stars: number): boolean {
-    return canCreate(this.state(), type, stars);
+  /** Nourrit l'Astre du Cœur ; rend le stade atteint quand il en passe un, sinon null. */
+  feedAstre(essence: EssenceId, amount: number): number | null {
+    const before = stageOf(this.state().astre);
+    const next = feedAstreWith(this.state(), essence, Math.min(amount, this.state().essences[essence]));
+    if (next === this.state()) {
+      return null;
+    }
+    this.save(next);
+    const after = stageOf(next.astre);
+    if (after > before) {
+      this.lastEvent.set({ id: ++this.eventCount, stage: after });
+      return after;
+    }
+    return null;
   }
 
-  create(type: RuneType, stars: number): boolean {
-    if (!this.canCreate(type, stars)) {
+  /** `open` : châsses ouvertes sur l'emplacement, selon les étoiles et l'Éveil (voir GearRunes). */
+  canCreateGearRune(slot: SlotId, socket: number, type: RuneType, open: number): boolean {
+    return canCreateGearRune(this.state(), slot, socket, type, open);
+  }
+
+  createGearRune(slot: SlotId, socket: number, type: RuneType, open: number): boolean {
+    if (!this.canCreateGearRune(slot, socket, type, open)) {
       return false;
     }
-    this.save(createRune(this.state(), type, stars));
-    this.lastEvent.set({ id: ++this.eventCount, kind: 'create', rune: { type, rank: 1 } });
+    this.save(createGearRune(this.state(), slot, socket, type, open));
     return true;
   }
 
-  canGrow(rune: Rune): boolean {
-    return canGrow(this.state(), rune);
+  canGrowGearRune(slot: SlotId, socket: number): boolean {
+    return canGrowGearRune(this.state(), slot, socket);
   }
 
-  /** Nourrit une rune de la réserve avec ses ressources : elle passe au rang suivant. */
-  grow(rune: Rune): boolean {
-    if (!this.canGrow(rune)) {
+  growGearRune(slot: SlotId, socket: number): boolean {
+    if (!this.canGrowGearRune(slot, socket)) {
       return false;
     }
-    this.save(growRune(this.state(), rune));
-    this.lastEvent.set({ id: ++this.eventCount, kind: 'grow', rune: { type: rune.type, rank: rune.rank + 1 } });
-    return true;
-  }
-
-  /** `stars` : étoiles déjà obtenues ; seuls les emplacements de la suivante (et d'avant) s'ouvrent. */
-  canSocket(socket: number, stars: number): boolean {
-    return canSocket(this.state(), socket, stars);
-  }
-
-  socket(socket: number, stars: number): boolean {
-    if (!this.canSocket(socket, stars)) {
-      return false;
-    }
-    this.save(socketRuneIn(this.state(), socket, stars));
-    return true;
-  }
-
-  /** `socketCount` : châsses ouvertes sur cet emplacement, selon les étoiles et l'Éveil (voir GearRunes). */
-  setGearRune(slot: SlotId, socket: number, rune: Rune, socketCount: number): boolean {
-    if (!canSetGearRune(this.state(), socket, rune, socketCount)) {
-      return false;
-    }
-    this.save(setGearRune(this.state(), slot, socket, rune, socketCount));
+    this.save(growGearRune(this.state(), slot, socket));
     return true;
   }
 
@@ -131,9 +120,9 @@ export class HeartForge {
     this.save(removeGearRune(this.state(), slot, socket));
   }
 
-  /** Les deux runes de cette étoile (1 à 5) sont serties. */
+  /** L'Astre a atteint le stade de cette étoile (1 à 5). */
   starReady(star: number): boolean {
-    return starRunesSet(this.state(), star);
+    return starReady(this.state(), star);
   }
 
   private save(next: HeartForgeState): void {

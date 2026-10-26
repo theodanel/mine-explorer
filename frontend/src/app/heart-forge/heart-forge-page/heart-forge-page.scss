@@ -56,154 +56,12 @@
 }
 
 // L'anneau d'obsidienne de Gemini ; emplacements et gemmes sont posés sur ses alvéoles, à 33 % du centre
-.ring {
-  --socket-radius: 24.6cqw;
-
-  position: relative;
-  width: 74cqw;
-  height: 74cqw;
-  margin: 1cqw 0;
-  background: url('/assets/ui/forge-du-coeur/anneau.webp') center / contain no-repeat;
-  filter: drop-shadow(0 1.2cqw 0 rgb(0 0 0 / 35%));
-}
-
-.portrait {
-  position: absolute;
-  inset: 27%;
-  width: 46%;
-  height: 46%;
-  border-radius: 50%;
-  background: radial-gradient(#5a3420, #1c120b);
-}
-
-.socket,
-.gem {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle)));
-}
-
-.gem {
-  width: 6cqw;
-  height: 6cqw;
-  margin: -3cqw 0 0 -3cqw;
-  object-fit: contain;
-  filter: drop-shadow(0 0 1.2cqw rgb(255 122 42 / 70%));
-}
-
-.socket {
-  display: grid;
-  place-items: center;
-  width: 9cqw;
-  height: 9cqw;
-  margin: -4.5cqw 0 0 -4.5cqw;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  cursor: default;
-
-  // Assez visible pour reconnaître la rune attendue, encore loin de l'éclat d'une rune sertie
-  img {
-    width: 100%;
-    height: 100%;
-    opacity: 0.45;
-    filter: grayscale(0.6);
-  }
-
-  // Étoile pas encore à portée : l'emplacement reste éteint
-  &.locked img {
-    opacity: 0.15;
-  }
-
-  &.ready {
-    cursor: pointer;
-    animation: socket-call 1.4s ease-in-out infinite;
-
-    img {
-      opacity: 0.7;
-      filter: none;
-    }
-  }
-
-  &.filled {
-    filter: drop-shadow(0 0 1.6cqw rgb(255 196 90 / 80%));
-
-    img {
-      opacity: 1;
-      filter: none;
-    }
-  }
-}
-
-.socket-rank {
-  position: absolute;
-  right: -1cqw;
-  bottom: -1cqw;
-  display: grid;
-  place-items: center;
-  width: 4cqw;
-  height: 4cqw;
-  border: 0.3cqw solid var(--ink);
-  border-radius: 50%;
-  background: #ffd36a;
-  color: var(--ink);
-  font: 2.3cqw / 1 var(--font-display);
-}
-
-@keyframes socket-call {
-  50% {
-    transform: rotate(var(--angle)) translateY(calc(-1 * var(--socket-radius))) rotate(calc(-1 * var(--angle))) scale(1.15);
-  }
-}
-
-// La prochaine étoile en clair : nom, rang et réserve de chacune de ses deux runes
-.next-star {
-  display: grid;
-  gap: 1cqw;
-  padding: 2cqw 3cqw;
-  border-radius: 2.4cqw;
-  background: rgb(0 0 0 / 25%);
-  font-size: 3cqw;
-
-  ul {
-    display: grid;
-    gap: 0.8cqw;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 1.6cqw;
-  }
-
-  img {
-    width: 6cqw;
-    height: 6cqw;
-  }
-
-  span {
-    margin-left: auto;
-    color: #ffd8a8;
-  }
-
-  .done {
-    opacity: 0.55;
-  }
-}
-
 .hint {
   margin: 0;
   font-size: 2.8cqw;
   text-align: center;
   opacity: 0.85;
 }
-
-
 
 .message {
   margin: 0;
@@ -217,139 +75,112 @@
   }
 }
 
-.runes {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0.8cqw;
-  font-size: 2.6cqw;
-  text-align: center;
+.hint.ready {
+  color: #b8f5a0;
+}
 
-  thead th {
-    font-weight: 700;
-    opacity: 0.8;
+// L'Astre du Cœur : un cercle à 5 pointes, dessiné en code, de sa couleur et qui brille avec le stade
+.astre {
+  display: grid;
+  grid-template-columns: 30cqw minmax(0, 1fr);
+  align-items: center;
+  gap: 3cqw;
+  padding: 3cqw;
+  border-radius: 3cqw;
+  background: linear-gradient(160deg, #2b1d18, #140c0a);
+  color: #fff3dc;
+
+  h3 {
+    margin: 0;
+    font-size: 4.6cqw;
   }
 
-  tbody th {
-    display: grid;
-    justify-items: center;
-    gap: 0.6cqw;
-    width: 22cqw;
-  }
-
-  td {
-    padding: 1cqw 0.4cqw;
-    border-radius: 2cqw;
-    background: rgb(0 0 0 / 18%);
-    vertical-align: middle;
+  small {
+    font-size: 2.8cqw;
   }
 }
 
-.rune-icon {
-  width: 10cqw;
-  height: 10cqw;
-  object-fit: contain;
-}
+.astre-art {
+  width: 30cqw;
+  height: 30cqw;
+  overflow: visible;
+  filter: drop-shadow(0 0 calc(var(--astre-glow) * 4cqw) var(--astre-color));
+  animation: astre-turn 16s linear infinite;
 
-.rune-label {
-  font-weight: 700;
-}
-
-
-.count {
-  display: block;
-  font: 4.4cqw / 1 var(--font-display);
-
-  &.zero {
-    opacity: 0.35;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 }
 
-// Jauge des ressources réunies pour faire grandir la rune
+@keyframes astre-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.astre-halo {
+  fill: var(--astre-color);
+  opacity: calc(var(--astre-glow) * 0.25);
+}
+
+.astre-ring {
+  fill: none;
+  stroke: var(--astre-color);
+  stroke-width: 2.5;
+  opacity: calc(0.35 + var(--astre-glow) * 0.65);
+}
+
+.astre-core {
+  fill: var(--astre-color);
+  opacity: var(--astre-glow);
+}
+
+.astre-point {
+  fill: #2a1c14;
+  stroke: var(--astre-color);
+  stroke-width: 2;
+
+  &.lit {
+    fill: var(--astre-color);
+  }
+}
+
+.astre-text {
+  display: grid;
+  gap: 1.2cqw;
+  min-width: 0;
+}
+
+.stage {
+  color: var(--astre-color);
+  font-size: 3cqw;
+}
+
 .gauge {
   display: block;
-  height: 1cqw;
-  margin: 0.6cqw 0.4cqw 0;
+  height: 1.6cqw;
   overflow: hidden;
   border-radius: 1cqw;
-  background: rgb(0 0 0 / 35%);
+  background: rgb(255 255 255 / 12%);
 
   span {
     display: block;
     height: 100%;
-    background: linear-gradient(90deg, #ffb347, #ff7a1a);
+    background: var(--astre-color);
   }
 }
 
-.fuse,
-.create {
-  display: grid;
-  margin: 0.8cqw auto 0;
-  padding: 0.6cqw 1cqw;
-  border: 0.35cqw solid var(--ink);
-  border-radius: 1.5cqw;
-  background: #8fd36a;
-  color: var(--ink);
-  font: 700 2.3cqw / 1.1 var(--font-body);
-  cursor: pointer;
-
-  small {
-    font-size: 1.9cqw;
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
-}
-
-// ─── Creuset ───
-
-.crucible,
-.book {
-  display: grid;
-  justify-items: center;
-  gap: 2cqw;
-  width: 100%;
-  padding: 3cqw;
-  border: 0.45cqw solid rgb(26 15 7 / 75%);
-  border-radius: 3cqw;
-  background: linear-gradient(#4a2f1c, #2f1e10);
-  color: #fff3d6;
-
-  h3 {
-    margin: 0;
-    color: #ffd36a;
-    font: 4.4cqw / 1 var(--font-display);
-  }
-}
-
-// Le Creuset dans son atelier, assombri pour garder les textes lisibles
-.crucible {
-  background:
-    linear-gradient(rgb(20 12 6 / 35%), rgb(20 12 6 / 80%)),
-    url('/assets/ui/forge-du-coeur/fond-creuset.webp') center / cover;
-}
-
-// La machine, posée au cœur de l'atelier ; son verre doré bouillonne doucement
-.machine {
-  width: 42cqw;
-  height: auto;
-  margin-bottom: -4cqw;
-  filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%));
-  animation: crucible-glow 2.4s ease-in-out infinite;
-}
-
-@keyframes crucible-glow {
-  50% {
-    filter: drop-shadow(0 1.5cqw 2cqw rgb(0 0 0 / 60%)) drop-shadow(0 0 2.5cqw rgb(255 176 74 / 45%));
-  }
+.bonuses {
+  margin: 0;
+  color: #ffe2b0;
+  font-size: 3cqw;
+  font-weight: 700;
 }
 
 .essences {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5cqw;
-  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -359,18 +190,15 @@
   display: grid;
   justify-items: center;
   gap: 0.5cqw;
-  width: 100%;
   padding: 1.5cqw 0.5cqw;
   border: 0.4cqw solid var(--ink);
   border-radius: 2cqw;
   background: rgb(0 0 0 / 22%);
-  color: inherit;
 
   img {
     width: 8cqw;
     height: 8cqw;
     object-fit: contain;
-    filter: drop-shadow(0 0.4cqw 0.6cqw rgb(0 0 0 / 50%));
   }
 
   strong {
@@ -380,39 +208,31 @@
   small {
     font-size: 2cqw;
     line-height: 1.1;
+    text-align: center;
   }
 }
 
-// ─── Créer une rune ───
-
-.book ul {
+.feed {
   display: grid;
-  gap: 1.2cqw;
+  gap: 0.6cqw;
   width: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 
-  li {
-    display: grid;
-    grid-template-columns: 8cqw 16cqw minmax(0, 1fr) auto;
-    gap: 2cqw;
-    align-items: center;
-    font-size: 2.6cqw;
-    opacity: 0.5;
+  button {
+    padding: 0.8cqw 0;
+    border: 0.35cqw solid var(--ink);
+    border-radius: 1.5cqw;
+    background: #8fd36a;
+    color: var(--ink);
+    font: 700 2.4cqw / 1 var(--font-body);
+    cursor: pointer;
 
-    &.known {
-      opacity: 1;
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
     }
   }
-
-  img {
-    width: 8cqw;
-    height: 8cqw;
-  }
-
-  .name {
-    font: 3.2cqw / 1 var(--font-display);
-  }
 }
 
+.gear-runes {
+  justify-self: center;
+}

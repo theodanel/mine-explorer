@@ -2,50 +2,58 @@ import { AFFINITY_MULTIPLIER, ELEMENT_EFFECTS, gearSocketCount, RESONANCE_MULTIP
 import {
   EMPTY_GEAR_RUNES,
   gearRuneBonuses,
-  removeGearRune,
   resonantType,
   sameOpenSockets,
   runeEffects,
-  setGearRune,
 } from './gear-runes-rules';
-import { EMPTY_HEART_FORGE, HeartForgeState, parseHeartForgeState, Rune, runeCount } from './heart-forge-rules';
+import {
+  addEssences,
+  canCreateGearRune,
+  canGrowGearRune,
+  createGearRune,
+  EMPTY_HEART_FORGE,
+  growGearRune,
+  parseHeartForgeState,
+  removeGearRune,
+  Rune,
+} from './heart-forge-rules';
+import { RUNE_GROW_ESSENCES } from '../balance/heart-forge';
 
 const FIRE_2: Rune = { type: 'fire', rank: 2 };
 const FIRE_1: Rune = { type: 'fire', rank: 1 };
 const ICE_1: Rune = { type: 'ice', rank: 1 };
 
-function withReserve(runes: HeartForgeState['runes']): HeartForgeState {
-  return { ...EMPTY_HEART_FORGE, runes };
-}
 
 describe('runes d’équipement', () => {
   it('ouvre une châsse par étoile, trois au plus', () => {
     expect([0, 1, 2, 3, 5].map(gearSocketCount)).toEqual([0, 1, 2, 3, 3]);
   });
 
-  it('sertit une rune de la réserve, et rend celle qu’elle remplace', () => {
-    const start = withReserve({ 'fire:2': 1, 'ice:1': 1 });
-    const fire = setGearRune(start, 'gloves', 0, FIRE_2, 1);
-    expect(fire.gear.gloves[0]).toEqual(FIRE_2);
-    expect(runeCount(fire, FIRE_2)).toBe(0);
-
-    const ice = setGearRune(fire, 'gloves', 0, ICE_1, 1);
-    expect(ice.gear.gloves[0]).toEqual(ICE_1);
-    expect(runeCount(ice, FIRE_2)).toBe(1);
-    expect(runeCount(ice, ICE_1)).toBe(0);
+  it("crée la rune d'un élément dans une châsse vide, puis la fait grandir avec ses ressources", () => {
+    const start = addEssences(EMPTY_HEART_FORGE, { ember: 3 + RUNE_GROW_ESSENCES[2] });
+    expect(canCreateGearRune(start, 'gloves', 1, 'fire', 1)).toBe(false);
+    const created = createGearRune(start, 'gloves', 0, 'fire', 1);
+    expect(created.gear.gloves[0]).toEqual(FIRE_1);
+    expect(created.essences.ember).toBe(RUNE_GROW_ESSENCES[2]);
+    expect(canGrowGearRune(created, 'gloves', 0)).toBe(true);
+    const grown = growGearRune(created, 'gloves', 0);
+    expect(grown.gear.gloves[0]).toEqual(FIRE_2);
+    expect(grown.essences.ember).toBe(0);
   });
 
-  it('refuse une châsse fermée ou une rune absente de la réserve', () => {
-    const start = withReserve({ 'fire:2': 1 });
-    expect(setGearRune(start, 'pickaxe', 1, FIRE_2, 1)).toBe(start);
-    expect(setGearRune(start, 'pickaxe', 0, ICE_1, 1)).toBe(start);
+  it("refuse une châsse fermée ou occupée, et les alliances", () => {
+    const rich = addEssences(EMPTY_HEART_FORGE, { ember: 50, sap: 50 });
+    expect(canCreateGearRune(rich, 'pickaxe', 1, 'fire', 1)).toBe(false);
+    expect(canCreateGearRune(rich, 'pickaxe', 0, 'magma', 1)).toBe(false);
+    const taken = createGearRune(rich, 'pickaxe', 0, 'fire', 1);
+    expect(canCreateGearRune(taken, 'pickaxe', 0, 'fire', 1)).toBe(false);
   });
 
-  it('retire une rune gratuitement : elle retourne dans la réserve', () => {
-    const set = setGearRune(withReserve({ 'fire:2': 1 }), 'pickaxe', 0, FIRE_2, 1);
+  it('retire une rune et rend ce qu’elle a coûté', () => {
+    const set = { ...EMPTY_HEART_FORGE, gear: { ...EMPTY_GEAR_RUNES, pickaxe: [FIRE_2, null, null, null, null] } };
     const removed = removeGearRune(set, 'pickaxe', 0);
     expect(removed.gear.pickaxe[0]).toBeNull();
-    expect(runeCount(removed, FIRE_2)).toBe(1);
+    expect(removed.essences.ember).toBe(3 + RUNE_GROW_ESSENCES[2]);
     expect(removeGearRune(removed, 'pickaxe', 0)).toBe(removed);
   });
 

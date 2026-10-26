@@ -43,9 +43,9 @@ export interface RebirthAura {
 
 const AURA_COLORS = [0xffb347, 0xff6a2a, 0xff3d7f, 0xb36bff, 0x4fc3ff, 0x6bffd1, 0xfff4b8] as const;
 const REBIRTHS_PER_COLOR = 3;
-/** Les chiffres de dégâts grossissent de 4 % par renaissance, jusqu'à 60 % de plus. */
-const TEXT_SCALE_PER_REBIRTH = 0.04;
-const TEXT_SCALE_MAX = 1.6;
+/** Les chiffres de dégâts grossissent de 2 % par renaissance, jusqu'à 25 % de plus (60 % avant : trop envahissant). */
+const TEXT_SCALE_PER_REBIRTH = 0.02;
+const TEXT_SCALE_MAX = 1.25;
 
 /** Lueur du mineur pour ce nombre de renaissances, ou null avant la première. */
 export function rebirthAura(count: number): RebirthAura | null {

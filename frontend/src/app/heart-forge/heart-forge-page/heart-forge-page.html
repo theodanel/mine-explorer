@@ -23,7 +23,7 @@
           <span class="gauge" aria-hidden="true"><span [style.width.%]="progress.percent"></span></span>
           <small>{{ progress.given }} / {{ progress.needed }} ressources vers le stade suivant</small>
         } @else {
-          <small>Astre au sommet de sa puissance.</small>
+          <small>Astre au sommet de sa puissance. Le nourrir encore change seulement la part de chaque bonus.</small>
         }
         @if (view.bonuses.length > 0) {
           <p class="bonuses">{{ view.bonuses.join(' · ') }}</p>

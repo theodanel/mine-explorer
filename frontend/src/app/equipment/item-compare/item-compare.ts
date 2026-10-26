@@ -6,7 +6,7 @@ import { itemIconUrl } from '../../loading/game-assets';
 import { CLOCK } from '../../shared/clock';
 import { EquippedItems, Item, SLOTS, STATS, TIER_LABELS } from '../equipment.model';
 import { formatStat, formatStatDelta } from '../equipment-format';
-import { compareItems, computePower, sellPrice } from '../equipment-rules';
+import { compareItems, computePower, rebirthMark, sellPrice } from '../equipment-rules';
 import { reinforce } from '../../workshop/workshop-rules';
 import { Workshop } from '../../workshop/workshop';
 import { Inventory } from '../inventory';
@@ -106,7 +106,7 @@ export class ItemCompare {
 }
 
 function describeItem(item: Item): { tier: string; tierLabel: string; level: number } {
-  return { tier: item.tier, tierLabel: TIER_LABELS[item.tier], level: item.level };
+  return { tier: item.tier, tierLabel: `${TIER_LABELS[item.tier]}${rebirthMark(item)}`, level: item.level };
 }
 
 function trendOf(delta: number): Trend {

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { reforgeGoldCost, REFORGE_ORES } from '../balance/workshop';
+import { reforgeGoldCost, REFORGE_ORES, WORKSHOP_MAX_LEVEL } from '../balance/workshop';
 import { Inventory } from '../equipment/inventory';
 import { Ores } from '../ores/ores';
 import { Wallet } from '../wallet/wallet';
@@ -51,8 +51,8 @@ describe('Workshop', () => {
     expect(setup(1, cost.gold - 1, { steel: 40 }).check('pickaxe')).toBe('gold');
   });
 
-  it('s\'arrête au niveau 50', () => {
-    expect(setup(1, 1e15, { steel: 99 }, { pickaxe: { steel: 50 } }).check('pickaxe')).toBe('max');
+  it('s\'arrête au niveau maximum', () => {
+    expect(setup(1, 1e15, { steel: 99 }, { pickaxe: { steel: WORKSHOP_MAX_LEVEL } }).check('pickaxe')).toBe('max');
   });
 
   it('garde les niveaux au rechargement', () => {

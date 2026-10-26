@@ -513,7 +513,7 @@ function forgeAll(now: number): void {
     shards -= FORGE_SHARD_COST;
     forges++;
     record('itemsForged');
-    const item: Item = rollItem(random, createId, pickaxe.level);
+    const item: Item = rollItem(random, createId, pickaxe.level, undefined, rebirthState.count);
     if (powerDelta(equipped, item, workshop, awakeningState.levels) > 0) {
       const replaced = equipped[item.slot];
       if (replaced) {
@@ -903,10 +903,8 @@ function maybeRebirth(now: number): void {
   pickaxe = { level: effects.startPickaxe, segments: 0, upgradeEndsAt: null };
   equipped = {};
   gold = Math.floor(gold * effects.goldKept);
-  for (const tier of TIER_IDS) ores[tier] = 0;
-  workshop = {};
+  // Atelier, compétences et minerais sont gardés (26/10/2026)
   camp = EMPTY_CAMP;
-  ranks = {};
   guardianStart = null;
   guardianBlocked = false;
   refresh(now);

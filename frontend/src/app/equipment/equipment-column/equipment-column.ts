@@ -15,7 +15,7 @@ import { describeBonuses } from '../../miner/bonus-format';
 import { Navigation } from '../../navigation/navigation';
 import { Tooltip, TooltipContent } from '../../shared/tooltip/tooltip';
 import { formatStatDelta } from '../equipment-format';
-import { gearSet, sellPrice } from '../equipment-rules';
+import { gearSet, rebirthMark, sellPrice } from '../equipment-rules';
 import { Item, SLOT_IDS, SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
 import { Awakening } from '../awakening';
@@ -201,7 +201,8 @@ function itemCard(label: string, item: Item, shown: Item, awakening: number): To
   const effects = STAT_IDS.filter((stat) => shown.stats[stat] !== undefined).map(
     (stat) => `${STATS[stat].label} ${formatStatDelta(stat, shown.stats[stat] ?? 0)}`,
   );
-  const tierLabel = awakening > 0 ? `${TIER_LABELS[item.tier]} corrompu · Éveil ${awakening}` : TIER_LABELS[item.tier];
+  const tierName = `${TIER_LABELS[item.tier]}${rebirthMark(item)}`;
+  const tierLabel = awakening > 0 ? `${tierName} corrompu · Éveil ${awakening}` : tierName;
   return {
     title: label,
     badge: { label: `${tierLabel} · Niv. ${item.level}`, tier: item.tier },

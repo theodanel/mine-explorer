@@ -5,7 +5,9 @@ import {
   computePower,
   computeStats,
   gearSet,
+  hasAffix,
   powerDelta,
+  rebirthMark,
   resolveHit,
   rollItem,
   sellPrice,
@@ -60,6 +62,16 @@ describe('rollItem', () => {
     const result = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7);
     expect(result.level).toBe(7);
     expect(result.tier).toBe('copper');
+  });
+
+  it('renforce la Frappe des pièces forgées après une renaissance, sans toucher aux stats plafonnées', () => {
+    const plain = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7);
+    const reborn = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7, undefined, 2);
+    expect(reborn.stats.strikePower).toBe(Math.round((plain.stats.strikePower ?? 0) * 1.3 ** 2));
+    expect(reborn.stats.critChance).toBe(plain.stats.critChance);
+    expect(hasAffix(reborn, 'strikePower')).toBe(hasAffix(plain, 'strikePower'));
+    expect(rebirthMark(reborn)).toBe(' ✦2');
+    expect(rebirthMark(plain)).toBe('');
   });
 
   it('atteint le dernier palier non nul de la table, jamais au-delà', () => {

@@ -7,17 +7,21 @@ package com.theodanel.backend.save;
  * zones 11 à 20 et les étoiles du Cœur du monde : le jeu était devenu 2 à 3 fois plus rapide qu'elle, et de vrais
  * joueurs étaient refusés (zone 13) ou classés trop bas (zone 17 affichée en 13).
  *
+ * <p>Au-delà de la zone 20, la Renaissance (25/10/2026) : le joueur renaît et redescend plus loin à chaque vie. Les
+ * points suivants sont la meilleure profondeur du même joueur continu, renaissances comprises
+ * ({@code tools/simulate.mts continu 40}) : zone 23 en 16 jours, 25 en 22, 27 en 29, 28 en 34, 30 en 39.
+ *
  * <p>Entre deux points, interpolation linéaire ; après le dernier, la pente du dernier segment continue.
  */
 final class ReferenceCurve {
 
 	/** Heures de jeu continu. Strictement croissantes. */
 	private static final double[] HOURS = { 0, 0.033, 0.117, 0.333, 0.65, 1.3, 2.1, 3.0, 5.1, 7.5, 12.0, 17.7, 21.6,
-			52.8, 57.6, 67.2, 81.6, 120, 177.6, 264 };
+			52.8, 57.6, 67.2, 81.6, 120, 177.6, 264, 384, 528, 696, 816, 936 };
 
-	/** Étapes atteintes à ces heures : le début de chaque zone, de la 1 à la 20. */
+	/** Étapes atteintes à ces heures : le début de chaque zone, de la 1 à la 20, puis des zones 23, 25, 27, 28 et 30. */
 	private static final int[] STAGES = { 1, 16, 31, 46, 61, 76, 91, 106, 121, 136, 151, 166, 181, 196, 211, 226, 241,
-			256, 271, 286 };
+			256, 271, 286, 331, 361, 391, 406, 436 };
 
 	private ReferenceCurve() {
 	}

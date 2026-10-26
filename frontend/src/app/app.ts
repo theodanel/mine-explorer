@@ -25,6 +25,9 @@ import { AchievementToast } from './achievements/achievement-toast';
 import { ProfilePage } from './profile/profile-page/profile-page';
 import { OnlineLayer } from './online/online-layer';
 import { ChatPage } from './online/chat/chat-page';
+import { RebirthPage } from './rebirth/rebirth-page/rebirth-page';
+import { Rebirth } from './rebirth/rebirth';
+import { auraCss, rebirthAura, romanNumeral } from './rebirth/rebirth-visuals';
 import { ChatUnread } from './online/chat/chat-unread';
 import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
 import { ONLINE_CONFIG } from './online/online-config';
@@ -99,6 +102,7 @@ function resourceLabel(amount: number): string {
     ArtifactFound,
     OfflineReport,
     PatchNotesDialog,
+    RebirthPage,
     EvolutionPage,
     HeartForgePage,
     GearRunesPage,
@@ -132,6 +136,12 @@ export class App {
   protected readonly online = inject(ONLINE_CONFIG).enabled;
   /** Pastille de la bulle de discussion : messages des autres pas encore lus. */
   protected readonly chatBadge = inject(ChatUnread).badge;
+  private readonly rebirth = inject(Rebirth);
+  /** Emblème de la Renaissance sur le portrait : le nombre de vies en chiffres romains, à la couleur de la lueur. */
+  protected readonly rebirthEmblem = computed(() => {
+    const count = this.rebirth.count();
+    return count === 0 ? null : { count, label: romanNumeral(count), color: auraCss(rebirthAura(count)) };
+  });
   /** Site de test (staging) : un bandeau le distingue du vrai jeu. */
   protected readonly testBanner = environment.testBanner;
   /** Outils de test (or, zone, forme…), ouverts depuis le bandeau du site de test. */

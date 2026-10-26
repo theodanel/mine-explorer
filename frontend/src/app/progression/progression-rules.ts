@@ -27,9 +27,12 @@ export const GUARDIAN_STAGE = STAGES_PER_ZONE;
 export const BEFORE_GUARDIAN_STAGE = STAGES_PER_ZONE - 1;
 const GUARDIAN_MS = GUARDIAN_SECONDS * 1000;
 
-/** PV du filon de l'étape : ceux de la courbe, sauf le gardien, calculés sur le temps (voir balance.ts). */
-export function stageHp(zone: number, stage: number): number {
-  return stage === GUARDIAN_STAGE ? guardianHp(zone) : rockHp(zone, stage);
+/**
+ * PV du filon de l'étape : ceux de la courbe, sauf le gardien, calculés sur le temps (voir balance.ts). `hardness` :
+ * dureté de la vie en cours, qui monte à chaque renaissance (balance/rebirth.ts).
+ */
+export function stageHp(zone: number, stage: number, hardness = 1): number {
+  return Math.round((stage === GUARDIAN_STAGE ? guardianHp(zone) : rockHp(zone, stage)) * hardness);
 }
 
 export function isGuardian(progress: Progress): boolean {
@@ -40,9 +43,9 @@ export function isGuardian(progress: Progress): boolean {
  * Applique un coup. Les dégâts en trop sont perdus : un coup ne casse qu'un seul rocher. `blocked` : le joueur a
  * raté le gardien, le filon d'avant se reforme à chaque fois au lieu de mener au gardien.
  */
-export function applyDamage(progress: Progress, damage: number, blocked = false): DamageResult {
+export function applyDamage(progress: Progress, damage: number, blocked = false, hardness = 1): DamageResult {
   const total = progress.damage + damage;
-  if (total < stageHp(progress.zone, progress.stage)) {
+  if (total < stageHp(progress.zone, progress.stage, hardness)) {
     return { progress: { ...progress, damage: total }, rockBroken: false, clearedZone: null };
   }
   if (blocked && progress.stage === BEFORE_GUARDIAN_STAGE) {
@@ -69,13 +72,13 @@ export function challengeGuardian(progress: Progress): Progress {
   return { zone: progress.zone, stage: GUARDIAN_STAGE, damage: 0 };
 }
 
-export function remainingHp(progress: Progress): number {
-  return Math.max(stageHp(progress.zone, progress.stage) - progress.damage, 0);
+export function remainingHp(progress: Progress, hardness = 1): number {
+  return Math.max(stageHp(progress.zone, progress.stage, hardness) - progress.damage, 0);
 }
 
 /** Résistance restante du rocher, entre 0 et 1. */
-export function rockHealth(progress: Progress): number {
-  return remainingHp(progress) / stageHp(progress.zone, progress.stage);
+export function rockHealth(progress: Progress, hardness = 1): number {
+  return remainingHp(progress, hardness) / stageHp(progress.zone, progress.stage, hardness);
 }
 
 export function stageLabel(progress: Progress): string {
@@ -88,30 +91,30 @@ export function stagesReached(progress: Progress): number {
 }
 
 /** L'ancienne sauvegarde « vie de zone » n'avait pas d'étape : on garde la zone et on repart de son premier rocher. */
-export function migrateProgress(value: unknown): unknown {
+export function migrateProgress(value: unknown, hardness = 1): unknown {
   if (typeof value === 'object' && value !== null && !('stage' in value) && 'zone' in value) {
     return { zone: (value as { zone: unknown }).zone, stage: 1, damage: 0 };
   }
-  return clampDamageToRock(value);
+  return clampDamageToRock(value, hardness);
 }
 
 /**
  * Quand un rééquilibrage baisse les PV des filons, les dégâts déjà portés au filon en cours peuvent dépasser
  * ses nouveaux PV : la sauvegarde serait rejetée et le joueur repartirait du 1-1. Le filon reste alors à 1 PV.
  */
-function clampDamageToRock(value: unknown): unknown {
+function clampDamageToRock(value: unknown, hardness: number): unknown {
   if (typeof value !== 'object' || value === null) {
     return value;
   }
   const { zone, stage, damage } = value as Record<string, unknown>;
-  if (!isPositiveInteger(zone) || !isPositiveInteger(stage) || stage > STAGES_PER_ZONE || !Number.isSafeInteger(damage)) {
+  if (!isPositiveInteger(zone) || !isPositiveInteger(stage) || stage > STAGES_PER_ZONE || !isDamage(damage)) {
     return value;
   }
-  const hp = stageHp(zone, stage);
-  return Number.isFinite(hp) && (damage as number) >= hp ? { ...value, damage: hp - 1 } : value;
+  const hp = stageHp(zone, stage, hardness);
+  return Number.isFinite(hp) && damage >= hp ? { ...value, damage: hp - 1 } : value;
 }
 
-export function isValidProgress(value: unknown): value is Progress {
+export function isValidProgress(value: unknown, hardness = 1): value is Progress {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -120,8 +123,16 @@ export function isValidProgress(value: unknown): value is Progress {
     return false;
   }
   // Une zone trafiquée trop profonde donnerait un filon aux PV infinis : la partie serait bloquée
-  const hp = stageHp(zone, stage);
-  return Number.isFinite(hp) && Number.isSafeInteger(damage) && (damage as number) >= 0 && (damage as number) < hp;
+  const hp = stageHp(zone, stage, hardness);
+  return Number.isFinite(hp) && isDamage(damage) && damage < hp;
+}
+
+/**
+ * Dégâts faits au filon : un nombre fini et positif. Dans les zones sans fin, les PV dépassent les entiers exacts de
+ * JavaScript (9 × 10¹⁵, vers la zone 35) : on garde alors un nombre à virgule, de la bonne grandeur.
+ */
+function isDamage(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
 function isPositiveInteger(value: unknown): value is number {
@@ -185,7 +196,7 @@ export function isValidFarm(value: unknown, progress: Progress): value is Farm {
     isPositiveInteger(zone) &&
     canFarm(progress, zone) &&
     echoValid &&
-    Number.isSafeInteger(damage) &&
+    isDamage(damage) &&
     (damage as number) >= 0 &&
     (damage as number) < ((echoHp as number | undefined) ?? farmRockHp(zone))
   );

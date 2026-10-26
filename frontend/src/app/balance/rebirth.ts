@@ -1,0 +1,110 @@
+// Équilibrage de la Renaissance, la boucle de fin de partie (choix de Théo, 25/10/2026) : à partir de la zone 20, le
+// joueur renaît en zone 1 avec ses acquis de long terme, gagne des Braises du Cœur et les dépense dans un arbre
+// permanent qui fait grimper ses dégâts. Chaque vie va plus vite et plus loin, mais les filons durcissent à chaque
+// renaissance : on avance en se battant. Voir docs/game-design/renaissance.md. Simulé par tools/simulate.mts.
+
+/** Zone à atteindre pour pouvoir renaître. */
+export const REBIRTH_MIN_ZONE = 20;
+/** Les Braises comptent les zones au-delà de celle-ci, au carré : pousser un peu plus loin rapporte nettement plus. */
+const EMBERS_BASE_ZONE = 15;
+
+/** Braises par zone au carré : de quoi acheter plusieurs paliers dès la première renaissance. */
+const EMBERS_PER_SQUARED_ZONE = 10;
+
+/** Braises du Cœur gagnées en renaissant depuis cette zone : 250 en zone 20, 490 en zone 22, 810 en zone 24. */
+export function rebirthEmbers(zone: number): number {
+  return zone < REBIRTH_MIN_ZONE ? 0 : EMBERS_PER_SQUARED_ZONE * (zone - EMBERS_BASE_ZONE) ** 2;
+}
+
+/**
+ * Dureté des filons : leurs PV sont multipliés par ce facteur à chaque renaissance (×2,9 vaut une zone). Les zones
+ * continuent sans fin au-delà de la 20, toujours plus dures.
+ */
+const HARDNESS_PER_REBIRTH = 1.3;
+
+export function rebirthHardness(rebirths: number): number {
+  return HARDNESS_PER_REBIRTH ** Math.max(rebirths, 0);
+}
+
+export const REBIRTH_BRANCHES = ['strike', 'speed', 'pickaxe', 'shortcut', 'shards', 'essences', 'gold'] as const;
+export type RebirthBranch = (typeof REBIRTH_BRANCHES)[number];
+
+export interface RebirthBranchDefinition {
+  readonly label: string;
+  /** Effet d'un palier, en clair. */
+  readonly describe: (level: number) => string;
+  readonly maxLevel: number;
+  /** Braises du palier suivant `level` (0 : le premier palier). */
+  readonly cost: (level: number) => number;
+}
+
+/** Le palier coûte un peu plus à chaque fois : base × (palier + 1). */
+function linear(base: number): (level: number) => number {
+  return (level) => base * (level + 1);
+}
+
+/** Paliers d'un gain en pourcentage : « +25 % ». */
+function percent(value: number): string {
+  return `+${Math.round(value * 100)} %`;
+}
+
+/** Frappe : chaque palier multiplie les dégâts, c'est la grosse hausse que le joueur sent d'une vie à l'autre. */
+export const REBIRTH_STRIKE_PER_LEVEL = 0.4;
+/** Vitesse de frappe en plus, par palier. */
+export const REBIRTH_SPEED_PER_LEVEL = 0.04;
+/** Niveaux de pioche avec lesquels on renaît, par palier. */
+export const REBIRTH_PICKAXE_PER_LEVEL = 3;
+/** Zone où l'on renaît, selon le palier du raccourci (0 : zone 1). */
+export const REBIRTH_START_ZONES = [1, 3, 5, 8, 10, 12, 15] as const;
+/** Éclats de géode en plus, par palier. */
+export const REBIRTH_SHARDS_PER_LEVEL = 0.15;
+/** Ressources du Cœur en plus par filon d'Écho, par palier. */
+export const REBIRTH_ESSENCES_PER_LEVEL = 1;
+/** Part de l'or qui repart avec le mineur, par palier. */
+export const REBIRTH_GOLD_PER_LEVEL = 0.1;
+
+export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinition>> = {
+  strike: {
+    label: 'Frappe ancestrale',
+    describe: (level) => `Frappe ×${((1 + REBIRTH_STRIKE_PER_LEVEL) ** level).toFixed(2).replace('.', ',')}`,
+    // Sans fin, comme les zones : la Frappe suit toujours
+    maxLevel: 1000,
+    cost: linear(10),
+  },
+  speed: {
+    label: 'Bras infatigable',
+    describe: (level) => `${percent(level * REBIRTH_SPEED_PER_LEVEL)} de vitesse de frappe`,
+    maxLevel: 10,
+    cost: linear(25),
+  },
+  pickaxe: {
+    label: 'Pioche mémoire',
+    describe: (level) => `Pioche au niveau ${1 + level * REBIRTH_PICKAXE_PER_LEVEL} en renaissant`,
+    maxLevel: 8,
+    cost: linear(30),
+  },
+  shortcut: {
+    label: 'Raccourci',
+    describe: (level) => `Renaître en zone ${REBIRTH_START_ZONES[level]}`,
+    maxLevel: REBIRTH_START_ZONES.length - 1,
+    cost: linear(60),
+  },
+  shards: {
+    label: 'Forge vive',
+    describe: (level) => `${percent(level * REBIRTH_SHARDS_PER_LEVEL)} d'éclats de géode`,
+    maxLevel: 10,
+    cost: linear(30),
+  },
+  essences: {
+    label: 'Mémoire du Cœur',
+    describe: (level) => `+${level * REBIRTH_ESSENCES_PER_LEVEL} ressource du Cœur par filon d'Écho`,
+    maxLevel: 5,
+    cost: linear(50),
+  },
+  gold: {
+    label: 'Bourse héritée',
+    describe: (level) => `${percent(level * REBIRTH_GOLD_PER_LEVEL)} de l'or gardé en renaissant`,
+    maxLevel: 5,
+    cost: linear(20),
+  },
+};

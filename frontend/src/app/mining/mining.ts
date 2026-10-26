@@ -13,6 +13,7 @@ import { Miner } from '../miner/miner';
 import { MissionCounters } from '../missions/mission-counters';
 import { Ores } from '../ores/ores';
 import { Progression } from '../progression/progression';
+import { Rebirth } from '../rebirth/rebirth';
 import { RANDOM } from '../shared/random';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
@@ -58,6 +59,7 @@ export class Mining {
   private readonly galleries = inject(Galleries);
   private readonly companions = inject(Companions);
   private readonly heartForge = inject(HeartForge);
+  private readonly rebirth = inject(Rebirth);
 
   constructor() {
     // Les Échos doivent veiller dès le lancement : une zone passée ouverte avant la Légende devient son Écho
@@ -101,7 +103,7 @@ export class Mining {
     // Un filon d'Écho donne sa ressource, sans tirage
     const essence = rockBroken && struck.echoZone !== null ? echoEssence(struck.echoZone) : null;
     if (essence !== null && struck.echoZone !== null) {
-      this.heartForge.onEchoRock(struck.echoZone);
+      this.heartForge.onEchoRock(struck.echoZone, this.rebirth.effects().essencesPerRock);
     }
     // Minerai de la zone frappée (celle qu'on vient de finir si ce coup fait passer à la suivante) :
     // parfois un au coup de pioche, plus le lot de fin de zone

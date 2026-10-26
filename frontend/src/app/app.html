@@ -13,6 +13,11 @@
       aria-label="Profil du mineur"
     >
       <img class="portrait" [src]="portraitUrl()" alt="" width="160" height="160" />
+      @if (rebirthEmblem(); as emblem) {
+        <span class="rebirth-emblem" [style.--emblem-color]="emblem.color" [attr.aria-label]="emblem.count + ' renaissances'">{{
+          emblem.label
+        }}</span>
+      }
       <span class="player-card">
         <span class="player-name">{{ playerName.label() }}</span>
         <span class="player-title">
@@ -127,6 +132,11 @@
     @case ('profile') {
       @defer (on immediate) {
         <app-profile-page class="page-layer" />
+      }
+    }
+    @case ('rebirth') {
+      @defer (on immediate) {
+        <app-rebirth-page class="page-layer" />
       }
     }
     @case ('evolution') {

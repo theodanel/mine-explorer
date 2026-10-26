@@ -34,6 +34,21 @@
         <span class="chevron" aria-hidden="true">›</span>
       </button>
 
+      <button type="button" class="card evolution" (click)="openRebirth()">
+        <span class="evolution-text">
+          <strong>Renaissance</strong>
+          @if (rebirth.count() > 0) {
+            <span>{{ rebirth.count() }} renaissance{{ rebirth.count() > 1 ? 's' : '' }} · {{ rebirth.embers() }} Braises</span>
+          } @else {
+            <span>S'ouvre en zone {{ rebirthZone }}</span>
+          }
+        </span>
+        @if (progression.zone() >= rebirthZone) {
+          <span class="pill ready">Possible !</span>
+        }
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+
       <button type="button" class="card evolution" (click)="openAchievements()">
         <span class="evolution-text">
           <strong>Succès et titres</strong>

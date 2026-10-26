@@ -11,6 +11,8 @@ import { Progression } from '../../progression/progression';
 import { PlayerName } from '../../shared/player-name';
 import { ACHIEVEMENTS } from '../../balance/achievements';
 import { Achievements } from '../../achievements/achievements';
+import { REBIRTH_MIN_ZONE } from '../../balance/rebirth';
+import { Rebirth } from '../../rebirth/rebirth';
 
 /** Volumes proposés, du plus fort au coupé. */
 const VOLUME_OPTIONS = [
@@ -37,12 +39,18 @@ export class ProfilePage {
   private readonly navigation = inject(Navigation);
   protected readonly achievements = inject(Achievements);
   protected readonly achievementCount = ACHIEVEMENTS.length;
+  protected readonly rebirth = inject(Rebirth);
+  protected readonly rebirthZone = REBIRTH_MIN_ZONE;
 
   protected readonly volumes = VOLUME_OPTIONS;
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
 
   protected openAchievements(): void {
     this.navigation.open('achievements');
+  }
+
+  protected openRebirth(): void {
+    this.navigation.open('rebirth');
   }
 
   protected openEvolution(): void {

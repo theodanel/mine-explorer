@@ -129,23 +129,25 @@ describe('Sauvegarde abîmée ou trafiquée', () => {
     for (const stat of Object.values(miner)) {
       expect(Number.isFinite(stat)).toBe(true);
     }
+    // Au-delà de 9 × 10¹⁵, l'or reste un entier fini (zones sans fin de la Renaissance)
     const wallet = TestBed.inject(Wallet).coins();
-    expect(Number.isSafeInteger(wallet) && wallet >= 0).toBe(true);
+    expect(Number.isFinite(wallet) && Number.isInteger(wallet) && wallet >= 0).toBe(true);
     const zone = TestBed.inject(Progression).zone();
     expect(Number.isSafeInteger(zone) && zone >= 1).toBe(true);
     expect(Number.isFinite(TestBed.inject(Progression).remainingHp())).toBe(true);
     expect(({} as Record<string, unknown>)['pollue']).toBeUndefined();
   });
 
-  it('plafonne l\'or au plus grand entier exact, sans perdre la sauvegarde', () => {
+  it("garde l'or au-delà des entiers exacts, sans perdre la sauvegarde", () => {
     startWith('{}');
     localStorage.setItem('mine-explorer.coins', String(Number.MAX_SAFE_INTEGER - 1));
     TestBed.resetTestingModule();
     const wallet = TestBed.inject(Wallet);
-    wallet.add(10);
-    expect(wallet.coins()).toBe(Number.MAX_SAFE_INTEGER);
+    wallet.add(1e20);
+    expect(wallet.coins()).toBeGreaterThan(Number.MAX_SAFE_INTEGER);
+    const saved = wallet.coins();
     TestBed.resetTestingModule();
-    expect(TestBed.inject(Wallet).coins()).toBe(Number.MAX_SAFE_INTEGER);
+    expect(TestBed.inject(Wallet).coins()).toBe(saved);
   });
 
   it('garde les missions d\'une sauvegarde écrite avant l\'ajout d\'un compteur', () => {

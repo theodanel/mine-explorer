@@ -3,8 +3,10 @@ import { Signal, signal, WritableSignal } from '@angular/core';
 import { readStorage, writeStorage } from './local-storage';
 
 /**
- * Quantité entière positive sauvegardée en local (pièces, éclats…).
+ * Quantité positive sauvegardée en local (pièces, éclats…), arrondie à l'unité.
  * Les services de ressources héritent de cette classe pour partager la validation et la sauvegarde.
+ * Avec les zones sans fin de la Renaissance (25/10/2026), l'or dépasse les entiers exacts de JavaScript (9 × 10¹⁵) :
+ * au-delà, un nombre à virgule flottante garde la bonne grandeur, ce qui suffit à un compteur de jeu idle.
  */
 export class StoredCounter {
   private readonly amountState: WritableSignal<number>;
@@ -17,8 +19,8 @@ export class StoredCounter {
 
   add(amount: number): void {
     assertValidAmount(amount);
-    // Plafonné : au-delà, le nombre ne serait plus exact et la sauvegarde serait rejetée au rechargement
-    this.amountState.update((current) => Math.min(current + amount, Number.MAX_SAFE_INTEGER));
+    // Plafonné au plus grand nombre fini : au-delà, la sauvegarde serait rejetée au rechargement
+    this.amountState.update((current) => Math.min(current + Math.round(amount), Number.MAX_VALUE));
     this.persist();
   }
 
@@ -28,7 +30,7 @@ export class StoredCounter {
     if (this.amountState() < amount) {
       return false;
     }
-    this.amountState.update((current) => current - amount);
+    this.amountState.update((current) => current - Math.round(amount));
     this.persist();
     return true;
   }
@@ -38,8 +40,13 @@ export class StoredCounter {
   }
 }
 
+/** Un montant entier, fini et positif (au-delà de 9 × 10¹⁵, tout nombre à virgule flottante est entier). */
+function isAmount(value: number): boolean {
+  return Number.isFinite(value) && value >= 0 && Number.isInteger(value);
+}
+
 function assertValidAmount(amount: number): void {
-  if (!Number.isSafeInteger(amount) || amount <= 0) {
+  if (!isAmount(amount) || amount <= 0) {
     throw new RangeError(`Montant invalide : ${amount}`);
   }
 }
@@ -50,7 +57,7 @@ function loadAmount(storageKey: string): number {
     return 0;
   }
   const amount = Number(raw);
-  if (raw.trim() === '' || !Number.isSafeInteger(amount) || amount < 0) {
+  if (raw.trim() === '' || !isAmount(amount)) {
     console.warn(`Sauvegarde "${storageKey}" invalide ignorée : "${raw}"`);
     return 0;
   }

@@ -142,6 +142,8 @@ import { gearRuneBonuses, OpenSockets, setGearRune } from '../src/app/heart-forg
 import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets, MAX_AWAKENING } from '../src/app/balance/awakening.ts';
 import { activeAwakening, awaken, AwakeningState, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
 import { spendEssences } from '../src/app/heart-forge/heart-forge-rules.ts';
+import { REBIRTH_MIN_ZONE, type RebirthBranch } from '../src/app/balance/rebirth.ts';
+import { buy, canBuy, EMPTY_REBIRTH, rebirth, rebirthEffects, type RebirthState } from '../src/app/rebirth/rebirth-rules.ts';
 import { GEAR_SOCKETS_TOTAL, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -349,6 +351,15 @@ let shards = 0;
 const ores = Object.fromEntries(TIER_IDS.map((tier) => [tier, 0])) as Record<TierId, number>;
 let pickaxe = { level: 1, segments: 0, upgradeEndsAt: null as number | null };
 let formIndex = 0;
+/** Renaissance (25/10/2026) : arbre des Braises et dureté des filons de la vie en cours. */
+let rebirthState: RebirthState = EMPTY_REBIRTH;
+const withRebirth = withNewSystems && !process.argv.includes('--sans-renaissance');
+/** Le joueur renaît quand il n'a pas changé de zone depuis ce nombre de jours, au-delà de la zone 20. */
+const REBIRTH_STALL_DAYS = Number(process.env.REBIRTH_STALL ?? 2);
+let lastZoneChangeDay = 0;
+const lives: string[] = [];
+let lifeStart = 0;
+let zone20Reached = false;
 // Déclarés tôt : gearStats() les lit dès le premier calcul de stats
 let awakeningState: AwakeningState = EMPTY_AWAKENING;
 const withAwakening = withNewSystems && !process.argv.includes('--sans-eveil');
@@ -418,6 +429,11 @@ function gearStats(): MiningStats {
   return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
+function rebirthBonuses() {
+  const effects = rebirthEffects(rebirthState);
+  return { ...NO_BONUSES, strikePct: effects.strikeMultiplier - 1, speed: effects.speed };
+}
+
 function gearSockets(): number {
   return gearSocketCount(EVOLUTION_FORMS[formIndex].stars);
 }
@@ -438,6 +454,7 @@ function families() {
         activeCompanionBonuses(companions),
         // Avant la 1re étoile, la Forge n'existe pas encore pour le simulateur (heartForge est déclaré plus bas)
         withGearRunes && gearSockets() > 0 ? gearRuneBonuses(heartForge.gear, openSockets()) : NO_BONUSES,
+        rebirthBonuses(),
       ]
     : [NO_BONUSES];
 }
@@ -744,6 +761,11 @@ function recipeOf(type: RuneType): readonly EssenceId[] {
   return [essence, essence, essence];
 }
 
+/** Ressources par filon d'Écho : 1, plus la Mémoire du Cœur. */
+function echoGain(): number {
+  return 1 + rebirthEffects(rebirthState).essencesPerRock;
+}
+
 /** Avance d'un pas vers une rune visée : fait grandir la plus haute en dessous de son rang, sinon en crée une. */
 function stepTowards(target: { type: RuneType; rank: number }): boolean {
   for (let rank = target.rank - 1; rank >= 1; rank--) {
@@ -785,7 +807,7 @@ function craftRunes(): void {
   while (rocks > 0) {
     const unfilled = targets.filter((socket) => !heartForge.sockets[socket] && runeCount(heartForge, socketRune(socket)) === 0);
     if (unfilled.length === 0) break;
-    earnEssences({ [lackingFor(socketRune(unfilled[rocks % unfilled.length]))]: 1 });
+    earnEssences({ [lackingFor(socketRune(unfilled[rocks % unfilled.length]))]: echoGain() });
     rocks--;
   }
   for (let guard = 0; guard < 5000; guard++) {
@@ -847,7 +869,7 @@ function craftGearRunes(): void {
     }
     if (stepTowards(wanted)) continue;
     if (rocks <= 0) return;
-    earnEssences({ [lackingFor(wanted)]: 1 });
+    earnEssences({ [lackingFor(wanted)]: echoGain() });
     rocks--;
   }
 }
@@ -868,7 +890,7 @@ function awakenGear(now: number): void {
   const target = byLevel().find((slot) => equipped[slot]?.tier === 'divine' && (awakeningState.levels[slot] ?? 0) < MAX_AWAKENING);
   const cost = target === undefined ? null : awakeningCost(target, awakeningState.levels[target] ?? 0);
   if (cost !== null) {
-    while (rocks-- > 0) earnEssences({ [cost.essence]: 1 });
+    while (rocks-- > 0) earnEssences({ [cost.essence]: echoGain() });
   }
   for (let guard = 0; guard < 25; guard++) {
     const slot = byLevel().find((id) => {
@@ -889,6 +911,41 @@ function awakenGear(now: number): void {
   }
   const lowest = lowestAwakening(equipped, awakeningState.levels);
   while (awakeningDays.length < lowest) awakeningDays.push(fmt(now));
+  refresh(now);
+}
+
+/** Ordre d'achat dans l'arbre : départ plus rapide d'abord, puis la Frappe, puis le reste. */
+const REBIRTH_PRIORITY: readonly RebirthBranch[] = ['strike', 'shortcut', 'pickaxe', 'speed', 'essences', 'shards', 'gold'];
+
+/** Au-delà de la zone 20, le joueur renaît quand il piétine : Braises dépensées, partie de mine remise à zéro. */
+function maybeRebirth(now: number): void {
+  if (!withRebirth || progress.zone < REBIRTH_MIN_ZONE || now / DAY - lastZoneChangeDay < REBIRTH_STALL_DAYS) return;
+  const reachedZone = progress.zone;
+  rebirthState = rebirth(rebirthState, reachedZone, stagesReached(progress));
+  for (let guard = 0; guard < 500; guard++) {
+    const branch = REBIRTH_PRIORITY.find((id) => canBuy(rebirthState, id));
+    if (branch === undefined) break;
+    rebirthState = buy(rebirthState, branch);
+  }
+  const effects = rebirthEffects(rebirthState);
+  lives.push(
+    `${fmt(now)} : renaissance ${rebirthState.count} depuis la zone ${reachedZone} (vie de ${((now - lifeStart) / DAY).toFixed(1)} j), ` +
+      `arbre ${Object.entries(rebirthState.tree).map(([id, level]) => `${id} ${level}`).join(', ')}, Braises restantes ${rebirthState.embers}`,
+  );
+  progress = { zone: effects.startZone, stage: 1, damage: 0 };
+  lastZone = effects.startZone;
+  lastZoneChangeDay = now / DAY;
+  lifeStart = now;
+  zone20Reached = false;
+  pickaxe = { level: effects.startPickaxe, segments: 0, upgradeEndsAt: null };
+  equipped = {};
+  gold = Math.floor(gold * effects.goldKept);
+  for (const tier of TIER_IDS) ores[tier] = 0;
+  workshop = {};
+  camp = EMPTY_CAMP;
+  ranks = {};
+  guardianStart = null;
+  guardianBlocked = false;
   refresh(now);
 }
 
@@ -955,7 +1012,7 @@ function dealDamage(now: number, damage: number): void {
   updateGuardian(now);
   const { zone, stage } = progress;
   const mods = GALLERIES[gallery].modifiers;
-  const result = applyDamage(progress, scaleAmount(damage, 1 / mods.hardness, galleryRandom), guardianBlocked);
+  const result = applyDamage(progress, scaleAmount(damage, 1 / (mods.hardness * rebirthEffects(rebirthState).hardness), galleryRandom), guardianBlocked);
   progress = result.progress;
   if (isGuardian(progress) && stage === BEFORE_GUARDIAN_STAGE) {
     guardianStart = now;
@@ -991,6 +1048,11 @@ function dealDamage(now: number, damage: number): void {
         `${(filonSecondsInZone / Math.max(filonsInZone, 1)).toFixed(0)} s par filon dans la zone précédente)`,
     );
     lastZone = progress.zone;
+    lastZoneChangeDay = now / DAY;
+    if (progress.zone >= REBIRTH_MIN_ZONE && !zone20Reached) {
+      zone20Reached = true;
+      lives.push(`vie ${rebirthState.count + 1} : zone ${REBIRTH_MIN_ZONE} en ${((now - lifeStart) / DAY).toFixed(1)} j`);
+    }
     filonSecondsInZone = 0;
     filonsInZone = 0;
   }
@@ -1151,6 +1213,7 @@ for (let day = 0; day < days; day++) {
   craftRunes();
   craftGearRunes();
   awakenGear(lastSeen);
+  maybeRebirth(lastSeen);
   const got = (key: keyof typeof shardSources): number => shardSources[key] - shardsBefore[key];
   if (day < 3 || (day + 1) % 7 === 0 || day === days - 1) {
     daily.push(
@@ -1168,6 +1231,9 @@ console.log(`Profil ${profile}, ${days} jours${withNewSystems ? '' : ' (sans arb
 console.log(milestones.join('\n'));
 console.log('');
 console.log(daily.join('\n'));
+if (withRebirth) {
+  console.log(`\nRenaissances (${rebirthState.count}) :\n  ${lives.join('\n  ') || 'aucune'}`);
+}
 if (withAwakening) {
   console.log(
     `\nÉveil (Divin corrompu) : les 5 pièces à l'Éveil ${awakeningDays.map((day, index) => `${index + 1} ${day}`).join(', ') || 'jamais atteint'} ; ` +

@@ -50,11 +50,11 @@ export class HeartForge {
   /** État complet, pour les écrans qui calculent avec les règles. */
   readonly snapshot = this.state.asReadonly();
 
-  /** Un filon d'Écho épuisé : sa ressource, garantie. */
-  onEchoRock(zone: number): void {
+  /** Un filon d'Écho épuisé : sa ressource, garantie, plus la Mémoire du Cœur de l'arbre des Braises. */
+  onEchoRock(zone: number, extra = 0): void {
     const essence = echoEssence(zone);
     if (essence !== null) {
-      this.save(addEssences(this.state(), { [essence]: ECHO_ESSENCES_PER_ROCK }));
+      this.save(addEssences(this.state(), { [essence]: ECHO_ESSENCES_PER_ROCK + extra }));
     }
   }
 

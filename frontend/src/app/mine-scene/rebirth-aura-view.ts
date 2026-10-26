@@ -4,11 +4,11 @@ import type { RebirthAura } from '../rebirth/rebirth-visuals';
 
 /** Halo derrière le mineur : des ellipses superposées de plus en plus pâles, comme une lueur douce. */
 const LAYERS = 6;
-const RADIUS_X = 150;
-const RADIUS_Y = 210;
+const RADIUS_X = 175;
+const RADIUS_Y = 235;
 /** Le halo grandit et s'éclaire avec l'intensité du palier. */
 const MIN_SCALE = 0.75;
-const MAX_ALPHA = 0.55;
+const MAX_ALPHA = 1.4;
 const PULSE_MS = 1800;
 const PULSE_SHARE = 0.12;
 /** Le halo entoure le corps du mineur, au-dessus de ses pieds. */
@@ -26,6 +26,8 @@ export class RebirthAuraView {
   private elapsedMs = 0;
 
   constructor() {
+    // Mélange additif : la lueur éclaire le décor, qu'il soit sombre ou clair
+    this.glow.blendMode = 'add';
     this.view.addChild(this.glow);
     this.view.visible = false;
   }
@@ -55,6 +57,6 @@ export class RebirthAuraView {
     this.elapsedMs = (this.elapsedMs + deltaMs) % PULSE_MS;
     const pulse = 1 + PULSE_SHARE * Math.sin((this.elapsedMs / PULSE_MS) * Math.PI * 2);
     this.view.scale.set((MIN_SCALE + (1 - MIN_SCALE) * this.intensity) * pulse);
-    this.view.alpha = 0.6 + 0.4 * this.intensity;
+    this.view.alpha = 0.75 + 0.25 * this.intensity;
   }
 }

@@ -384,7 +384,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
-    this.aura.place(this.miner.x, MINER_FEET_Y);
+    // Centré sur le corps dessiné (l'image fixe des formes évoluées est au centre de la scène)
+    this.aura.place(SCENE_WIDTH / 2, MINER_FEET_Y);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
   }

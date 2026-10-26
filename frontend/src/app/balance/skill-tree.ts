@@ -175,6 +175,18 @@ export function spellDurationMs(spell: SpellDef, rank: number, durationPct: numb
 }
 
 /** Multiple de la Frappe d'un sort explosif à ce rang, bonus d'explosion compris. */
+/**
+ * Les explosions (sorts et compétence du familier) profitent de 40 % du bonus de critique du mineur (choix de Théo,
+ * 26/10/2026). Avant, elles ignoraient le critique et tombaient sous 1 % des dégâts dès que le critique montait : un
+ * coup moyen valait 7 Frappes en fin de partie. Avec cette part, la Dynamite et le Grisou pèsent chacun 10 à 13 % des
+ * dégâts, quel que soit le stade de la partie.
+ */
+export const BLAST_CRIT_SHARE = 0.4;
+
+export function blastCritFactor(critChance: number, critDamage: number): number {
+  return 1 + BLAST_CRIT_SHARE * critChance * critDamage;
+}
+
 export function blastStrikeMultiplier(spell: SpellDef, rank: number, blastPct: number): number {
   if (spell.effect.kind !== 'blast') {
     return 0;

@@ -2,7 +2,6 @@ import { Container, Graphics, Text } from 'pixi.js';
 
 import { TIER_LABELS } from '../equipment/equipment.model';
 import type { StrikeOutcome } from '../mining/mining';
-import type { PowerGain } from './power-gain';
 import { compactNumber } from '../shared/format-number';
 import { ESSENCE_LABELS } from '../balance/heart-forge';
 import type { RebirthAura } from '../rebirth/rebirth-visuals';
@@ -43,11 +42,7 @@ const BREAK_CHIP_SIZE = 1.8;
 const BREAK_FLASH_RADIUS = 120;
 const BREAK_FLASH_MS = 220;
 const FLASH_COLOR = 0xfff4dc;
-// Gain de Puissance : un anneau doré qui s'ouvre autour du mineur, des étincelles, puis ce qui a changé
-const POWER_TEXT_MS = 1800;
-const POWER_TEXT_SIZE = 64;
-const POWER_LINE_SIZE = 40;
-const POWER_LINE_GAP = 52;
+// Gain de Puissance : un anneau doré qui s'ouvre autour du mineur et des étincelles
 const POWER_RING_MS = 650;
 const POWER_RING_RADIUS = 210;
 const POWER_RING_WIDTH = 10;
@@ -221,17 +216,15 @@ export class HitEffects {
     }
   }
 
-  /** Le mineur vient de gagner en Puissance : onde dorée, étincelles, puis le gain et ce qui a changé. */
-  spawnPowerGain(x: number, y: number, gain: PowerGain): void {
+  /**
+   * Le mineur vient de gagner en Puissance : onde dorée et étincelles. Le texte du gain a été retiré le 26/10/2026
+   * (Théo) : avec les chiffres de la renaissance, il débordait de l'écran et devenait illisible.
+   */
+  spawnPowerGain(x: number, y: number): void {
     this.add(new Pulse(x, y, POWER_RING_RADIUS, GOLD_COLOR, POWER_RING_MS, true));
     for (let i = 0; i < POWER_SPARKS; i++) {
       this.add(new RockChip(x, y, 1, SPARK_COLORS));
     }
-    const label = `Puissance +${compactNumber(gain.to - gain.from)}`;
-    this.add(new FloatingText(x, y, label, GOLD_COLOR, POWER_TEXT_SIZE, true, POWER_TEXT_MS));
-    gain.lines.forEach((line, index) => {
-      this.add(new FloatingText(x, y + POWER_LINE_GAP * (index + 1), line, DAMAGE_COLOR, POWER_LINE_SIZE, false, POWER_TEXT_MS));
-    });
   }
 
   update(elapsedMs: number): void {

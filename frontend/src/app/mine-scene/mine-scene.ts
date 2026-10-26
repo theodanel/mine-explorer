@@ -27,6 +27,7 @@ import { MineRock, RockTop } from './mine-rock';
 import { AmbienceLayer } from './ambience-layer';
 import { PowerGain, powerGain } from './power-gain';
 import { MiningStats } from '../equipment/equipment.model';
+import { compactNumber } from '../shared/format-number';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -59,7 +60,6 @@ const DYNAMITE_SHAKE_SHARE = 0.4;
 /** La barre de vie flotte juste au-dessus du rocher, en pixels de scène. */
 const HEALTH_BAR_GAP = 14;
 const PERCENT = 100;
-const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 const MS_PER_SECOND = 1000;
 /** Un Écho garde le décor de la zone, assombri et rougi : le monde a changé. Hors Écho, aucune teinte. */
 const ECHO_TINT = 0xb0786a;
@@ -127,7 +127,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
   protected readonly healthBarTop = computed(() => ((this.rockTop().y + this.extra() - HEALTH_BAR_GAP) / this.sceneHeight()) * PERCENT);
   protected readonly rockZoneTop = computed(() => ((this.rockTop().y + this.extra()) / this.sceneHeight()) * PERCENT);
   protected readonly healthPercent = computed(() => Math.round(this.progression.health() * PERCENT));
-  protected readonly remaining = computed(() => NUMBER_FORMAT.format(this.progression.remainingHp()));
+  protected readonly remaining = computed(() => compactNumber(this.progression.remainingHp()));
   /** Le gardien de la zone est devant le mineur (jamais en zone passée). */
   protected readonly guardian = computed(() => this.progression.farmZone() === null && this.progression.progress().stage === GUARDIAN_STAGE);
   protected readonly guardianSeconds = computed(() => Math.ceil(this.progression.guardianTimeLeft() / MS_PER_SECOND));
@@ -200,7 +200,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       if (gain === null || this.navigation.page() !== 'mine' || !this.effects || !this.miner) {
         return;
       }
-      untracked(() => this.showPowerGain(gain));
+      untracked(() => this.showPowerGain());
     });
     // Nouvelle forme, nouveau visuel, sans recréer la scène
     effect(() => {
@@ -457,9 +457,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
   }
 
-  private showPowerGain(gain: PowerGain): void {
+  private showPowerGain(): void {
     this.pendingGain.set(null);
-    this.effects?.spawnPowerGain(SCENE_WIDTH / 2, MINER_FEET_Y - POWER_GAIN_ABOVE_FEET, gain);
+    this.effects?.spawnPowerGain(SCENE_WIDTH / 2, MINER_FEET_Y - POWER_GAIN_ABOVE_FEET);
     this.glowMs = POWER_GLOW_MS;
     this.sound.play('upgrade');
   }

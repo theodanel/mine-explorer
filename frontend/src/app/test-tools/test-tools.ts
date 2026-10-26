@@ -4,6 +4,7 @@ import { EVOLUTION_FORMS, MAX_PICKAXE_LEVEL } from '../balance/balance';
 import { ABYSS_FLOORS_PER_ESSENCES } from '../balance/heart-forge';
 import { TIER_IDS } from '../equipment/equipment.model';
 import { formTitle } from '../evolution/evolution-rules';
+import { Awakening } from '../equipment/awakening';
 import { HeartForge } from '../heart-forge/heart-forge';
 import { REVEAL_IDS } from '../onboarding/reveal-rules';
 import { Ores } from '../ores/ores';
@@ -21,6 +22,7 @@ const COIN_GIFTS = [10_000, 1_000_000, 1_000_000_000] as const;
 const SHARD_GIFT = 1_000;
 const ORE_GIFT = 100;
 const ESSENCE_GIFT = 50;
+const DUPLICATE_GIFT = 100;
 
 /**
  * Outils du site de test (staging) seulement : se donner de l'or, des éclats, des minerais, une renaissance, sauter à
@@ -39,6 +41,7 @@ export class TestTools {
   private readonly ores = inject(Ores);
   private readonly heartForge = inject(HeartForge);
   private readonly rebirth = inject(Rebirth);
+  private readonly awakening = inject(Awakening);
   private readonly document = inject(DOCUMENT);
   readonly closed = output();
 
@@ -58,6 +61,7 @@ export class TestTools {
   protected readonly shardGift = SHARD_GIFT;
   protected readonly oreGift = ORE_GIFT;
   protected readonly essenceGift = ESSENCE_GIFT;
+  protected readonly duplicateGift = DUPLICATE_GIFT;
   protected readonly done = signal<string | null>(null);
   protected readonly confirmingReset = signal(false);
 
@@ -82,6 +86,11 @@ export class TestTools {
   protected addEssences(): void {
     this.heartForge.onAbyssRun(ESSENCE_GIFT * ABYSS_FLOORS_PER_ESSENCES);
     this.done.set(`+${ESSENCE_GIFT} de chaque ressource du Cœur`);
+  }
+
+  protected addDuplicates(): void {
+    this.awakening.addDuplicates(DUPLICATE_GIFT);
+    this.done.set(`+${DUPLICATE_GIFT} doublons Divin sur chaque emplacement`);
   }
 
   /** Une renaissance de plus, sans repartir de zéro : pour tester la Constellation et la dureté des filons. */

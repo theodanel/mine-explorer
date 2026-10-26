@@ -7,6 +7,7 @@ import { HeartForge } from '../heart-forge/heart-forge';
 import { Rebirth } from '../rebirth/rebirth';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import {
+  addDuplicates,
   AwakeningBlocker,
   awakeningBlocker,
   awaken,
@@ -52,6 +53,11 @@ export class Awakening {
     if (this.unlocked()) {
       this.save(recordDuplicate(this.state(), item));
     }
+  }
+
+  /** Outils de test : des doublons Divin sur chaque emplacement. */
+  addDuplicates(amount: number): void {
+    this.save(addDuplicates(this.state(), amount));
   }
 
   blocker(item: Item | undefined): AwakeningBlocker | null {

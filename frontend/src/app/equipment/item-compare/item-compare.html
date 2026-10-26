@@ -24,7 +24,7 @@
           } @else if (view.powerTrend === 'worse') {
             <span class="power-arrow" aria-label="moins bon que l'objet porté">▼</span>
           }
-          <span class="power-delta">{{ view.powerDelta > 0 ? '+' : '' }}{{ view.powerDelta }}</span>
+          <span class="power-delta">{{ view.powerDelta > 0 ? '+' : view.powerDelta < 0 ? '−' : '' }}{{ view.powerDeltaLabel }}</span>
           <span class="power-label">Puissance</span>
         </p>
         <p class="power-total">

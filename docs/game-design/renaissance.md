@@ -46,7 +46,7 @@ Six branches, chacune achetée palier par palier avec un coût qui monte. À cal
 |---|---|---|
 | Frappe ancestrale | +10 % de Frappe | La puissance de base qui grandit à chaque vie |
 | Pioche mémoire | La pioche repart au niveau 2, 4, 6… | Les premières heures passent plus vite |
-| Raccourci | On renaît directement en zone 3, 5, 8, 10 | Sauter ce qui est devenu trivial |
+| Raccourci | On renaît 10 zones avant son record, puis 9, 8… jusqu'à 4 (choix de Théo, 26/10/2026 ; avant : zones fixes 3 à 15) | Sauter ce qui est devenu trivial |
 | Forge vive | +5 % d'éclats gagnés | La Forge va plus vite |
 | Mémoire du Cœur | +1 ressource du Cœur par filon d'Écho | Les runes et l'Éveil avancent aussi entre les vies |
 | Bourse héritée | Une part de l'or repart avec toi | Moins de piétinement au départ |

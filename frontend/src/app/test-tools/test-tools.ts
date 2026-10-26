@@ -5,30 +5,26 @@ import { ABYSS_FLOORS_PER_ESSENCES } from '../balance/heart-forge';
 import { TIER_IDS } from '../equipment/equipment.model';
 import { formTitle } from '../evolution/evolution-rules';
 import { HeartForge } from '../heart-forge/heart-forge';
-import { RuneKey } from '../heart-forge/heart-forge-rules';
-import { RUNE_TYPES } from '../balance/heart-forge';
 import { REVEAL_IDS } from '../onboarding/reveal-rules';
 import { Ores } from '../ores/ores';
+import { Rebirth, REBIRTH_STORAGE_KEY } from '../rebirth/rebirth';
 import { writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 
 /** Clés de sauvegarde du jeu : toutes commencent ainsi. */
 const SAVE_PREFIX = 'mine-explorer.';
-/** Dernière zone dessinée (decors zone1 à zone20). */
-const LAST_ZONE = 20;
+/** Zones proposées : les zones continuent sans fin depuis la renaissance, assez loin pour tester la fin de jeu. */
+const LAST_ZONE = 60;
 const COIN_GIFTS = [10_000, 1_000_000, 1_000_000_000] as const;
 const SHARD_GIFT = 1_000;
 const ORE_GIFT = 100;
 const ESSENCE_GIFT = 50;
-/** Runes offertes : 3 de chaque type, aux rangs 1 à 3. */
-const RUNE_GIFT = 3;
-const RUNE_GIFT_RANKS = [1, 2, 3] as const;
 const COMPACT = new Intl.NumberFormat('fr-FR', { notation: 'compact' });
 
 /**
- * Outils du site de test (staging) seulement : se donner de l'or, des éclats, des minerais, sauter à une zone, choisir
- * une forme ou un niveau de pioche, tout débloquer, ou repartir de zéro. Jamais dans le build de production
+ * Outils du site de test (staging) seulement : se donner de l'or, des éclats, des minerais, une renaissance, sauter à
+ * une zone, choisir une forme ou un niveau de pioche, tout débloquer, ou repartir de zéro. Jamais dans le build de production
  * (environment.testBanner). Les réglages qui changent l'état de départ réécrivent la sauvegarde puis rechargent la
  * page : chaque service relit et valide sa clé, comme au lancement du jeu.
  */
@@ -42,6 +38,7 @@ export class TestTools {
   private readonly shards = inject(GeodeShards);
   private readonly ores = inject(Ores);
   private readonly heartForge = inject(HeartForge);
+  private readonly rebirth = inject(Rebirth);
   private readonly document = inject(DOCUMENT);
   readonly closed = output();
 
@@ -87,17 +84,10 @@ export class TestTools {
     this.done.set(`+${ESSENCE_GIFT} de chaque ressource du Cœur`);
   }
 
-  /** Réécrit la réserve de la Forge du Cœur puis recharge : le service relit sa sauvegarde, comme au lancement. */
-  protected addRunes(): void {
-    const state = this.heartForge.snapshot();
-    const runes: Partial<Record<RuneKey, number>> = { ...state.runes };
-    for (const type of RUNE_TYPES) {
-      for (const rank of RUNE_GIFT_RANKS) {
-        const key: RuneKey = `${type}:${rank}`;
-        runes[key] = (runes[key] ?? 0) + RUNE_GIFT;
-      }
-    }
-    writeStorage(`${SAVE_PREFIX}forge-du-coeur`, JSON.stringify({ ...state, runes }));
+  /** Une renaissance de plus, sans repartir de zéro : pour tester la Constellation et la dureté des filons. */
+  protected addRebirth(): void {
+    const state = this.rebirth.snapshot();
+    writeStorage(REBIRTH_STORAGE_KEY, JSON.stringify({ ...state, count: state.count + 1 }));
     this.reload();
   }
 

@@ -1,5 +1,6 @@
 import { awakeningCost, awakeningSockets, awakeningStatBonus, AWAKENING_SET_STRIKE_PER_LEVEL, MAX_AWAKENING } from '../balance/awakening';
 import { SET_BONUSES } from '../balance/balance';
+import { rebirthHardness } from '../balance/rebirth';
 import {
   applyAwakening,
   awaken,
@@ -47,12 +48,27 @@ describe('Éveil des pièces Divin', () => {
     expect(awakeningBlocker({ levels: { pickaxe: MAX_AWAKENING }, duplicates: {} }, item('pickaxe'), essences)).toBe('max');
   });
 
-  it('renforce les stats d’une pièce Divin seulement, et l’Éveil reste à l’emplacement', () => {
-    const equipped: EquippedItems = { pickaxe: item('pickaxe'), bag: item('bag', 'magma') };
-    const awakened = applyAwakening(equipped, { pickaxe: 5, bag: 5 });
+  it("renforce toute pièce portée à l'emplacement : l'Éveil survit à la renaissance", () => {
+    const equipped: EquippedItems = { pickaxe: item('pickaxe'), bag: item('bag', 'wood') };
+    const awakened = applyAwakening(equipped, { pickaxe: 5, bag: 2 });
     expect(awakened.pickaxe?.stats.strikePower).toBeCloseTo(1000 * (1 + awakeningStatBonus(5)));
-    expect(awakened.bag).toBe(equipped.bag);
+    expect(awakened.bag?.stats.strikePower).toBeCloseTo(1000 * (1 + awakeningStatBonus(2)));
+    expect(applyAwakening({}, { pickaxe: 5 }).pickaxe).toBeUndefined();
     expect(computeStats(equipped, { pickaxe: 5 }).strikePower).toBeGreaterThan(computeStats(equipped).strikePower);
+  });
+
+  it('fait grandir le bonus avec les renaissances, comme la dureté des filons', () => {
+    expect(awakeningStatBonus(5, 3)).toBeCloseTo(awakeningStatBonus(5) * rebirthHardness(3));
+    const equipped: EquippedItems = { pickaxe: item('pickaxe') };
+    expect(computeStats(equipped, { pickaxe: 5 }, 3).strikePower).toBeGreaterThan(computeStats(equipped, { pickaxe: 5 }).strikePower);
+  });
+
+  it('débloque chaque palier après le premier avec une renaissance de plus', () => {
+    const state = readyFor('pickaxe', 1);
+    const essences = awakeningCost('pickaxe', 1)?.essences ?? 0;
+    expect(awakeningBlocker(state, item('pickaxe'), essences, 0)).toBe('rebirths');
+    expect(awakeningBlocker(state, item('pickaxe'), essences, 1)).toBeNull();
+    expect(awakeningCost('pickaxe', 4)?.rebirths).toBe(4);
   });
 
   it('ouvre une châsse de rune de plus aux paliers 2 et 4', () => {

@@ -79,7 +79,7 @@ export class Inventory {
 
   /** Stats d'un équipement, porté ou envisagé, avec l'Éveil des emplacements et le bonus de Frappe des évolutions. */
   statsOf(equipped: EquippedItems): MiningStats {
-    const stats = computeStats(equipped, this.awakening.levels());
+    const stats = computeStats(equipped, this.awakening.levels(), this.awakening.rebirths());
     return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
   }
 

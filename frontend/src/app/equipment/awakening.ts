@@ -4,6 +4,7 @@ import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets } from '../balan
 import { EVOLUTION_FORMS } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
 import { HeartForge } from '../heart-forge/heart-forge';
+import { Rebirth } from '../rebirth/rebirth';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import {
   AwakeningBlocker,
@@ -28,11 +29,14 @@ const UNLOCK_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === AWAKENING_U
 export class Awakening {
   private readonly evolution = inject(Evolution);
   private readonly heartForge = inject(HeartForge);
+  private readonly rebirth = inject(Rebirth);
   private readonly state = signal<AwakeningState>(loadState());
 
   readonly unlocked = computed(() => this.evolution.index() >= UNLOCK_INDEX);
   readonly levels = computed(() => this.state().levels);
   readonly duplicates = computed(() => this.state().duplicates);
+  /** Renaissances faites : elles débloquent les paliers et font grandir leur bonus. */
+  readonly rebirths = computed(() => this.rebirth.count());
 
   level(slot: SlotId): number {
     return this.state().levels[slot] ?? 0;
@@ -52,7 +56,7 @@ export class Awakening {
 
   blocker(item: Item | undefined): AwakeningBlocker | null {
     const cost = item === undefined ? null : awakeningCost(item.slot, this.level(item.slot));
-    return awakeningBlocker(this.state(), item, cost === null ? 0 : this.heartForge.essences()[cost.essence]);
+    return awakeningBlocker(this.state(), item, cost === null ? 0 : this.heartForge.essences()[cost.essence], this.rebirths());
   }
 
   /** Éveille la pièce portée d'un palier, si tout est payé. */

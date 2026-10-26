@@ -128,9 +128,9 @@ export function gearSet(equipped: EquippedItems, awakening: AwakeningLevels = {}
   return { ...best, strikePct: base + awakened };
 }
 
-export function computeStats(equipped: EquippedItems, awakening: AwakeningLevels = {}): MiningStats {
+export function computeStats(equipped: EquippedItems, awakening: AwakeningLevels = {}, rebirths = 0): MiningStats {
   const total: MiningStats = { ...BASE_STATS };
-  const awakened = applyAwakening(equipped, awakening);
+  const awakened = applyAwakening(equipped, awakening, rebirths);
   for (const slot of SLOT_IDS) {
     const item = awakened[slot];
     for (const stat of STAT_IDS) {
@@ -169,13 +169,14 @@ export function powerDelta(
   candidate: Item,
   levels: WorkshopLevels = {},
   awakening: AwakeningLevels = {},
+  rebirths = 0,
 ): number {
   const swapped: EquippedItems = { ...equipped, [candidate.slot]: candidate };
-  return gearPower(swapped, levels, awakening) - gearPower(equipped, levels, awakening);
+  return gearPower(swapped, levels, awakening, rebirths) - gearPower(equipped, levels, awakening, rebirths);
 }
 
-function gearPower(equipped: EquippedItems, levels: WorkshopLevels, awakening: AwakeningLevels): number {
-  return computePower(reinforce(computeStats(equipped, awakening), levels, equipped));
+function gearPower(equipped: EquippedItems, levels: WorkshopLevels, awakening: AwakeningLevels, rebirths: number): number {
+  return computePower(reinforce(computeStats(equipped, awakening, rebirths), levels, equipped));
 }
 
 /** Multiplicateur appliqué à la vitesse d'animation du mineur. */

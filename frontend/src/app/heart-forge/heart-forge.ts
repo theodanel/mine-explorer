@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { ABYSS_FLOORS_PER_ESSENCES, ECHO_ESSENCES_PER_ROCK, ESSENCES, EssenceId, RuneType } from '../balance/heart-forge';
 import type { SlotId } from '../equipment/equipment.model';
@@ -14,18 +14,22 @@ import {
   growGearRune,
   HeartForgeState,
   parseHeartForgeState,
+  raiseConstellation,
   removeGearRune,
   spendEssences,
   starReady,
 } from './heart-forge-rules';
-import { stageOf } from './astre-rules';
+import { Progression } from '../progression/progression';
+import { Rebirth } from '../rebirth/rebirth';
+import { astrePower, canRaiseConstellation, constellationNeeds, stageOf } from './astre-rules';
 
 const STORAGE_KEY = 'mine-explorer.forge-du-coeur';
 
-/** L'Astre vient de passer un stade, pour le fêter à l'écran. */
+/** L'Astre vient de passer un stade ou un niveau de Constellation, pour le fêter à l'écran. */
 export interface ForgeEvent {
   readonly id: number;
   readonly stage: number;
+  readonly constellation: number;
 }
 
 /**
@@ -34,6 +38,8 @@ export interface ForgeEvent {
  */
 @Injectable({ providedIn: 'root' })
 export class HeartForge {
+  private readonly rebirth = inject(Rebirth);
+  private readonly progression = inject(Progression);
   private readonly state = signal<HeartForgeState>(loadState());
   private readonly lastEvent = signal<ForgeEvent | null>(null);
   private eventCount = 0;
@@ -42,6 +48,14 @@ export class HeartForge {
   /** Ressources données à l'Astre du Cœur, et son stade (0 à 5). */
   readonly astre = computed(() => this.state().astre);
   readonly astreStage = computed(() => stageOf(this.state().astre));
+  /** Niveaux de Constellation allumés (fin de jeu). */
+  readonly astreConstellation = computed(() => this.state().constellation);
+  /** Ce que demande le niveau de Constellation suivant : Supernova, une renaissance de plus, nourriture et épreuve. */
+  readonly constellationNeeds = computed(() =>
+    constellationNeeds(this.state().astre, this.state().constellation, this.rebirth.count(), this.progression.zone()),
+  );
+  /** Multiplicateur de l'Astre dû à la Constellation : ses bonus, sa frappe et sa pluie d'étoiles. */
+  readonly astrePower = computed(() => astrePower(this.astreConstellation()));
   /** Runes serties sur l'équipement, par emplacement. */
   readonly gear = computed(() => this.state().gear);
   readonly event = this.lastEvent.asReadonly();
@@ -75,20 +89,29 @@ export class HeartForge {
     return true;
   }
 
-  /** Nourrit l'Astre du Cœur ; rend le stade atteint quand il en passe un, sinon null. */
-  feedAstre(essence: EssenceId, amount: number): number | null {
-    const before = stageOf(this.state().astre);
+  /** Nourrit l'Astre du Cœur ; rend vrai quand il passe un stade. */
+  feedAstre(essence: EssenceId, amount: number): boolean {
+    const before = this.astreStage();
     const next = feedAstreWith(this.state(), essence, Math.min(amount, this.state().essences[essence]));
     if (next === this.state()) {
-      return null;
+      return false;
     }
     this.save(next);
-    const after = stageOf(next.astre);
-    if (after > before) {
-      this.lastEvent.set({ id: ++this.eventCount, stage: after });
-      return after;
+    if (this.astreStage() > before) {
+      this.lastEvent.set({ id: ++this.eventCount, stage: this.astreStage(), constellation: this.astreConstellation() });
+      return true;
     }
-    return null;
+    return false;
+  }
+
+  /** Allume le niveau de Constellation suivant, si tout ce qu'il demande est réuni. */
+  raiseConstellation(): boolean {
+    if (!canRaiseConstellation(this.constellationNeeds())) {
+      return false;
+    }
+    this.save(raiseConstellation(this.state()));
+    this.lastEvent.set({ id: ++this.eventCount, stage: this.astreStage(), constellation: this.astreConstellation() });
+    return true;
   }
 
   /** `open` : châsses ouvertes sur l'emplacement, selon les étoiles et l'Éveil (voir GearRunes). */

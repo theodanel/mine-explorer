@@ -3,6 +3,7 @@
 // les 5 étoiles de la Légende du Cœur du monde. Voir docs/game-design/astre-du-coeur.md. Simulé par tools/simulate.mts.
 import type { BonusId } from './skill-tree';
 import type { EssenceId } from './heart-forge';
+import { REBIRTH_MIN_ZONE } from './rebirth';
 
 export const ASTRE_STAGES = 5;
 
@@ -48,3 +49,30 @@ export const ASTRE_COLORS: Readonly<Record<EssenceId, number>> = {
   sap: 0x7ad65a,
   dawn: 0xffd34d,
 };
+
+/**
+ * Constellation (choix de Théo, 26/10/2026) : après Supernova, l'Astre continue de grandir pour la fin de jeu. Chaque
+ * renaissance ouvre un niveau de plus. Pour l'allumer, il faut le nourrir et réussir son épreuve : atteindre une zone
+ * dans la vie en cours, plus profonde à chaque niveau, alors que les filons durcissent à chaque renaissance. Ce qu'on
+ * donne en avance compte pour le niveau suivant. Les Échos rapportent environ 10 ressources par jour au simulateur
+ * (plus avec la Mémoire du Cœur) : le 1er niveau demande quelques jours de récolte, chaque niveau suivant 20 % de plus.
+ */
+export const ASTRE_CONSTELLATION_FIRST_COST = 120;
+export const ASTRE_CONSTELLATION_COST_GROWTH = 1.2;
+/** Chaque niveau ajoute la moitié de la puissance de Supernova à ses bonus, à sa frappe et à sa pluie d'étoiles. */
+export const ASTRE_CONSTELLATION_POWER = 0.5;
+const COST_ROUNDING = 10;
+
+/** Ressources à donner pour ce niveau de Constellation (1 et plus). */
+export function constellationCost(level: number): number {
+  const raw = ASTRE_CONSTELLATION_FIRST_COST * ASTRE_CONSTELLATION_COST_GROWTH ** (level - 1);
+  return Math.round(raw / COST_ROUNDING) * COST_ROUNDING;
+}
+
+/** Épreuve de la Constellation : zones de plus que la renaissance à atteindre dans la vie, par niveau. */
+export const ASTRE_CONSTELLATION_ZONES_PER_LEVEL = 2;
+
+/** Zone à atteindre dans la vie en cours pour allumer ce niveau de Constellation (1 et plus). */
+export function constellationZone(level: number): number {
+  return REBIRTH_MIN_ZONE + ASTRE_CONSTELLATION_ZONES_PER_LEVEL * level;
+}

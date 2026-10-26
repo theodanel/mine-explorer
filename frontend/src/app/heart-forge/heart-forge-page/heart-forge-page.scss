@@ -79,7 +79,7 @@
   color: #b8f5a0;
 }
 
-// L'Astre du Cœur : un cercle à 5 pointes, dessiné en code, de sa couleur et qui brille avec le stade
+// L'Astre du Cœur : une constellation dessinée en code, de sa couleur et qui brille avec le stade
 .astre {
   display: grid;
   grid-template-columns: 30cqw minmax(0, 1fr);
@@ -87,7 +87,7 @@
   gap: 3cqw;
   padding: 3cqw;
   border-radius: 3cqw;
-  background: linear-gradient(160deg, #2b1d18, #140c0a);
+  background: radial-gradient(circle at 20% 50%, #2e2033, #140c0a 70%);
   color: #fff3dc;
 
   h3 {
@@ -104,10 +104,32 @@
   width: 30cqw;
   height: 30cqw;
   overflow: visible;
-  filter: drop-shadow(0 0 calc(var(--astre-glow) * 4cqw) var(--astre-color));
-  animation: astre-turn 16s linear infinite;
+  filter: drop-shadow(0 0 calc(var(--astre-glow) * 2.5cqw) var(--astre-color));
+}
 
-  @media (prefers-reduced-motion: reduce) {
+.astre-body,
+.astre-orbit,
+.astre-core {
+  transform-origin: 50px 50px;
+  transform-box: view-box;
+}
+
+.astre-body {
+  animation: astre-turn 20s linear infinite;
+}
+
+.astre-orbit {
+  animation: astre-turn 12s linear infinite reverse;
+}
+
+.astre-core {
+  animation: astre-pulse 1.6s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .astre-body,
+  .astre-orbit,
+  .astre-core {
     animation: none;
   }
 }
@@ -118,30 +140,85 @@
   }
 }
 
-.astre-halo {
-  fill: var(--astre-color);
-  opacity: calc(var(--astre-glow) * 0.25);
+@keyframes astre-pulse {
+  to {
+    transform: scale(1.12);
+  }
 }
 
-.astre-ring {
-  fill: none;
+.astre-line {
   stroke: var(--astre-color);
-  stroke-width: 2.5;
-  opacity: calc(0.35 + var(--astre-glow) * 0.65);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: calc(0.5 + var(--astre-glow) * 0.5);
+}
+
+.astre-star {
+  fill: var(--astre-color);
+  stroke: #fff;
+  stroke-width: 0.6;
+}
+
+.astre-unlit {
+  fill: var(--astre-color);
+  opacity: 0.35;
+}
+
+.astre-core-glow {
+  fill: var(--astre-color);
+  opacity: calc(var(--astre-glow) * 0.22);
 }
 
 .astre-core {
   fill: var(--astre-color);
-  opacity: var(--astre-glow);
+  stroke: #fff;
+  stroke-width: 0.8;
 }
 
-.astre-point {
-  fill: #2a1c14;
-  stroke: var(--astre-color);
-  stroke-width: 2;
+.astre-orbit-star {
+  fill: #fff;
+}
 
-  &.lit {
-    fill: var(--astre-color);
+.constellation {
+  display: grid;
+  gap: 1.5cqw;
+  justify-items: center;
+  width: 100%;
+  padding: 3cqw;
+  border-radius: 3cqw;
+  background: rgb(0 0 0 / 28%);
+  color: #fff3dc;
+  text-align: center;
+
+  h3 {
+    margin: 0;
+    font-size: 4.4cqw;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.8cqw;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 3cqw;
+  }
+
+  li::before {
+    content: '○ ';
+  }
+
+  li.done {
+    color: #b8f5a0;
+
+    &::before {
+      content: '✓ ';
+    }
+  }
+
+  small {
+    font-size: 2.6cqw;
+    opacity: 0.85;
   }
 }
 

@@ -82,20 +82,21 @@ export class Mining {
     return this.dealDamage(hit, foundShard, foundOre);
   }
 
-  /** Coup de l'Astre du Cœur, qui frappe avec le mineur : une part de sa Frappe selon son stade, ou null s'il dort. */
+  /** Coup de l'Astre du Cœur, qui frappe avec le mineur : une part de sa Frappe selon son stade et sa Constellation, ou null s'il dort. */
   astreStrike(): StrikeOutcome | null {
     const stage = this.heartForge.astreStage();
     if (stage === 0) {
       return null;
     }
-    const damage = Math.round(this.miner.permanent().stats.strikePower * ASTRE_STRIKE_SHARE[stage - 1]);
+    const share = ASTRE_STRIKE_SHARE[stage - 1] * this.heartForge.astrePower();
+    const damage = Math.round(this.miner.permanent().stats.strikePower * share);
     return damage > 0 ? this.dealDamage({ damage, critical: false }, false, false) : null;
   }
 
   /** Pluie d'étoiles de l'Astre (stades 4 et 5) au début d'un combat contre le gardien, ou null avant. */
   astreStarRain(): StrikeOutcome | null {
     const stage = this.heartForge.astreStage();
-    const strikes = stage === 0 ? 0 : ASTRE_GUARDIAN_STRIKES[stage - 1];
+    const strikes = stage === 0 ? 0 : ASTRE_GUARDIAN_STRIKES[stage - 1] * this.heartForge.astrePower();
     if (strikes === 0) {
       return null;
     }

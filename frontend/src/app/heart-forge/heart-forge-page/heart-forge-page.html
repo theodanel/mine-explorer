@@ -6,30 +6,67 @@
   </header>
 
   <div class="scroll">
-    <!-- L'Astre du Cœur : un cercle à 5 pointes, une par stade, qui brille de plus en plus -->
+    <!-- L'Astre du Cœur : une constellation de 5 étoiles, une par stade, qui brille de plus en plus -->
     @let view = astre();
     <article class="astre" [style.--astre-color]="view.color" [style.--astre-glow]="view.glow">
       <svg class="astre-art" viewBox="0 0 100 100" role="img" [attr.aria-label]="'Astre du Cœur, stade ' + view.name">
-        <circle class="astre-halo" cx="50" cy="50" r="46" />
-        <circle class="astre-ring" cx="50" cy="50" r="40" />
-        <circle class="astre-core" cx="50" cy="50" r="12" />
-        @for (point of view.points; track $index) {
-          <circle class="astre-point" [class.lit]="point.lit" [attr.cx]="point.x" [attr.cy]="point.y" r="6" />
-        }
+        <g class="astre-orbit">
+          @for (star of view.orbit; track $index) {
+            <path class="astre-orbit-star" [attr.d]="star" />
+          }
+        </g>
+        <g class="astre-body">
+          @for (line of view.lines; track $index) {
+            <line class="astre-line" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" />
+          }
+          @for (point of view.points; track $index) {
+            @if (point.lit) {
+              <path class="astre-star" [attr.d]="point.path" />
+            } @else {
+              <circle class="astre-unlit" [attr.cx]="point.x" [attr.cy]="point.y" r="2" />
+            }
+          }
+        </g>
+        <circle class="astre-core-glow" cx="50" cy="50" r="17" />
+        <path class="astre-core" [attr.d]="view.core" />
       </svg>
       <div class="astre-text">
-        <h3>{{ view.name }} <span class="stage">stade {{ view.stage }} / 5</span></h3>
-        @if (view.progress; as progress) {
-          <span class="gauge" aria-hidden="true"><span [style.width.%]="progress.percent"></span></span>
-          <small>{{ progress.given }} / {{ progress.needed }} ressources vers le stade suivant</small>
-        } @else {
-          <small>Astre au sommet de sa puissance. Le nourrir encore change seulement la part de chaque bonus.</small>
-        }
+        <h3>
+          {{ view.name }}
+          <span class="stage">
+            @if (view.constellation > 0) {
+              Constellation {{ view.constellation }}
+            } @else {
+              stade {{ view.stage }} / 5
+            }
+          </span>
+        </h3>
+        <span class="gauge" aria-hidden="true"><span [style.width.%]="view.progress.percent"></span></span>
+        <small>
+          {{ view.progress.given }} / {{ view.progress.needed }} ressources vers
+          {{ view.stage < 5 ? 'le stade suivant' : 'la Constellation ' + (view.constellation + 1) }}
+        </small>
         @if (view.bonuses.length > 0) {
           <p class="bonuses">{{ view.bonuses.join(' · ') }}</p>
         }
       </div>
     </article>
+
+    <!-- Fin de jeu : chaque renaissance ouvre un niveau de Constellation, allumé par la nourriture et une épreuve -->
+    @if (constellation(); as next) {
+      <article class="constellation">
+        <h3>Constellation {{ next.level }}</h3>
+        <ul>
+          <li [class.done]="next.rebirth">{{ next.level }} renaissance{{ next.level > 1 ? 's' : '' }}</li>
+          <li [class.done]="next.fed">Nourrir l'Astre ({{ view.progress.given }} / {{ view.progress.needed }})</li>
+          <li [class.done]="next.zoneReached">Épreuve : atteindre la zone {{ next.zone }} dans cette vie</li>
+        </ul>
+        <small>Bonus, frappe et pluie d'étoiles de l'Astre : +50 % de sa puissance de Supernova par niveau.</small>
+        <button type="button" class="game-button" [disabled]="!next.ready" (click)="raiseConstellation()">
+          Allumer la Constellation {{ next.level }}
+        </button>
+      </article>
+    }
 
     @if (nextStar(); as next) {
       <p class="hint" [class.ready]="next.ready">

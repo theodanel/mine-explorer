@@ -30,9 +30,11 @@ describe('Renaissance', () => {
   });
 
   it('donne de grosses hausses de Frappe, un meilleur départ, et durcit les filons à chaque vie', () => {
-    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, shortcut: 2, pickaxe: 1 }, bestStages: 0 });
+    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, shortcut: 2, pickaxe: 1 }, bestStages: 30 * 15 });
     expect(effects.strikeMultiplier).toBeCloseTo((1 + REBIRTH_STRIKE_PER_LEVEL) ** 3);
-    expect(effects.startZone).toBe(5);
+    // Record en zone 30, raccourci au palier 2 : 8 zones avant
+    expect(effects.startZone).toBe(22);
+    expect(rebirthEffects({ count: 1, embers: 0, tree: {}, bestStages: 5 }).startZone).toBe(1);
     expect(effects.startPickaxe).toBeGreaterThan(1);
     expect(effects.hardness).toBeCloseTo(rebirthHardness(2));
     expect(stageHp(20, 3, effects.hardness)).toBeGreaterThan(stageHp(20, 3));

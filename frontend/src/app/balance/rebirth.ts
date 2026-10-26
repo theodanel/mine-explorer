@@ -1,5 +1,5 @@
 // Équilibrage de la Renaissance, la boucle de fin de partie (choix de Théo, 25/10/2026) : à partir de la zone 20, le
-// joueur renaît en zone 1 avec ses acquis de long terme, gagne des Braises du Cœur et les dépense dans un arbre
+// joueur renaît quelques zones avant son record avec ses acquis de long terme, gagne des Braises du Cœur et les dépense dans un arbre
 // permanent qui fait grimper ses dégâts. Chaque vie va plus vite et plus loin, mais les filons durcissent à chaque
 // renaissance : on avance en se battant. Voir docs/game-design/renaissance.md. Simulé par tools/simulate.mts.
 
@@ -54,8 +54,12 @@ export const REBIRTH_STRIKE_PER_LEVEL = 0.4;
 export const REBIRTH_SPEED_PER_LEVEL = 0.04;
 /** Niveaux de pioche avec lesquels on renaît, par palier. */
 export const REBIRTH_PICKAXE_PER_LEVEL = 3;
-/** Zone où l'on renaît, selon le palier du raccourci (0 : zone 1). */
-export const REBIRTH_START_ZONES = [1, 3, 5, 8, 10, 12, 15] as const;
+/**
+ * Zones d'écart entre le record et la zone où l'on renaît, selon le palier du raccourci (choix de Théo, 26/10/2026) :
+ * chaque vie repart près du mur au lieu de retraverser des zones devenues une formalité. Avant, le raccourci donnait
+ * une zone fixe (1 à 15).
+ */
+export const REBIRTH_SHORTCUT_GAPS = [10, 9, 8, 7, 6, 5, 4] as const;
 /** Éclats de géode en plus, par palier. */
 export const REBIRTH_SHARDS_PER_LEVEL = 0.15;
 /** Ressources du Cœur en plus par filon d'Écho, par palier. */
@@ -85,8 +89,8 @@ export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinitio
   },
   shortcut: {
     label: 'Raccourci',
-    describe: (level) => `Renaître en zone ${REBIRTH_START_ZONES[level]}`,
-    maxLevel: REBIRTH_START_ZONES.length - 1,
+    describe: (level) => `Renaître ${REBIRTH_SHORTCUT_GAPS[level]} zones avant ton record`,
+    maxLevel: REBIRTH_SHORTCUT_GAPS.length - 1,
     cost: linear(60),
   },
   shards: {

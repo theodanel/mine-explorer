@@ -1,6 +1,7 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
 import { AWAKENING_SET_STRIKE_PER_LEVEL } from '../balance/awakening';
+import { REBIRTH_GEAR_STATS, rebirthGearPower } from '../balance/rebirth';
 import {
   AFFINITY_WEIGHT,
   AFFIX_SHARE,
@@ -53,9 +54,16 @@ export interface StatComparison {
  * Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche.
  * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon. N'importe quel
  * emplacement peut porter n'importe quelle stat, mais ses deux affinités sortent 3 fois plus souvent. Un affixe de
- * Frappe s'ajoute à la Frappe de base.
+ * Frappe s'ajoute à la Frappe de base. Chaque renaissance renforce les stats sans plafond de la pièce (voir
+ * REBIRTH_GEAR_POWER).
  */
-export function rollItem(random: Random, createId: () => string, pickaxeLevel: number, forcedTier?: TierId): Item {
+export function rollItem(
+  random: Random,
+  createId: () => string,
+  pickaxeLevel: number,
+  forcedTier?: TierId,
+  rebirths = 0,
+): Item {
   const slot = pickOne(SLOT_IDS, random);
   const chances = tierChances(pickaxeLevel);
   // Qualité imposée : la Forge express récompense une bonne partie par une meilleure qualité
@@ -70,7 +78,14 @@ export function rollItem(random: Random, createId: () => string, pickaxeLevel: n
     const ratio = AFFIX_SHARE[stat] * (i === 0 ? 1 : NEXT_AFFIX_RATIO);
     stats[stat] = (stats[stat] ?? 0) + rollStat(stat, tier, level, ratio, random);
   }
-  return { id: createId(), slot, tier, level, stats };
+  const power = rebirthGearPower(rebirths);
+  for (const stat of REBIRTH_GEAR_STATS) {
+    const value = stats[stat];
+    if (value !== undefined && rebirths > 0) {
+      stats[stat] = stat === 'strikePower' ? Math.round(value * power) : value * power;
+    }
+  }
+  return rebirths > 0 ? { id: createId(), slot, tier, level, rebirth: rebirths, stats } : { id: createId(), slot, tier, level, stats };
 }
 
 /** Poids d'une stat dans les tirages d'affixes de cet emplacement. */
@@ -90,7 +105,10 @@ export function hasAffix(item: Item, stat: StatId): boolean {
   if (stat !== 'strikePower') {
     return true;
   }
-  const baseMax = expectedStatValue('strikePower', item.tier, item.level, ITEM_BASE_STRIKE_SHARE) * (1 + STAT_ROLL_SPREAD);
+  const baseMax =
+    expectedStatValue('strikePower', item.tier, item.level, ITEM_BASE_STRIKE_SHARE) *
+    (1 + STAT_ROLL_SPREAD) *
+    rebirthGearPower(item.rebirth ?? 0);
   return value > Math.max(1, Math.round(baseMax));
 }
 
@@ -220,4 +238,9 @@ function pickWeighted<T>(values: readonly T[], weightOf: (value: T) => number, r
   }
   // Inatteignable tant que random() < 1, gardé pour les arrondis flottants
   return values[values.length - 1];
+}
+
+/** Marque d'une pièce forgée après une renaissance : « ✦3 » pour la 3e. Vide avant la première. */
+export function rebirthMark(item: Item): string {
+  return item.rebirth === undefined || item.rebirth === 0 ? '' : ` ✦${item.rebirth}`;
 }

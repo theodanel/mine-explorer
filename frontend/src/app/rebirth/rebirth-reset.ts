@@ -3,13 +3,12 @@ import type { RebirthEffects } from './rebirth-rules';
 
 /**
  * Clés de la « vie » qui repartent de zéro en renaissant : elles retrouvent leur valeur de départ au rechargement.
- * Tout le reste (évolution, artefacts, compagnons, runes, Éveil, succès, Puits…) est gardé.
+ * Tout le reste (évolution, artefacts, compagnons, runes, Éveil, succès, Puits…) est gardé. Depuis le 26/10/2026
+ * (choix de Théo), l'Atelier, les compétences et les minerais sont gardés aussi : leurs progrès durent d'une vie à
+ * l'autre, et retourner chercher du minerai dans les anciennes zones garde un intérêt.
  */
 const LIFE_KEYS_REMOVED = [
-  'mine-explorer.ores',
-  'mine-explorer.workshop',
   'mine-explorer.camp',
-  'mine-explorer.skills',
   'mine-explorer.farm',
   'mine-explorer.guardian-blocked',
   'mine-explorer.gallery',

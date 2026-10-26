@@ -51,6 +51,8 @@ describe('workshop-rules', () => {
     expect(workshopGoldCost('steel', 1) / workshopGoldCost('steel', 0)).toBeCloseTo(1.1, 2);
     expect(workshopOreCost(0)).toBe(6);
     expect(workshopOreCost(49)).toBe(18);
+    // Au-delà du niveau 50, le minerai grimpe de 8 % par niveau : l'Atelier devient un objectif de long terme
+    expect(workshopOreCost(99)).toBeGreaterThan(800);
   });
 
   it('demande le minerai de la qualité, sauf pour le bois', () => {
@@ -59,7 +61,7 @@ describe('workshop-rules', () => {
     expect(upgradeCost('mithril', 12)?.ores).toEqual({ mithril: workshopOreCost(12) });
   });
 
-  it('s\'arrête au niveau 50', () => {
+  it('s\'arrête au niveau maximum', () => {
     expect(upgradeCost('steel', WORKSHOP_MAX_LEVEL - 1)).not.toBeNull();
     expect(upgradeCost('steel', WORKSHOP_MAX_LEVEL)).toBeNull();
   });
@@ -74,7 +76,7 @@ describe('workshop-rules', () => {
   it('refuse une sauvegarde invalide', () => {
     expect(isValidLevels({ pickaxe: { steel: 3 } })).toBe(true);
     expect(isValidLevels({ pickaxe: { steel: -1 } })).toBe(false);
-    expect(isValidLevels({ pickaxe: { steel: 51 } })).toBe(false);
+    expect(isValidLevels({ pickaxe: { steel: WORKSHOP_MAX_LEVEL + 1 } })).toBe(false);
     expect(isValidLevels({ pickaxe: { plastic: 1 } })).toBe(false);
     expect(isValidLevels({ hat: {} })).toBe(false);
     expect(isValidLevels({ pickaxe: 3 })).toBe(false);
@@ -82,9 +84,9 @@ describe('workshop-rules', () => {
   });
 
   it('convertit l\'ancienne sauvegarde vers la qualité de la pièce portée', () => {
-    expect(migrateSlotLevels({ pickaxe: 7, gloves: 60, boots: 2 }, steelPickaxe)).toEqual({
+    expect(migrateSlotLevels({ pickaxe: 7, gloves: WORKSHOP_MAX_LEVEL + 10, boots: 2 }, steelPickaxe)).toEqual({
       pickaxe: { steel: 7 },
-      gloves: { iron: 50 },
+      gloves: { iron: WORKSHOP_MAX_LEVEL },
     });
     expect(migrateSlotLevels({ pickaxe: { steel: 1 } }, steelPickaxe)).toBeNull();
   });

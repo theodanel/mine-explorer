@@ -73,3 +73,11 @@ Six branches, chacune achetée palier par palier avec un coût qui monte. À cal
 4. **Le classement** : meilleure profondeur toutes vies confondues (recommandé), ou classement remis à zéro.
 
 Une fois ces choix faits : calibrage au simulateur (plusieurs vies), puis le code, puis staging.
+
+## Vies durables (26/10/2026)
+
+Choix de Théo : l'Atelier, les compétences et les minerais sont gardés à la renaissance. L'Atelier monte jusqu'au niveau 100 (+40 %) ; au-delà du niveau 50, le minerai demandé grimpe de 8 % par niveau (environ 850 au niveau 99), ce qui fait revenir chercher du minerai dans les anciennes zones. Les compétences gardées ne donnent pas de points en plus : les points dépendent de la zone atteinte dans la vie.
+
+Forge renforcée : chaque pièce forgée après une renaissance porte « ✦N » et a sa Frappe, ses dégâts critiques et son or multipliés par 1,3 puissance N, au rythme de la dureté des filons. Une pièce en Bois d'une 5e vie reste utile. La vitesse et le critique, plafonnés, ne grandissent pas.
+
+Simulateur, 80 jours (joueur régulier) : renaissances depuis les zones 20, 22, 24 et 26, contre 20, 21, 22 et 23 avant.

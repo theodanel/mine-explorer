@@ -112,3 +112,15 @@ export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinitio
     cost: linear(20),
   },
 };
+
+/**
+ * Forge renforcée (choix de Théo, 26/10/2026) : chaque renaissance, les pièces forgées sont plus fortes, au même rythme
+ * que la dureté des filons. Une pièce en Bois d'une 5e vie reste utile. Seules les stats sans plafond grandissent
+ * (Frappe, dégâts critiques, or) : la vitesse et le critique ont un plafond.
+ */
+export const REBIRTH_GEAR_POWER = 1.3;
+export const REBIRTH_GEAR_STATS = ['strikePower', 'critDamage', 'goldBonus'] as const;
+
+export function rebirthGearPower(rebirths: number): number {
+  return REBIRTH_GEAR_POWER ** Math.max(rebirths, 0);
+}

@@ -9,8 +9,11 @@ import { type EvolutionId, goldForDamage, rockHp, TIER_ORDER, tierIndex } from '
  */
 export const WORKSHOP_UNLOCK_FORM: EvolutionId = 'miner';
 
-/** Niveau maximum d'une pièce dans une qualité. */
-export const WORKSHOP_MAX_LEVEL = 50;
+/**
+ * Niveau maximum d'une pièce dans une qualité : 100 depuis le 26/10/2026 (50 avant), l'Atelier étant gardé d'une
+ * renaissance à l'autre pour devenir un objectif de long terme (+40 % au niveau 100).
+ */
+export const WORKSHOP_MAX_LEVEL = 100;
 
 /**
  * Chaque niveau donne +0,4 % à la stat d'Atelier de la pièce (Frappe pour la pioche, Critique pour les gants…),
@@ -52,8 +55,18 @@ export function workshopGoldCost(tier: TierId, level: number): number {
 const WORKSHOP_BASE_ORES = 6;
 const WORKSHOP_ORE_STEP_LEVELS = 4;
 
+/**
+ * Au-delà du niveau 50 (ouvert le 26/10/2026, l'Atelier étant gardé à la renaissance), le minerai grimpe de 8 % par
+ * niveau : 18 au niveau 50, environ 850 au niveau 99. L'or ne freine plus en fin de jeu, le minerai si : c'est lui
+ * qui fait revenir dans les anciennes zones. Au simulateur, sans cette hausse, l'Atelier finissait au jour 80.
+ */
+const WORKSHOP_LONG_TERM_FROM = 50;
+const WORKSHOP_LONG_TERM_ORE_GROWTH = 1.08;
+
 export function workshopOreCost(level: number): number {
-  return WORKSHOP_BASE_ORES + Math.floor(level / WORKSHOP_ORE_STEP_LEVELS);
+  const base = WORKSHOP_BASE_ORES + Math.floor(Math.min(level, WORKSHOP_LONG_TERM_FROM - 1) / WORKSHOP_ORE_STEP_LEVELS);
+  const extra = Math.max(level - (WORKSHOP_LONG_TERM_FROM - 1), 0);
+  return Math.round(base * WORKSHOP_LONG_TERM_ORE_GROWTH ** extra);
 }
 
 /** Minerai demandé : celui de la qualité de la pièce. Le Bois n'est pas un minerai : il se renforce à l'or seul. */

@@ -19,6 +19,8 @@ export interface Item {
   readonly tier: TierId;
   /** Niveau de l'objet : celui de la pioche qui l'a forgé. */
   readonly level: number;
+  /** Renaissances du mineur quand il l'a forgé (absent : 0) : ses stats sont renforcées d'autant, affiché « ✦N ». */
+  readonly rebirth?: number;
   readonly stats: Readonly<Partial<MiningStats>>;
 }
 

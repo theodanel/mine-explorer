@@ -6,6 +6,7 @@ import { Forge } from '../forge/forge';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { ID_FACTORY, RANDOM } from '../shared/random';
 import { MissionCounters } from '../missions/mission-counters';
+import { Rebirth } from '../rebirth/rebirth';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { Awakening } from './awakening';
@@ -46,6 +47,7 @@ export class Inventory {
   private readonly missionCounters = inject(MissionCounters);
   private readonly evolution = inject(Evolution);
   private readonly awakening = inject(Awakening);
+  private readonly rebirth = inject(Rebirth);
   private readonly state = signal<EquipmentSave>(loadSave());
   private readonly animationMs = inject(FORGE_ANIMATION_MS);
   private readonly forgingState = signal(false);
@@ -89,7 +91,7 @@ export class Inventory {
       return false;
     }
     const level = this.forgeLevel();
-    const item = rollItem(this.random, this.createId, level);
+    const item = rollItem(this.random, this.createId, level, undefined, this.rebirth.count());
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);

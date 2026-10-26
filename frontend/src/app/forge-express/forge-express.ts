@@ -9,6 +9,7 @@ import { Evolution } from '../evolution/evolution';
 import { Forge } from '../forge/forge';
 import { dayKey } from '../missions/mission-rules';
 import { MissionCounters } from '../missions/mission-counters';
+import { Rebirth } from '../rebirth/rebirth';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { ID_FACTORY, RANDOM } from '../shared/random';
@@ -59,6 +60,7 @@ export class ForgeExpress {
   private readonly evolution = inject(Evolution);
   private readonly inventory = inject(Inventory);
   private readonly forge = inject(Forge);
+  private readonly rebirth = inject(Rebirth);
   private readonly missionCounters = inject(MissionCounters);
   private readonly runs = signal<DailyRuns>(loadRuns());
   private readonly today = signal(dayKey(this.clock()));
@@ -132,7 +134,7 @@ export class ForgeExpress {
     this.stopLoop();
     const level = this.forge.level();
     const { tier, boosted } = rewardTier(smithing.score, level);
-    const item = rollItem(this.random, this.createId, level, tier);
+    const item = rollItem(this.random, this.createId, level, tier, this.rebirth.count());
     this.inventory.receive(item);
     this.lastResult.set({ score: smithing.score, item, boosted });
   }

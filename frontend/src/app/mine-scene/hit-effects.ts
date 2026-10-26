@@ -10,7 +10,9 @@ import type { RebirthAura } from '../rebirth/rebirth-visuals';
 const FLOATING_TEXT_DURATION_MS = 700;
 const FLOATING_TEXT_RISE_PX = 110;
 const FLOATING_TEXT_OFFSET_Y = -40;
-const TEXT_SIZE = 52;
+/** Chiffres de dégâts plus discrets depuis le 26/10/2026 (Théo) : 52 et 68 avant, ils couvraient le mineur. */
+const DAMAGE_TEXT_SIZE = 34;
+const DAMAGE_CRIT_TEXT_SIZE = 44;
 const HIGHLIGHT_TEXT_SIZE = 68;
 const REWARD_TEXT_SIZE = 38;
 const DAMAGE_COLOR = 0xffffff;
@@ -179,7 +181,7 @@ export class HitEffects {
     const damage = compactNumber(outcome.damage);
     const damageLabel = outcome.critical ? `${damage} !` : damage;
     const damageColor = outcome.critical ? CRITICAL_COLOR : this.damageColor;
-    const damageSize = Math.round((outcome.critical ? HIGHLIGHT_TEXT_SIZE : TEXT_SIZE) * this.damageScale);
+    const damageSize = Math.round((outcome.critical ? DAMAGE_CRIT_TEXT_SIZE : DAMAGE_TEXT_SIZE) * this.damageScale);
     this.add(new FloatingText(x, y + FLOATING_TEXT_OFFSET_Y, damageLabel, damageColor, damageSize, outcome.critical));
 
     // Pas d'or affiché à chaque coup (demande de Théo) : seul le compteur du haut le montre

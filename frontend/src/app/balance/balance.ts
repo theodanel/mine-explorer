@@ -348,6 +348,25 @@ export function rockHp(zone: number, stage: number): number {
   return Math.round(BASE_ROCK_HP * ROCK_HP_GROWTH ** index * softStartFactor(index));
 }
 
+/**
+ * Prix en or qui suivent le revenu (choix de Théo, 27/10/2026) : l'or d'un filon grandit avec la zone et la dureté
+ * de la renaissance, alors que la pioche, l'Atelier et le Campement étaient calés sur les zones 1 à 20 de la 1re vie.
+ * Au-delà, tout devenait gratuit. Ces prix sont donc multipliés par ce que vaut un filon de ta zone, comparé à un filon
+ * de la zone 20 en 1re vie. Jamais moins de ×1 : la 1re vie ne change pas.
+ */
+export const GOLD_PRICE_REFERENCE_ZONE = 20;
+const GOLD_PRICE_REFERENCE_STAGE = 8;
+
+export function goldPriceScale(zone: number, hardness: number): number {
+  const reference = rockHp(GOLD_PRICE_REFERENCE_ZONE, GOLD_PRICE_REFERENCE_STAGE);
+  return Math.max(1, (rockHp(zone, GOLD_PRICE_REFERENCE_STAGE) * hardness) / reference);
+}
+
+/** Or d'un filon moyen de cette zone, dureté comprise : l'unité des prix de fin de jeu. */
+export function rockGold(zone: number, hardness: number): number {
+  return goldForDamage(rockHp(zone, GOLD_PRICE_REFERENCE_STAGE) * hardness, 0);
+}
+
 export function goldForDamage(damage: number, goldBonus: number): number {
   return Math.round(damage * GOLD_PER_DAMAGE * (1 + goldBonus));
 }

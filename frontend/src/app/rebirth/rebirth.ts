@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 
 import { RebirthBranch } from '../balance/rebirth';
 import { readStorage, writeStorage } from '../shared/local-storage';
-import { buy, canBuy, EMPTY_REBIRTH, parseRebirth, rebirthEffects, RebirthState } from './rebirth-rules';
+import { buy, canBuy, EMPTY_REBIRTH, offer, parseRebirth, rebirthEffects, RebirthState } from './rebirth-rules';
 
 export const REBIRTH_STORAGE_KEY = 'mine-explorer.renaissance';
 
@@ -30,6 +30,11 @@ export class Rebirth {
     }
     this.save(buy(this.state(), branch));
     return true;
+  }
+
+  /** Une Offrande au Cœur, déjà payée en or par la page. */
+  offer(): void {
+    this.save(offer(this.state()));
   }
 
   /** La renaissance préparée sur la page (Braises gagnées puis dépensées) devient l'état du compte. */

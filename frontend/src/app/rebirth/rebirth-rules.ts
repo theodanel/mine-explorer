@@ -1,5 +1,6 @@
 // Règles pures de la Renaissance : Braises gagnées, arbre permanent et ce qu'il apporte au mineur.
 import {
+  OFFERING_EMBERS,
   REBIRTH_BRANCHES,
   REBIRTH_ESSENCES_PER_LEVEL,
   REBIRTH_GOLD_PER_LEVEL,
@@ -25,9 +26,11 @@ export interface RebirthState {
   readonly tree: Readonly<Partial<Record<RebirthBranch, number>>>;
   /** Étapes atteintes au plus profond, toutes vies confondues : c'est ce que retient le classement. */
   readonly bestStages: number;
+  /** Offrandes au Cœur faites dans la vie en cours : leur prix double à chacune. */
+  readonly offerings: number;
 }
 
-export const EMPTY_REBIRTH: RebirthState = { count: 0, embers: 0, tree: {}, bestStages: 0 };
+export const EMPTY_REBIRTH: RebirthState = { count: 0, embers: 0, tree: {}, bestStages: 0, offerings: 0 };
 
 export function branchLevel(state: RebirthState, branch: RebirthBranch): number {
   return state.tree[branch] ?? 0;
@@ -47,6 +50,7 @@ export function rebirth(state: RebirthState, zone: number, stagesReached: number
     count: state.count + 1,
     embers: state.embers + rebirthEmbers(zone),
     bestStages: Math.max(state.bestStages, stagesReached),
+    offerings: 0,
   };
 }
 
@@ -68,6 +72,11 @@ export function buy(state: RebirthState, branch: RebirthBranch): RebirthState {
     return state;
   }
   return { ...state, embers: state.embers - cost, tree: { ...state.tree, [branch]: branchLevel(state, branch) + 1 } };
+}
+
+/** Une Offrande au Cœur : des Braises de plus, payées en or par l'appelant. */
+export function offer(state: RebirthState): RebirthState {
+  return { ...state, embers: state.embers + OFFERING_EMBERS, offerings: state.offerings + 1 };
 }
 
 /** Ce que l'arbre apporte : multiplicateur de Frappe, vitesse, départ, éclats, ressources et or gardé. */
@@ -115,8 +124,9 @@ export function parseRebirth(raw: string): RebirthState | null {
   if (typeof value !== 'object' || value === null) {
     return null;
   }
-  const { count, embers, tree, bestStages } = value as Record<string, unknown>;
-  const counts = [count, embers, bestStages].every((number) => Number.isSafeInteger(number) && (number as number) >= 0);
+  const { count, embers, tree, bestStages, offerings = 0 } = value as Record<string, unknown>;
+  // Sauvegarde d'avant l'Offrande (27/10/2026) : aucune offrande faite
+  const counts = [count, embers, bestStages, offerings].every((number) => Number.isSafeInteger(number) && (number as number) >= 0);
   if (!counts || typeof tree !== 'object' || tree === null) {
     return null;
   }
@@ -128,5 +138,7 @@ export function parseRebirth(raw: string): RebirthState | null {
       level >= 0 &&
       level <= REBIRTH_TREE[branch as RebirthBranch].maxLevel,
   );
-  return treeValid ? { count: count as number, embers: embers as number, tree, bestStages: bestStages as number } : null;
+  return treeValid
+    ? { count: count as number, embers: embers as number, tree, bestStages: bestStages as number, offerings: offerings as number }
+    : null;
 }

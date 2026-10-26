@@ -62,7 +62,8 @@ export class Camp {
   }
 
   cost(building: BuildingId): BuildingCost {
-    return buildingCost(this.level(building), this.progression.zone());
+    const cost = buildingCost(this.level(building), this.progression.zone());
+    return { ...cost, gold: Math.round(cost.gold * this.progression.goldPriceScale()) };
   }
 
   check(building: BuildingId): BuildCheck {

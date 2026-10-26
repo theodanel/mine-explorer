@@ -3,6 +3,7 @@ import {
   BASE_STATS,
   expectedStatsAtPickaxe,
   goldForDamage,
+  goldPriceScale,
   MAX_PICKAXE_LEVEL,
   powerOf,
   recommendedPower,
@@ -180,5 +181,14 @@ describe('courbe de progression', () => {
   it('ouvre vite les premières zones, puis demande environ 3 niveaux de pioche par zone, évolutions non comptées', () => {
     const needed = Array.from({ length: 7 }, (_, index) => pickaxeNeededFor(index + 1));
     expect(needed).toEqual([1, 7, 12, 16, 19, 22, 24]);
+  });
+});
+
+describe('Prix en or de fin de jeu', () => {
+  it('ne changent pas en 1re vie, puis suivent l’or que rapporte la zone', () => {
+    expect(goldPriceScale(12, 1)).toBe(1);
+    expect(goldPriceScale(20, 1)).toBe(1);
+    expect(goldPriceScale(20, 1.3)).toBeCloseTo(1.3);
+    expect(goldPriceScale(25, 1)).toBeGreaterThan(10);
   });
 });

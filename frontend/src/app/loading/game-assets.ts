@@ -163,9 +163,18 @@ export function spellIconUrl(spell: SpellId): string {
   return `assets/ui/spells/${spell}.webp`;
 }
 
+/**
+ * Les sceaux n'ont pas encore d'icône peinte : celle de Poigne solide (Frappe, comme eux) les remplace en attendant.
+ * Une icône manquante bloque tout le chargement du jeu, puisque les icônes sont préchargées.
+ */
+const SEAL_ICON_STAND_IN = 'firmGrip';
+
 export function skillIconUrl(nodeId: string): string {
   const node = SKILL_NODES.find((candidate) => candidate.id === nodeId);
-  return node?.kind === 'spell' ? spellIconUrl(node.spell) : `assets/ui/skills/${nodeId}.webp`;
+  if (node?.kind === 'spell') {
+    return spellIconUrl(node.spell);
+  }
+  return `assets/ui/skills/${node?.branch === 'seals' ? SEAL_ICON_STAND_IN : nodeId}.webp`;
 }
 
 export function artifactIconUrl(artifact: ArtifactId): string {

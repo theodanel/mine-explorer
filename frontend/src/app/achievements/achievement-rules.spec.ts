@@ -5,7 +5,6 @@ const START: AchievementSnapshot = {
   zoneReached: 1,
   zonesCleared: 0,
   itemsForged: 0,
-  jackpots: 0,
   abyssRecord: 0,
   setPieces: 0,
   divineSet: 0,
@@ -14,9 +13,9 @@ const START: AchievementSnapshot = {
 };
 
 describe('succès', () => {
-  it('compte 24 succès aux identifiants uniques, chacun avec un titre', () => {
-    expect(ACHIEVEMENTS).toHaveLength(24);
-    expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(24);
+  it('compte 22 succès aux identifiants uniques, chacun avec un titre', () => {
+    expect(ACHIEVEMENTS).toHaveLength(22);
+    expect(new Set(ACHIEVEMENTS.map((achievement) => achievement.id)).size).toBe(22);
   });
 
   it('ne donne rien au début, puis les succès atteints, une seule fois', () => {

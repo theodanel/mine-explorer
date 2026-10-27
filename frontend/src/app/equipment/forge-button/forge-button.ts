@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { forgeSound } from '../../audio/sound-catalog';
 import { Sound } from '../../audio/sound';
 
-import { JACKPOT_CHANCE, jackpotTier, MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
+import { MAX_PICKAXE_LEVEL, tierChances } from '../../balance/balance';
 import { AutoForge } from '../../forge/auto-forge';
 import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
@@ -19,7 +19,6 @@ import { GeodeShards } from '../../wallet/geode-shards';
 import { Wallet } from '../../wallet/wallet';
 import { SLOTS, TIER_IDS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
-import { JackpotBurst } from '../jackpot-burst/jackpot-burst';
 import { compactNumber } from '../../shared/format-number';
 
 const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
@@ -30,7 +29,7 @@ const PERCENT_FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2
  */
 @Component({
   selector: 'app-forge-button',
-  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective, JackpotBurst],
+  imports: [MissionsDialog, ForgeFiltersDialog, RevealDirective],
   templateUrl: './forge-button.html',
   styleUrl: './forge-button.scss',
 })
@@ -66,7 +65,6 @@ export class ForgeButton {
         tier: item.tier,
         icon: itemIconUrl(item.slot, item.tier, SLOTS[item.slot].iconUrl),
         sold: sold !== null && sold.id === item.id ? sold.price : null,
-        jackpot: forged.jackpot,
       },
     ];
   });
@@ -81,7 +79,7 @@ export class ForgeButton {
     effect(() => {
       const forged = this.inventory.lastForged();
       if (forged !== null) {
-        this.sound.play(forged.jackpot ? 'jackpot' : forgeSound(forged.item.tier));
+        this.sound.play(forgeSound(forged.item.tier));
       }
     });
   }
@@ -121,7 +119,6 @@ export class ForgeButton {
     Array.from({ length: this.forge.segmentsPerLevel }, (_, index) => index < this.forge.segments()),
   );
 
-  protected readonly jackpotChance = formatPercent(JACKPOT_CHANCE);
 
   /** Forge renforcée par les renaissances : chaque pièce sort « ✦N », avec ses stats sans plafond multipliées. */
   protected readonly rebirthForge = computed(() => {
@@ -146,7 +143,6 @@ export class ForgeButton {
         next: next === null ? null : formatPercent(next[tier]),
         // Les paliers hors de portée aux deux niveaux sont atténués, comme dans la référence
         reachable: current[tier] > 0 || (next !== null && next[tier] > 0),
-        jackpot: tier === jackpotTier(level),
       })),
     };
   });

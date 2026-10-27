@@ -43,7 +43,6 @@ export class Achievements {
       zoneReached: zone,
       zonesCleared: zone - 1,
       itemsForged: counters.itemsForged,
-      jackpots: counters.jackpots,
       abyssRecord: this.abyss.record(),
       setPieces: set?.pieces ?? 0,
       divineSet: set !== null && set.tier === 'divine' && set.pieces === 5 ? 1 : 0,

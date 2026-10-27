@@ -19,7 +19,6 @@ export const COUNTER_IDS = [
   'workshopUpgrades',
   'adventureRuns',
   'expeditionsSent',
-  'jackpots',
 ] as const;
 export type CounterId = (typeof COUNTER_IDS)[number];
 export type Counters = Readonly<Record<CounterId, number>>;
@@ -37,7 +36,6 @@ export const EMPTY_COUNTERS: Counters = {
   workshopUpgrades: 0,
   adventureRuns: 0,
   expeditionsSent: 0,
-  jackpots: 0,
 };
 
 export interface MissionReward {

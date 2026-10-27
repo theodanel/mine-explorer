@@ -28,11 +28,6 @@ import { AmbienceLayer } from './ambience-layer';
 import { PowerGain, powerGain } from './power-gain';
 import { MiningStats } from '../equipment/equipment.model';
 import { compactNumber } from '../shared/format-number';
-import { Companions } from '../companions/companions';
-import { IMPACT_FRAME, isWindingUp, STRIKE_FRAME_COUNT, walkWindowMs } from './strike-rhythm';
-import { TopDownSettings } from './top-down-settings';
-import { drawFloorTile, TopDownView } from './top-down-view';
-import type { Point } from './top-down-path';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -48,6 +43,9 @@ const MINER_FEET_Y = 690;
 const MINER_ANIMATION = 'pickaxe_swing';
 // Pixi avance d'animationSpeed frame par tick (60 ticks/s) : 0.2 donne les 12 fps prévus par l'atlas
 const MINER_BASE_ANIMATION_SPEED = 0.2;
+// Toutes les animations de frappe ont 23 images avec l'impact sur la même : la cadence ne change pas avec la forme
+const STRIKE_FRAME_COUNT = 23;
+const IMPACT_FRAME = 10;
 
 // Formes sans animation affichées en image fixe : un peu plus grandes que l'Apprenti,
 // avec un petit écrasement à chaque coup pour garder le rythme du minage
@@ -76,8 +74,6 @@ const POWER_GLOW_MS = 600;
 const POWER_GLOW_TINT = 0xffe08a;
 /** L'éclat de l'Astre frappe le filon un peu sous son sommet. */
 const ASTRE_SHOT_BELOW_TOP = 60;
-/** Les effets passent devant tout ce que la vue du dessus range par profondeur. */
-const EFFECTS_DEPTH = 100_000;
 
 @Component({
   selector: 'app-mine-scene',
@@ -105,29 +101,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private squashMs = 0;
   private shakeMs = 0;
   private effects: HitEffects | null = null;
-  /** Haut du rocher à l'écran, pour la barre de vie, le chrono du gardien et la zone du tutoriel. */
   private readonly rockTop = signal<RockTop>({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y });
-  /** Haut du rocher dans le monde, que visent l'Astre et les sorts : l'écran s'en écarte quand la caméra suit le héros. */
-  private rockWorldTop: RockTop = { x: SCENE_WIDTH / 2, y: MINER_FEET_Y };
-  private readonly rock = new MineRock((top) => {
-    this.rockWorldTop = top;
-    this.syncRockTop();
-  });
-  private readonly random = inject(RANDOM);
-  private readonly ambience = new AmbienceLayer(this.random);
-  /** Tout ce qui vit dans la galerie : la caméra de la vue du dessus le déplace d'un bloc. Le décor reste à l'écran. */
-  private readonly world = new Container();
-  /** Mineur de la vue de côté (animé ou image fixe), caché dans la vue du dessus où il ne sert plus que de métronome. */
-  private readonly classicHero = new Container();
-  /** Chiffres de dégâts, éclats, explosions et tirs de l'Astre : toujours au premier plan. */
-  private readonly effectsLayer = new Container();
-  /** Images de l'animation de frappe en cours : le héros de la vue du dessus montre la première en marchant. */
-  private strikeFrames: Texture[] = [];
-  private readonly topDownSettings = inject(TopDownSettings);
-  private readonly companions = inject(Companions);
-  private topDown: TopDownView | null = null;
-  /** La scène est affichée vue du dessus (zone 1 du prototype). */
-  private topDownShown = false;
+  private readonly rock = new MineRock((top) => this.rockTop.set(top));
+  private readonly ambience = new AmbienceLayer(inject(RANDOM));
   /** Lueur de la Renaissance derrière le mineur, et couleur des chiffres de dégâts. */
   private readonly aura = new RebirthAuraView();
   private readonly rebirth = inject(Rebirth);
@@ -176,7 +152,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         untracked(() => {
           const outcome = this.mining.astreStarRain();
           if (outcome !== null && this.effects) {
-            const top = this.rockWorldTop;
+            const top = this.rockTop();
             this.effects.spawnBlast(top.x, top.y, outcome, true);
           }
         });
@@ -199,9 +175,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
     effect(() => {
       const blast = this.mining.blasts();
       if (blast && this.effects && this.miner) {
-        const impact = this.impactPoint(this.miner);
+        const { impactOffset, scale } = this.strike;
         const isFiredamp = blast.spell === 'firedamp';
-        this.effects.spawnBlast(impact.x, impact.y, blast.outcome, isFiredamp);
+        this.effects.spawnBlast(this.miner.x + impactOffset.x * scale, this.miner.y + impactOffset.y * scale, blast.outcome, isFiredamp);
         // Le grisou secoue toute la galerie, la dynamite juste un peu
         this.shakeMs = isFiredamp ? SHAKE_MS : SHAKE_MS * DYNAMITE_SHAKE_SHARE;
         this.sound.play('blast');
@@ -238,24 +214,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const echo = this.progression.inEcho();
       if (this.background) {
         this.background.tint = echo ? ECHO_TINT : NO_TINT;
-      }
-      if (this.topDown) {
-        this.topDown.floor.tint = echo ? ECHO_TINT : NO_TINT;
-      }
-    });
-    // Zone 1 du prototype : la mine vue du dessus, sinon la scène de côté ; changer de caméra replace le héros
-    effect(() => {
-      const topDown = this.topDownSettings.active();
-      this.topDownSettings.fixedCamera();
-      if (this.topDown) {
-        untracked(() => this.applyMode(topDown));
-      }
-    });
-    // Vue du dessus : le compagnon actif quitte le HTML pour suivre le héros dans la scène
-    effect(() => {
-      const companion = this.topDownSettings.active() ? this.companions.active() : null;
-      if (this.topDown) {
-        void this.topDown.companion.show(companion);
       }
     });
     // Sous un menu, la scène tourne au ralenti ; les coups gardent leur cadence (animation au temps écoulé)
@@ -302,9 +260,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         return;
       }
       this.background = new Sprite();
-      this.world.sortableChildren = true;
-      this.world.addChild(this.rock.sprite);
-      this.app.stage.addChild(this.background, this.ambience.container, this.world);
+      this.app.stage.addChild(this.background, this.ambience.container, this.rock.sprite);
       this.ambience.showZone(this.progression.playingZone());
       await this.showZoneBackground(this.progression.playingZone());
       void this.rock.show(this.progression.playingZone(), this.guardian());
@@ -358,9 +314,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
     this.strike = strike;
-    this.strikeFrames = frames;
-    const effectsLayer = this.effectsLayer;
-    effectsLayer.zIndex = EFFECTS_DEPTH;
+    const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
     effects.setRebirthAura(this.rebirthAura());
     this.effects = effects;
@@ -373,37 +327,21 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.classicHero.addChild(miner, this.staticBody);
-    const floorTile = drawFloorTile();
-    const topDown = new TopDownView({ x: SCENE_WIDTH / 2, y: MINER_FEET_Y }, this.random, this.app.renderer.generateTexture(floorTile));
-    floorTile.destroy();
-    // Rien de la vue du dessus ne se montre avant que applyMode ait choisi la vue
-    topDown.floor.visible = false;
-    topDown.hero.visible = false;
-    topDown.companion.view.visible = false;
-    this.topDown = topDown;
-    this.app.stage.addChildAt(topDown.floor, this.app.stage.getChildIndex(this.world));
-    this.world.addChild(astre.view, this.aura.view, this.classicHero, topDown.hero, topDown.companion.view, effectsLayer);
+    this.app.stage.addChild(astre.view, this.aura.view, miner, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
-    if (this.destroyed) {
-      return;
-    }
-    this.applyMode(this.topDownSettings.active());
-    void topDown.companion.show(this.topDownSettings.active() ? this.companions.active() : null);
 
     let previousFrame = miner.currentFrame;
     miner.onFrameChange = (currentFrame: number) => {
       if (hasCrossedFrame(previousFrame, currentFrame, IMPACT_FRAME)) {
         const outcome = this.mining.strike();
-        const impact = this.impactPoint(miner);
-        effects.spawn(impact.x, impact.y, outcome);
+        const { impactOffset, scale } = this.strike;
+        effects.spawn(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale, outcome);
         this.playStrikeSounds(outcome);
         this.rock.hit(outcome.rockBroken);
         if (outcome.rockBroken) {
-          effects.spawnRockBreak(impact.x, impact.y);
+          effects.spawnRockBreak(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale);
           this.shakeMs = Math.max(this.shakeMs, SHAKE_MS * ROCK_BREAK_SHAKE_SHARE);
-          this.walkToNextRock(miner);
         }
         this.squashMs = STRIKE_SQUASH_MS;
       }
@@ -419,7 +357,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.aura.update(ticker.deltaMS);
       astre.update(ticker.deltaMS);
       this.updateAstreStrikes(ticker.deltaMS);
-      this.updateTopDown(ticker.deltaMS, miner);
     });
     miner.play();
   }
@@ -465,7 +402,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const playing = this.miner.playing;
       this.miner.textures = frames;
       this.strike = strike;
-      this.strikeFrames = frames;
       this.placeMiner(strike);
       if (playing) {
         this.miner.gotoAndPlay(frame);
@@ -482,11 +418,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     this.miner.scale.set(strike.scale);
     this.miner.position.set(SCENE_WIDTH / 2 + strike.bodyOffsetX * strike.scale, MINER_FEET_Y);
-    if (this.topDownShown) {
-      // Vue du dessus : l'Astre et la lueur suivent le héros à chaque image, le rocher pousse devant lui
-      this.placeRockAhead();
-      return;
-    }
     // Centré sur le corps dessiné (l'image fixe des formes évoluées est au centre de la scène)
     this.aura.place(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.astre?.place(SCENE_WIDTH / 2, MINER_FEET_Y);
@@ -504,7 +435,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       return;
     }
     this.astreClockMs -= ASTRE_STRIKE_MS;
-    const top = this.rockWorldTop;
+    const top = this.rockTop();
     const effects = this.effects;
     this.astre.shoot(top.x, top.y + ASTRE_SHOT_BELOW_TOP, () => {
       const outcome = this.mining.astreStrike();
@@ -526,133 +457,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Pointe de la pioche à l'impact, dans le repère du monde. */
-  private impactPoint(miner: AnimatedSprite): Point {
-    const { impactOffset, scale, bodyOffsetX } = this.strike;
-    if (this.topDownShown && this.topDown) {
-      const feet = this.topDown.heroFeet;
-      const facing = this.topDown.facing;
-      return { x: feet.x + facing * (bodyOffsetX + impactOffset.x) * scale, y: feet.y + impactOffset.y * scale };
-    }
-    return { x: miner.x + impactOffset.x * scale, y: miner.y + impactOffset.y * scale };
-  }
-
-  private heroFeet(): Point {
-    return this.topDownShown && this.topDown ? this.topDown.heroFeet : { x: SCENE_WIDTH / 2, y: MINER_FEET_Y };
-  }
-
-  /** Bascule entre la scène de côté et la vue du dessus. Le métronome ne s'arrête jamais : seul l'affichage change. */
-  private applyMode(topDown: boolean): void {
-    const view = this.topDown;
-    if (!view || !this.background) {
-      return;
-    }
-    this.topDownShown = topDown;
-    this.background.visible = !topDown;
-    this.ambience.container.visible = !topDown;
-    this.classicHero.visible = !topDown;
-    view.floor.visible = topDown;
-    view.hero.visible = topDown;
-    view.companion.view.visible = topDown;
-    if (topDown) {
-      view.reset(this.topDownSettings.fixedCamera());
-    } else {
-      this.world.position.set(0, 0);
-      this.layerClassic();
-    }
-    this.placeMiner(this.strike);
-    this.syncRockTop();
-  }
-
-  /** Vue de côté : l'ordre d'affichage d'origine, du rocher au mineur (les effets restent devant). */
-  private layerClassic(): void {
-    const layers = [this.rock.sprite, this.astre?.view, this.aura.view, this.classicHero, this.topDown?.hero, this.topDown?.companion.view];
-    layers.forEach((layer, index) => {
-      if (layer) {
-        layer.zIndex = index;
-      }
-    });
-  }
-
-  /** Le filon a cédé sous la pioche : vue du dessus, le héros marche jusqu'au suivant pendant la fin du geste. */
-  private walkToNextRock(miner: AnimatedSprite): void {
-    if (!this.topDownShown || !this.topDown) {
-      return;
-    }
-    this.topDown.walkToNext(walkWindowMs(miner.animationSpeed));
-    this.placeRockAhead();
-  }
-
-  /** Le rocher pousse devant l'endroit où le héros s'arrête, sous sa pioche. */
-  private placeRockAhead(): void {
-    if (!this.topDown) {
-      return;
-    }
-    const { impactOffset, scale, bodyOffsetX } = this.strike;
-    const at = this.topDown.destination;
-    const facing = this.topDown.facing;
-    this.rock.place(at.x + facing * (bodyOffsetX + impactOffset.x) * scale, at.y, facing);
-  }
-
-  /** Vue du dessus, à chaque image : marche, caméra, héros visible, et tout ce qui le suit. */
-  private updateTopDown(elapsedMs: number, miner: AnimatedSprite): void {
-    const view = this.topDown;
-    if (!this.topDownShown || !view) {
-      return;
-    }
-    const reducedMotion = this.topDownSettings.reducedMotion();
-    view.update(elapsedMs, isWindingUp(miner.currentFrame), reducedMotion);
-    const feet = view.heroFeet;
-    this.showTopDownHero(view, miner, reducedMotion);
-    const offset = view.worldOffset;
-    this.world.position.set(offset.x, offset.y);
-    view.layoutFloor(-this.extra(), SCENE_WIDTH, this.sceneHeight(), SHAKE_PX);
-    this.aura.place(feet.x, feet.y);
-    this.astre?.place(feet.x, feet.y);
-    // Rangés par profondeur : ce qui est plus bas à l'écran passe devant
-    this.rock.sprite.zIndex = this.rock.floorLine;
-    this.aura.view.zIndex = feet.y;
-    if (this.astre) {
-      this.astre.view.zIndex = feet.y;
-    }
-    view.hero.zIndex = feet.y;
-    view.companion.view.zIndex = view.companion.feetY;
-    this.syncRockTop();
-  }
-
-  /**
-   * Le héros visible recopie l'image du métronome invisible (ou l'image fixe des formes sans animation), en miroir quand
-   * il regarde à gauche. En marchant, il garde la pose du début de l'élan, faute de vidéo de marche.
-   */
-  private showTopDownHero(view: TopDownView, miner: AnimatedSprite, reducedMotion: boolean): void {
-    const staticBody = this.staticBody;
-    const source: Sprite = staticBody?.visible ? staticBody : miner;
-    const isStatic = source === staticBody;
-    const hero = view.hero;
-    hero.texture = isStatic || !view.walking ? source.texture : (this.strikeFrames[0] ?? source.texture);
-    hero.anchor.copyFrom(source.anchor);
-    hero.scale.set(Math.abs(source.scale.x) * view.facing, source.scale.y);
-    hero.tint = source.tint;
-    const bodyOffset = isStatic ? 0 : this.strike.bodyOffsetX * this.strike.scale;
-    const feet = view.heroFeet;
-    hero.position.set(feet.x + view.facing * bodyOffset, feet.y - view.hop(reducedMotion));
-  }
-
-  /** Le haut du rocher à l'écran : sa place dans le monde, décalée par la caméra. Le signal ne change que s'il bouge. */
-  private syncRockTop(): void {
-    const offset = this.topDownShown && this.topDown ? this.topDown.worldOffset : { x: 0, y: 0 };
-    const x = Math.round(this.rockWorldTop.x + offset.x);
-    const y = Math.round(this.rockWorldTop.y + offset.y);
-    const current = this.rockTop();
-    if (current.x !== x || current.y !== y) {
-      this.rockTop.set({ x, y });
-    }
-  }
-
   private showPowerGain(): void {
     this.pendingGain.set(null);
-    const feet = this.heroFeet();
-    this.effects?.spawnPowerGain(feet.x, feet.y - POWER_GAIN_ABOVE_FEET);
+    this.effects?.spawnPowerGain(SCENE_WIDTH / 2, MINER_FEET_Y - POWER_GAIN_ABOVE_FEET);
     this.glowMs = POWER_GLOW_MS;
     this.sound.play('upgrade');
   }
@@ -753,7 +560,6 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.effects = null;
     this.background = null;
     this.staticBody = null;
-    this.topDown = null;
     // children: true libère sprites et effets ; les textures restent en cache dans Assets pour un remontage
     this.app.destroy(true, { children: true });
   }

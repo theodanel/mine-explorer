@@ -32,6 +32,7 @@ import { ChatUnread } from './online/chat/chat-unread';
 import { LeaderboardPage } from './online/leaderboard-page/leaderboard-page';
 import { ONLINE_CONFIG } from './online/online-config';
 import { TestTools } from './test-tools/test-tools';
+import { TopDownSettings } from './mine-scene/top-down-settings';
 import { environment } from '../environments/environment';
 import { PlayerName } from './shared/player-name';
 import { ItemCompare } from './equipment/item-compare/item-compare';
@@ -144,6 +145,8 @@ export class App {
   });
   /** Site de test (staging) : un bandeau le distingue du vrai jeu. */
   protected readonly testBanner = environment.testBanner;
+  /** Vue du dessus : le compagnon suit le héros dans la scène PixiJS, plus à ses pieds en HTML. */
+  protected readonly topDownMine = inject(TopDownSettings).active;
   /** Outils de test (or, zone, forme…), ouverts depuis le bandeau du site de test. */
   protected readonly testToolsOpen = signal(false);
   // Le défi tourne toute la partie : ses points comptent même quand sa page est fermée

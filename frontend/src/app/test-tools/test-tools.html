@@ -79,6 +79,30 @@
         </button>
       </label>
 
+      <h3>Vue du dessus (prototype, zone 1)</h3>
+      <div class="buttons">
+        <button
+          type="button"
+          class="game-button"
+          [class.green]="topDown.enabled()"
+          [attr.aria-pressed]="topDown.enabled()"
+          (click)="topDown.setEnabled(!topDown.enabled())"
+        >
+          {{ topDown.enabled() ? 'Vue du dessus : allumée' : 'Vue du dessus : éteinte' }}
+        </button>
+      </div>
+      <label class="field">
+        <span>Caméra</span>
+        <select #camera [value]="topDown.camera()">
+          @for (choice of cameraChoices; track choice.id) {
+            <option [value]="choice.id">{{ choice.label }}</option>
+          }
+        </select>
+        <button type="button" class="game-button green" (click)="setCamera(camera.value)">
+          Choisir
+        </button>
+      </label>
+
       <div class="buttons">
         <button type="button" class="game-button" (click)="unlockInterface()">
           Tout débloquer à l'écran

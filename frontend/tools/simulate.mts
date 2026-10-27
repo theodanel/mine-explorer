@@ -141,10 +141,10 @@ const ASTRE_STRIKE_SECONDS = ASTRE_STRIKE_MS / 1000;
 const LEGEND_INDEX = EVOLUTION_FORMS.findIndex((form) => form.id === 'legend');
 import { gearRuneBonuses, OpenSockets } from '../src/app/heart-forge/gear-runes-rules.ts';
 import { AWAKENING_UNLOCK_FORM, awakeningCost, awakeningSockets, MAX_AWAKENING } from '../src/app/balance/awakening.ts';
-import { activeAwakening, awaken, AwakeningState, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
+import { activeAwakening, awaken, AwakeningState, corruptionPhase, EMPTY_AWAKENING, lowestAwakening, recordDuplicate } from '../src/app/equipment/awakening-rules.ts';
 import { spendEssences } from '../src/app/heart-forge/heart-forge-rules.ts';
 import { offeringCost, REBIRTH_MIN_ZONE, type RebirthBranch } from '../src/app/balance/rebirth.ts';
-import { buy, canBuy, EMPTY_REBIRTH, offer, rebirth, rebirthEffects, type RebirthState } from '../src/app/rebirth/rebirth-rules.ts';
+import { buy, canBuy, canRebirth, EMPTY_REBIRTH, forgeLineage, offer, rebirth, rebirthEffects, type RebirthState } from '../src/app/rebirth/rebirth-rules.ts';
 import { GEAR_SOCKETS_TOTAL, gearSocketCount } from '../src/app/balance/gear-runes.ts';
 
 type Profile = 'continu' | 'assidu' | 'regulier';
@@ -425,7 +425,7 @@ let filonSecondsInZone = 0;
 let filonsInZone = 0;
 
 function gearStats(): MiningStats {
-  const base = computeStats(equipped, awakeningState.levels, rebirthState.count);
+  const base = computeStats(equipped, awakeningState.levels);
   return reinforce({ ...base, strikePower: base.strikePower * evolutionStrikeMultiplier(formIndex) }, workshop, equipped);
 }
 
@@ -515,7 +515,7 @@ function forgeAll(now: number): void {
     shards -= FORGE_SHARD_COST;
     forges++;
     record('itemsForged');
-    const item: Item = rollItem(random, createId, pickaxe.level, undefined, rebirthState.count);
+    const item: Item = rollItem(random, createId, pickaxe.level, undefined, forgeLineage(rebirthState.count));
     if (powerDelta(equipped, item, workshop, awakeningState.levels) > 0) {
       const replaced = equipped[item.slot];
       if (replaced) {
@@ -871,7 +871,10 @@ function awakenGear(now: number): void {
   if (!awakeningUnlocked()) return;
   const byLevel = () => [...SLOT_IDS].sort((a, b) => (awakeningState.levels[a] ?? 0) - (awakeningState.levels[b] ?? 0));
   let rocks = Math.round((AWAKEN_ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
-  const target = byLevel().find((slot) => equipped[slot]?.tier === 'divine' && (awakeningState.levels[slot] ?? 0) < MAX_AWAKENING);
+  // La phase suivante se fait avec le Divin de la famille de la vie
+  const ready = (slot: SlotId): boolean =>
+    equipped[slot]?.tier === 'divine' && (equipped[slot]?.family ?? 0) === (awakeningState.levels[slot] ?? 0);
+  const target = byLevel().find((slot) => ready(slot) && (awakeningState.levels[slot] ?? 0) < MAX_AWAKENING);
   const cost = target === undefined ? null : awakeningCost(target, awakeningState.levels[target] ?? 0);
   if (cost !== null) {
     while (rocks-- > 0) earnEssences({ [cost.essence]: echoGain() });
@@ -880,9 +883,8 @@ function awakenGear(now: number): void {
     const slot = byLevel().find((id) => {
       const next = awakeningCost(id, awakeningState.levels[id] ?? 0);
       return (
-        equipped[id]?.tier === 'divine' &&
+        ready(id) &&
         next !== null &&
-        rebirthState.count >= next.rebirths &&
         (awakeningState.duplicates[id] ?? 0) >= next.duplicates &&
         heartForge.essences[next.essence] >= next.essences
       );
@@ -902,9 +904,13 @@ function awakenGear(now: number): void {
 /** Ordre d'achat dans l'arbre : départ plus rapide d'abord, puis la Frappe, puis le reste. */
 const REBIRTH_PRIORITY: readonly RebirthBranch[] = ['strike', 'shortcut', 'pickaxe', 'speed', 'essences', 'shards', 'gold'];
 
-/** Au-delà de la zone 20, le joueur renaît quand il piétine : Braises dépensées, partie de mine remise à zéro. */
+/**
+ * Une fois la phase de la vie faite (puis la zone 20 après la phase 5), le joueur renaît quand il piétine : il est
+ * descendu aussi loin que possible pour ses Braises. Braises dépensées, partie de mine remise à zéro.
+ */
 function maybeRebirth(now: number): void {
-  if (!withRebirth || progress.zone < REBIRTH_MIN_ZONE || now / DAY - lastZoneChangeDay < REBIRTH_STALL_DAYS) return;
+  const phase = corruptionPhase(awakeningState.levels);
+  if (!withRebirth || !canRebirth(progress.zone, rebirthState.count, phase) || now / DAY - lastZoneChangeDay < REBIRTH_STALL_DAYS) return;
   const reachedZone = progress.zone;
   // Avant de renaître, l'or restant part en Offrandes au Cœur
   const unitGold = rockGold(progress.zone, rebirthEffects(rebirthState).hardness);
@@ -913,7 +919,7 @@ function maybeRebirth(now: number): void {
     rebirthState = offer(rebirthState);
     offeringsMade++;
   }
-  rebirthState = rebirth(rebirthState, reachedZone, stagesReached(progress));
+  rebirthState = rebirth(rebirthState, reachedZone, stagesReached(progress), phase);
   for (let guard = 0; guard < 500; guard++) {
     const branch = REBIRTH_PRIORITY.find((id) => canBuy(rebirthState, id));
     if (branch === undefined) break;

@@ -10,6 +10,7 @@ import { Forge } from '../forge/forge';
 import { dayKey } from '../missions/mission-rules';
 import { MissionCounters } from '../missions/mission-counters';
 import { Rebirth } from '../rebirth/rebirth';
+import { forgeLineage } from '../rebirth/rebirth-rules';
 import { CLOCK } from '../shared/clock';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import { ID_FACTORY, RANDOM } from '../shared/random';
@@ -134,7 +135,7 @@ export class ForgeExpress {
     this.stopLoop();
     const level = this.forge.level();
     const { tier, boosted } = rewardTier(smithing.score, level);
-    const item = rollItem(this.random, this.createId, level, tier, this.rebirth.count());
+    const item = rollItem(this.random, this.createId, level, tier, forgeLineage(this.rebirth.count()));
     this.inventory.receive(item);
     this.lastResult.set({ score: smithing.score, item, boosted });
   }

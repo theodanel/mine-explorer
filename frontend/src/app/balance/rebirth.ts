@@ -3,27 +3,58 @@
 // permanent qui fait grimper ses dégâts. Chaque vie va plus vite et plus loin, mais les filons durcissent à chaque
 // renaissance : on avance en se battant. Voir docs/game-design/renaissance.md. Simulé par tools/simulate.mts.
 
-/** Zone à atteindre pour pouvoir renaître. */
+/**
+ * Zone à atteindre pour renaître une fois les 5 phases du Divin corrompu faites. Avant, c'est la phase de la vie qui
+ * ouvre la renaissance (choix de Théo, 27/10/2026), plus la zone.
+ */
 export const REBIRTH_MIN_ZONE = 20;
+/** Phases du Divin corrompu : une par vie. */
+export const CORRUPTION_PHASES = 5;
 /** Les Braises comptent les zones au-delà de celle-ci, au carré : pousser un peu plus loin rapporte nettement plus. */
 const EMBERS_BASE_ZONE = 15;
 
 /** Braises par zone au carré : de quoi acheter plusieurs paliers dès la première renaissance. */
 const EMBERS_PER_SQUARED_ZONE = 10;
 
-/** Braises du Cœur gagnées en renaissant depuis cette zone : 250 en zone 20, 490 en zone 22, 810 en zone 24. */
+/**
+ * Braises du Cœur gagnées en renaissant depuis cette zone : 160 en zone 19, 250 en zone 20, 490 en zone 22. Une phase
+ * peut se finir avant la zone 20 : la zone compte quand même.
+ */
 export function rebirthEmbers(zone: number): number {
-  return zone < REBIRTH_MIN_ZONE ? 0 : EMBERS_PER_SQUARED_ZONE * (zone - EMBERS_BASE_ZONE) ** 2;
+  return EMBERS_PER_SQUARED_ZONE * Math.max(zone - EMBERS_BASE_ZONE, 0) ** 2;
 }
 
 /**
- * Dureté des filons : leurs PV sont multipliés par ce facteur à chaque renaissance (×2,9 vaut une zone). Les zones
- * continuent sans fin au-delà de la 20, toujours plus dures.
+ * Dureté des filons (calée au simulateur, validée par Théo le 27/10/2026) : ×80 par renaissance pendant les 5 phases,
+ * pour suivre le ×1 000 de Frappe de chaque famille de pièces, puis ×3 par renaissance. Les zones continuent sans fin.
  */
-const HARDNESS_PER_REBIRTH = 1.3;
+const HARDNESS_PER_PHASE = 80;
+const HARDNESS_AFTER_PHASES = 3;
 
 export function rebirthHardness(rebirths: number): number {
-  return HARDNESS_PER_REBIRTH ** Math.max(rebirths, 0);
+  const count = Math.max(rebirths, 0);
+  return HARDNESS_PER_PHASE ** Math.min(count, CORRUPTION_PHASES) * HARDNESS_AFTER_PHASES ** Math.max(count - CORRUPTION_PHASES, 0);
+}
+
+/** Famille des pièces forgées dans la vie : 0 (Bois → Divin), puis une famille corrompue par phase faite (1 à 5). */
+export function lifeFamily(rebirths: number): number {
+  return Math.min(Math.max(rebirths, 0), CORRUPTION_PHASES);
+}
+
+/** Renaissances faites après la phase 5 : chacune renforce les pièces forgées, affichées « ✦N ». */
+export function afterPhaseStars(rebirths: number): number {
+  return Math.max(rebirths - CORRUPTION_PHASES, 0);
+}
+
+/**
+ * Frappe des pièces forgées : ×1 000 par famille (le Bois corrompu d'une phase vaut le Divin de la phase d'avant), puis
+ * ×10 par renaissance après la phase 5. La Frappe seule : multiplier aussi les dégâts critiques doublerait l'effet.
+ */
+const FAMILY_STRIKE_POWER = 1000;
+const STAR_STRIKE_POWER = 10;
+
+export function gearStrikeMultiplier(family: number, stars: number): number {
+  return FAMILY_STRIKE_POWER ** Math.max(family, 0) * STAR_STRIKE_POWER ** Math.max(stars, 0);
 }
 
 export const REBIRTH_BRANCHES = ['strike', 'speed', 'pickaxe', 'shortcut', 'shards', 'essences', 'gold'] as const;
@@ -48,6 +79,9 @@ function percent(value: number): string {
   return `+${Math.round(value * 100)} %`;
 }
 
+const STRIKE_FIRST_COST = 10;
+const STRIKE_COST_GROWTH = 1.5;
+
 /** Frappe : chaque palier multiplie les dégâts, c'est la grosse hausse que le joueur sent d'une vie à l'autre. */
 export const REBIRTH_STRIKE_PER_LEVEL = 0.4;
 /** Vitesse de frappe en plus, par palier. */
@@ -71,9 +105,10 @@ export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinitio
   strike: {
     label: 'Frappe ancestrale',
     describe: (level) => `Frappe ×${((1 + REBIRTH_STRIKE_PER_LEVEL) ** level).toFixed(2).replace('.', ',')}`,
-    // Sans fin, comme les zones : la Frappe suit toujours
+    // Sans fin, comme les zones ; le coût grimpe de 50 % par palier (27/10/2026) pour que la famille de pièces reste la
+    // grosse hausse d'une vie à l'autre
     maxLevel: 1000,
-    cost: linear(10),
+    cost: (level) => Math.round(STRIKE_FIRST_COST * STRIKE_COST_GROWTH ** level),
   },
   speed: {
     label: 'Bras infatigable',
@@ -112,18 +147,6 @@ export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinitio
     cost: linear(20),
   },
 };
-
-/**
- * Forge renforcée (choix de Théo, 26/10/2026) : chaque renaissance, les pièces forgées sont plus fortes, au même rythme
- * que la dureté des filons. Une pièce en Bois d'une 5e vie reste utile. Seules les stats sans plafond grandissent
- * (Frappe, dégâts critiques, or) : la vitesse et le critique ont un plafond.
- */
-export const REBIRTH_GEAR_POWER = 1.3;
-export const REBIRTH_GEAR_STATS = ['strikePower', 'critDamage', 'goldBonus'] as const;
-
-export function rebirthGearPower(rebirths: number): number {
-  return REBIRTH_GEAR_POWER ** Math.max(rebirths, 0);
-}
 
 /**
  * Offrande au Cœur (choix de Théo, 27/10/2026) : l'or s'échange contre des Braises. Le prix se compte en filons de la

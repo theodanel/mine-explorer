@@ -1,10 +1,10 @@
 import { awakeningCost, awakeningSockets, awakeningStatBonus, AWAKENING_SET_STRIKE_PER_LEVEL, MAX_AWAKENING } from '../balance/awakening';
 import { SET_BONUSES } from '../balance/balance';
-import { rebirthHardness } from '../balance/rebirth';
 import {
   applyAwakening,
   awaken,
   awakeningBlocker,
+  corruptionPhase,
   AwakeningState,
   EMPTY_AWAKENING,
   lowestAwakening,
@@ -14,8 +14,8 @@ import {
 import { computeStats, gearSet } from './equipment-rules';
 import { EquippedItems, Item, SLOT_IDS, SlotId, TierId } from './equipment.model';
 
-function item(slot: SlotId, tier: TierId = 'divine'): Item {
-  return { id: `${slot}-${tier}`, slot, tier, level: 30, stats: { strikePower: 1000, critChance: 0.02 } };
+function item(slot: SlotId, tier: TierId = 'divine', family = 0): Item {
+  return { id: `${slot}-${tier}-${family}`, slot, tier, level: 30, family, stats: { strikePower: 1000, critChance: 0.02 } };
 }
 
 const ALL_DIVINE: EquippedItems = Object.fromEntries(SLOT_IDS.map((slot) => [slot, item(slot)]));
@@ -57,18 +57,24 @@ describe('Éveil des pièces Divin', () => {
     expect(computeStats(equipped, { pickaxe: 5 }).strikePower).toBeGreaterThan(computeStats(equipped).strikePower);
   });
 
-  it('fait grandir le bonus avec les renaissances, comme la dureté des filons', () => {
-    expect(awakeningStatBonus(5, 3)).toBeCloseTo(awakeningStatBonus(5) * rebirthHardness(3));
-    const equipped: EquippedItems = { pickaxe: item('pickaxe') };
-    expect(computeStats(equipped, { pickaxe: 5 }, 3).strikePower).toBeGreaterThan(computeStats(equipped, { pickaxe: 5 }).strikePower);
-  });
-
-  it('débloque chaque palier après le premier avec une renaissance de plus', () => {
+  it('fait chaque phase avec le Divin de sa famille : la phase 2 demande un Divin corrompu I', () => {
     const state = readyFor('pickaxe', 1);
     const essences = awakeningCost('pickaxe', 1)?.essences ?? 0;
-    expect(awakeningBlocker(state, item('pickaxe'), essences, 0)).toBe('rebirths');
-    expect(awakeningBlocker(state, item('pickaxe'), essences, 1)).toBeNull();
-    expect(awakeningCost('pickaxe', 4)?.rebirths).toBe(4);
+    expect(awakeningBlocker(state, item('pickaxe', 'divine', 0), essences)).toBe('family');
+    expect(awakeningBlocker(state, item('pickaxe', 'divine', 1), essences)).toBeNull();
+    expect(awakeningCost('pickaxe', 0)?.duplicates).toBe(3000);
+  });
+
+  it('ne compte comme doublons que les Divin de la famille de la phase à venir', () => {
+    const atPhase1 = { levels: { bag: 1 }, duplicates: {} };
+    expect(recordDuplicate(atPhase1, item('bag', 'divine', 0)).duplicates).toEqual({});
+    expect(recordDuplicate(atPhase1, item('bag', 'divine', 1)).duplicates).toEqual({ bag: 1 });
+  });
+
+  it('a pour phase le palier le plus bas des cinq emplacements', () => {
+    expect(corruptionPhase({})).toBe(0);
+    expect(corruptionPhase(Object.fromEntries(SLOT_IDS.map((slot) => [slot, 2])))).toBe(2);
+    expect(corruptionPhase({ ...Object.fromEntries(SLOT_IDS.map((slot) => [slot, 2])), boots: 1 })).toBe(1);
   });
 
   it('ouvre une châsse de rune de plus aux paliers 2 et 4', () => {

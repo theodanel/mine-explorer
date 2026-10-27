@@ -1,4 +1,5 @@
 import { BASE_STATS, SET_BONUSES } from '../balance/balance';
+import { gearStrikeMultiplier } from '../balance/rebirth';
 import { EquippedItems, Item, SLOT_IDS, SlotId, TierId } from './equipment.model';
 import {
   compareItems,
@@ -64,14 +65,19 @@ describe('rollItem', () => {
     expect(result.tier).toBe('copper');
   });
 
-  it('renforce la Frappe des pièces forgées après une renaissance, sans toucher aux stats plafonnées', () => {
+  it('multiplie la seule Frappe des pièces de la famille de la phase, puis par renaissance après la phase 5', () => {
     const plain = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7);
-    const reborn = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7, undefined, 2);
-    expect(reborn.stats.strikePower).toBe(Math.round((plain.stats.strikePower ?? 0) * 1.3 ** 2));
-    expect(reborn.stats.critChance).toBe(plain.stats.critChance);
-    expect(hasAffix(reborn, 'strikePower')).toBe(hasAffix(plain, 'strikePower'));
-    expect(rebirthMark(reborn)).toBe(' ✦2');
+    const corrupted = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7, undefined, { family: 2, stars: 0 });
+    expect(corrupted.stats.strikePower).toBe(Math.round((plain.stats.strikePower ?? 0) * gearStrikeMultiplier(2, 0)));
+    expect(corrupted.stats.critChance).toBe(plain.stats.critChance);
+    expect(corrupted.stats.critDamage).toBe(plain.stats.critDamage);
+    expect(hasAffix(corrupted, 'strikePower')).toBe(hasAffix(plain, 'strikePower'));
+    expect(rebirthMark(corrupted)).toBe(' corrompu II');
+    const starred = rollItem(sequence(0.2, 0.5, 0.5, 0.5, 0.5), createId, 7, undefined, { family: 5, stars: 2 });
+    expect(rebirthMark(starred)).toBe(' corrompu V ✦2');
     expect(rebirthMark(plain)).toBe('');
+    expect(gearStrikeMultiplier(1, 0)).toBe(1000);
+    expect(gearStrikeMultiplier(5, 2)).toBe(1000 ** 5 * 100);
   });
 
   it('atteint le dernier palier non nul de la table, jamais au-delà', () => {

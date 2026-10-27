@@ -10,6 +10,7 @@ import { holdUserDialog } from '../../shared/overlays';
 import { Awakening } from '../awakening';
 import { applyAwakening, AwakeningBlocker } from '../awakening-rules';
 import { formatStat } from '../equipment-format';
+import { rebirthMark } from '../equipment-rules';
 import { SlotId, SLOTS, STAT_IDS, STATS, TIER_LABELS } from '../equipment.model';
 import { Inventory } from '../inventory';
 
@@ -18,7 +19,7 @@ const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 const BLOCKER_TEXT: Readonly<Record<AwakeningBlocker, string>> = {
   'not-divine': 'Seule une pièce Divin peut s’éveiller.',
   max: 'Éveil au maximum : la pièce est entièrement corrompue.',
-  rebirths: 'Ce palier se débloque avec une renaissance de plus.',
+  family: 'Cette phase se fait avec le Divin de la famille de ta vie en cours : renais, puis forge-le.',
   duplicates: 'Il manque des doublons Divin de cette pièce : chaque Divin vendu en met un de côté.',
   essences: 'Il manque des ressources du Cœur : récolte-les dans les Échos.',
 };
@@ -58,11 +59,11 @@ export class ItemSheet {
     const divine = item.tier === 'divine';
     // L'Éveil de l'emplacement compte sur toute pièce ; seule une pièce Divin prend l'apparence corrompue
     const level = this.awakening.level(slot);
-    const shown = applyAwakening({ [slot]: item }, this.awakening.levels(), this.awakening.rebirths())[slot] ?? item;
+    const shown = applyAwakening({ [slot]: item }, this.awakening.levels())[slot] ?? item;
     return {
       label: SLOTS[slot].label,
       tier: item.tier,
-      tierLabel: level > 0 && divine ? `${TIER_LABELS[item.tier]} corrompu` : TIER_LABELS[item.tier],
+      tierLabel: `${TIER_LABELS[item.tier]}${rebirthMark(item)}`,
       level: item.level,
       icon: itemIconUrl(slot, item.tier, SLOTS[slot].iconUrl, level),
       awakening: level,
@@ -81,14 +82,13 @@ export class ItemSheet {
     return {
       level,
       max: MAX_AWAKENING,
-      bonus: level > 0 ? percent(awakeningStatBonus(level, this.awakening.rebirths())) : null,
-      nextBonus: cost === null ? null : percent(awakeningStatBonus(level + 1, this.awakening.rebirths())),
+      bonus: level > 0 ? percent(awakeningStatBonus(level)) : null,
+      nextBonus: cost === null ? null : percent(awakeningStatBonus(level + 1)),
       cost:
         cost === null || !divine
           ? null
           : {
               duplicates: `${NUMBER_FORMAT.format(this.awakening.duplicates()[slot] ?? 0)} / ${NUMBER_FORMAT.format(cost.duplicates)}`,
-              rebirths: cost.rebirths > 0 ? `${this.awakening.rebirths()} / ${cost.rebirths}` : null,
               essence: ESSENCE_LABELS[cost.essence],
               essenceIcon: essenceIconUrl(cost.essence),
               essences: `${NUMBER_FORMAT.format(this.heartForge.essences()[cost.essence])} / ${NUMBER_FORMAT.format(cost.essences)}`,

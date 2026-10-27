@@ -4,34 +4,30 @@
 import type { SlotId } from '../equipment/equipment.model';
 import type { EvolutionId } from './balance';
 import type { EssenceId } from './heart-forge';
-import { rebirthHardness } from './rebirth';
 
 /** L'Éveil s'ouvre avec la Légende du Cœur du monde, quand l'équipement est déjà presque tout en Divin. */
 export const AWAKENING_UNLOCK_FORM: EvolutionId = 'heart';
 
 export const MAX_AWAKENING = 5;
 
-/** Coût d'un palier : des doublons Divin de cette pièce, une ressource du Cœur et des renaissances déjà faites. */
+/**
+ * Coût d'un palier : des doublons Divin de cette pièce et une ressource du Cœur. Depuis le 27/10/2026, un palier est une
+ * phase et se fait dans sa vie : la phase N+1 demande une pièce Divin de la famille N (forgée dans la vie N+1).
+ */
 export interface AwakeningCost {
   readonly duplicates: number;
   readonly essence: EssenceId;
   readonly essences: number;
-  readonly rebirths: number;
 }
-
-/**
- * Renaissances déjà faites pour atteindre chaque palier (idée de Théo, 26/10/2026) : l'Éveil 1 se fait dans la
- * première vie, puis chaque renaissance débloque le palier suivant. Le Divin corrompu avance de vie en vie.
- */
-const REBIRTHS_NEEDED = [0, 1, 2, 3, 4] as const;
 
 /**
  * Doublons Divin de la pièce pour passer chaque palier (index 0 : vers l'Éveil 1). En fin de partie, la Forge sort
  * environ 170 Divin par emplacement et par jour (simulateur, régulier) : à 50/150/400/900/1 800, les doublons
  * n'étaient qu'une formalité (Théo, 25/10/2026) ; multipliés par 6, ils freinent les derniers paliers et la Forge reste
- * utile des semaines (Éveil 5 des 5 pièces vers le jour 137 au lieu de 129).
+ * utile des semaines. La phase 1 passe à 3 000 (27/10/2026) : la vie 1 va jusqu'à la zone 19-20 vers le jour 40 ; les
+ * phases suivantes gardent leur coût, la Forge sortant bien plus de Divin dans les vies suivantes.
  */
-const DUPLICATE_COSTS = [300, 900, 2400, 5400, 10800] as const;
+const DUPLICATE_COSTS = [3000, 900, 2400, 5400, 10800] as const;
 /** Ressources du Cœur pour chaque palier : le gros du temps de fin de partie, avec les runes. */
 const ESSENCE_COSTS = [25, 60, 120, 220, 375] as const;
 
@@ -53,19 +49,15 @@ export function awakeningCost(slot: SlotId, level: number): AwakeningCost | null
     duplicates: DUPLICATE_COSTS[level],
     essence: AWAKENING_ESSENCE[slot],
     essences: ESSENCE_COSTS[level],
-    rebirths: REBIRTHS_NEEDED[level],
   };
 }
 
 /** Bonus sur toutes les stats de la pièce, par palier (index 0 : Éveil 1) : +40 % à l'Éveil 5. Calé au simulateur. */
 const STAT_BONUSES = [0.05, 0.12, 0.2, 0.3, 0.4] as const;
 
-/**
- * Bonus d'un palier, qui grandit avec les renaissances comme la dureté des filons (Théo, 26/10/2026 : « plus tu
- * renais, plus les zones sont dures ») : ×1,3 par renaissance, le Divin corrompu suit la difficulté.
- */
-export function awakeningStatBonus(level: number, rebirths = 0): number {
-  return level <= 0 ? 0 : STAT_BONUSES[Math.min(level, MAX_AWAKENING) - 1] * rebirthHardness(rebirths);
+/** Bonus d'un palier, sans multiplicateur de renaissance depuis le 27/10/2026 : c'est la famille des pièces qui grandit. */
+export function awakeningStatBonus(level: number): number {
+  return level <= 0 ? 0 : STAT_BONUSES[Math.min(level, MAX_AWAKENING) - 1];
 }
 
 /** Les paliers 2 et 4 ouvrent chacun une châsse de rune de plus sur l'emplacement. */

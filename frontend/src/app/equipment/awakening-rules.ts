@@ -24,15 +24,15 @@ export function activeAwakening(equipped: EquippedItems, levels: AwakeningLevels
   return equipped[slot] === undefined ? 0 : (levels[slot] ?? 0);
 }
 
-/** Équipement avec les stats des pièces éveillées multipliées ; le bonus grandit avec les renaissances. */
-export function applyAwakening(equipped: EquippedItems, levels: AwakeningLevels, rebirths = 0): EquippedItems {
+/** Équipement avec les stats des pièces éveillées multipliées. */
+export function applyAwakening(equipped: EquippedItems, levels: AwakeningLevels): EquippedItems {
   const result: Partial<Record<SlotId, Item>> = {};
   for (const slot of SLOT_IDS) {
     const item = equipped[slot];
     if (item === undefined) {
       continue;
     }
-    const bonus = awakeningStatBonus(activeAwakening(equipped, levels, slot), rebirths);
+    const bonus = awakeningStatBonus(activeAwakening(equipped, levels, slot));
     result[slot] = bonus === 0 ? item : { ...item, stats: scaledStats(item.stats, 1 + bonus) };
   }
   return result;
@@ -49,13 +49,22 @@ function scaledStats(stats: Item['stats'], factor: number): Partial<MiningStats>
   return scaled;
 }
 
+/** Phase du Divin corrompu : le palier le plus bas des cinq emplacements, pièces portées ou non. */
+export function corruptionPhase(levels: AwakeningLevels): number {
+  return Math.min(...SLOT_IDS.map((slot) => levels[slot] ?? 0));
+}
+
 /** Palier le plus bas des cinq pièces : c'est lui que suit le bonus de panoplie Divin. */
 export function lowestAwakening(equipped: EquippedItems, levels: AwakeningLevels): number {
   return Math.min(...SLOT_IDS.map((slot) => activeAwakening(equipped, levels, slot)));
 }
 
+/**
+ * Une pièce Divin vendue devient un doublon de son emplacement, si elle est de la famille de la phase à venir sur cet
+ * emplacement : seuls les Divin de la famille en cours paient la phase suivante.
+ */
 export function recordDuplicate(state: AwakeningState, item: Item): AwakeningState {
-  if (!isDivine(item)) {
+  if (!isDivine(item) || (item.family ?? 0) !== (state.levels[item.slot] ?? 0)) {
     return state;
   }
   return { ...state, duplicates: { ...state.duplicates, [item.slot]: (state.duplicates[item.slot] ?? 0) + 1 } };
@@ -67,23 +76,20 @@ export function addDuplicates(state: AwakeningState, amount: number): AwakeningS
 }
 
 /** Ce qui manque pour éveiller la pièce portée, ou null si c'est possible. */
-export type AwakeningBlocker = 'not-divine' | 'max' | 'rebirths' | 'duplicates' | 'essences';
+export type AwakeningBlocker = 'not-divine' | 'max' | 'family' | 'duplicates' | 'essences';
 
-export function awakeningBlocker(
-  state: AwakeningState,
-  item: Item | undefined,
-  essencesOwned: number,
-  rebirths = 0,
-): AwakeningBlocker | null {
+export function awakeningBlocker(state: AwakeningState, item: Item | undefined, essencesOwned: number): AwakeningBlocker | null {
   if (!isDivine(item)) {
     return 'not-divine';
   }
-  const cost = awakeningCost(item.slot, state.levels[item.slot] ?? 0);
+  const level = state.levels[item.slot] ?? 0;
+  const cost = awakeningCost(item.slot, level);
   if (cost === null) {
     return 'max';
   }
-  if (rebirths < cost.rebirths) {
-    return 'rebirths';
+  // La phase suivante se fait avec le Divin de la famille de cette vie
+  if ((item.family ?? 0) !== level) {
+    return 'family';
   }
   if ((state.duplicates[item.slot] ?? 0) < cost.duplicates) {
     return 'duplicates';
@@ -98,10 +104,8 @@ export function awaken(state: AwakeningState, slot: SlotId): AwakeningState {
   if (cost === null) {
     return state;
   }
-  return {
-    levels: { ...state.levels, [slot]: level + 1 },
-    duplicates: { ...state.duplicates, [slot]: (state.duplicates[slot] ?? 0) - cost.duplicates },
-  };
+  // Les doublons en trop sont d'une famille passée : ils ne paieront pas la phase suivante
+  return { levels: { ...state.levels, [slot]: level + 1 }, duplicates: { ...state.duplicates, [slot]: 0 } };
 }
 
 /** Lecture d'une sauvegarde : null si elle est abîmée. */

@@ -11,8 +11,9 @@ import { Progression } from '../../progression/progression';
 import { PlayerName } from '../../shared/player-name';
 import { ACHIEVEMENTS } from '../../balance/achievements';
 import { Achievements } from '../../achievements/achievements';
-import { REBIRTH_MIN_ZONE } from '../../balance/rebirth';
+import { Awakening } from '../../equipment/awakening';
 import { Rebirth } from '../../rebirth/rebirth';
+import { canRebirth } from '../../rebirth/rebirth-rules';
 
 /** Volumes proposés, du plus fort au coupé. */
 const VOLUME_OPTIONS = [
@@ -40,7 +41,9 @@ export class ProfilePage {
   protected readonly achievements = inject(Achievements);
   protected readonly achievementCount = ACHIEVEMENTS.length;
   protected readonly rebirth = inject(Rebirth);
-  protected readonly rebirthZone = REBIRTH_MIN_ZONE;
+  private readonly awakening = inject(Awakening);
+  /** La renaissance s'ouvre avec la phase du Divin corrompu de la vie (puis la zone 20 après la phase 5). */
+  protected readonly rebirthReady = computed(() => canRebirth(this.progression.zone(), this.rebirth.count(), this.awakening.phase()));
 
   protected readonly volumes = VOLUME_OPTIONS;
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);

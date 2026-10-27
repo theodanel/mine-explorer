@@ -46,6 +46,7 @@ function isItem(value: unknown): value is Item {
     Number.isSafeInteger(value['level']) &&
     (value['level'] as number) >= 1 &&
     (value['rebirth'] === undefined || (Number.isSafeInteger(value['rebirth']) && (value['rebirth'] as number) >= 0)) &&
+    (value['family'] === undefined || (Number.isSafeInteger(value['family']) && (value['family'] as number) >= 0)) &&
     isStats(value['stats'])
   );
 }

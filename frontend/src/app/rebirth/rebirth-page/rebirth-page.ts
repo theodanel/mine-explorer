@@ -3,6 +3,7 @@ import { Component, computed, DOCUMENT, inject, signal } from '@angular/core';
 import { Sound } from '../../audio/sound';
 import { rockGold } from '../../balance/balance';
 import {
+  CORRUPTION_PHASES,
   OFFERING_EMBERS,
   offeringCost,
   REBIRTH_BRANCHES,
@@ -18,7 +19,8 @@ import { Progression } from '../../progression/progression';
 import { Wallet } from '../../wallet/wallet';
 import { Rebirth } from '../rebirth';
 import { writeNewLife } from '../rebirth-reset';
-import { branchLevel, buy, canBuy, nextCost, rebirth, rebirthEffects, RebirthState } from '../rebirth-rules';
+import { Awakening } from '../../equipment/awakening';
+import { branchLevel, buy, canBuy, canRebirth, nextCost, rebirth, rebirthEffects, RebirthState } from '../rebirth-rules';
 import { romanNumeral } from '../rebirth-visuals';
 
 const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
@@ -35,6 +37,7 @@ const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
 export class RebirthPage {
   protected readonly rebirth = inject(Rebirth);
   private readonly progression = inject(Progression);
+  private readonly awakening = inject(Awakening);
   private readonly wallet = inject(Wallet);
   private readonly navigation = inject(Navigation);
   private readonly sound = inject(Sound);
@@ -52,12 +55,14 @@ export class RebirthPage {
   protected readonly minZone = REBIRTH_MIN_ZONE;
   protected readonly emblem = computed(() => romanNumeral(this.rebirth.count()));
   protected readonly embersLabel = computed(() => NUMBER_FORMAT.format(this.shown().embers));
-  protected readonly canRebirth = computed(() => this.zone() >= REBIRTH_MIN_ZONE);
+  /** Phase du Divin corrompu à faire dans cette vie, ou null après la phase 5 (la renaissance demande alors la zone 20). */
+  protected readonly phaseNeeded = computed(() => (this.rebirth.count() < CORRUPTION_PHASES ? this.rebirth.count() + 1 : null));
+  protected readonly canRebirth = computed(() => canRebirth(this.zone(), this.rebirth.count(), this.awakening.phase()));
   protected readonly gain = computed(() => NUMBER_FORMAT.format(rebirthEmbers(this.zone())));
   /** Ce que la vie suivante coûtera en plus : la dureté des filons après cette renaissance. */
   protected readonly nextHardness = computed(() => {
     const ratio = rebirthHardness(this.rebirth.count() + 1);
-    return `×${ratio.toFixed(2).replace('.', ',')}`;
+    return `×${compactNumber(ratio)}`;
   });
   protected readonly start = computed(() => {
     const effects = rebirthEffects(this.shown());
@@ -118,7 +123,7 @@ export class RebirthPage {
   /** Prépare la renaissance : les Braises de cette vie s'ajoutent, à dépenser avant de repartir. */
   protected prepareRebirth(): void {
     if (this.canRebirth()) {
-      this.draft.set(rebirth(this.rebirth.snapshot(), this.zone(), this.progression.stagesReached()));
+      this.draft.set(rebirth(this.rebirth.snapshot(), this.zone(), this.progression.stagesReached(), this.awakening.phase()));
     }
   }
 

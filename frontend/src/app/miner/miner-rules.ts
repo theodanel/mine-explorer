@@ -26,6 +26,10 @@ export interface MinerProfile {
   readonly blastPct: number;
 }
 
+/** Surplus au-delà des plafonds : 1 point de vitesse en trop = +100 % de Frappe, 1 point de critique = +2 de dégâts crit. */
+const SPEED_TO_STRIKE = 1;
+const CRIT_TO_CRIT_DAMAGE = 2;
+
 /** Bonus relatifs (Frappe, or) : chaque famille multiplie. Les autres s'additionnent. */
 const MULTIPLICATIVE: ReadonlySet<BonusId> = new Set<BonusId>(['strikePct', 'goldPct']);
 
@@ -50,15 +54,20 @@ export function minerProfile(gear: MiningStats, families: readonly Bonuses[], bu
   const bonus = combineFamilies(families);
   const critCap = STAT_CAPS.critChance ?? 1;
   const speedCap = STAT_CAPS.miningSpeed ?? Infinity;
-  const permanentCrit = Math.min(gear.critChance + bonus.critChance, critCap);
-  const permanentSpeed = Math.min(gear.miningSpeed + bonus.speed, speedCap);
+  const rawCrit = gear.critChance + bonus.critChance;
+  const rawSpeed = gear.miningSpeed + bonus.speed;
+  const permanentCrit = Math.min(rawCrit, critCap);
+  const permanentSpeed = Math.min(rawSpeed, speedCap);
+  // Plafonds convertis (27/10/2026) : la vitesse en trop devient de la Frappe, le critique en trop des dégâts critiques
+  const extraSpeed = Math.max(rawSpeed - speedCap, 0);
+  const extraCrit = Math.max(rawCrit - critCap, 0);
   const gold = (1 + gear.goldBonus) * (1 + bonus.goldPct) * buffs.goldMultiplier - 1;
   return {
     stats: {
-      strikePower: gear.strikePower * (1 + bonus.strikePct),
+      strikePower: gear.strikePower * (1 + bonus.strikePct) * (1 + extraSpeed * SPEED_TO_STRIKE),
       miningSpeed: permanentSpeed + buffs.speed,
       critChance: buffs.guaranteedCrit ? 1 : permanentCrit,
-      critDamage: gear.critDamage + bonus.critDamage,
+      critDamage: gear.critDamage + bonus.critDamage + extraCrit * CRIT_TO_CRIT_DAMAGE,
       goldBonus: gold,
     },
     shardChance: SHARD_FIND_CHANCE + bonus.shardChance + buffs.shardChance,

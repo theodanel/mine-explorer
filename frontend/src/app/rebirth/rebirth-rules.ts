@@ -1,5 +1,8 @@
 // Règles pures de la Renaissance : Braises gagnées, arbre permanent et ce qu'il apporte au mineur.
 import {
+  afterPhaseStars,
+  CORRUPTION_PHASES,
+  lifeFamily,
   OFFERING_EMBERS,
   REBIRTH_BRANCHES,
   REBIRTH_ESSENCES_PER_LEVEL,
@@ -16,6 +19,7 @@ import {
   rebirthHardness,
 } from '../balance/rebirth';
 import { STAGES_PER_ZONE } from '../balance/balance';
+import type { ForgeLineage } from '../equipment/equipment-rules';
 
 export interface RebirthState {
   /** Renaissances faites : elles durcissent les filons et allument l'emblème du mineur. */
@@ -36,13 +40,17 @@ export function branchLevel(state: RebirthState, branch: RebirthBranch): number 
   return state.tree[branch] ?? 0;
 }
 
-export function canRebirth(zone: number): boolean {
-  return zone >= REBIRTH_MIN_ZONE;
+/**
+ * La renaissance s'ouvre quand la phase du Divin corrompu de la vie est faite (`phase` : la plus basse des 5 pièces).
+ * Après la phase 5, il faut atteindre la zone 20.
+ */
+export function canRebirth(zone: number, rebirths: number, phase: number): boolean {
+  return rebirths < CORRUPTION_PHASES ? phase > rebirths : zone >= REBIRTH_MIN_ZONE;
 }
 
 /** Renaît depuis cette zone : une renaissance de plus, ses Braises, et la profondeur gardée pour le classement. */
-export function rebirth(state: RebirthState, zone: number, stagesReached: number): RebirthState {
-  if (!canRebirth(zone)) {
+export function rebirth(state: RebirthState, zone: number, stagesReached: number, phase: number): RebirthState {
+  if (!canRebirth(zone, state.count, phase)) {
     return state;
   }
   return {
@@ -72,6 +80,11 @@ export function buy(state: RebirthState, branch: RebirthBranch): RebirthState {
     return state;
   }
   return { ...state, embers: state.embers - cost, tree: { ...state.tree, [branch]: branchLevel(state, branch) + 1 } };
+}
+
+/** Famille et ✦ des pièces forgées dans la vie en cours. */
+export function forgeLineage(rebirths: number): ForgeLineage {
+  return { family: lifeFamily(rebirths), stars: afterPhaseStars(rebirths) };
 }
 
 /** Une Offrande au Cœur : des Braises de plus, payées en or par l'appelant. */

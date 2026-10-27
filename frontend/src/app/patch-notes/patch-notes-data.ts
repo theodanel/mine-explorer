@@ -12,6 +12,17 @@ export interface Release {
  */
 export const RELEASES: readonly Release[] = [
   {
+    id: '2026-10-27',
+    title: 'Nouveautés du 27 octobre',
+    fixes: [
+      'Panoplie : 3 pièces du même matériau donnent +3 % de Frappe, 5 pièces +8 %',
+      'Succès : 22 succès à débloquer, chacun donne un titre à porter',
+      'Ton titre s’affiche dans la discussion et au classement',
+      'Discussion : touche la bulle d’un joueur pour voir sa fiche',
+      'Discussion : une pastille compte les messages non lus',
+    ],
+  },
+  {
     id: '2026-10-20b',
     title: 'Correctif du 20 octobre',
     fixes: ['Puits sans fond : les étages sont les mêmes pour tous, un mineur plus fort descend plus loin'],

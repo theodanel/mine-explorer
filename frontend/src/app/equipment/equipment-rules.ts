@@ -1,7 +1,7 @@
 // Règles pures de l'équipement : aucune dépendance à Angular ni au stockage, pour être testées
 // et portées telles quelles côté Spring quand le serveur fera les tirages. Les chiffres viennent de balance.ts.
 import { AWAKENING_SET_STRIKE_PER_LEVEL } from '../balance/awakening';
-import { REBIRTH_GEAR_STATS, rebirthGearPower } from '../balance/rebirth';
+import { gearStrikeMultiplier } from '../balance/rebirth';
 import {
   AFFINITY_WEIGHT,
   AFFIX_SHARE,
@@ -54,15 +54,15 @@ export interface StatComparison {
  * Forge un objet : son palier dépend uniquement du niveau de la pioche, et son niveau est celui de la pioche.
  * Toute pièce a une Frappe de base, puis 1 à 4 affixes tirés dans les cinq stats, sans doublon. N'importe quel
  * emplacement peut porter n'importe quelle stat, mais ses deux affinités sortent 3 fois plus souvent. Un affixe de
- * Frappe s'ajoute à la Frappe de base. Chaque renaissance renforce les stats sans plafond de la pièce (voir
- * REBIRTH_GEAR_POWER).
+ * Frappe s'ajoute à la Frappe de base. La famille de la vie et les renaissances après la phase 5 multiplient la Frappe
+ * de la pièce (voir gearStrikeMultiplier).
  */
 export function rollItem(
   random: Random,
   createId: () => string,
   pickaxeLevel: number,
   forcedTier?: TierId,
-  rebirths = 0,
+  lineage: ForgeLineage = NO_LINEAGE,
 ): Item {
   const slot = pickOne(SLOT_IDS, random);
   const chances = tierChances(pickaxeLevel);
@@ -78,15 +78,28 @@ export function rollItem(
     const ratio = AFFIX_SHARE[stat] * (i === 0 ? 1 : NEXT_AFFIX_RATIO);
     stats[stat] = (stats[stat] ?? 0) + rollStat(stat, tier, level, ratio, random);
   }
-  const power = rebirthGearPower(rebirths);
-  for (const stat of REBIRTH_GEAR_STATS) {
-    const value = stats[stat];
-    if (value !== undefined && rebirths > 0) {
-      stats[stat] = stat === 'strikePower' ? Math.round(value * power) : value * power;
-    }
+  const power = gearStrikeMultiplier(lineage.family, lineage.stars);
+  if (power !== 1 && stats.strikePower !== undefined) {
+    stats.strikePower = Math.round(stats.strikePower * power);
   }
-  return rebirths > 0 ? { id: createId(), slot, tier, level, rebirth: rebirths, stats } : { id: createId(), slot, tier, level, stats };
+  return {
+    id: createId(),
+    slot,
+    tier,
+    level,
+    ...(lineage.family > 0 ? { family: lineage.family } : {}),
+    ...(lineage.stars > 0 ? { rebirth: lineage.stars } : {}),
+    stats,
+  };
 }
+
+/** Famille de la vie et renaissances après la phase 5, au moment de forger. */
+export interface ForgeLineage {
+  readonly family: number;
+  readonly stars: number;
+}
+
+export const NO_LINEAGE: ForgeLineage = { family: 0, stars: 0 };
 
 /** Poids d'une stat dans les tirages d'affixes de cet emplacement. */
 export function affinityWeight(slot: SlotId, stat: StatId): number {
@@ -105,11 +118,9 @@ export function hasAffix(item: Item, stat: StatId): boolean {
   if (stat !== 'strikePower') {
     return true;
   }
-  const baseMax =
-    expectedStatValue('strikePower', item.tier, item.level, ITEM_BASE_STRIKE_SHARE) *
-    (1 + STAT_ROLL_SPREAD) *
-    rebirthGearPower(item.rebirth ?? 0);
-  return value > Math.max(1, Math.round(baseMax));
+  const baseMax = expectedStatValue('strikePower', item.tier, item.level, ITEM_BASE_STRIKE_SHARE) * (1 + STAT_ROLL_SPREAD);
+  // Le multiplicateur de famille s'applique après l'arrondi, comme au tirage de la pièce
+  return value > Math.max(1, Math.round(baseMax)) * gearStrikeMultiplier(item.family ?? 0, item.rebirth ?? 0);
 }
 
 /** Panoplie portée : le palier le plus représenté, son nombre de pièces et le bonus de Frappe qu'il donne. */
@@ -146,9 +157,9 @@ export function gearSet(equipped: EquippedItems, awakening: AwakeningLevels = {}
   return { ...best, strikePct: base + awakened };
 }
 
-export function computeStats(equipped: EquippedItems, awakening: AwakeningLevels = {}, rebirths = 0): MiningStats {
+export function computeStats(equipped: EquippedItems, awakening: AwakeningLevels = {}): MiningStats {
   const total: MiningStats = { ...BASE_STATS };
-  const awakened = applyAwakening(equipped, awakening, rebirths);
+  const awakened = applyAwakening(equipped, awakening);
   for (const slot of SLOT_IDS) {
     const item = awakened[slot];
     for (const stat of STAT_IDS) {
@@ -187,14 +198,13 @@ export function powerDelta(
   candidate: Item,
   levels: WorkshopLevels = {},
   awakening: AwakeningLevels = {},
-  rebirths = 0,
 ): number {
   const swapped: EquippedItems = { ...equipped, [candidate.slot]: candidate };
-  return gearPower(swapped, levels, awakening, rebirths) - gearPower(equipped, levels, awakening, rebirths);
+  return gearPower(swapped, levels, awakening) - gearPower(equipped, levels, awakening);
 }
 
-function gearPower(equipped: EquippedItems, levels: WorkshopLevels, awakening: AwakeningLevels, rebirths: number): number {
-  return computePower(reinforce(computeStats(equipped, awakening, rebirths), levels, equipped));
+function gearPower(equipped: EquippedItems, levels: WorkshopLevels, awakening: AwakeningLevels): number {
+  return computePower(reinforce(computeStats(equipped, awakening), levels, equipped));
 }
 
 /** Multiplicateur appliqué à la vitesse d'animation du mineur. */
@@ -240,7 +250,12 @@ function pickWeighted<T>(values: readonly T[], weightOf: (value: T) => number, r
   return values[values.length - 1];
 }
 
-/** Marque d'une pièce forgée après une renaissance : « ✦3 » pour la 3e. Vide avant la première. */
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'] as const;
+
+/** Ce qui suit le nom du palier : « corrompu III » pour la famille de la phase 3, puis « ✦2 » après la phase 5. */
 export function rebirthMark(item: Item): string {
-  return item.rebirth === undefined || item.rebirth === 0 ? '' : ` ✦${item.rebirth}`;
+  const family = item.family ?? 0;
+  const corrupted = family > 0 ? ` corrompu ${ROMAN[Math.min(family, ROMAN.length - 1)]}` : '';
+  const stars = item.rebirth === undefined || item.rebirth === 0 ? '' : ` ✦${item.rebirth}`;
+  return corrupted + stars;
 }

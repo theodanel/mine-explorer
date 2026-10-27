@@ -10,6 +10,7 @@ import {
   addDuplicates,
   AwakeningBlocker,
   awakeningBlocker,
+  corruptionPhase,
   awaken,
   AwakeningState,
   EMPTY_AWAKENING,
@@ -36,6 +37,8 @@ export class Awakening {
   readonly unlocked = computed(() => this.evolution.index() >= UNLOCK_INDEX);
   readonly levels = computed(() => this.state().levels);
   readonly duplicates = computed(() => this.state().duplicates);
+  /** Phase du Divin corrompu : elle ouvre la renaissance de la vie. */
+  readonly phase = computed(() => corruptionPhase(this.state().levels));
   /** Renaissances faites : elles débloquent les paliers et font grandir leur bonus. */
   readonly rebirths = computed(() => this.rebirth.count());
 
@@ -62,7 +65,7 @@ export class Awakening {
 
   blocker(item: Item | undefined): AwakeningBlocker | null {
     const cost = item === undefined ? null : awakeningCost(item.slot, this.level(item.slot));
-    return awakeningBlocker(this.state(), item, cost === null ? 0 : this.heartForge.essences()[cost.essence], this.rebirths());
+    return awakeningBlocker(this.state(), item, cost === null ? 0 : this.heartForge.essences()[cost.essence]);
   }
 
   /** Éveille la pièce portée d'un palier, si tout est payé. */

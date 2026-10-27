@@ -9,7 +9,9 @@ import { Forge } from '../../forge/forge';
 import { itemIconUrl, materialIconUrl } from '../../loading/game-assets';
 import { ForgeFiltersDialog } from '../../forge/forge-filters/forge-filters';
 import { Missions } from '../../missions/missions';
-import { rebirthGearPower } from '../../balance/rebirth';
+import { gearStrikeMultiplier } from '../../balance/rebirth';
+import { rebirthMark } from '../equipment-rules';
+import { forgeLineage } from '../../rebirth/rebirth-rules';
 import { Rebirth } from '../../rebirth/rebirth';
 import { RevealDirective } from '../../onboarding/reveal.directive';
 import { Overlays } from '../../shared/overlays';
@@ -120,16 +122,21 @@ export class ForgeButton {
   );
 
 
-  /** Forge renforcée par les renaissances : chaque pièce sort « ✦N », avec ses stats sans plafond multipliées. */
+  /** Forge de la vie : famille corrompue de la phase, puis ✦ après la phase 5, qui multiplient la Frappe des pièces. */
   protected readonly rebirthForge = computed(() => {
-    const count = this.rebirth.count();
-    return count === 0 ? null : { count, power: rebirthGearPower(count).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) };
+    const lineage = forgeLineage(this.rebirth.count());
+    if (lineage.family === 0) {
+      return null;
+    }
+    const mark = rebirthMark({ id: '', slot: 'pickaxe', tier: 'wood', level: 1, family: lineage.family, rebirth: lineage.stars, stats: {} });
+    return { mark: mark.trim(), power: compactNumber(gearStrikeMultiplier(lineage.family, lineage.stars)) };
   });
 
   /** Table des chances : niveau actuel et niveau suivant côte à côte, un palier par ligne. */
   protected readonly odds = computed(() => {
     const level = this.forge.level();
-    const mark = this.rebirth.count() > 0 ? ` ✦${this.rebirth.count()}` : '';
+    const lineage = forgeLineage(this.rebirth.count());
+    const mark = rebirthMark({ id: '', slot: 'pickaxe', tier: 'wood', level: 1, family: lineage.family, rebirth: lineage.stars, stats: {} });
     const nextLevel = level < MAX_PICKAXE_LEVEL ? level + 1 : null;
     const current = tierChances(level);
     const next = nextLevel === null ? null : tierChances(nextLevel);

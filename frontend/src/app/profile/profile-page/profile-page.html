@@ -40,10 +40,10 @@
           @if (rebirth.count() > 0) {
             <span>{{ rebirth.count() }} renaissance{{ rebirth.count() > 1 ? 's' : '' }} · {{ rebirth.embers() }} Braises</span>
           } @else {
-            <span>S'ouvre en zone {{ rebirthZone }}</span>
+            <span>S'ouvre avec la phase 1 du Divin corrompu</span>
           }
         </span>
-        @if (progression.zone() >= rebirthZone) {
+        @if (rebirthReady()) {
           <span class="pill ready">Possible !</span>
         }
         <span class="chevron" aria-hidden="true">›</span>

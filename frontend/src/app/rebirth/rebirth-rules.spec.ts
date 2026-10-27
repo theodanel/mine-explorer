@@ -11,18 +11,33 @@ import { buy, canBuy, canRebirth, EMPTY_REBIRTH, nextCost, offer, parseRebirth, 
 import { auraCss, rebirthAura, romanNumeral } from './rebirth-visuals';
 
 describe('Renaissance', () => {
-  it("ne s'ouvre qu'à partir de la zone 20, et rapporte plus en allant plus loin", () => {
-    expect(canRebirth(19)).toBe(false);
-    expect(canRebirth(20)).toBe(true);
-    expect(rebirthEmbers(19)).toBe(0);
+  it("s'ouvre avec la phase de la vie, puis en zone 20 après la phase 5, et rapporte plus en allant plus loin", () => {
+    expect(canRebirth(30, 0, 0)).toBe(false);
+    expect(canRebirth(17, 0, 1)).toBe(true);
+    expect(canRebirth(30, 2, 2)).toBe(false);
+    expect(canRebirth(19, 5, 5)).toBe(false);
+    expect(canRebirth(20, 7, 5)).toBe(true);
+    expect(rebirthEmbers(15)).toBe(0);
+    expect(rebirthEmbers(19)).toBe(160);
     expect(rebirthEmbers(22)).toBeGreaterThan(rebirthEmbers(20));
-    expect(rebirth(EMPTY_REBIRTH, 19, 280)).toBe(EMPTY_REBIRTH);
+    expect(rebirth(EMPTY_REBIRTH, 25, 360, 0)).toBe(EMPTY_REBIRTH);
   });
 
   it('compte la vie, ses Braises et garde la meilleure profondeur', () => {
-    const once = rebirth(EMPTY_REBIRTH, 21, 305);
+    const once = rebirth(EMPTY_REBIRTH, 21, 305, 1);
     expect(once).toEqual({ count: 1, embers: rebirthEmbers(21), tree: {}, bestStages: 305, offerings: 0 });
-    expect(rebirth(once, 20, 290).bestStages).toBe(305);
+    expect(rebirth(once, 20, 290, 2).bestStages).toBe(305);
+  });
+
+  it('durcit les filons de ×80 par phase, puis de ×3 par renaissance', () => {
+    expect(rebirthHardness(0)).toBe(1);
+    expect(rebirthHardness(2)).toBe(80 ** 2);
+    expect(rebirthHardness(7)).toBe(80 ** 5 * 9);
+  });
+
+  it('fait grimper le coût de la Frappe ancestrale de 50 % par palier', () => {
+    expect(REBIRTH_TREE.strike.cost(0)).toBe(10);
+    expect(REBIRTH_TREE.strike.cost(2)).toBe(Math.round(10 * 1.5 ** 2));
   });
 
   it("achète les paliers de l'arbre avec les Braises, jusqu'au maximum", () => {
@@ -67,7 +82,7 @@ describe('Renaissance', () => {
   it('échange de l’or contre des Braises, et remet les offrandes à zéro en renaissant', () => {
     const gifted = offer(EMPTY_REBIRTH);
     expect(gifted).toEqual({ ...EMPTY_REBIRTH, embers: OFFERING_EMBERS, offerings: 1 });
-    expect(rebirth(gifted, 20, 300).offerings).toBe(0);
+    expect(rebirth(gifted, 20, 300, 1).offerings).toBe(0);
     expect(offeringCost(100, 1)).toBe(1.5 * offeringCost(100, 0));
   });
 });

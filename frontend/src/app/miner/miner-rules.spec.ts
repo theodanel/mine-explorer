@@ -51,3 +51,14 @@ describe('profil du mineur', () => {
     expect(profile.stats.goldBonus).toBeCloseTo(3.5);
   });
 });
+
+describe('plafonds convertis', () => {
+  it('change la vitesse en trop en Frappe et le critique en trop en dégâts critiques', () => {
+    const gear = { ...BASE_STATS, strikePower: 100, miningSpeed: 2.5, critChance: 1.2, critDamage: 1 };
+    const profile = minerProfile(gear, [], NO_BUFFS);
+    expect(profile.stats.miningSpeed).toBe(2);
+    expect(profile.stats.critChance).toBe(1);
+    expect(profile.stats.strikePower).toBeCloseTo(150);
+    expect(profile.stats.critDamage).toBeCloseTo(1.4);
+  });
+});

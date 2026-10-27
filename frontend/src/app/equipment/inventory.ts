@@ -7,6 +7,7 @@ import { readStorage, writeStorage } from '../shared/local-storage';
 import { ID_FACTORY, RANDOM } from '../shared/random';
 import { MissionCounters } from '../missions/mission-counters';
 import { Rebirth } from '../rebirth/rebirth';
+import { forgeLineage } from '../rebirth/rebirth-rules';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { Awakening } from './awakening';
@@ -79,7 +80,7 @@ export class Inventory {
 
   /** Stats d'un équipement, porté ou envisagé, avec l'Éveil des emplacements et le bonus de Frappe des évolutions. */
   statsOf(equipped: EquippedItems): MiningStats {
-    const stats = computeStats(equipped, this.awakening.levels(), this.awakening.rebirths());
+    const stats = computeStats(equipped, this.awakening.levels());
     return { ...stats, strikePower: stats.strikePower * this.evolution.strikeMultiplier() };
   }
 
@@ -89,7 +90,7 @@ export class Inventory {
       return false;
     }
     const level = this.forgeLevel();
-    const item = rollItem(this.random, this.createId, level, undefined, this.rebirth.count());
+    const item = rollItem(this.random, this.createId, level, undefined, forgeLineage(this.rebirth.count()));
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);

@@ -77,3 +77,16 @@ Crée une icône de jeu vidéo : une paire de gants de mineur « Divin corrompu 
 ```
 Crée une icône de jeu vidéo : une paire de bottes de mineur « Divin corrompu ». Style : illustration 2D cartoon peinte à la main, comme un jeu mobile idle façon Legend of Mushroom, contours épais brun foncé, couleurs riches, ombrage doux peint ; surtout pas de photo, pas de rendu 3D, pas de réalisme. Les bottes reprennent la forme exacte des bottes de l'image de référence (lacets, semelles épaisses), mais corrompues : cuir noirci presque noir, semelles et coques en obsidienne fissurée, veines de lave orange lumineuses le long des coutures, lacets rougeoyants ; un peu de braise et de fumée sombre au sol sous les semelles. Cadrage : la paire seule, centrée, vue de trois quarts, occupant environ 80 % d'une image carrée 1024×1024. Fond : vert uni #00FF00, sans dégradé ni ombre portée sur le fond. Aucun texte, aucune lettre, aucun chiffre, aucun cadre. Utilise l'image jointe comme référence de forme et de style.
 ```
+
+## Les 5 phases (27/10/2026, remplace les paliers liés aux renaissances)
+
+Décidé par Théo (doc « La Corruption : une fin de jeu pour chaque système ») : une vie = une phase.
+
+- Phase N = les 5 emplacements éveillés au palier N. Elle se fait avec le Divin de la famille de la vie : la vie 1 forge du Bois → Divin, la vie 2 du « corrompu I », etc. Seuls les Divin de cette famille comptent comme doublons, et les doublons en trop repartent à zéro après un palier.
+- Doublons : 3 000 pour la phase 1 (la vie 1 va jusqu'en zone 19-20 vers J40), puis 900, 2 400, 5 400, 10 800. Bonus +5/12/20/30/40 %, sans multiplicateur de renaissance.
+- La phase de la vie ouvre la renaissance (plus la zone 20) ; après la phase 5, la zone 20. Renaître reste un choix : descendre plus loin rapporte plus de Braises (10 × (zone − 15)²).
+- Familles : Frappe des pièces ×1 000 par famille, puis ×10 par renaissance après la phase 5 (« ✦N »). La Frappe seule (avant, les ✦ multipliaient aussi les dégâts critiques et l'or).
+- Filons : ×80 par renaissance pendant les phases, puis ×3.
+- Frappe ancestrale : coût 10 × 1,5^palier. Plafonds convertis : vitesse en trop → Frappe (1 point = +100 %), critique en trop → dégâts critiques (×2).
+
+Simulateur (regulier, 80 jours) : phases J39 (zone 19), J46 (24), J57 (28), J67 (31), J78 (35).

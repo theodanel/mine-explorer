@@ -23,14 +23,21 @@
           <button type="button" class="game-button gold" (click)="prepareRebirth()">Préparer la renaissance</button>
         </article>
       } @else {
-        <p class="hint">Atteins la zone {{ minZone }} pour renaître (tu es en zone {{ zone() }}).</p>
+        @if (phaseNeeded(); as phase) {
+          <p class="hint">
+            Éveille tes 5 pièces Divin en phase {{ phase }} du Divin corrompu pour renaître. Tu pourras ensuite rester et
+            descendre encore pour gagner plus de Braises.
+          </p>
+        } @else {
+          <p class="hint">Atteins la zone {{ minZone }} pour renaître (tu es en zone {{ zone() }}).</p>
+        }
       }
     } @else {
       <article class="reborn confirm">
         <h3>Avant de renaître</h3>
         <p>
           <strong>Repart de zéro</strong> : zone, pioche, équipement, or et Campement. Tu gardes l'Atelier, les
-          compétences et les minerais, et ta prochaine forge est plus forte (✦).
+          compétences et les minerais, et ta prochaine forge passe à la famille suivante du Divin corrompu.
         </p>
         <p>
           <strong>Reste</strong> : évolution, artefacts, compagnons, runes, Éveil, succès et Puits sans fond.

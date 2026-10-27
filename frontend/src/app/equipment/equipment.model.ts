@@ -19,7 +19,9 @@ export interface Item {
   readonly tier: TierId;
   /** Niveau de l'objet : celui de la pioche qui l'a forgé. */
   readonly level: number;
-  /** Renaissances du mineur quand il l'a forgé (absent : 0) : ses stats sont renforcées d'autant, affiché « ✦N ». */
+  /** Famille de la vie où il a été forgé (absent : 0) : 1 à 5 pour les phases du Divin corrompu. */
+  readonly family?: number;
+  /** Renaissances faites après la phase 5 quand il a été forgé (absent : 0), affiché « ✦N ». */
   readonly rebirth?: number;
   readonly stats: Readonly<Partial<MiningStats>>;
 }

@@ -44,6 +44,7 @@ import { CompanionsPage } from './companions/companions-page/companions-page';
 import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
+import { IntroTale } from './intro/intro-tale';
 import { JournalBook } from './journal/journal-book/journal-book';
 import { JournalButton } from './journal/journal-button/journal-button';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
@@ -120,6 +121,7 @@ function resourceLabel(amount: number): string {
     RevealDirective,
     MineEventLayer,
     GalleryChoice,
+    IntroTale,
     JournalBook,
     JournalButton,
     CompanionsPage,

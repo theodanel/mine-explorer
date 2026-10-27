@@ -1,0 +1,25 @@
+@if (visible()) {
+  <section class="tale" role="dialog" aria-modal="true" aria-label="Introduction" (click)="next()">
+    @for (item of pages; track item.image; let position = $index) {
+      <img
+        class="picture"
+        [class.shown]="position === index()"
+        [src]="item.image"
+        alt=""
+        width="1080"
+        height="1935"
+      />
+    }
+    @let current = page();
+    <!-- La phrase scintille par-dessus l'image, lettre après lettre -->
+    @for (sentence of [current]; track sentence.text) {
+      <p class="text" [attr.aria-label]="sentence.text">
+        @for (letter of letters(); track $index) {
+          <span class="letter" aria-hidden="true" [style.animation-delay.ms]="letter.delay">{{ letter.char }}</span>
+        }
+      </p>
+    }
+    <p class="hint" aria-hidden="true">Touche pour continuer</p>
+    <button type="button" class="skip" (click)="$event.stopPropagation(); finish()">Passer</button>
+  </section>
+}

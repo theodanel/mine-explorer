@@ -273,23 +273,6 @@ export const COMPANION_ANIMATIONS: Readonly<Partial<Record<CompanionId, { readon
   dragonling: { url: 'assets/companions/dragonling-idle.webp', frames: 33, frameWidth: 199, frameHeight: 200 },
 };
 
-/**
- * Mine vue du dessus (prototype, zone 1) : sol qui se répète, décors semés, trou laissé par un filon, et marche
- * provisoire du héros (vidéo Gemini découpée par art-source/animations/decouper-marche.py, en attendant celle de
- * chaque forme). Préparés par art-source/decors/preparer-decors.py.
- */
-export const TOP_DOWN_ASSETS = {
-  floorUrl: 'assets/floors/zone1.webp',
-  decorUrls: ['racines', 'etai', 'eclats-or', 'lanterne', 'cailloux', 'seau'].map((name) => `assets/decors/zone1/${name}.webp`),
-  holeUrl: 'assets/decors/zone1/trou-filon.webp',
-  walk: {
-    atlasUrl: 'assets/characters/miner/marche-provisoire.json',
-    animation: 'walk',
-    // Corps de 360 px dans l'atlas, ramené aux 259 px de l'Apprenti à l'écran
-    scale: 0.72,
-  },
-} as const;
-
 /** Icône de la loterie du jour (roue de la fortune), près du bandeau de zone. */
 export const LOTTERY_ICON = 'assets/ui/refonte/lottery.webp';
 

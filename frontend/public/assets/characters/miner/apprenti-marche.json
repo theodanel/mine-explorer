@@ -4,293 +4,251 @@
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0001": {
    "frame": {
-    "x": 318,
+    "x": 389,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0002": {
    "frame": {
-    "x": 636,
+    "x": 778,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0003": {
    "frame": {
-    "x": 954,
+    "x": 1167,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0004": {
    "frame": {
-    "x": 1272,
+    "x": 1556,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0005": {
    "frame": {
-    "x": 1590,
+    "x": 1945,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0006": {
    "frame": {
     "x": 0,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0007": {
    "frame": {
-    "x": 318,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "x": 389,
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0008": {
    "frame": {
-    "x": 636,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "x": 778,
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0009": {
    "frame": {
-    "x": 954,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "x": 1167,
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0010": {
    "frame": {
-    "x": 1272,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "x": 1556,
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   },
   "apprenti-marche_0011": {
    "frame": {
-    "x": 1590,
-    "y": 365,
-    "w": 318,
-    "h": 365
+    "x": 1945,
+    "y": 366,
+    "w": 389,
+    "h": 366
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "sourceSize": {
-    "w": 318,
-    "h": 365
-   },
-   "duration": 83
-  },
-  "apprenti-marche_0012": {
-   "frame": {
-    "x": 0,
-    "y": 730,
-    "w": 318,
-    "h": 365
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 318,
-    "h": 365
-   },
-   "sourceSize": {
-    "w": 318,
-    "h": 365
-   },
-   "duration": 83
-  },
-  "apprenti-marche_0013": {
-   "frame": {
-    "x": 318,
-    "y": 730,
-    "w": 318,
-    "h": 365
-   },
-   "rotated": false,
-   "trimmed": false,
-   "spriteSourceSize": {
-    "x": 0,
-    "y": 0,
-    "w": 318,
-    "h": 365
-   },
-   "sourceSize": {
-    "w": 318,
-    "h": 365
+    "w": 389,
+    "h": 366
    },
    "duration": 83
   }
@@ -308,9 +266,7 @@
    "apprenti-marche_0008",
    "apprenti-marche_0009",
    "apprenti-marche_0010",
-   "apprenti-marche_0011",
-   "apprenti-marche_0012",
-   "apprenti-marche_0013"
+   "apprenti-marche_0011"
   ]
  },
  "meta": {
@@ -319,8 +275,8 @@
   "image": "apprenti-marche.webp",
   "format": "RGBA8888",
   "size": {
-   "w": 1908,
-   "h": 1095
+   "w": 2334,
+   "h": 732
   },
   "scale": "1"
  }

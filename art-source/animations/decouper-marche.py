@@ -1,17 +1,23 @@
-"""Transforme une vidéo de marche sur place, sur fond vert, en atlas d'animation pour la mine vue du dessus.
+"""Transforme une vidéo de marche sur place, sur fond vert, en atlas d'animation pour le héros qui avance.
 
 Usage :
     python decouper-marche.py <video.mp4> <première image> <images par cycle> <nom> <dossier de sortie>
+                              [--zone x0,y0,x1,y1] [--zoom]
 
 - <première image> : numéro (à partir de 1) d'une image où le cycle de pas commence.
 - <images par cycle> : longueur d'un cycle complet de la vidéo (deux pas), en images à 24 i/s. Le script affiche
   l'écart entre l'image de départ et celle d'un cycle plus loin : proche de 0, la boucle ne saute pas.
 - Garde une image sur deux (12 i/s, comme les frappes), découpe toutes les images dans un même cadre pour que le
   personnage ne glisse pas, et le centre sur ses pieds.
+- --zone : ne garde que ce rectangle de la vidéo (en pixels), pour écarter un filigrane ou un logo.
+- --zoom : la caméra de la vidéo avance ou recule (le personnage grossit). Chaque image est alors ramenée à la même
+  taille et posée sur les mêmes pieds, d'après une droite ajustée sur toute la boucle (une jambe levée ne fait pas
+  sauter la taille d'une image à l'autre).
 - Écrit <nom>.webp (grille de 6 colonnes) et <nom>.json (atlas TexturePacker, animation « walk »).
 
 Dépendances : ffmpeg dans le PATH, Pillow, et decouper-frappe.py dans le même dossier (détourage du vert).
 """
+import argparse
 import importlib.util
 import json
 import subprocess
@@ -54,16 +60,61 @@ def feet_center(frame: Image.Image) -> float:
     return (feet[0] + feet[2]) / 2
 
 
+def fitted(values: list[float]) -> list[float]:
+    """Droite des moindres carrés passant au mieux par les valeurs, une par image."""
+    count = len(values)
+    mean_x, mean_y = (count - 1) / 2, sum(values) / count
+    spread = sum((x - mean_x) ** 2 for x in range(count)) or 1
+    slope = sum((x - mean_x) * (y - mean_y) for x, y in enumerate(values)) / spread
+    return [mean_y + slope * (x - mean_x) for x in range(count)]
+
+
+def cancel_zoom(frames: list[Image.Image]) -> list[Image.Image]:
+    """Ramène chaque image à la même taille de corps, pieds au même endroit, malgré une caméra qui zoome."""
+    boxes = [frame.getchannel("A").point(lambda a: 255 if a > 128 else 0).getbbox() for frame in frames]
+    heights = fitted([b[3] - b[1] for b in boxes])
+    bottoms = fitted([b[3] for b in boxes])
+    axes = fitted([feet_center(frame) for frame in frames])
+    reference = heights[0]
+    width, height = frames[0].size
+    steady = []
+    for frame, body, bottom, axis in zip(frames, heights, bottoms, axes):
+        scale = reference / body
+        resized = frame.resize((round(frame.width * scale), round(frame.height * scale)), Image.LANCZOS)
+        canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        # Pieds de chaque image posés sur ceux de la première
+        canvas.alpha_composite(resized, (round(axes[0] - axis * scale), round(bottoms[0] - bottom * scale)))
+        steady.append(canvas)
+    return steady
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
-    video, first, cycle, name, out = Path(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), sys.argv[4], Path(sys.argv[5])
+    parser = argparse.ArgumentParser(description="Découpe une boucle de marche sur fond vert en atlas.")
+    parser.add_argument("video", type=Path)
+    parser.add_argument("first", type=int)
+    parser.add_argument("cycle", type=int)
+    parser.add_argument("name")
+    parser.add_argument("out", type=Path)
+    parser.add_argument("--zone", help="x0,y0,x1,y1 : rectangle gardé, pour écarter un filigrane")
+    parser.add_argument("--zoom", action="store_true", help="la caméra zoome : chaque image est ramenée à la même taille")
+    args = parser.parse_args()
+    video, first, cycle, name, out = args.video, args.first, args.cycle, args.name, args.out
+    zone = tuple(int(value) for value in args.zone.split(",")) if args.zone else None
     key_green = load_key_green()
     numbers = list(range(first, first + cycle, STEP))
+
+    def read(folder: Path, number: int) -> Image.Image:
+        image = Image.open(folder / f"f{number:04d}.png")
+        return image.crop(zone) if zone else image
+
     with tempfile.TemporaryDirectory() as tmp:
         folder = Path(tmp)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(video), str(folder / "f%04d.png")], check=True)
-        print(f"écart de boucle (image {first} contre {first + cycle}) : {loop_gap(Image.open(folder / f'f{first:04d}.png'), Image.open(folder / f'f{first + cycle:04d}.png')):.2f}")
-        frames = [key_green(Image.open(folder / f"f{n:04d}.png")) for n in numbers]
+        print(f"écart de boucle (image {first} contre {first + cycle}) : {loop_gap(read(folder, first), read(folder, first + cycle)):.2f}")
+        frames = [key_green(read(folder, n)) for n in numbers]
+    if args.zoom:
+        frames = cancel_zoom(frames)
 
     boxes = [frame.getchannel("A").point(lambda a: 255 if a > 16 else 0).getbbox() for frame in frames]
     top = max(min(b[1] for b in boxes) - MARGIN, 0)

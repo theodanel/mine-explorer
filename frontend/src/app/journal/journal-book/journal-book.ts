@@ -2,7 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { Sound } from '../../audio/sound';
 import { Overlays } from '../../shared/overlays';
-import { FIRST_LOOP, JournalChapter } from '../journal-chapters';
+import { environment } from '../../../environments/environment';
+import { ALL_PAGES, JournalChapter } from '../journal-chapters';
 import { Journal } from '../journal';
 
 /** Temps de l'animation de la page qui se tourne, en ms. */
@@ -24,21 +25,29 @@ export class JournalBook {
   private readonly autoShown = this.overlays.isShown('journal');
 
   protected readonly visible = computed(() => this.journal.openedByPlayer() || this.autoShown());
-  /** Chapitre scellé que le joueur relit, ou null pour le chapitre en cours. */
+  /** Page que le joueur relit, ou null pour le chapitre en cours. */
   protected readonly reading = signal<number | null>(null);
+  /** Sur le site de test, on feuillette toutes les pages, même pas encore atteintes, pour juger la fin de jeu. */
+  protected readonly browseAll = environment.testBanner;
+  /** Dernière page qu'on peut ouvrir avec les flèches : les chapitres scellés, ou tout sur le site de test. */
+  private readonly lastBrowsable = computed(() => (this.browseAll ? ALL_PAGES.length - 1 : this.journal.readChapters().length - 1));
   protected readonly turning = signal(false);
 
   protected readonly page = computed(() => {
     const reading = this.reading();
     if (reading !== null) {
-      return this.view(FIRST_LOOP[reading], reading, true);
+      const sealed = reading < this.journal.readChapters().length;
+      return this.view(ALL_PAGES[reading], reading, sealed, !sealed);
     }
     const chapter = this.journal.chapter();
     return chapter === null ? null : this.view(chapter, this.journal.index(), false);
   });
 
-  protected readonly canGoBack = computed(() => (this.reading() ?? this.journal.readChapters().length) > 0);
-  protected readonly canGoForward = computed(() => this.reading() !== null);
+  protected readonly canGoBack = computed(() => (this.reading() ?? this.journal.index()) > 0);
+  protected readonly canGoForward = computed(() => {
+    const reading = this.reading();
+    return reading !== null || (this.browseAll && this.journal.index() < ALL_PAGES.length - 1);
+  });
 
   constructor() {
     this.overlays.register('journal', this.journal.wantsToOpen);
@@ -68,7 +77,7 @@ export class JournalBook {
   }
 
   protected previous(): void {
-    const current = this.reading() ?? this.journal.readChapters().length;
+    const current = this.reading() ?? this.journal.index();
     if (current > 0) {
       this.reading.set(current - 1);
     }
@@ -76,10 +85,13 @@ export class JournalBook {
 
   protected next(): void {
     const reading = this.reading();
-    if (reading === null) {
+    const from = reading ?? this.journal.index();
+    if (reading === null && !this.browseAll) {
       return;
     }
-    this.reading.set(reading + 1 < this.journal.readChapters().length ? reading + 1 : null);
+    const target = from + 1;
+    // Revenir sur le chapitre en cours le remet dans son état vivant (objectifs, sceau)
+    this.reading.set(target > this.lastBrowsable() ? null : target === this.journal.index() ? null : target);
   }
 
   protected close(): void {
@@ -88,10 +100,16 @@ export class JournalBook {
     this.journal.markAutoShown();
   }
 
-  private view(chapter: JournalChapter, index: number, sealed: boolean) {
+  private view(chapter: JournalChapter, index: number, sealed: boolean, preview = false) {
+    const facts = this.journal.facts();
     const objectives = sealed
       ? chapter.objectives.map((objective) => ({ label: objective.label, current: 1, target: 1, done: true }))
-      : this.journal.objectives();
+      : preview
+        ? chapter.objectives.map((objective) => {
+            const [current, target] = objective.progress(facts);
+            return { label: objective.label, current, target, done: current >= target };
+          })
+        : this.journal.objectives();
     return {
       number: index + 1,
       title: chapter.title,
@@ -100,7 +118,8 @@ export class JournalBook {
       unlocks: chapter.unlocks,
       shards: chapter.shards,
       sealed,
-      ready: !sealed && this.journal.ready(),
+      preview,
+      ready: !sealed && !preview && this.journal.ready(),
     };
   }
 }

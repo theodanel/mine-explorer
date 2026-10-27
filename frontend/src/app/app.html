@@ -94,6 +94,7 @@
   <app-zone-banner class="zone" />
   <app-achievement-toast class="achievement-toast" />
   <app-lottery-button class="lottery" />
+  <app-journal-button class="journal" />
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">
@@ -226,6 +227,9 @@
   @defer (on idle) {
     <app-item-compare />
     <app-gallery-choice />
+    @defer (on idle) {
+      <app-journal-book />
+    }
     <app-artifact-found />
     <app-companion-hatched />
     <app-offline-report />

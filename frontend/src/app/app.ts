@@ -44,6 +44,8 @@ import { CompanionsPage } from './companions/companions-page/companions-page';
 import { Challenge } from './challenge/challenge';
 import { ChallengePage } from './challenge/challenge-page/challenge-page';
 import { GalleryChoice } from './galleries/gallery-choice/gallery-choice';
+import { JournalBook } from './journal/journal-book/journal-book';
+import { JournalButton } from './journal/journal-button/journal-button';
 import { SplashScreen } from './loading/splash-screen/splash-screen';
 import { MineScene } from './mine-scene/mine-scene';
 import { OfflineReport } from './offline/offline-report/offline-report';
@@ -118,6 +120,8 @@ function resourceLabel(amount: number): string {
     RevealDirective,
     MineEventLayer,
     GalleryChoice,
+    JournalBook,
+    JournalButton,
     CompanionsPage,
     ChallengePage,
     CompanionHatched,

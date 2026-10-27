@@ -1,0 +1,67 @@
+@if (visible()) {
+  <div class="backdrop" (click)="close()">
+    <section
+      class="book"
+      [class.turning]="turning()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="journal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="close" aria-label="Refermer le carnet" (click)="close()">×</button>
+
+      @if (page(); as page) {
+        <!-- Pages du haut : le journal d'Orvald, qui court sur les deux pages -->
+        <div class="lore">
+          <p class="chapter">Chapitre {{ page.number }}</p>
+          <h2 id="journal-title">{{ page.title }}</h2>
+          <p class="lore-text">{{ page.lore }}</p>
+        </div>
+
+        <!-- Page du bas à gauche : les objectifs du joueur, au crayon -->
+        <ul class="objectives" aria-label="Objectifs">
+          @for (objective of page.objectives; track objective.label) {
+            <li [class.done]="objective.done">
+              <span class="box" aria-hidden="true">{{ objective.done ? '✔' : '' }}</span>
+              <span class="label">{{ objective.label }}</span>
+              @if (!objective.done && objective.target > 1) {
+                <span class="count">{{ objective.current }} / {{ objective.target }}</span>
+              }
+            </li>
+          }
+        </ul>
+
+        <!-- Page du bas à droite : ce qui s'ouvre, la récompense et le sceau -->
+        <div class="reward">
+          <p class="unlocks">{{ page.unlocks }}</p>
+          <p class="shards">
+            <img src="assets/ui/geode-shard.webp" alt="" width="128" height="128" />+{{ page.shards }} éclats
+          </p>
+          @if (page.sealed) {
+            <img class="seal stamped" src="assets/ui/carnet/sceau.webp" alt="Chapitre scellé" width="256" height="256" />
+          } @else if (page.ready) {
+            <button type="button" class="game-button gold seal-button" (click)="seal()">
+              <img src="assets/ui/carnet/sceau.webp" alt="" width="256" height="256" />
+              Sceller le chapitre
+            </button>
+          } @else {
+            <p class="pending">Remplis les objectifs pour sceller ce chapitre.</p>
+          }
+        </div>
+      } @else {
+        <div class="lore">
+          <h2 id="journal-title">Page de vie scellée</h2>
+          <p class="lore-text">
+            La page de cette vie est complète. Renais pour découvrir la suivante, ou descends encore pour gagner plus de
+            Braises.
+          </p>
+        </div>
+      }
+
+      <nav class="pager" aria-label="Feuilleter le carnet">
+        <button type="button" class="turn" [disabled]="!canGoBack()" aria-label="Chapitre précédent" (click)="previous()">‹</button>
+        <button type="button" class="turn" [disabled]="!canGoForward()" aria-label="Chapitre suivant" (click)="next()">›</button>
+      </nav>
+    </section>
+  </div>
+}

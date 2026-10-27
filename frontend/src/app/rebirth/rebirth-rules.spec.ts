@@ -52,14 +52,18 @@ describe('Renaissance', () => {
   });
 
   it('donne de grosses hausses de Frappe, un meilleur départ, et durcit les filons à chaque vie', () => {
-    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, shortcut: 2, pickaxe: 1 }, bestStages: 30 * 15, offerings: 0 });
+    const effects = rebirthEffects({ count: 2, embers: 0, tree: { strike: 3, pickaxe: 1 }, bestStages: 30 * 15, offerings: 0 });
     expect(effects.strikeMultiplier).toBeCloseTo((1 + REBIRTH_STRIKE_PER_LEVEL) ** 3);
-    // Record en zone 30, raccourci au palier 2 : 8 zones avant
-    expect(effects.startZone).toBe(22);
-    expect(rebirthEffects({ count: 1, embers: 0, tree: {}, bestStages: 5, offerings: 0 }).startZone).toBe(1);
+    // Toujours en zone 1, quel que soit le record
+    expect(effects.startZone).toBe(1);
     expect(effects.startPickaxe).toBeGreaterThan(1);
     expect(effects.hardness).toBeCloseTo(rebirthHardness(2));
     expect(stageHp(20, 3, effects.hardness)).toBeGreaterThan(stageHp(20, 3));
+  });
+
+  it('rend en Braises les paliers de l’ancienne branche Raccourci', () => {
+    const old = { count: 2, embers: 5, tree: { strike: 1, shortcut: 2 }, bestStages: 300, offerings: 0 };
+    expect(parseRebirth(JSON.stringify(old))).toEqual({ ...old, embers: 5 + 60 + 120, tree: { strike: 1 } });
   });
 
   it('relit une sauvegarde, et refuse un palier impossible', () => {

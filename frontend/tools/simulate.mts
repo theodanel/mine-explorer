@@ -912,7 +912,7 @@ function awakenGear(now: number): void {
 }
 
 /** Ordre d'achat dans l'arbre : départ plus rapide d'abord, puis la Frappe, puis le reste. */
-const REBIRTH_PRIORITY: readonly RebirthBranch[] = ['strike', 'shortcut', 'pickaxe', 'speed', 'essences', 'shards', 'gold'];
+const REBIRTH_PRIORITY: readonly RebirthBranch[] = ['strike', 'pickaxe', 'speed', 'essences', 'shards', 'gold'];
 
 /**
  * Une fois la phase de la vie faite (puis la zone 20 après la phase 5), le joueur renaît quand il piétine : il est

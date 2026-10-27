@@ -272,7 +272,7 @@
  "meta": {
   "app": "art-source/animations/decouper-marche.py (ffmpeg + Pillow)",
   "version": "1.0",
-  "image": "apprenti-marche.webp",
+  "image": "apprenti-marche-v2.webp",
   "format": "RGBA8888",
   "size": {
    "w": 2334,

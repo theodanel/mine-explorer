@@ -156,16 +156,6 @@ const RENDERERS: Readonly<Record<SoundId, (sampleRate: number) => Samples>> = {
     addArpeggio(out, rate, [72, 76, 79, 84, 88], 0.12, 0.07, 0.25);
     return out;
   },
-  // Jackpot : le coup d'enclume, une montée de cloches sur deux octaves, puis une pluie de pièces
-  jackpot: (rate) => {
-    const out = buffer(2, rate);
-    addClang(out, rate, 0, 0.7);
-    addArpeggio(out, rate, [72, 76, 79, 84, 88, 91, 96], 0.1, 0.07, 0.28);
-    for (let coin = 0; coin < 8; coin++) {
-      addTone(out, rate, { start: 0.8 + coin * 0.1, hz: noteHz(coin % 2 === 0 ? 96 : 100), decay: 0.08, gain: 0.3 });
-    }
-    return out;
-  },
   // Vente : deux pièces qui tintent
   sell: (rate) => {
     const out = buffer(0.5, rate);

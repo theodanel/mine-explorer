@@ -36,10 +36,7 @@
     </button>
     <!-- Animation de forge : étincelles et objet qui monte, rejouées à chaque tirage -->
     @for (pop of forgedPop(); track pop.key) {
-      <span class="forge-burst" [attr.data-tier]="pop.jackpot ? 'gold' : pop.tier" aria-hidden="true"></span>
-      @if (pop.jackpot) {
-        <app-jackpot-burst />
-      }
+      <span class="forge-burst" [attr.data-tier]="pop.tier" aria-hidden="true"></span>
       <span class="forged-pop" [attr.data-tier]="pop.tier" aria-hidden="true">
         <img class="item-frame" [attr.data-tier]="pop.tier" [src]="pop.icon" alt="" width="128" height="128" />
         @if (pop.sold !== null) {
@@ -143,9 +140,6 @@
             <tr [attr.data-tier]="row.tier" [class.unreachable]="!row.reachable">
               <th scope="row">
                 <img class="tier-swatch" [src]="materialIcon(row.tier)" alt="" width="128" height="128" />{{ row.label }}
-                @if (row.jackpot) {
-                  <span class="jackpot-tag">Jackpot</span>
-                }
               </th>
               <td>{{ row.current }}</td>
               @if (row.next !== null) {
@@ -155,7 +149,6 @@
           }
         </tbody>
       </table>
-      <p class="jackpot-note">Jackpot : {{ jackpotChance }} de chance d'un objet deux paliers au-dessus.</p>
 
       @if (upgradeTimeLeft(); as timeLeft) {
         <ol class="segments" [attr.aria-label]="forge.segments() + ' segments sur ' + forge.segmentsPerLevel">

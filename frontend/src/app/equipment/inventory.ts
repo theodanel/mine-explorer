@@ -1,6 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, InjectionToken, signal } from '@angular/core';
 
-import { FORGE_SHARD_COST, isJackpot } from '../balance/balance';
+import { FORGE_SHARD_COST } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
 import { Forge } from '../forge/forge';
 import { readStorage, writeStorage } from '../shared/local-storage';
@@ -29,8 +29,6 @@ export const FORGE_ANIMATION_MS = new InjectionToken<number>('FORGE_ANIMATION_MS
 export interface ForgedEvent {
   readonly key: number;
   readonly item: Item;
-  /** Objet tiré deux paliers au-dessus de la base : la forge le fête. */
-  readonly jackpot: boolean;
 }
 
 /**
@@ -95,11 +93,7 @@ export class Inventory {
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);
-    const jackpot = isJackpot(item.tier, level);
-    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot });
-    if (jackpot) {
-      this.missionCounters.record('jackpots');
-    }
+    this.lastForgedState.set({ key: ++this.forgedCount, item });
     this.startForgingAnimation();
     this.missionCounters.record('itemsForged');
     return true;
@@ -113,8 +107,7 @@ export class Inventory {
     this.save({ ...this.state(), pending: item });
     this.reviewClosed.set(false);
     this.pendingIsPrevious.set(false);
-    // La Forge express choisit elle-même la qualité : ce n'est pas un jackpot de la forge
-    this.lastForgedState.set({ key: ++this.forgedCount, item, jackpot: false });
+    this.lastForgedState.set({ key: ++this.forgedCount, item });
     return true;
   }
 

@@ -7,7 +7,6 @@ export type AchievementMetric =
   | 'zoneReached'
   | 'zonesCleared'
   | 'itemsForged'
-  | 'jackpots'
   | 'abyssRecord'
   | 'setPieces'
   | 'divineSet'
@@ -36,8 +35,6 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'forge-1000', title: 'Forgeron', description: 'Forger 1 000 objets', metric: 'itemsForged', target: 1000 },
   { id: 'forge-10000', title: 'Maître de forge', description: 'Forger 10 000 objets', metric: 'itemsForged', target: 10000 },
   { id: 'forge-50000', title: 'Enclume vivante', description: 'Forger 50 000 objets', metric: 'itemsForged', target: 50000 },
-  { id: 'jackpot-1', title: 'Chanceux', description: 'Obtenir un jackpot à la Forge', metric: 'jackpots', target: 1 },
-  { id: 'jackpot-5', title: 'Né sous une bonne étoile', description: 'Obtenir 5 jackpots à la Forge', metric: 'jackpots', target: 5 },
   { id: 'puits-25', title: 'Descendeur', description: 'Atteindre l’étage 25 du Puits sans fond', metric: 'abyssRecord', target: 25 },
   { id: 'puits-50', title: 'Plongeur des ténèbres', description: 'Atteindre l’étage 50 du Puits sans fond', metric: 'abyssRecord', target: 50 },
   { id: 'puits-100', title: 'Sans fond', description: 'Atteindre l’étage 100 du Puits sans fond', metric: 'abyssRecord', target: 100 },

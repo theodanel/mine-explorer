@@ -1,6 +1,6 @@
 {
  "frames": {
-  "apprenti-marche_0000": {
+  "apprenti-marche-v3_0000": {
    "frame": {
     "x": 0,
     "y": 0,
@@ -21,7 +21,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0001": {
+  "apprenti-marche-v3_0001": {
    "frame": {
     "x": 389,
     "y": 0,
@@ -42,7 +42,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0002": {
+  "apprenti-marche-v3_0002": {
    "frame": {
     "x": 778,
     "y": 0,
@@ -63,7 +63,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0003": {
+  "apprenti-marche-v3_0003": {
    "frame": {
     "x": 1167,
     "y": 0,
@@ -84,7 +84,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0004": {
+  "apprenti-marche-v3_0004": {
    "frame": {
     "x": 1556,
     "y": 0,
@@ -105,7 +105,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0005": {
+  "apprenti-marche-v3_0005": {
    "frame": {
     "x": 1945,
     "y": 0,
@@ -126,7 +126,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0006": {
+  "apprenti-marche-v3_0006": {
    "frame": {
     "x": 0,
     "y": 366,
@@ -147,7 +147,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0007": {
+  "apprenti-marche-v3_0007": {
    "frame": {
     "x": 389,
     "y": 366,
@@ -168,7 +168,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0008": {
+  "apprenti-marche-v3_0008": {
    "frame": {
     "x": 778,
     "y": 366,
@@ -189,7 +189,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0009": {
+  "apprenti-marche-v3_0009": {
    "frame": {
     "x": 1167,
     "y": 366,
@@ -210,7 +210,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0010": {
+  "apprenti-marche-v3_0010": {
    "frame": {
     "x": 1556,
     "y": 366,
@@ -231,7 +231,7 @@
    },
    "duration": 83
   },
-  "apprenti-marche_0011": {
+  "apprenti-marche-v3_0011": {
    "frame": {
     "x": 1945,
     "y": 366,
@@ -255,24 +255,24 @@
  },
  "animations": {
   "walk": [
-   "apprenti-marche_0000",
-   "apprenti-marche_0001",
-   "apprenti-marche_0002",
-   "apprenti-marche_0003",
-   "apprenti-marche_0004",
-   "apprenti-marche_0005",
-   "apprenti-marche_0006",
-   "apprenti-marche_0007",
-   "apprenti-marche_0008",
-   "apprenti-marche_0009",
-   "apprenti-marche_0010",
-   "apprenti-marche_0011"
+   "apprenti-marche-v3_0000",
+   "apprenti-marche-v3_0001",
+   "apprenti-marche-v3_0002",
+   "apprenti-marche-v3_0003",
+   "apprenti-marche-v3_0004",
+   "apprenti-marche-v3_0005",
+   "apprenti-marche-v3_0006",
+   "apprenti-marche-v3_0007",
+   "apprenti-marche-v3_0008",
+   "apprenti-marche-v3_0009",
+   "apprenti-marche-v3_0010",
+   "apprenti-marche-v3_0011"
   ]
  },
  "meta": {
   "app": "art-source/animations/decouper-marche.py (ffmpeg + Pillow)",
   "version": "1.0",
-  "image": "apprenti-marche-v2.webp",
+  "image": "apprenti-marche-v3.webp",
   "format": "RGBA8888",
   "size": {
    "w": 2334,

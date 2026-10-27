@@ -99,7 +99,7 @@ export const WIDE_BACKGROUNDS: Readonly<Partial<Record<number, { readonly url: s
  * change à chaque nouvelle vidéo : les images gardent un jour en cache et l'ancienne marche resterait affichée.
  */
 export const APPRENTICE_WALK = {
-  atlasUrl: 'assets/characters/miner/apprenti-marche-v2.json',
+  atlasUrl: 'assets/characters/miner/apprenti-marche-v3.json',
   animation: 'walk',
   scale: 0.72,
 } as const;

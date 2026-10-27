@@ -2,7 +2,7 @@
 
 Usage :
     python decouper-marche.py <video.mp4> <première image> <images par cycle> <nom> <dossier de sortie>
-                              [--zone x0,y0,x1,y1] [--zoom]
+                              [--zone x0,y0,x1,y1] [--zoom] [--couleurs <image de référence>]
 
 - <première image> : numéro (à partir de 1) d'une image où le cycle de pas commence.
 - <images par cycle> : longueur d'un cycle complet de la vidéo (deux pas), en images à 24 i/s. Le script affiche
@@ -13,6 +13,9 @@ Usage :
 - --zoom : la caméra de la vidéo avance ou recule (le personnage grossit). Chaque image est alors ramenée à la même
   taille et posée sur les mêmes pieds, d'après une droite ajustée sur toute la boucle (une jambe levée ne fait pas
   sauter la taille d'une image à l'autre).
+- --couleurs : la vidéo n'a pas tout à fait les teintes du jeu (Vidu tire vers le magenta). Chaque canal (rouge, vert,
+  bleu) des images est recalé sur la moyenne et l'écart de l'image de référence (le personnage détouré, par exemple sa
+  première image de frappe), pour que la marche et la frappe aient la même couleur.
 - Écrit <nom>.webp (grille de 6 colonnes) et <nom>.json (atlas TexturePacker, animation « walk »).
 
 Dépendances : ffmpeg dans le PATH, Pillow, et decouper-frappe.py dans le même dossier (détourage du vert).
@@ -25,6 +28,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageChops, ImageStat
 
 STEP = 2
@@ -35,6 +39,8 @@ ATLAS_BODY_HEIGHT = 360
 MARGIN = 8
 # Les pieds occupent le bas du personnage : leur centre donne l'axe du corps, la queue et la pioche le faussent
 FEET_SHARE = 0.15
+# Pixels du personnage pris pour mesurer ses couleurs : les bords adoucis faussent la mesure
+OPAQUE = 200
 
 
 def load_key_green():
@@ -69,6 +75,26 @@ def fitted(values: list[float]) -> list[float]:
     return [mean_y + slope * (x - mean_x) for x in range(count)]
 
 
+def opaque_pixels(image: Image.Image) -> np.ndarray:
+    pixels = np.asarray(image.convert("RGBA"), dtype=float)
+    return pixels[pixels[:, :, 3] > OPAQUE][:, :3]
+
+
+def match_colors(frames: list[Image.Image], reference: Image.Image) -> list[Image.Image]:
+    """Recale la moyenne et l'écart de chaque canal sur ceux de la référence, mesurés sur toute la boucle."""
+    target = opaque_pixels(reference)
+    source = np.concatenate([opaque_pixels(frame) for frame in frames])
+    gain = target.std(axis=0) / np.maximum(source.std(axis=0), 1)
+    shift = target.mean(axis=0) - source.mean(axis=0) * gain
+    matched = []
+    for frame in frames:
+        pixels = np.asarray(frame.convert("RGBA"), dtype=float)
+        pixels[:, :, :3] = np.clip(pixels[:, :, :3] * gain + shift, 0, 255)
+        matched.append(Image.fromarray(pixels.astype(np.uint8), "RGBA"))
+    print(f"couleurs recalées : gain {np.round(gain, 2)}, décalage {np.round(shift, 1)}")
+    return matched
+
+
 def cancel_zoom(frames: list[Image.Image]) -> list[Image.Image]:
     """Ramène chaque image à la même taille de corps, pieds au même endroit, malgré une caméra qui zoome."""
     boxes = [frame.getchannel("A").point(lambda a: 255 if a > 128 else 0).getbbox() for frame in frames]
@@ -98,6 +124,7 @@ def main() -> None:
     parser.add_argument("out", type=Path)
     parser.add_argument("--zone", help="x0,y0,x1,y1 : rectangle gardé, pour écarter un filigrane")
     parser.add_argument("--zoom", action="store_true", help="la caméra zoome : chaque image est ramenée à la même taille")
+    parser.add_argument("--couleurs", type=Path, help="image du personnage détouré dont reprendre les couleurs")
     args = parser.parse_args()
     video, first, cycle, name, out = args.video, args.first, args.cycle, args.name, args.out
     zone = tuple(int(value) for value in args.zone.split(",")) if args.zone else None
@@ -115,6 +142,8 @@ def main() -> None:
         frames = [key_green(read(folder, n)) for n in numbers]
     if args.zoom:
         frames = cancel_zoom(frames)
+    if args.couleurs:
+        frames = match_colors(frames, Image.open(args.couleurs))
 
     boxes = [frame.getchannel("A").point(lambda a: 255 if a > 16 else 0).getbbox() for frame in frames]
     top = max(min(b[1] for b in boxes) - MARGIN, 0)

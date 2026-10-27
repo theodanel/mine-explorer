@@ -43,6 +43,7 @@ import {
   spellDurationMs,
   SPELLS,
   type SpellId,
+  sealsLearned,
 } from '../src/app/balance/skill-tree.ts';
 import { computeStats, powerDelta, resolveHit, rollItem, sellPrice } from '../src/app/equipment/equipment-rules.ts';
 import type { EquippedItems, Item, MiningStats, TierId } from '../src/app/equipment/equipment.model.ts';
@@ -724,6 +725,13 @@ function spendPoints(now: number): void {
   while (learned) {
     learned = false;
     const available = pointsEarned(progress.zone) - pointsSpent(ranks);
+    // Le sceau de la phase à venir passe avant le reste de l'arbre : il ouvre l'Éveil
+    const seal = SKILL_NODES.find((node) => node.id === `seal${sealsLearned(ranks) + 1}`);
+    if (seal !== undefined && awakeningUnlocked() && learnCheck(seal, ranks, available) === 'ok') {
+      ranks = learn(ranks, seal);
+      learned = true;
+      continue;
+    }
     const counts = new Map<string, number>();
     for (const id of LEARN_ORDER) {
       counts.set(id, (counts.get(id) ?? 0) + 1);
@@ -873,7 +881,9 @@ function awakenGear(now: number): void {
   let rocks = Math.round((AWAKEN_ECHO_MINUTES_PER_DAY * 60) / ECHO_ROCK_SECONDS);
   // La phase suivante se fait avec le Divin de la famille de la vie
   const ready = (slot: SlotId): boolean =>
-    equipped[slot]?.tier === 'divine' && (equipped[slot]?.family ?? 0) === (awakeningState.levels[slot] ?? 0);
+    equipped[slot]?.tier === 'divine' &&
+    (equipped[slot]?.family ?? 0) === (awakeningState.levels[slot] ?? 0) &&
+    sealsLearned(ranks) > (awakeningState.levels[slot] ?? 0);
   const target = byLevel().find((slot) => ready(slot) && (awakeningState.levels[slot] ?? 0) < MAX_AWAKENING);
   const cost = target === undefined ? null : awakeningCost(target, awakeningState.levels[target] ?? 0);
   if (cost !== null) {

@@ -596,3 +596,11 @@ img[data-awakening],
 *::-webkit-scrollbar {
   display: none;
 }
+
+// Pièces du Divin corrompu (27/10/2026) : l'icône s'assombrit et rougeoie comme de la lave, plus fort à chaque phase
+// (--corruption de 1 à 5). Partagé par la colonne d'équipement, la fiche et la comparaison.
+.corrupted-icon {
+  filter: brightness(calc(1 - var(--corruption) * 0.08)) saturate(calc(1 + var(--corruption) * 0.15))
+    drop-shadow(0 0 calc(var(--corruption) * 0.5cqw) #ff5a1e);
+}
+

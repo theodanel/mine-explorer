@@ -90,3 +90,5 @@ Décidé par Théo (doc « La Corruption : une fin de jeu pour chaque système �
 - Frappe ancestrale : coût 10 × 1,5^palier. Plafonds convertis : vitesse en trop → Frappe (1 point = +100 %), critique en trop → dégâts critiques (×2).
 
 Simulateur (regulier, 80 jours) : phases J39 (zone 19), J46 (24), J57 (28), J67 (31), J78 (35).
+
+Sceaux (lot 2) : branche « Sceaux » de l'arbre de compétences, un sceau par phase (3, 4, 5, 6 puis 7 points, +10 % de Frappe chacun). La phase N demande le sceau N : les points venant de la profondeur atteinte dans la vie, il faut descendre assez loin. Arbre complet + 5 sceaux = 92 points, soit la zone 32. Simulateur avec sceaux : phases J38 (zone 19), J51 (25), J60 (29), J70 (32), J78 (35). Icônes des pièces corrompues assombries et rougeoyantes en code, plus fort à chaque phase.

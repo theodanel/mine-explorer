@@ -20,6 +20,7 @@ const BLOCKER_TEXT: Readonly<Record<AwakeningBlocker, string>> = {
   'not-divine': 'Seule une pièce Divin peut s’éveiller.',
   max: 'Éveil au maximum : la pièce est entièrement corrompue.',
   family: 'Cette phase se fait avec le Divin de la famille de ta vie en cours : renais, puis forge-le.',
+  seal: 'Apprends le sceau de cette phase dans les Compétences (branche Sceaux) : descends plus profond pour les points.',
   duplicates: 'Il manque des doublons Divin de cette pièce : chaque Divin vendu en met un de côté.',
   essences: 'Il manque des ressources du Cœur : récolte-les dans les Échos.',
 };
@@ -67,6 +68,7 @@ export class ItemSheet {
       level: item.level,
       icon: itemIconUrl(slot, item.tier, SLOTS[slot].iconUrl, level),
       awakening: level,
+      family: item.family ?? 0,
       stats: STAT_IDS.filter((stat) => shown.stats[stat] !== undefined).map((stat) => ({
         stat,
         label: STATS[stat].label,

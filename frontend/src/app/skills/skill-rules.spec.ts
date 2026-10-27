@@ -1,4 +1,4 @@
-import { SKILL_NODES, SKILL_POINTS_PER_ZONE, SkillNode } from '../balance/skill-tree';
+import { nodeRankCost, sealsLearned, SKILL_NODES, SKILL_POINTS_PER_ZONE, SkillNode } from '../balance/skill-tree';
 import { learn, learnCheck, passiveBonuses, pointsEarned, pointsSpent, rowOpen, SkillRanks, spellRank } from './skill-rules';
 
 function node(id: string): SkillNode {
@@ -34,7 +34,8 @@ describe('points de compétence', () => {
 
   it('demandent plus de points que ce qu\'un joueur gagne en 90 jours : il faut choisir', () => {
     const all = SKILL_NODES.reduce((ranks, candidate) => learnTimes(ranks, candidate.id, candidate.kind === 'spell' ? 3 : candidate.maxRank), {} as SkillRanks);
-    expect(pointsSpent(all)).toBe(67);
+    // 67 points d'arbre, plus 25 pour les 5 sceaux
+    expect(pointsSpent(all)).toBe(92);
   });
 });
 
@@ -68,5 +69,16 @@ describe('arbre', () => {
   it('donne le rang d\'un sort appris', () => {
     expect(spellRank(learnTimes({}, 'frenzy', 2), 'frenzy')).toBe(2);
     expect(spellRank({}, 'firedamp')).toBe(0);
+  });
+});
+
+describe('sceaux', () => {
+  it('coûtent leurs points, s’ouvrent l’un après l’autre et se comptent à la suite', () => {
+    const seal1 = SKILL_NODES.find((node) => node.id === 'seal1');
+    const seal2 = SKILL_NODES.find((node) => node.id === 'seal2');
+    expect(seal1 && nodeRankCost(seal1, 0)).toBe(3);
+    expect(seal2 && learnCheck(seal2, {}, 100)).toBe('locked');
+    expect(seal2 && learnCheck(seal2, { seal1: 1 }, 100)).toBe('ok');
+    expect(sealsLearned({ seal1: 1, seal2: 1, seal4: 1 })).toBe(2);
   });
 });

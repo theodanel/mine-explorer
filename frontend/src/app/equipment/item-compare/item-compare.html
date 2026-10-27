@@ -9,7 +9,7 @@
       (click)="$event.stopPropagation()"
     >
       <h2 id="item-compare-title">
-        <img class="title-icon item-frame" [attr.data-tier]="view.candidate.tier" [src]="view.iconUrl" alt="" width="128" height="128" />
+        <img class="title-icon item-frame" [class.corrupted-icon]="view.family > 0" [style.--corruption]="view.family" [attr.data-tier]="view.candidate.tier" [src]="view.iconUrl" alt="" width="128" height="128" />
         {{ view.isPrevious ? 'Ancien' : 'Nouveau' }} : {{ view.slot.label }}
         <span class="tier" [attr.data-tier]="view.candidate.tier"
           >{{ view.candidate.tierLabel }} · Niv. {{ view.candidate.level }}</span

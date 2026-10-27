@@ -10,6 +10,8 @@
       <h2 id="item-sheet-title">
         <img
           class="piece-icon item-frame"
+          [class.corrupted-icon]="view.family > 0"
+          [style.--corruption]="view.family"
           [attr.data-tier]="view.tier"
           [attr.data-awakening]="view.awakening"
           [src]="view.icon"

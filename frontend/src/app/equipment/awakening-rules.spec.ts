@@ -41,11 +41,11 @@ describe('Éveil des pièces Divin', () => {
 
   it('dit ce qui manque : pièce non Divin, doublons, ressources du Cœur, maximum', () => {
     const essences = FULL_COST?.essences ?? 0;
-    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe', 'magma'), essences)).toBe('not-divine');
-    expect(awakeningBlocker(EMPTY_AWAKENING, item('pickaxe'), essences)).toBe('duplicates');
-    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences - 1)).toBe('essences');
-    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences)).toBeNull();
-    expect(awakeningBlocker({ levels: { pickaxe: MAX_AWAKENING }, duplicates: {} }, item('pickaxe'), essences)).toBe('max');
+    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe', 'magma'), essences, 5)).toBe('not-divine');
+    expect(awakeningBlocker(EMPTY_AWAKENING, item('pickaxe'), essences, 5)).toBe('duplicates');
+    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences - 1, 5)).toBe('essences');
+    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences, 5)).toBeNull();
+    expect(awakeningBlocker({ levels: { pickaxe: MAX_AWAKENING }, duplicates: {} }, item('pickaxe'), essences, 5)).toBe('max');
   });
 
   it("renforce toute pièce portée à l'emplacement : l'Éveil survit à la renaissance", () => {
@@ -60,9 +60,15 @@ describe('Éveil des pièces Divin', () => {
   it('fait chaque phase avec le Divin de sa famille : la phase 2 demande un Divin corrompu I', () => {
     const state = readyFor('pickaxe', 1);
     const essences = awakeningCost('pickaxe', 1)?.essences ?? 0;
-    expect(awakeningBlocker(state, item('pickaxe', 'divine', 0), essences)).toBe('family');
-    expect(awakeningBlocker(state, item('pickaxe', 'divine', 1), essences)).toBeNull();
+    expect(awakeningBlocker(state, item('pickaxe', 'divine', 0), essences, 5)).toBe('family');
+    expect(awakeningBlocker(state, item('pickaxe', 'divine', 1), essences, 5)).toBeNull();
     expect(awakeningCost('pickaxe', 0)?.duplicates).toBe(3000);
+  });
+
+  it('demande le sceau de la phase, appris dans les compétences', () => {
+    const essences = FULL_COST?.essences ?? 0;
+    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences, 0)).toBe('seal');
+    expect(awakeningBlocker(readyFor('pickaxe', 0), item('pickaxe'), essences, 1)).toBeNull();
   });
 
   it('ne compte comme doublons que les Divin de la famille de la phase à venir', () => {

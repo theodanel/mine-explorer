@@ -95,10 +95,11 @@ export const WIDE_BACKGROUNDS: Readonly<Partial<Record<number, { readonly url: s
 
 /**
  * Marche de profil de l'Apprenti, découpée par art-source/animations/decouper-marche.py : un cycle de deux pas. Le corps
- * fait 360 px dans l'atlas, ramené aux 259 px de l'Apprenti à l'écran (446 px de frappe × 0,58).
+ * fait 360 px dans l'atlas, ramené aux 259 px de l'Apprenti à l'écran (446 px de frappe × 0,58). Le numéro de version
+ * change à chaque nouvelle vidéo : les images gardent un jour en cache et l'ancienne marche resterait affichée.
  */
 export const APPRENTICE_WALK = {
-  atlasUrl: 'assets/characters/miner/apprenti-marche.json',
+  atlasUrl: 'assets/characters/miner/apprenti-marche-v2.json',
   animation: 'walk',
   scale: 0.72,
 } as const;

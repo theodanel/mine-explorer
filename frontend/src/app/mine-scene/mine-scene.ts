@@ -78,6 +78,8 @@ const POWER_GLOW_TINT = 0xffe08a;
 const ASTRE_SHOT_BELOW_TOP = 60;
 /** Les effets passent devant tout ce que la vue du dessus range par profondeur. */
 const EFFECTS_DEPTH = 100_000;
+/** Le sol semé de décors passe sous tout le reste. */
+const GROUND_DEPTH = -100_000;
 
 @Component({
   selector: 'app-mine-scene',
@@ -382,8 +384,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
     topDown.hero.visible = false;
     topDown.companion.view.visible = false;
     this.topDown = topDown;
+    topDown.ground.visible = false;
+    topDown.ground.zIndex = GROUND_DEPTH;
+    void topDown.loadVisuals();
     this.app.stage.addChildAt(topDown.floor, this.app.stage.getChildIndex(this.world));
-    this.world.addChild(astre.view, this.aura.view, this.classicHero, topDown.hero, topDown.companion.view, effectsLayer);
+    this.world.addChild(topDown.ground, astre.view, this.aura.view, this.classicHero, topDown.hero, topDown.companion.view, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
     if (this.destroyed) {
@@ -552,6 +557,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.ambience.container.visible = !topDown;
     this.classicHero.visible = !topDown;
     view.floor.visible = topDown;
+    view.ground.visible = topDown;
     view.hero.visible = topDown;
     view.companion.view.visible = topDown;
     if (topDown) {
@@ -579,6 +585,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     if (!this.topDownShown || !this.topDown) {
       return;
     }
+    this.topDown.leaveHole({ x: this.rockWorldTop.x, y: this.rock.floorLine });
     this.topDown.walkToNext(walkWindowMs(miner.animationSpeed));
     this.placeRockAhead();
   }
@@ -602,6 +609,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
     const reducedMotion = this.topDownSettings.reducedMotion();
     view.update(elapsedMs, isWindingUp(miner.currentFrame), reducedMotion);
+    view.updateHoles(elapsedMs);
     const feet = view.heroFeet;
     this.showTopDownHero(view, miner, reducedMotion);
     const offset = view.worldOffset;
@@ -629,12 +637,22 @@ export class MineScene implements AfterViewInit, OnDestroy {
     const source: Sprite = staticBody?.visible ? staticBody : miner;
     const isStatic = source === staticBody;
     const hero = view.hero;
+    const feet = view.heroFeet;
+    const walkTexture = view.walkTexture();
+    if (walkTexture) {
+      // Marche découpée d'une vidéo : centrée sur les pieds, à la taille de l'Apprenti
+      hero.texture = walkTexture;
+      hero.anchor.set(0.5, 1);
+      hero.scale.set(view.walkScale * view.facing, view.walkScale);
+      hero.tint = source.tint;
+      hero.position.set(feet.x, feet.y);
+      return;
+    }
     hero.texture = isStatic || !view.walking ? source.texture : (this.strikeFrames[0] ?? source.texture);
     hero.anchor.copyFrom(source.anchor);
     hero.scale.set(Math.abs(source.scale.x) * view.facing, source.scale.y);
     hero.tint = source.tint;
     const bodyOffset = isStatic ? 0 : this.strike.bodyOffsetX * this.strike.scale;
-    const feet = view.heroFeet;
     hero.position.set(feet.x + view.facing * bodyOffset, feet.y - view.hop(reducedMotion));
   }
 

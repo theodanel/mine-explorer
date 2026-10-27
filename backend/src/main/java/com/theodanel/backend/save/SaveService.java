@@ -3,6 +3,7 @@ package com.theodanel.backend.save;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,11 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.theodanel.backend.account.AccountService;
+import com.theodanel.backend.account.TitleCatalog;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
 import com.theodanel.backend.leaderboard.LeaderboardChanged;
 import com.theodanel.backend.leaderboard.LeaderboardType;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -32,6 +35,8 @@ public class SaveService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SaveService.class);
 	private static final TypeReference<TreeMap<String, String>> DATA_TYPE = new TypeReference<>() {
+	};
+	private static final TypeReference<List<String>> UNLOCKED_TYPE = new TypeReference<>() {
 	};
 
 	/** Taille utile maximale d'une partie (somme des clés et valeurs) : une vraie partie pèse quelques dizaines de Ko. */
@@ -55,6 +60,26 @@ public class SaveService {
 	}
 
 	public record StoredSave(long version, Instant updatedAt, Map<String, String> data) {
+	}
+
+	/** Succès gagnés d'après la sauvegarde cloud (vide sans sauvegarde ou si la liste est illisible). */
+	@Transactional(readOnly = true)
+	public Set<String> unlockedAchievements(UUID playerId) {
+		return find(playerId).map(save -> save.data().get(TitleCatalog.UNLOCKED_SAVE_KEY)).map(raw -> {
+			try {
+				return Set.copyOf(json.readValue(raw, UNLOCKED_TYPE));
+			}
+			catch (JacksonException unreadable) {
+				LOG.warn("Liste des succès illisible dans une sauvegarde");
+				return Set.<String>of();
+			}
+		}).orElse(Set.of());
+	}
+
+	/** Ce que les autres joueurs voient de la partie : zone, forme et équipement porté (profil vide sans sauvegarde). */
+	@Transactional(readOnly = true)
+	public PublicProfile publicProfile(UUID playerId) {
+		return find(playerId).map(save -> PublicProfile.read(save.data(), json)).orElse(PublicProfile.EMPTY);
 	}
 
 	@Transactional(readOnly = true)

@@ -4,6 +4,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -165,5 +166,74 @@ class ChatApiTests extends ApiTestSupport {
 		mockMvc.perform(get("/api/me/export").with(as(alice)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.chatMessages[0].text").value("merci !"));
+	}
+
+	/** Envoie une partie avec un équipement porté, l'Éveil de la pioche et des clés qui ne doivent jamais sortir. */
+	private void saveWithEquipment(UUID player) throws Exception {
+		String equipment = "{\"equipped\":{\"pickaxe\":{\"id\":\"x\",\"slot\":\"pickaxe\",\"tier\":\"divine\",\"level\":30,"
+				+ "\"stats\":{\"strikePower\":1200,\"critChance\":0.05,\"secret\":9}},"
+				+ "\"bag\":{\"id\":\"y\",\"slot\":\"bag\",\"tier\":\"magma\",\"level\":28,\"stats\":{\"goldBonus\":0.4}}},\"pending\":null}";
+		Map<String, Object> body = Map.of("data", Map.of(
+				"mine-explorer.progress", "{\"zone\":3,\"stage\":2,\"damage\":0}",
+				"mine-explorer.equipment", equipment,
+				"mine-explorer.eveil", "{\"levels\":{\"pickaxe\":3,\"bag\":2},\"duplicates\":{}}",
+				"mine-explorer.evolution", "2",
+				"mine-explorer.coins", "999999"));
+		mockMvc.perform(put("/api/save").with(as(player)).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(body)))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	void leProfilDeLAuteurMontreSonEquipementEtRienDAutre() throws Exception {
+		UUID alice = newPlayer("a");
+		accounts.rename(alice, "Alice");
+		saveWithEquipment(alice);
+		send(alice, "regardez ma pioche").andExpect(status().isNoContent());
+
+		// Public, retrouvé par le message : pseudo, zone, forme, pièces portées ; ni identifiant, ni or, ni clé inconnue
+		mockMvc.perform(get("/api/chat/{id}/author", lastMessageId()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.pseudo").value("Alice"))
+			.andExpect(jsonPath("$.zone").value(3))
+			.andExpect(jsonPath("$.form").value(2))
+			.andExpect(jsonPath("$.equipment[0].slot").value("pickaxe"))
+			.andExpect(jsonPath("$.equipment[0].awakening").value(3))
+			.andExpect(jsonPath("$.equipment[0].stats.strikePower").value(1200.0))
+			.andExpect(jsonPath("$.equipment[0].stats.secret").doesNotExist())
+			.andExpect(jsonPath("$.equipment[0].id").doesNotExist())
+			.andExpect(jsonPath("$.equipment[1].awakening").value(0))
+			.andExpect(jsonPath("$.playerId").doesNotExist())
+			.andExpect(jsonPath("$.coins").doesNotExist());
+	}
+
+	@Test
+	void pasDeProfilPourUnMessageCacheOuInconnu() throws Exception {
+		mockMvc.perform(get("/api/chat/{id}/author", 999_999)).andExpect(status().isNotFound());
+		UUID alice = newPlayer("a");
+		send(alice, "bonjour").andExpect(status().isNoContent());
+		long id = lastMessageId();
+		jdbc.update("update chat_message set hidden = true where id = ?", id);
+		mockMvc.perform(get("/api/chat/{id}/author", id)).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void lesNonLusComptentLesMessagesDesAutresDepuisLeDernierLu() throws Exception {
+		UUID alice = newPlayer("a");
+		UUID bob = newPlayer("b");
+		send(alice, "un").andExpect(status().isNoContent());
+		long first = lastMessageId();
+		clock.advance(Duration.ofSeconds(10));
+		send(bob, "deux").andExpect(status().isNoContent());
+		clock.advance(Duration.ofSeconds(10));
+		send(alice, "trois").andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/api/chat/unread").param("after", Long.toString(first)).with(as(alice)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.count").value(1))
+			.andExpect(jsonPath("$.lastId").value(lastMessageId()));
+		mockMvc.perform(get("/api/chat/unread").param("after", "0"))
+			.andExpect(jsonPath("$.count").value(3));
 	}
 }

@@ -1,5 +1,25 @@
 :host {
+  position: relative;
   display: block;
+}
+
+// Panoplie : une pastille au-dessus de la rangée, aux couleurs du palier quand le bonus est actif
+.set-badge {
+  position: absolute;
+  inset: -5.4cqw auto auto 50%;
+  margin: 0;
+  padding: 0.6cqw 2.4cqw;
+  border: 0.4cqw solid var(--ink);
+  border-radius: 999px;
+  background: #e9d6b0;
+  color: var(--ink);
+  font: 700 2.6cqw / 1.2 var(--font-body);
+  white-space: nowrap;
+  transform: translateX(-50%);
+
+  &.active {
+    background: linear-gradient(color-mix(in srgb, var(--tier-color) 75%, #fff), var(--tier-color));
+  }
 }
 
 .column {

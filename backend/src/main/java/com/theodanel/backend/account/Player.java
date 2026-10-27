@@ -25,6 +25,10 @@ public class Player {
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
+	/** Titre porté : un identifiant de {@link TitleCatalog}, ou null. */
+	@Column(length = 40)
+	private String title;
+
 	protected Player() {
 		// Requis par JPA
 	}
@@ -45,6 +49,15 @@ public class Player {
 
 	public Instant getCreatedAt() {
 		return createdAt;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	/** Le titre doit déjà être vérifié par {@link AccountService#wearTitle}. */
+	void wearTitle(String newTitle) {
+		this.title = newTitle;
 	}
 
 	/** Le pseudo doit déjà être validé par {@link PseudoRules#normalize}. */

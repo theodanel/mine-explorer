@@ -1,9 +1,12 @@
 import { Component, computed, DestroyRef, ElementRef, inject, output, signal, viewChild } from '@angular/core';
 
 import { GoogleButton } from '../google-button/google-button';
+import { AuthorCard } from './author-card';
+import { ChatUnread } from './chat-unread';
 import { OnlineAccount } from '../online-account';
 import { OnlineApi } from '../online-api';
 import { CHAT_EMOJIS, CHAT_MAX_LENGTH, ChatView, chatLength, chatRefusalText, isChatView } from './chat-model';
+import { titleOf } from '../../achievements/achievement-rules';
 
 /** La discussion est relue toutes les 6 s tant qu'elle est ouverte, jamais en arrière-plan. */
 const REFRESH_MS = 6000;
@@ -16,13 +19,14 @@ const TIME_FORMAT = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: 
  */
 @Component({
   selector: 'app-chat-page',
-  imports: [GoogleButton],
+  imports: [GoogleButton, AuthorCard],
   templateUrl: './chat-page.html',
   styleUrl: './chat-page.scss',
 })
 export class ChatPage {
   private readonly api = inject(OnlineApi);
   protected readonly account = inject(OnlineAccount);
+  private readonly unread = inject(ChatUnread);
   readonly closed = output();
 
   protected readonly emojis = CHAT_EMOJIS;
@@ -33,6 +37,8 @@ export class ChatPage {
   protected readonly sending = signal(false);
   protected readonly emojisOpen = signal(false);
   protected readonly notice = signal<string | null>(null);
+  /** Message dont on regarde l'auteur : sa fiche s'ouvre par-dessus la discussion. */
+  protected readonly authorOf = signal<number | null>(null);
   /** Messages signalés pendant cette visite : le bouton devient « Signalé ». */
   protected readonly reported = signal<ReadonlySet<number>>(new Set());
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
@@ -43,7 +49,13 @@ export class ChatPage {
   protected readonly remaining = computed(() => CHAT_MAX_LENGTH - chatLength(this.draft()));
   protected readonly canSend = computed(() => !this.sending() && this.draft().trim() !== '' && this.remaining() >= 0);
   protected readonly messages = computed(() =>
-    this.view()?.messages.map((message) => ({ ...message, time: TIME_FORMAT.format(new Date(message.sentAt)) })) ?? null,
+    this.view()?.messages.map((message) => ({
+      ...message,
+      time: TIME_FORMAT.format(new Date(message.sentAt)),
+      titleLabel: titleOf(message.title ?? null),
+      initial: [...message.pseudo.trim()][0]?.toUpperCase() ?? '?',
+      hue: avatarHue(message.pseudo),
+    })) ?? null,
   );
 
   constructor() {
@@ -104,6 +116,10 @@ export class ChatPage {
       const previousLast = this.view()?.messages.at(-1)?.id;
       this.view.set(result.body);
       this.failed.set(false);
+      const lastId = result.body.messages.at(-1)?.id;
+      if (lastId !== undefined) {
+        this.unread.markRead(lastId);
+      }
       if (result.body.messages.at(-1)?.id !== previousLast) {
         // Nouveau message : on descend tout en bas une fois la liste redessinée
         setTimeout(() => {
@@ -115,4 +131,13 @@ export class ChatPage {
       this.failed.set(true);
     }
   }
+}
+
+/** Teinte de la bulle d'un joueur : toujours la même pour un pseudo, pour le reconnaître d'un coup d'œil. */
+function avatarHue(pseudo: string): number {
+  let hash = 0;
+  for (const char of pseudo) {
+    hash = (hash * 31 + (char.codePointAt(0) ?? 0)) % 360;
+  }
+  return hash;
 }

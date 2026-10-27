@@ -123,6 +123,45 @@ class AccountApiTests extends ApiTestSupport {
 			.andExpect(jsonPath("$.code").value("csrf-invalid"));
 	}
 
+	@Test
+	void porterUnTitreGagneDansLaSauvegarde() throws Exception {
+		UUID player = newPlayer("theo");
+		saveWithAchievements(player, "[\"premiers-pas\",\"forge-100\"]");
+		wearTitle(player, "forge-100").andExpect(status().isOk()).andExpect(jsonPath("$.title").value("forge-100"));
+		mockMvc.perform(get("/api/me").with(as(player))).andExpect(jsonPath("$.title").value("forge-100"));
+		// Aucun titre : null
+		wearTitle(player, null).andExpect(status().isOk()).andExpect(jsonPath("$.title").doesNotExist());
+	}
+
+	@Test
+	void refuseUnTitreInconnuOuPasEncoreGagne() throws Exception {
+		UUID player = newPlayer("theo");
+		saveWithAchievements(player, "[\"premiers-pas\"]");
+		wearTitle(player, "Roi de la mine").andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("title-unknown"));
+		wearTitle(player, "coeur-5").andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("title-locked"));
+		// Sans sauvegarde, aucun succès n'est gagné
+		wearTitle(newPlayer("autre"), "premiers-pas").andExpect(status().isConflict());
+	}
+
+	private void saveWithAchievements(UUID player, String unlocked) throws Exception {
+		Map<String, Object> body = new java.util.HashMap<>();
+		body.put("expectedVersion", null);
+		body.put("data", Map.of("mine-explorer.progress", "{\"zone\":2,\"stage\":1,\"damage\":0}",
+				"mine-explorer.succes", unlocked));
+		mockMvc.perform(put("/api/save").with(as(player)).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(body))).andExpect(status().isOk());
+	}
+
+	private ResultActions wearTitle(UUID player, String title) throws Exception {
+		Map<String, Object> body = new java.util.HashMap<>();
+		body.put("title", title);
+		return mockMvc.perform(put("/api/me/title").with(as(player)).with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(body)));
+	}
+
 	private ResultActions rename(UUID player, String pseudo) throws Exception {
 		return mockMvc.perform(put("/api/me/pseudo").with(as(player)).with(csrf())
 			.contentType(MediaType.APPLICATION_JSON)

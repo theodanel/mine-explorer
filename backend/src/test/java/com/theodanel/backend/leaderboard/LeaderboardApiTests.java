@@ -34,6 +34,9 @@ class LeaderboardApiTests extends ApiTestSupport {
 	@Autowired
 	private LeaderboardEvents events;
 
+	@Autowired
+	private org.springframework.jdbc.core.JdbcTemplate jdbc;
+
 	/**
 	 * Les changements laissés en attente par les tests précédents (toutes classes confondues : le service est partagé)
 	 * partiraient dans le premier flux ouvert ici : on les envoie d'abord, à personne.
@@ -77,6 +80,14 @@ class LeaderboardApiTests extends ApiTestSupport {
 			.andExpect(jsonPath("$.me.rank").value(3))
 			// Seuls pseudo, rang et valeur sont publics
 			.andExpect(jsonPath("$.top[0].playerId").doesNotExist());
+	}
+
+	@Test
+	void leClassementMontreLeTitrePorte() throws Exception {
+		UUID alice = playerWith("a", "Alice", 5, 2, 0);
+		jdbc.update("update player set title = 'forge-100' where id = ?", alice);
+		mockMvc.perform(get("/api/leaderboard/depth"))
+			.andExpect(jsonPath("$.top[0].title").value("forge-100"));
 	}
 
 	@Test

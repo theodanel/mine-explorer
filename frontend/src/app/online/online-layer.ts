@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 
 import { AccountPrompt } from './account-prompt/account-prompt';
 import { CloudSync } from './cloud-sync';
+import { TitleSync } from './title-sync';
 
 /**
  * Partie toujours présente du jeu en ligne, chargée après le démarrage avec les autres fenêtres différées :
@@ -15,5 +16,6 @@ import { CloudSync } from './cloud-sync';
 export class OnlineLayer {
   constructor() {
     inject(CloudSync);
+    inject(TitleSync);
   }
 }

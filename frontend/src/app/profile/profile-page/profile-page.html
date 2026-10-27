@@ -34,7 +34,15 @@
         <span class="chevron" aria-hidden="true">›</span>
       </button>
 
-      @if (online) {
+      <button type="button" class="card evolution" (click)="openAchievements()">
+        <span class="evolution-text">
+          <strong>Succès et titres</strong>
+          <span>{{ achievements.unlocked().length }} / {{ achievementCount }} · titre : {{ achievements.titleLabel() ?? 'aucun' }}</span>
+        </span>
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+
+            @if (online) {
         <app-account-card (leaderboard)="leaderboardOpen.set(true)" />
       }
 

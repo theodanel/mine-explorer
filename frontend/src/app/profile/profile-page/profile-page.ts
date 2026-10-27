@@ -9,6 +9,8 @@ import { LeaderboardPage } from '../../online/leaderboard-page/leaderboard-page'
 import { OnlineAccount } from '../../online/online-account';
 import { Progression } from '../../progression/progression';
 import { PlayerName } from '../../shared/player-name';
+import { ACHIEVEMENTS } from '../../balance/achievements';
+import { Achievements } from '../../achievements/achievements';
 
 /** Volumes proposés, du plus fort au coupé. */
 const VOLUME_OPTIONS = [
@@ -33,9 +35,15 @@ export class ProfilePage {
   protected readonly online = inject(OnlineAccount).enabled;
   protected readonly leaderboardOpen = signal(false);
   private readonly navigation = inject(Navigation);
+  protected readonly achievements = inject(Achievements);
+  protected readonly achievementCount = ACHIEVEMENTS.length;
 
   protected readonly volumes = VOLUME_OPTIONS;
   protected readonly portraitUrl = computed(() => EVOLUTION_VISUALS[this.evolution.form().id].portraitUrl);
+
+  protected openAchievements(): void {
+    this.navigation.open('achievements');
+  }
 
   protected openEvolution(): void {
     this.navigation.open('evolution');

@@ -47,7 +47,8 @@ public record MineProperties(
 	 * Requêtes autorisées par minute et par adresse IP. Derrière le proxy, l'adresse est déjà celle du joueur :
 	 * Tomcat la reprend de X-Forwarded-For, seulement quand la requête vient du proxy (voir application-prod).
 	 */
-	public record RateLimit(@Positive int loginPerMinute, @Positive int writePerMinute, @Positive int readPerMinute) {
+	public record RateLimit(@Positive int loginPerMinute, @Positive int writePerMinute, @Positive int readPerMinute,
+			@Positive int profilePerMinute) {
 	}
 
 	/**

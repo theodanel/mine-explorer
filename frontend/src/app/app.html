@@ -65,8 +65,16 @@
       <button type="button" class="side-link" aria-label="Classement" (click)="navigation.open('leaderboard')">
         <img src="assets/ui/leaderboard.webp" alt="" width="128" height="128" />
       </button>
-      <button type="button" class="side-link" aria-label="Discussion" (click)="navigation.open('chat')">
+      <button
+        type="button"
+        class="side-link"
+        [attr.aria-label]="chatBadge() ? 'Discussion : ' + chatBadge() + ' nouveaux messages' : 'Discussion'"
+        (click)="navigation.open('chat')"
+      >
         <img src="assets/ui/chat.webp" alt="" width="128" height="128" />
+        @if (chatBadge(); as badge) {
+          <span class="side-badge" aria-hidden="true">{{ badge }}</span>
+        }
       </button>
     </nav>
   }
@@ -74,6 +82,7 @@
     <p class="test-ribbon">Version de test</p>
   }
   <app-zone-banner class="zone" />
+  <app-achievement-toast class="achievement-toast" />
   <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
@@ -123,6 +132,11 @@
     @case ('heart-forge') {
       @defer (on immediate) {
         <app-heart-forge-page class="page-layer" />
+      }
+    }
+    @case ('achievements') {
+      @defer (on immediate) {
+        <app-achievements-page class="page-layer" />
       }
     }
     @case ('challenge') {

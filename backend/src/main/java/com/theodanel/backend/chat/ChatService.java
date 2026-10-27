@@ -12,8 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.theodanel.backend.account.Player;
+import com.theodanel.backend.account.PlayerRepository;
 import com.theodanel.backend.config.MineProperties;
 import com.theodanel.backend.error.ApiException;
+import com.theodanel.backend.save.PublicProfile;
+import com.theodanel.backend.save.SaveService;
 
 /**
  * Discussion entre joueurs, en texte libre. Protections, sans en faire trop : message filtré par {@link ChatRules}
@@ -36,24 +40,55 @@ public class ChatService {
 	private final ChatReportRepository reports;
 	private final ChatMuteRepository mutes;
 	private final ChatRules rules = ChatRules.withDefaultWords();
+	private final PlayerRepository players;
+	private final SaveService saves;
 	private final Set<UUID> moderators;
 	private final Clock clock;
 
 	public ChatService(ChatMessageRepository messages, ChatReportRepository reports, ChatMuteRepository mutes,
-			MineProperties properties, Clock clock) {
+			PlayerRepository players, SaveService saves, MineProperties properties, Clock clock) {
 		this.messages = messages;
 		this.reports = reports;
 		this.mutes = mutes;
+		this.players = players;
+		this.saves = saves;
 		this.moderators = Set.copyOf(properties.chat().moderators());
 		this.clock = clock;
 	}
 
 	/** Message vu par un joueur ({@code mine} : c'est le sien), du plus ancien au plus récent. */
-	public record Message(long id, String pseudo, String text, Instant sentAt, boolean mine) {
+	public record Message(long id, String pseudo, String title, String text, Instant sentAt, boolean mine) {
 	}
 
 	/** Ce que voit un joueur : les messages, et ce qu'il a le droit de faire. */
 	public record View(List<Message> messages, boolean canWrite, boolean moderator) {
+	}
+
+	/** Profil public de l'auteur d'un message : pseudo, titre, zone, forme et équipement porté, sans identifiant. */
+	public record AuthorProfile(String pseudo, String title, int zone, int form, List<PublicProfile.Piece> equipment) {
+	}
+
+	/** Messages arrivés après {@code after} et écrits par d'autres que {@code viewer}, et le dernier message visible. */
+	public record Unread(long count, long lastId) {
+	}
+
+	@Transactional(readOnly = true)
+	public AuthorProfile authorProfile(long messageId) {
+		ChatMessage message = messages.findByIdAndHiddenFalse(messageId).orElseThrow(ChatService::messageNotFound);
+		Player author = players.findById(message.getPlayerId()).orElseThrow(ChatService::messageNotFound);
+		PublicProfile profile = saves.publicProfile(author.getId());
+		return new AuthorProfile(author.getPseudo(), author.getTitle(), profile.zone(), profile.form(), profile.equipment());
+	}
+
+	@Transactional(readOnly = true)
+	public Unread unread(long after, UUID viewer) {
+		long count = viewer == null ? messages.countByHiddenFalseAndIdGreaterThan(after)
+				: messages.countByHiddenFalseAndIdGreaterThanAndPlayerIdNot(after, viewer);
+		return new Unread(count, messages.lastVisibleId());
+	}
+
+	private static ApiException messageNotFound() {
+		return new ApiException(HttpStatus.NOT_FOUND, "message-not-found", "Message introuvable");
 	}
 
 	@Transactional(readOnly = true)
@@ -61,7 +96,7 @@ public class ChatService {
 		List<Message> latest = messages.latestVisible(Limit.of(VISIBLE_MESSAGES))
 			.reversed()
 			.stream()
-			.map(line -> new Message(line.id(), line.pseudo(), line.text(), line.sentAt(), line.playerId().equals(viewer)))
+			.map(line -> new Message(line.id(), line.pseudo(), line.title(), line.text(), line.sentAt(), line.playerId().equals(viewer)))
 			.toList();
 		boolean canWrite = viewer != null && !mutes.existsById(viewer);
 		return new View(latest, canWrite, isModerator(viewer));

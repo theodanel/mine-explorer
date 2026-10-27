@@ -44,8 +44,12 @@
 }
 
 .message {
+  // La bulle du joueur à gauche du message, sur toute sa hauteur : la toucher ouvre sa fiche
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 2cqw;
   justify-self: start;
-  max-width: 78%;
+  max-width: 84%;
   padding: 1.8cqw 3cqw 2.2cqw;
   border: 0.45cqw solid var(--ink);
   border-radius: 1cqw 3.2cqw 3.2cqw;
@@ -54,6 +58,7 @@
   color: var(--parchment-text);
 
   header {
+    grid-column: 2;
     display: flex;
     align-items: baseline;
     gap: 2cqw;
@@ -74,6 +79,7 @@
   }
 
   p {
+    grid-column: 2;
     margin: 0.6cqw 0 0;
     font-size: 3.6cqw;
     font-weight: 700;
@@ -86,6 +92,28 @@
     justify-self: end;
     border-radius: 3.2cqw 1cqw 3.2cqw 3.2cqw;
     background: #ffe8a8;
+  }
+}
+
+.avatar {
+  grid-row: span 2;
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 8cqw;
+  height: 8cqw;
+  padding: 0;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 50%;
+  background: hsl(var(--avatar-hue, 30) 65% 55%);
+  box-shadow: 0 0.4cqw 0 rgb(74 44 22 / 35%);
+  color: #fff;
+  font: 4cqw / 1 var(--font-display);
+  text-shadow: 0 0.3cqw 0 rgb(0 0 0 / 35%);
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.94);
   }
 }
 
@@ -242,4 +270,14 @@
     font-size: 3.2cqw;
     font-weight: 700;
   }
+}
+
+// Titre porté (succès), à côté du pseudo
+.title {
+  padding: 0.2cqw 1.4cqw;
+  border-radius: 999px;
+  background: #ffd34d;
+  color: var(--ink);
+  font-size: 2.4cqw;
+  font-weight: 700;
 }

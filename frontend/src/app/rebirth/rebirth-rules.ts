@@ -11,14 +11,14 @@ import {
   REBIRTH_PICKAXE_PER_LEVEL,
   REBIRTH_SHARDS_PER_LEVEL,
   REBIRTH_SPEED_PER_LEVEL,
-  REBIRTH_SHORTCUT_GAPS,
+  REBIRTH_START_ZONE,
+  REMOVED_SHORTCUT_COST_BASE,
   REBIRTH_STRIKE_PER_LEVEL,
   REBIRTH_TREE,
   RebirthBranch,
   rebirthEmbers,
   rebirthHardness,
 } from '../balance/rebirth';
-import { STAGES_PER_ZONE } from '../balance/balance';
 import type { ForgeLineage } from '../equipment/equipment-rules';
 
 export interface RebirthState {
@@ -110,19 +110,12 @@ export function rebirthEffects(state: RebirthState): RebirthEffects {
     strikeMultiplier: (1 + REBIRTH_STRIKE_PER_LEVEL) ** branchLevel(state, 'strike'),
     speed: branchLevel(state, 'speed') * REBIRTH_SPEED_PER_LEVEL,
     startPickaxe: 1 + branchLevel(state, 'pickaxe') * REBIRTH_PICKAXE_PER_LEVEL,
-    startZone: startZone(state),
+    startZone: REBIRTH_START_ZONE,
     shardBonus: branchLevel(state, 'shards') * REBIRTH_SHARDS_PER_LEVEL,
     essencesPerRock: branchLevel(state, 'essences') * REBIRTH_ESSENCES_PER_LEVEL,
     goldKept: branchLevel(state, 'gold') * REBIRTH_GOLD_PER_LEVEL,
     hardness: rebirthHardness(state.count),
   };
-}
-
-/** Zone où l'on renaît : quelques zones avant la plus profonde atteinte, toutes vies confondues. */
-function startZone(state: RebirthState): number {
-  const recordZone = Math.ceil(state.bestStages / STAGES_PER_ZONE);
-  const gap = REBIRTH_SHORTCUT_GAPS[branchLevel(state, 'shortcut')] ?? REBIRTH_SHORTCUT_GAPS[0];
-  return Math.max(recordZone - gap, 1);
 }
 
 /** Lecture d'une sauvegarde : null si elle est abîmée. */
@@ -143,15 +136,33 @@ export function parseRebirth(raw: string): RebirthState | null {
   if (!counts || typeof tree !== 'object' || tree === null) {
     return null;
   }
-  const levels = Object.entries(tree);
+  // Branche Raccourci retirée le 27/10/2026 : ses paliers sont rendus en Braises
+  const { shortcut, ...kept } = tree as Record<string, unknown>;
+  const refund = Number.isSafeInteger(shortcut) ? shortcutRefund(shortcut as number) : 0;
+  const levels = Object.entries(kept);
   const treeValid = levels.every(
     ([branch, level]) =>
       (REBIRTH_BRANCHES as readonly string[]).includes(branch) &&
       Number.isSafeInteger(level) &&
-      level >= 0 &&
-      level <= REBIRTH_TREE[branch as RebirthBranch].maxLevel,
+      (level as number) >= 0 &&
+      (level as number) <= REBIRTH_TREE[branch as RebirthBranch].maxLevel,
   );
   return treeValid
-    ? { count: count as number, embers: embers as number, tree, bestStages: bestStages as number, offerings: offerings as number }
+    ? {
+        count: count as number,
+        embers: (embers as number) + refund,
+        tree: kept as RebirthState['tree'],
+        bestStages: bestStages as number,
+        offerings: offerings as number,
+      }
     : null;
+}
+
+/** Braises payées pour `levels` paliers de l'ancienne branche Raccourci. */
+function shortcutRefund(levels: number): number {
+  let total = 0;
+  for (let level = 0; level < levels; level++) {
+    total += REMOVED_SHORTCUT_COST_BASE * (level + 1);
+  }
+  return total;
 }

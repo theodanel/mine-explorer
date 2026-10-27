@@ -57,7 +57,7 @@ export function gearStrikeMultiplier(family: number, stars: number): number {
   return FAMILY_STRIKE_POWER ** Math.max(family, 0) * STAR_STRIKE_POWER ** Math.max(stars, 0);
 }
 
-export const REBIRTH_BRANCHES = ['strike', 'speed', 'pickaxe', 'shortcut', 'shards', 'essences', 'gold'] as const;
+export const REBIRTH_BRANCHES = ['strike', 'speed', 'pickaxe', 'shards', 'essences', 'gold'] as const;
 export type RebirthBranch = (typeof REBIRTH_BRANCHES)[number];
 
 export interface RebirthBranchDefinition {
@@ -89,11 +89,12 @@ export const REBIRTH_SPEED_PER_LEVEL = 0.04;
 /** Niveaux de pioche avec lesquels on renaît, par palier. */
 export const REBIRTH_PICKAXE_PER_LEVEL = 3;
 /**
- * Zones d'écart entre le record et la zone où l'on renaît, selon le palier du raccourci (choix de Théo, 26/10/2026) :
- * chaque vie repart près du mur au lieu de retraverser des zones devenues une formalité. Avant, le raccourci donnait
- * une zone fixe (1 à 15).
+ * On renaît en zone 1 (choix de Théo, 27/10/2026) : avec des filons ×80 par phase, repartir près du record laissait
+ * des premiers filons interminables. La branche Raccourci a été retirée et ses Braises rendues.
  */
-export const REBIRTH_SHORTCUT_GAPS = [10, 9, 8, 7, 6, 5, 4] as const;
+export const REBIRTH_START_ZONE = 1;
+/** Ancien coût d'un palier de Raccourci (60 × (palier + 1)), pour rendre les Braises des vieilles sauvegardes. */
+export const REMOVED_SHORTCUT_COST_BASE = 60;
 /** Éclats de géode en plus, par palier. */
 export const REBIRTH_SHARDS_PER_LEVEL = 0.15;
 /** Ressources du Cœur en plus par filon d'Écho, par palier. */
@@ -121,12 +122,6 @@ export const REBIRTH_TREE: Readonly<Record<RebirthBranch, RebirthBranchDefinitio
     describe: (level) => `Pioche au niveau ${1 + level * REBIRTH_PICKAXE_PER_LEVEL} en renaissant`,
     maxLevel: 8,
     cost: linear(30),
-  },
-  shortcut: {
-    label: 'Raccourci',
-    describe: (level) => `Renaître ${REBIRTH_SHORTCUT_GAPS[level]} zones avant ton record`,
-    maxLevel: REBIRTH_SHORTCUT_GAPS.length - 1,
-    cost: linear(60),
   },
   shards: {
     label: 'Forge vive',

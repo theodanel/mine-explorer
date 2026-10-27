@@ -282,6 +282,13 @@
   z-index: calc(var(--z-events) + 1);
 }
 
+// Carnet d'aventure, juste sous la roue de la loterie
+.journal {
+  position: absolute;
+  inset: calc(var(--core) * 0.145 + 15cqw) 3cqw auto auto;
+  z-index: calc(var(--z-events) + 1);
+}
+
 // Indices du Marchand nain, sous le bandeau de zone, au centre
 .merchant-hint {
   position: absolute;

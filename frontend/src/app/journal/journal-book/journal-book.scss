@@ -1,0 +1,245 @@
+:host {
+  display: contents;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 60%);
+  container-type: inline-size;
+}
+
+// Le carnet ouvert de Théo (1438 × 2576) : quatre pages, deux en haut pour Orvald, deux en bas pour le joueur.
+// Les zones de texte sont posées sur les pages de l'image, en pourcentage de sa taille.
+.book {
+  position: relative;
+  width: min(100cqw, calc(100dvh * 1438 / 2576));
+  aspect-ratio: 1438 / 2576;
+  background: url('/assets/ui/carnet/carnet-ouvert.webp') center / 100% 100% no-repeat;
+  color: #3b2614;
+  container-type: inline-size;
+  animation: book-open 0.35s ease-out;
+
+  &.turning .lore,
+  &.turning .objectives,
+  &.turning .reward {
+    animation: page-turn 0.7s ease-in-out;
+  }
+}
+
+.close {
+  position: absolute;
+  top: 7cqw;
+  right: 5cqw;
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.5cqw solid #3b2614;
+  border-radius: 50%;
+  background: #f3e3c3;
+  color: #3b2614;
+  font-size: 6cqw;
+  line-height: 1;
+  cursor: pointer;
+}
+
+// Pages du haut : le texte d'Orvald court sur les deux pages, la reliure au milieu
+.lore {
+  position: absolute;
+  // Sous les croquis des coins (pioche à gauche, lanterne à droite)
+  top: 22.5%;
+  left: 10%;
+  right: 10%;
+  height: 25%;
+  column-count: 2;
+  column-gap: 9cqw;
+  column-fill: auto;
+  overflow: hidden;
+
+  h2 {
+    margin: 0 0 2cqw;
+    font-size: 5cqw;
+    line-height: 1.1;
+  }
+}
+
+.chapter {
+  margin: 0;
+  font-size: 3cqw;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.lore-text {
+  margin: 0;
+  font: italic 3.3cqw / 1.4 Georgia, 'Times New Roman', serif;
+}
+
+// Page du bas à gauche : les objectifs, cochés au crayon
+.objectives {
+  position: absolute;
+  top: 54%;
+  left: 10%;
+  width: 36%;
+  display: grid;
+  gap: 2.4cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 3.4cqw;
+
+  li {
+    display: grid;
+    grid-template-columns: 5cqw minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5cqw;
+  }
+
+  .done .label {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 4.6cqw;
+  height: 4.6cqw;
+  border: 0.45cqw solid #3b2614;
+  border-radius: 0.8cqw;
+  color: #2f6b2a;
+  font-weight: 800;
+}
+
+.count {
+  grid-column: 2;
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
+// Page du bas à droite : ce qui s'ouvre, la récompense et le sceau
+.reward {
+  position: absolute;
+  top: 54%;
+  left: 54%;
+  width: 36%;
+  display: grid;
+  justify-items: center;
+  gap: 2.4cqw;
+  text-align: center;
+  font-size: 3.3cqw;
+
+  p {
+    margin: 0;
+  }
+}
+
+.unlocks {
+  font-style: italic;
+}
+
+.shards {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  font-weight: 800;
+
+  img {
+    width: 5cqw;
+    height: 5cqw;
+  }
+}
+
+.seal {
+  width: 20cqw;
+  height: 20cqw;
+}
+
+.stamped {
+  transform: rotate(-12deg);
+}
+
+.seal-button {
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+  font-size: 3.4cqw;
+
+  img {
+    width: 14cqw;
+    height: 14cqw;
+    animation: seal-call 1.2s ease-in-out infinite;
+  }
+}
+
+.pending {
+  font-size: 3cqw;
+  opacity: 0.75;
+}
+
+.pager {
+  position: absolute;
+  bottom: 9%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12%;
+}
+
+.turn {
+  width: 9cqw;
+  height: 9cqw;
+  border: 0.5cqw solid #3b2614;
+  border-radius: 50%;
+  background: #f3e3c3;
+  color: #3b2614;
+  font-size: 6cqw;
+  line-height: 1;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+@keyframes book-open {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+// La page se tourne : le texte s'efface d'un côté et revient de l'autre
+@keyframes page-turn {
+  40% {
+    transform: perspective(80cqw) rotateY(-80deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: perspective(80cqw) rotateY(80deg);
+    opacity: 0;
+  }
+}
+
+@keyframes seal-call {
+  50% {
+    transform: scale(1.08) rotate(-6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book,
+  .book.turning .lore,
+  .book.turning .objectives,
+  .book.turning .reward,
+  .seal-button img {
+    animation: none;
+  }
+}

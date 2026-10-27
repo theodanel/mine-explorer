@@ -1,0 +1,59 @@
+:host {
+  display: block;
+}
+
+// Même style que la roue de la loterie juste au-dessus : sans fond, seule une ombre détache l'icône du décor
+.journal-link {
+  position: relative;
+  width: 13cqw;
+  height: 13cqw;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0.6cqw 0.6cqw rgb(0 0 0 / 60%));
+  }
+
+  &.ready img {
+    animation: journal-call 1.4s ease-in-out infinite;
+  }
+
+  &:focus-visible {
+    outline: 0.6cqw solid #ffd34d;
+    border-radius: 2cqw;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -1cqw;
+  right: -1cqw;
+  display: grid;
+  place-items: center;
+  width: 5cqw;
+  height: 5cqw;
+  border-radius: 50%;
+  background: #d8432e;
+  color: #fff;
+  font-size: 3.2cqw;
+  font-weight: 800;
+}
+
+// Le carnet appelle le joueur : il se soulève un peu et brille
+@keyframes journal-call {
+  50% {
+    transform: translateY(-0.8cqw) rotate(-4deg);
+    filter: drop-shadow(0 0 2cqw #ffd34d);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-link.ready img {
+    animation: none;
+  }
+}

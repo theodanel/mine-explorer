@@ -85,11 +85,11 @@
   left: 10%;
   width: 36%;
   display: grid;
-  gap: 2.4cqw;
+  gap: 1.6cqw;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 3.4cqw;
+  font-size: 3.1cqw;
 
   li {
     display: grid;
@@ -116,9 +116,9 @@
 }
 
 .count {
-  grid-column: 2;
-  font-size: 3cqw;
+  font-size: 2.7cqw;
   opacity: 0.75;
+  white-space: nowrap;
 }
 
 // Page du bas à droite : ce qui s'ouvre, la récompense et le sceau

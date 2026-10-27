@@ -23,10 +23,12 @@
           @for (objective of page.objectives; track objective.label) {
             <li [class.done]="objective.done">
               <span class="box" aria-hidden="true">{{ objective.done ? '✔' : '' }}</span>
-              <span class="label">{{ objective.label }}</span>
-              @if (!objective.done && objective.target > 1) {
-                <span class="count">{{ objective.current }} / {{ objective.target }}</span>
-              }
+              <span class="label"
+                >{{ objective.label }}
+                @if (!objective.done && objective.target > 1) {
+                  <span class="count">({{ objective.current }} / {{ objective.target }})</span>
+                }
+              </span>
             </li>
           }
         </ul>
@@ -39,6 +41,8 @@
           </p>
           @if (page.sealed) {
             <img class="seal stamped" src="assets/ui/carnet/sceau.webp" alt="Chapitre scellé" width="256" height="256" />
+          } @else if (page.preview) {
+            <p class="pending">Aperçu (site de test) : page pas encore atteinte.</p>
           } @else if (page.ready) {
             <button type="button" class="game-button gold seal-button" (click)="seal()">
               <img src="assets/ui/carnet/sceau.webp" alt="" width="256" height="256" />

@@ -263,3 +263,7 @@ export function chaptersAlreadyDone(facts: JournalFacts): number {
   }
   return index;
 }
+
+/** Toutes les pages du carnet, dans l'ordre : la 1re boucle, puis les vies 2 à 5 et la suite sans fin (site de test). */
+export const ALL_PAGES: readonly JournalChapter[] = [...FIRST_LOOP, ...Array.from({ length: PHASES }, (_, index) => lifeChapter(index + 1))];
+

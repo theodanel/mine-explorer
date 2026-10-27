@@ -29,6 +29,8 @@ export class MineRock {
   readonly sprite = new Sprite();
   private impactX = 0;
   private floorY = 0;
+  /** 1 : la pioche arrive de la gauche ; -1 : de la droite (héros en miroir, vue du dessus). */
+  private facing: 1 | -1 = 1;
   private hitMs = 0;
   private respawnMs = 0;
   /** Rocher demandé en dernier (zone, ou gardien de la zone) : une image arrivée trop tard est ignorée. */
@@ -41,9 +43,10 @@ export class MineRock {
   }
 
   /** Place le rocher sous la pioche de la forme en cours, pieds du mineur au niveau `floorY`. */
-  place(impactX: number, floorY: number): void {
+  place(impactX: number, floorY: number, facing: 1 | -1 = 1): void {
     this.impactX = impactX;
     this.floorY = floorY;
+    this.facing = facing;
     this.layout();
   }
 
@@ -92,7 +95,12 @@ export class MineRock {
   }
 
   private centerX(): number {
-    return this.impactX + width(this.sprite) * (0.5 - IMPACT_SHARE);
+    return this.impactX + this.facing * width(this.sprite) * (0.5 - IMPACT_SHARE);
+  }
+
+  /** Sol sous le rocher : la vue du dessus range les objets du monde par profondeur. */
+  get floorLine(): number {
+    return this.floorY + ROCK_SINK;
   }
 
   private layout(): void {

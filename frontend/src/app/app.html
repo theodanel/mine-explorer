@@ -100,7 +100,9 @@
       <img class="trophy-icon" src="assets/ui/refonte/challenge-trophy.webp" alt="" width="160" height="160" />Défi : récompense !
     </button>
   }
-  <app-companion-buddy class="buddy" />
+  @if (!topDownMine()) {
+    <app-companion-buddy class="buddy" />
+  }
   <app-mine-event-layer class="events" />
 
 

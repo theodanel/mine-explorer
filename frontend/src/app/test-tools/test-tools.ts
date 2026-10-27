@@ -13,6 +13,7 @@ import { writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { compactNumber } from '../shared/format-number';
+import { CameraChoice, TopDownSettings } from '../mine-scene/top-down-settings';
 
 /** Clés de sauvegarde du jeu : toutes commencent ainsi. */
 const SAVE_PREFIX = 'mine-explorer.';
@@ -23,6 +24,11 @@ const SHARD_GIFT = 1_000;
 const ORE_GIFT = 100;
 const ESSENCE_GIFT = 50;
 const DUPLICATE_GIFT = 100;
+const CAMERA_CHOICES: readonly { readonly id: CameraChoice; readonly label: string }[] = [
+  { id: 'auto', label: 'Comme le téléphone (fixe si moins d’animations)' },
+  { id: 'follow', label: 'Qui suit le héros' },
+  { id: 'fixed', label: 'Fixe' },
+];
 
 /**
  * Outils du site de test (staging) seulement : se donner de l'or, des éclats, des minerais, une renaissance, sauter à
@@ -43,6 +49,8 @@ export class TestTools {
   private readonly rebirth = inject(Rebirth);
   private readonly awakening = inject(Awakening);
   private readonly document = inject(DOCUMENT);
+  protected readonly topDown = inject(TopDownSettings);
+  protected readonly cameraChoices = CAMERA_CHOICES;
   readonly closed = output();
 
   protected readonly coinGifts = COIN_GIFTS.map((amount) => ({
@@ -110,6 +118,15 @@ export class TestTools {
   protected setForm(index: number): void {
     writeStorage(`${SAVE_PREFIX}evolution`, String(index));
     this.reload();
+  }
+
+  /** Tout de suite, sans recharger : la scène bascule de caméra en replaçant le héros. */
+  protected setCamera(id: string): void {
+    const choice = CAMERA_CHOICES.find((option) => option.id === id);
+    if (choice) {
+      this.topDown.setCamera(choice.id);
+      this.done.set(`Caméra : ${choice.label}`);
+    }
   }
 
   protected setPickaxe(level: number): void {

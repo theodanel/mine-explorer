@@ -15,7 +15,6 @@ import {
   Gauges,
   isComplete,
   isValidCounters,
-  mainMission,
   MissionDef,
   missionProgress,
   MissionReward,
@@ -45,7 +44,10 @@ export interface MissionView {
   readonly claimed: boolean;
 }
 
-/** Missions principale et du jour : avancement, récompenses et remise à zéro quotidienne. */
+/**
+ * Missions du jour : avancement, récompenses et remise à zéro quotidienne. La mission principale a laissé sa place au
+ * Carnet d'aventure (28/10/2026) ; ses champs restent dans la sauvegarde pour que les anciennes se relisent.
+ */
 @Injectable({ providedIn: 'root' })
 export class Missions {
   private readonly counters = inject(MissionCounters).counters;
@@ -62,11 +64,6 @@ export class Missions {
     pickaxeLevel: this.forge.level(),
   }));
 
-  readonly main = computed<MissionView>(() => {
-    const { mainIndex, mainBaseline } = this.state();
-    return this.view(mainMission(mainIndex), mainBaseline, false);
-  });
-
   readonly daily = computed<readonly MissionView[]>(() => {
     const { dayBaseline, dailyClaimed } = this.state();
     return availableDailyMissions(this.evolution.index(), this.progression.zone()).map((mission) =>
@@ -78,12 +75,13 @@ export class Missions {
     () => !this.state().chestClaimed && this.daily().every((mission) => mission.claimed),
   );
   readonly chestClaimed = computed(() => this.state().chestClaimed);
+  /** Missions du jour récupérées, sur le total : l'avancement montré sur le bouton Missions. */
+  readonly dailyDone = computed(() => this.daily().filter((mission) => mission.claimed).length);
   readonly chestReward = DAILY_CHEST_REWARD;
 
   /** Nombre de récompenses à récupérer, pour la pastille du bouton Missions. */
   readonly claimableCount = computed(
     () =>
-      (this.main().complete ? 1 : 0) +
       this.daily().filter((mission) => mission.complete && !mission.claimed).length +
       (this.chestReady() ? 1 : 0),
   );
@@ -91,14 +89,6 @@ export class Missions {
   constructor() {
     const timer = setInterval(() => this.rolloverDay(), DAY_CHECK_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
-  }
-
-  claimMain(): void {
-    if (!this.main().complete) {
-      return;
-    }
-    this.grant(this.main().mission.reward);
-    this.save({ ...this.state(), mainIndex: this.state().mainIndex + 1, mainBaseline: this.counters() });
   }
 
   claimDaily(id: string): void {

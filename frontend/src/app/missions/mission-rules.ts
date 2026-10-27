@@ -1,7 +1,7 @@
 // Règles pures des missions, inspirées de Legends of Mushroom : une mission principale à la fois,
 // qui s'enchaîne sans fin, et trois missions du jour avec un coffre. Elles complètent les éclats gagnés en minant.
 import { ABYSS_UNLOCK_FORM } from '../balance/abyss';
-import { EVOLUTION_FORMS, type EvolutionId, MAX_PICKAXE_LEVEL, STAGES_PER_ZONE } from '../balance/balance';
+import { EVOLUTION_FORMS, type EvolutionId, MAX_PICKAXE_LEVEL } from '../balance/balance';
 import { COMPANIONS_UNLOCK_ZONE } from '../balance/companions';
 import { WORKSHOP_UNLOCK_FORM } from '../balance/workshop';
 
@@ -54,42 +54,7 @@ export interface MissionDef {
   readonly reward: MissionReward;
 }
 
-// ─── Missions principales ──────────────────────────────────────────────────
-
-/**
- * Cycle de 6 missions qui revient avec des objectifs plus grands à chaque tour.
- * Les objectifs liés aux filons et aux segments sont plafonnés : en profondeur, un filon peut durer
- * une demi-heure et un segment plusieurs jours d'or, et une mission impossible bloquerait toute la chaîne.
- */
-const MAX_ROCKS_TARGET = 3;
-const MAX_SEGMENTS_TARGET = 3;
-const MAX_FORGE_TARGET = 40;
-const MAX_SELL_TARGET = 25;
-
-const MAIN_TEMPLATES: readonly ((round: number) => Omit<MissionDef, 'id'>)[] = [
-  (round) =>
-    counterMission('rocksBroken', Math.min(1 + round, MAX_ROCKS_TARGET), (n) => (n === 1 ? 'Épuise un filon' : `Épuise ${n} filons`), 4),
-  (round) => counterMission('itemsForged', Math.min(2 + 2 * round, MAX_FORGE_TARGET), (n) => `Forge ${n} objets`, 3),
-  (round) => {
-    const target = 5 + 3 * round;
-    return { label: `Atteins le filon ${stageName(target)}`, metric: { kind: 'gauge', id: 'stagesReached' }, target, reward: shardsOnly(5) };
-  },
-  (round) => counterMission('segmentsPaid', Math.min(1 + round, MAX_SEGMENTS_TARGET), (n) => (n === 1 ? 'Paie un segment de pioche' : `Paie ${n} segments de pioche`), 4),
-  (round) => counterMission('itemsSold', Math.min(1 + 2 * round, MAX_SELL_TARGET), (n) => (n === 1 ? 'Vends un objet' : `Vends ${n} objets`), 3),
-  (round) => {
-    // Au niveau maximum, la mission se valide d'elle-même : la chaîne continue
-    const target = Math.min(2 + round, MAX_PICKAXE_LEVEL);
-    return { label: `Monte la pioche au niveau ${target}`, metric: { kind: 'gauge', id: 'pickaxeLevel' }, target, reward: shardsOnly(6) };
-  },
-];
-
-/** Mission principale numéro `index` (à partir de 0). La récompense grandit d'un éclat tous les 2 tours. */
-export function mainMission(index: number): MissionDef {
-  const round = Math.floor(index / MAIN_TEMPLATES.length);
-  const mission = MAIN_TEMPLATES[index % MAIN_TEMPLATES.length](round);
-  const bonus = Math.floor(round / 2);
-  return { ...mission, id: `main-${index}`, reward: { ...mission.reward, shards: mission.reward.shards + bonus } };
-}
+// La mission principale a été retirée le 28/10/2026 (Théo) : le Carnet d'aventure tient ce rôle.
 
 // ─── Missions du jour ──────────────────────────────────────────────────────
 
@@ -182,8 +147,3 @@ function shardsOnly(shards: number): MissionReward {
 }
 
 /** « 5 » → « 1-5 », « 16 » → « 2-1 ». */
-function stageName(stagesReached: number): string {
-  const zone = Math.floor((stagesReached - 1) / STAGES_PER_ZONE) + 1;
-  const stage = ((stagesReached - 1) % STAGES_PER_ZONE) + 1;
-  return `${zone}-${stage}`;
-}

@@ -11,9 +11,6 @@
       <button type="button" class="close" aria-label="Fermer" (click)="closed.emit()">×</button>
     </header>
 
-    <h3>Mission principale</h3>
-    <app-mission-row [view]="missions.main()" [main]="true" (claim)="missions.claimMain()" />
-
     <h3>Missions du jour</h3>
     <ul class="list">
       @for (view of missions.daily(); track view.mission.id) {

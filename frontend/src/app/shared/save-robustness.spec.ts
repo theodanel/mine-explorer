@@ -12,7 +12,6 @@ import { Forge } from '../forge/forge';
 import { Galleries } from '../galleries/galleries';
 import { Miner } from '../miner/miner';
 import { MissionCounters } from '../missions/mission-counters';
-import { mainMission } from '../missions/mission-rules';
 import { Missions } from '../missions/missions';
 import { OfflineEarnings } from '../offline/offline-earnings';
 import { Ores } from '../ores/ores';
@@ -162,6 +161,7 @@ describe('Sauvegarde abîmée ou trafiquée', () => {
     );
     TestBed.resetTestingModule();
     expect(TestBed.inject(MissionCounters).counters().eventsTouched).toBe(0);
-    expect(TestBed.inject(Missions).main().mission.id).toBe(mainMission(7).id);
+    // La sauvegarde se relit : le jour en cours garde ses missions, aucune récupérée
+    expect(TestBed.inject(Missions).dailyDone()).toBe(0);
   });
 });

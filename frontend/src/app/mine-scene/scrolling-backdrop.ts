@@ -14,6 +14,7 @@ export class ScrollingBackdrop {
   private copyWidth = 0;
   private left = 0;
   private offset = 0;
+  private mirrored = true;
 
   constructor() {
     for (let index = 0; index < COPIES; index++) {
@@ -35,16 +36,20 @@ export class ScrollingBackdrop {
     }
   }
 
-  /** Taille et place de la copie à l'écran, comme pour un fond unique. */
-  layout(width: number, height: number, x: number, y: number): void {
+  /**
+   * Taille et place de la copie à l'écran, comme pour un fond unique. `mirrored` : fond pas dessiné pour se répéter,
+   * une copie sur deux est retournée ; un fond large qui se raccorde à lui-même est simplement répété.
+   */
+  layout(width: number, height: number, x: number, y: number, mirrored = true): void {
     this.copyWidth = width;
     this.left = x;
+    this.mirrored = mirrored;
     this.copies.forEach((copy, index) => {
       // Une copie sur deux en miroir : l'ancre à droite garde la même case qu'une copie normale
-      const mirrored = index % 2 === 1;
-      copy.anchor.set(mirrored ? 1 : 0, 0);
+      const flipped = mirrored && index % 2 === 1;
+      copy.anchor.set(flipped ? 1 : 0, 0);
       copy.setSize(width, height);
-      copy.scale.x = Math.abs(copy.scale.x) * (mirrored ? -1 : 1);
+      copy.scale.x = Math.abs(copy.scale.x) * (flipped ? -1 : 1);
       copy.position.set(index * width, y);
     });
     this.place();
@@ -60,8 +65,8 @@ export class ScrollingBackdrop {
     if (this.copyWidth <= 0) {
       return;
     }
-    // Le motif (copie normale + copie en miroir) se répète tous les deux fonds
-    const period = this.copyWidth * 2;
+    // En miroir, le motif (copie normale + copie retournée) se répète tous les deux fonds
+    const period = this.mirrored ? this.copyWidth * 2 : this.copyWidth;
     this.container.x = this.left - (((this.offset % period) + period) % period);
   }
 }

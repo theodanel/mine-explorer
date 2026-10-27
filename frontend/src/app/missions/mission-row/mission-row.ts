@@ -14,7 +14,6 @@ const PERCENT = 100;
 })
 export class MissionRow {
   readonly view = input.required<MissionView>();
-  readonly main = input(false);
   readonly claim = output();
 
   protected readonly percent = computed(() => {

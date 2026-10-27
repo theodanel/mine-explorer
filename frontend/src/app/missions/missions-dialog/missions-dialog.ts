@@ -5,7 +5,7 @@ import { MissionRow } from '../mission-row/mission-row';
 import { Missions } from '../missions';
 import { RewardFlightDirective } from '../../reward-flight/reward-flight.directive';
 
-/** Fenêtre des missions : la principale en haut, celles du jour en dessous, puis le coffre du jour. */
+/** Fenêtre des missions : celles du jour, puis le coffre du jour. L'objectif principal est dans le Carnet d'aventure. */
 @Component({
   selector: 'app-missions-dialog',
   imports: [MissionRow, RewardFlightDirective],

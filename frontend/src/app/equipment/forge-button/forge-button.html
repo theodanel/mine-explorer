@@ -74,7 +74,7 @@
     (click)="missionsOpen.set(true)"
   >
     <span class="side-title">Missions</span>
-    <span class="side-level">{{ missions.main().progress }} / {{ missions.main().mission.target }}</span>
+    <span class="side-level">{{ missions.dailyDone() }} / {{ missions.daily().length }}</span>
     @if (missions.claimableCount() > 0) {
       <span class="badge bounce" aria-hidden="true">{{ missions.claimableCount() }}</span>
     }

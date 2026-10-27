@@ -8,7 +8,6 @@ import {
   DAILY_MISSIONS,
   EMPTY_COUNTERS,
   isComplete,
-  mainMission,
   type CounterId,
   type Counters,
 } from '../src/app/missions/mission-rules.ts';
@@ -367,8 +366,6 @@ let zone20Reached = false;
 let awakeningState: AwakeningState = EMPTY_AWAKENING;
 const withAwakening = withNewSystems && !process.argv.includes('--sans-eveil');
 let counters: Counters = EMPTY_COUNTERS;
-let mainIndex = 0;
-let mainBaseline: Counters = EMPTY_COUNTERS;
 let dayBaseline: Counters = EMPTY_COUNTERS;
 let dailyClaimed = new Set<string>();
 let chestClaimed = false;
@@ -990,15 +987,6 @@ function findArtifact(now: number): void {
 
 function claimMissions(): void {
   const gauges = { stagesReached: stagesReached(progress), pickaxeLevel: pickaxe.level };
-  for (let guard = 0; guard < 10; guard++) {
-    const mission = mainMission(mainIndex);
-    if (!isComplete(mission, counters, mainBaseline, gauges)) break;
-    shards += mission.reward.shards;
-    shardSources.missions += mission.reward.shards;
-    gold += mission.reward.gold;
-    mainIndex++;
-    mainBaseline = counters;
-  }
   for (const mission of DAILY_MISSIONS) {
     if (!dailyClaimed.has(mission.id) && isComplete(mission, counters, dayBaseline, gauges)) {
       dailyClaimed.add(mission.id);

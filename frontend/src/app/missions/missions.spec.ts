@@ -22,22 +22,19 @@ describe('Missions', () => {
     };
   }
 
-  it('récompense la mission principale et passe à la suivante', () => {
+  it('récompense une mission du jour une seule fois', () => {
     const { missions, counters, shards } = setup();
-    expect(missions.main().complete).toBe(false);
     counters.record('rocksBroken');
-    // La mission principale et la mission du jour « Épuise un filon »
-    expect(missions.claimableCount()).toBe(2);
-
-    missions.claimMain();
-    expect(shards.amount()).toBe(4);
-    expect(missions.main().mission.id).toBe('main-1');
-    expect(missions.main().progress).toBe(0);
+    expect(missions.claimableCount()).toBe(1);
+    missions.claimDaily(DAILY_MISSIONS[0].id);
+    expect(shards.amount()).toBe(DAILY_MISSIONS[0].reward.shards);
+    expect(missions.dailyDone()).toBe(1);
+    missions.claimDaily(DAILY_MISSIONS[0].id);
+    expect(shards.amount()).toBe(DAILY_MISSIONS[0].reward.shards);
   });
 
   it('refuse une récompense non méritée', () => {
     const { missions, shards } = setup();
-    missions.claimMain();
     missions.claimDaily(DAILY_MISSIONS[0].id);
     expect(shards.amount()).toBe(0);
   });

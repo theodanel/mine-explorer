@@ -28,6 +28,10 @@ import { AmbienceLayer } from './ambience-layer';
 import { PowerGain, powerGain } from './power-gain';
 import { MiningStats } from '../equipment/equipment.model';
 import { compactNumber } from '../shared/format-number';
+import { ScrollingBackdrop } from './scrolling-backdrop';
+import { SideWalk, walkDistance } from './side-walk';
+import { SideWalkSettings } from './side-walk-settings';
+import { IMPACT_FRAME, isWindingUp, STRIKE_FRAME_COUNT, walkWindowMs } from './strike-rhythm';
 
 // Résolution logique portrait 9:16, mise à l'échelle de l'écran en CSS
 const SCENE_WIDTH = 720;
@@ -43,9 +47,6 @@ const MINER_FEET_Y = 690;
 const MINER_ANIMATION = 'pickaxe_swing';
 // Pixi avance d'animationSpeed frame par tick (60 ticks/s) : 0.2 donne les 12 fps prévus par l'atlas
 const MINER_BASE_ANIMATION_SPEED = 0.2;
-// Toutes les animations de frappe ont 23 images avec l'impact sur la même : la cadence ne change pas avec la forme
-const STRIKE_FRAME_COUNT = 23;
-const IMPACT_FRAME = 10;
 
 // Formes sans animation affichées en image fixe : un peu plus grandes que l'Apprenti,
 // avec un petit écrasement à chaque coup pour garder le rythme du minage
@@ -74,6 +75,9 @@ const POWER_GLOW_MS = 600;
 const POWER_GLOW_TINT = 0xffe08a;
 /** L'éclat de l'Astre frappe le filon un peu sous son sommet. */
 const ASTRE_SHOT_BELOW_TOP = 60;
+/** Faute de vidéo de marche, le héros avance en faisant deux petits bonds dans sa pose de départ. */
+const WALK_HOPS = 2;
+const WALK_HOP_PX = 18;
 
 @Component({
   selector: 'app-mine-scene',
@@ -93,7 +97,14 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private miner: AnimatedSprite | null = null;
   /** Animation affichée par `miner`, qui donne aussi le point d'impact des effets. */
   private strike: StrikeAnimation = APPRENTICE_STRIKE;
-  private background: Sprite | null = null;
+  private background: ScrollingBackdrop | null = null;
+  /** Le héros qui avance entre deux filons : le décor défile, le filon suivant arrive par la droite. */
+  private readonly sideWalk = new SideWalk();
+  private readonly sideWalkSettings = inject(SideWalkSettings);
+  /** Pose du héros pendant la marche, à la place du mineur animé qui continue de cadencer les coups, invisible. */
+  private readonly walker = new Sprite();
+  /** Images de la frappe en cours : la première sert de pose de marche. */
+  private strikeFrames: Texture[] = [];
   /** Vidéo du décor animé en cours, à libérer en changeant de zone. */
   private zoneVideoUrl: string | null = null;
   private staticBody: Sprite | null = null;
@@ -231,6 +242,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
         this.ambience.showZone(zone);
       }
     });
+    // Zone 1 à l'essai : le décor défile entre deux filons ; ailleurs (ou réglage coupé) il reste immobile
+    effect(() => {
+      const active = this.sideWalkSettings.active();
+      if (!active && this.miner) {
+        untracked(() => this.stopSideWalk());
+      }
+    });
     // Le gardien de fin de zone remplace le rocher le temps du combat
     effect(() => {
       const zone = this.progression.playingZone();
@@ -259,8 +277,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
       if (this.destroyed) {
         return;
       }
-      this.background = new Sprite();
-      this.app.stage.addChild(this.background, this.ambience.container, this.rock.sprite);
+      this.background = new ScrollingBackdrop();
+      this.app.stage.addChild(this.background.container, this.ambience.container, this.rock.sprite);
       this.ambience.showZone(this.progression.playingZone());
       await this.showZoneBackground(this.progression.playingZone());
       void this.rock.show(this.progression.playingZone(), this.guardian());
@@ -314,6 +332,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
     miner.animationSpeed = MINER_BASE_ANIMATION_SPEED * speedMultiplier(this.minerStats.current().stats);
     this.miner = miner;
     this.strike = strike;
+    this.strikeFrames = frames;
     const effectsLayer = new Container();
     const effects = new HitEffects(effectsLayer);
     effects.setRebirthAura(this.rebirthAura());
@@ -327,7 +346,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.anchor.set(0.5, 1);
     this.staticBody.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
     this.staticBody.visible = false;
-    this.app.stage.addChild(astre.view, this.aura.view, miner, this.staticBody, effectsLayer);
+    this.walker.visible = false;
+    this.app.stage.addChild(astre.view, this.aura.view, miner, this.walker, this.staticBody, effectsLayer);
     // On attend la bonne forme avant de lancer les coups : pas d'Apprenti qui clignote au chargement
     await this.showForm(this.evolution.form().id);
 
@@ -342,6 +362,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
         if (outcome.rockBroken) {
           effects.spawnRockBreak(miner.x + impactOffset.x * scale, miner.y + impactOffset.y * scale);
           this.shakeMs = Math.max(this.shakeMs, SHAKE_MS * ROCK_BREAK_SHAKE_SHARE);
+          this.startSideWalk(miner);
         }
         this.squashMs = STRIKE_SQUASH_MS;
       }
@@ -357,6 +378,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.aura.update(ticker.deltaMS);
       astre.update(ticker.deltaMS);
       this.updateAstreStrikes(ticker.deltaMS);
+      this.updateSideWalk(ticker.deltaMS, miner);
     });
     miner.play();
   }
@@ -402,6 +424,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       const playing = this.miner.playing;
       this.miner.textures = frames;
       this.strike = strike;
+      this.strikeFrames = frames;
       this.placeMiner(strike);
       if (playing) {
         this.miner.gotoAndPlay(frame);
@@ -423,6 +446,68 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.astre?.place(SCENE_WIDTH / 2, MINER_FEET_Y);
     // Le rocher se cale sous la pioche de la forme affichée : chaque forme frappe un peu plus loin
     this.rock.place(this.miner.x + strike.impactOffset.x * strike.scale, MINER_FEET_Y);
+  }
+
+  /**
+   * Le filon a cédé sous la pioche : pendant la fin du geste, le héros marche sur place, le décor défile vers la gauche
+   * et le filon suivant arrive par la droite, sous la pioche quand l'élan reprend. Les coups gardent leur cadence.
+   */
+  private startSideWalk(miner: AnimatedSprite): void {
+    if (!this.sideWalkSettings.active()) {
+      return;
+    }
+    const windowMs = walkWindowMs(miner.animationSpeed);
+    this.sideWalk.start(walkDistance(windowMs), windowMs);
+    this.rock.slide(this.sideWalk.remaining);
+  }
+
+  private updateSideWalk(elapsedMs: number, miner: AnimatedSprite): void {
+    if (!this.sideWalk.walking) {
+      return;
+    }
+    this.sideWalk.update(elapsedMs, isWindingUp(miner.currentFrame));
+    this.background?.scrollTo(this.sideWalk.scrolled);
+    this.rock.slide(this.sideWalk.remaining);
+    if (this.sideWalk.walking) {
+      this.showWalkPose(miner);
+    } else {
+      this.endWalkPose(miner);
+    }
+  }
+
+  /** Arrivée immédiate et décor remis en place (zone sans défilement, réglage coupé). */
+  private stopSideWalk(): void {
+    this.sideWalk.finish();
+    this.background?.scrollTo(0);
+    this.rock.slide(0);
+    if (this.miner) {
+      this.endWalkPose(this.miner);
+    }
+  }
+
+  /** La pose de départ du coup, qui sautille : le mineur animé, lui, continue son geste sans être vu. */
+  private showWalkPose(miner: AnimatedSprite): void {
+    const hop = Math.abs(Math.sin(this.sideWalk.progress * Math.PI * WALK_HOPS)) * WALK_HOP_PX;
+    if (this.staticBody?.visible) {
+      this.staticBody.y = MINER_FEET_Y - hop;
+      return;
+    }
+    miner.alpha = 0;
+    this.walker.texture = this.strikeFrames[0] ?? miner.texture;
+    this.walker.anchor.copyFrom(miner.anchor);
+    this.walker.scale.copyFrom(miner.scale);
+    this.walker.tint = miner.tint;
+    this.walker.position.set(miner.x, miner.y - hop);
+    this.walker.visible = true;
+  }
+
+  private endWalkPose(miner: AnimatedSprite): void {
+    this.walker.visible = false;
+    if (this.staticBody) {
+      this.staticBody.y = MINER_FEET_Y;
+    }
+    // Une forme en image fixe garde son mineur animé invisible : il ne sert que de métronome
+    miner.alpha = this.staticBody?.visible ? 0 : 1;
   }
 
   /** Toutes les 2 s, l'Astre lance un éclat d'étoile ; le coup part à l'impact sur le filon. */
@@ -551,8 +636,7 @@ export class MineScene implements AfterViewInit, OnDestroy {
       return;
     }
     const scale = Math.max(1, (MINER_FEET_Y + this.extra()) / this.floorY);
-    this.background.setSize(SCENE_WIDTH * scale, SCENE_HEIGHT * scale);
-    this.background.position.set((SCENE_WIDTH - SCENE_WIDTH * scale) / 2, MINER_FEET_Y - this.floorY * scale);
+    this.background.layout(SCENE_WIDTH * scale, SCENE_HEIGHT * scale, (SCENE_WIDTH - SCENE_WIDTH * scale) / 2, MINER_FEET_Y - this.floorY * scale);
   }
 
   private destroyApp(): void {

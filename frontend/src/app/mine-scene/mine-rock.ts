@@ -29,6 +29,8 @@ export class MineRock {
   readonly sprite = new Sprite();
   private impactX = 0;
   private floorY = 0;
+  /** Chemin qui reste au filon suivant pour arriver sous la pioche, pendant que le héros avance. */
+  private slideX = 0;
   private hitMs = 0;
   private respawnMs = 0;
   /** Rocher demandé en dernier (zone, ou gardien de la zone) : une image arrivée trop tard est ignorée. */
@@ -71,6 +73,12 @@ export class MineRock {
     this.layout();
   }
 
+  /** Le filon suivant arrive par la droite : il est encore à `remaining` pixels de sa place. */
+  slide(remaining: number): void {
+    this.slideX = remaining;
+    this.layout();
+  }
+
   hit(rockBroken: boolean): void {
     if (rockBroken) {
       this.respawnMs = RESPAWN_MS;
@@ -92,7 +100,7 @@ export class MineRock {
   }
 
   private centerX(): number {
-    return this.impactX + width(this.sprite) * (0.5 - IMPACT_SHARE);
+    return this.impactX + this.slideX + width(this.sprite) * (0.5 - IMPACT_SHARE);
   }
 
   private layout(): void {

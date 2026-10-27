@@ -13,6 +13,7 @@ import { writeStorage } from '../shared/local-storage';
 import { GeodeShards } from '../wallet/geode-shards';
 import { Wallet } from '../wallet/wallet';
 import { compactNumber } from '../shared/format-number';
+import { SideWalkSettings } from '../mine-scene/side-walk-settings';
 
 /** Clés de sauvegarde du jeu : toutes commencent ainsi. */
 const SAVE_PREFIX = 'mine-explorer.';
@@ -43,6 +44,7 @@ export class TestTools {
   private readonly rebirth = inject(Rebirth);
   private readonly awakening = inject(Awakening);
   private readonly document = inject(DOCUMENT);
+  protected readonly sideWalk = inject(SideWalkSettings);
   readonly closed = output();
 
   protected readonly coinGifts = COIN_GIFTS.map((amount) => ({

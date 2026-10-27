@@ -79,6 +79,19 @@
         </button>
       </label>
 
+      <h3>Héros qui avance (essai, zone 1)</h3>
+      <div class="buttons">
+        <button
+          type="button"
+          class="game-button"
+          [class.green]="sideWalk.enabled()"
+          [attr.aria-pressed]="sideWalk.enabled()"
+          (click)="sideWalk.setEnabled(!sideWalk.enabled())"
+        >
+          {{ sideWalk.enabled() ? 'Décor qui défile : allumé' : 'Décor qui défile : éteint' }}
+        </button>
+      </div>
+
       <div class="buttons">
         <button type="button" class="game-button" (click)="unlockInterface()">
           Tout débloquer à l'écran

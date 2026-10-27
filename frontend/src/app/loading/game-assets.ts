@@ -84,6 +84,25 @@ interface ZoneBackground {
  */
 const ZONE_VIDEOS: Readonly<Record<number, string>> = { 20: 'assets/backgrounds/zone20.mp4' };
 
+/**
+ * Fonds larges dont le bord gauche continue le bord droit, pour le héros qui avance d'un filon au suivant
+ * (art-source/backgrounds/preparer-fond-large.py). Le sol est mesuré sur l'image ramenée à 1280 px de haut, au milieu
+ * de la bande de terre battue. Une zone sans fond large défile avec son fond habituel mis bout à bout en miroir.
+ */
+export const WIDE_BACKGROUNDS: Readonly<Partial<Record<number, { readonly url: string; readonly floorY: number }>>> = {
+  1: { url: 'assets/backgrounds/zone1-large.webp', floorY: 885 },
+};
+
+/**
+ * Marche de profil de l'Apprenti, découpée par art-source/animations/decouper-marche.py : un cycle de deux pas. Le corps
+ * fait 360 px dans l'atlas, ramené aux 259 px de l'Apprenti à l'écran (446 px de frappe × 0,58).
+ */
+export const APPRENTICE_WALK = {
+  atlasUrl: 'assets/characters/miner/apprenti-marche.json',
+  animation: 'walk',
+  scale: 0.72,
+} as const;
+
 /** Le fond de la zone 1 a son sol plus bas que les fonds suivants, peints d'après un autre gabarit. */
 const ZONE1_FLOOR_Y = 850;
 const OTHER_ZONES_FLOOR_Y = 735;

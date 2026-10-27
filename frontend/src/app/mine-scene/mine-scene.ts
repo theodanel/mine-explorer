@@ -7,7 +7,7 @@ import { speedMultiplier } from '../equipment/equipment-rules';
 import { EvolutionId, GUARDIAN_SECONDS } from '../balance/balance';
 import { Miner } from '../miner/miner';
 import { Evolution } from '../evolution/evolution';
-import { APPRENTICE_STRIKE, cadenceStrike, EVOLUTION_VISUALS, StrikeAnimation, zoneBackground } from '../loading/game-assets';
+import { APPRENTICE_STRIKE, APPRENTICE_WALK, cadenceStrike, EVOLUTION_VISUALS, StrikeAnimation, WIDE_BACKGROUNDS, zoneBackground } from '../loading/game-assets';
 import { Mining, StrikeOutcome } from '../mining/mining';
 import { Navigation } from '../navigation/navigation';
 import { Sound } from '../audio/sound';
@@ -131,6 +131,11 @@ export class MineScene implements AfterViewInit, OnDestroy {
   private readonly sceneHeight = signal(SCENE_HEIGHT);
   private readonly extra = computed(() => this.sceneHeight() - SCENE_HEIGHT);
   private floorY = 0;
+  /** Le fond affiché est un fond large qui se répète (sinon le fond habituel, mis bout à bout en miroir). */
+  private wideBackground = false;
+  private backgroundAspect = 1;
+  /** Marche de profil de l'Apprenti, vide tant qu'elle n'est pas chargée (le héros sautille alors dans sa pose). */
+  private walkFrames: Texture[] = [];
   private resizeObserver: ResizeObserver | null = null;
 
   /** Position de la barre de vie, en pourcentage de la scène : elle suit le rocher, quelle que soit la taille de l'écran. */
@@ -237,8 +242,10 @@ export class MineScene implements AfterViewInit, OnDestroy {
     // Nouvelle zone (ou retour dans une zone passée), nouveau décor : le fond se charge pendant que le mineur continue
     effect(() => {
       const zone = this.progression.playingZone();
+      // Le héros qui avance prend le fond large de la zone, s'il existe
+      const wide = this.sideWalkSettings.active();
       if (this.background) {
-        void this.showZoneBackground(zone);
+        void this.showZoneBackground(zone, wide);
         this.ambience.showZone(zone);
       }
     });
@@ -280,7 +287,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.background = new ScrollingBackdrop();
       this.app.stage.addChild(this.background.container, this.ambience.container, this.rock.sprite);
       this.ambience.showZone(this.progression.playingZone());
-      await this.showZoneBackground(this.progression.playingZone());
+      await this.showZoneBackground(this.progression.playingZone(), this.sideWalkSettings.active());
+      void this.loadWalkFrames();
       void this.rock.show(this.progression.playingZone(), this.guardian());
       await this.startMining(frames, strike);
     } catch (error) {
@@ -485,8 +493,32 @@ export class MineScene implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** La pose de départ du coup, qui sautille : le mineur animé, lui, continue son geste sans être vu. */
+  /** Marche de l'Apprenti : chargée à part, le jeu tourne sans elle. */
+  private async loadWalkFrames(): Promise<void> {
+    try {
+      const sheet = await Assets.load<Spritesheet>(APPRENTICE_WALK.atlasUrl);
+      this.walkFrames = sheet.animations[APPRENTICE_WALK.animation] ?? [];
+    } catch (error) {
+      console.warn('Marche de l\'Apprenti indisponible : il avance en sautillant', error);
+    }
+  }
+
+  /**
+   * Pendant la marche, le mineur animé continue son geste sans être vu. L'Apprenti joue sa marche de profil (un cycle
+   * de deux pas par trajet) ; les autres formes, en attendant la leur, sautillent dans la pose de départ du coup.
+   */
   private showWalkPose(miner: AnimatedSprite): void {
+    if (this.walkFrames.length > 0 && this.strike === APPRENTICE_STRIKE && !this.staticBody?.visible) {
+      miner.alpha = 0;
+      const index = Math.floor(this.sideWalk.progress * this.walkFrames.length) % this.walkFrames.length;
+      this.walker.texture = this.walkFrames[index];
+      this.walker.anchor.set(0.5, 1);
+      this.walker.scale.set(APPRENTICE_WALK.scale);
+      this.walker.tint = miner.tint;
+      this.walker.position.set(SCENE_WIDTH / 2, MINER_FEET_Y);
+      this.walker.visible = true;
+      return;
+    }
     const hop = Math.abs(Math.sin(this.sideWalk.progress * Math.PI * WALK_HOPS)) * WALK_HOP_PX;
     if (this.staticBody?.visible) {
       this.staticBody.y = MINER_FEET_Y - hop;
@@ -582,8 +614,9 @@ export class MineScene implements AfterViewInit, OnDestroy {
     this.staticBody.scale.set(this.staticScale * (1 + squash), this.staticScale * (1 - squash));
   }
 
-  private async showZoneBackground(zone: number): Promise<void> {
-    const { url, videoUrl, floorY } = zoneBackground(zone);
+  private async showZoneBackground(zone: number, wide: boolean): Promise<void> {
+    const wideBackground = wide ? WIDE_BACKGROUNDS[zone] : undefined;
+    const { url, videoUrl, floorY } = wideBackground ? { ...wideBackground, videoUrl: null } : zoneBackground(zone);
     try {
       const texture = videoUrl === null ? await Assets.load<Texture>(url) : await this.loadZoneVideo(videoUrl, url);
       if (this.destroyed || !this.background) {
@@ -593,6 +626,8 @@ export class MineScene implements AfterViewInit, OnDestroy {
       this.background.texture = texture;
       this.background.tint = this.progression.inEcho() ? ECHO_TINT : NO_TINT;
       this.floorY = floorY;
+      this.wideBackground = wideBackground !== undefined;
+      this.backgroundAspect = texture.width / texture.height;
       this.layoutBackground();
     } catch (error) {
       // On garde l'ancien décor plutôt qu'un écran vide
@@ -636,7 +671,13 @@ export class MineScene implements AfterViewInit, OnDestroy {
       return;
     }
     const scale = Math.max(1, (MINER_FEET_Y + this.extra()) / this.floorY);
-    this.background.layout(SCENE_WIDTH * scale, SCENE_HEIGHT * scale, (SCENE_WIDTH - SCENE_WIDTH * scale) / 2, MINER_FEET_Y - this.floorY * scale);
+    const top = MINER_FEET_Y - this.floorY * scale;
+    if (this.wideBackground) {
+      // Un fond large garde ses proportions : il dépasse à droite, prêt à défiler
+      this.background.layout(SCENE_HEIGHT * scale * this.backgroundAspect, SCENE_HEIGHT * scale, 0, top, false);
+      return;
+    }
+    this.background.layout(SCENE_WIDTH * scale, SCENE_HEIGHT * scale, (SCENE_WIDTH - SCENE_WIDTH * scale) / 2, top);
   }
 
   private destroyApp(): void {

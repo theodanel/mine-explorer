@@ -58,7 +58,7 @@
           (click)="openSheet(cell.key)"
           (keydown.enter)="openSheet(cell.key)"
         >
-          <img class="slot-icon" [src]="cell.iconUrl" alt="" width="128" height="128" />
+          <img class="slot-icon" [class.corrupted-icon]="cell.family > 0" [style.--corruption]="cell.family" [src]="cell.iconUrl" alt="" width="128" height="128" />
           @if (cell.runes.length > 0) {
             <span class="slot-runes" aria-hidden="true">
               @for (rune of cell.runes; track rune.key) {

@@ -92,6 +92,7 @@ export class ItemCompare {
       powerTrend: trendOf(delta),
       slot: SLOTS[candidate.slot],
       iconUrl: itemIconUrl(candidate.slot, candidate.tier, SLOTS[candidate.slot].iconUrl),
+      family: candidate.family ?? 0,
       current: current ? describeItem(current) : null,
       candidate: describeItem(candidate),
       rows: compareItems(current, candidate).map(({ stat, current: before, candidate: after }) => ({

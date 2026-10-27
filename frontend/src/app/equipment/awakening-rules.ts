@@ -76,9 +76,14 @@ export function addDuplicates(state: AwakeningState, amount: number): AwakeningS
 }
 
 /** Ce qui manque pour éveiller la pièce portée, ou null si c'est possible. */
-export type AwakeningBlocker = 'not-divine' | 'max' | 'family' | 'duplicates' | 'essences';
+export type AwakeningBlocker = 'not-divine' | 'max' | 'family' | 'seal' | 'duplicates' | 'essences';
 
-export function awakeningBlocker(state: AwakeningState, item: Item | undefined, essencesOwned: number): AwakeningBlocker | null {
+export function awakeningBlocker(
+  state: AwakeningState,
+  item: Item | undefined,
+  essencesOwned: number,
+  seals: number,
+): AwakeningBlocker | null {
   if (!isDivine(item)) {
     return 'not-divine';
   }
@@ -90,6 +95,10 @@ export function awakeningBlocker(state: AwakeningState, item: Item | undefined, 
   // La phase suivante se fait avec le Divin de la famille de cette vie
   if ((item.family ?? 0) !== level) {
     return 'family';
+  }
+  // Le sceau de la phase, appris dans l'arbre de compétences avec les points de la profondeur
+  if (seals <= level) {
+    return 'seal';
   }
   if ((state.duplicates[item.slot] ?? 0) < cost.duplicates) {
     return 'duplicates';

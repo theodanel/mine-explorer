@@ -91,6 +91,7 @@ export class EquipmentColumn {
         tier: item?.tier ?? 'empty',
         level: item?.level ?? null,
         awakening: activeAwakening(equipped, awakening, slot),
+        family: item?.family ?? 0,
         best: slot === bestSlot,
         inSet: setTier !== null && item?.tier === setTier,
         // Runes serties sur l'emplacement : de petites gemmes au coin du cadre, qui rendent chaque équipement unique
@@ -202,7 +203,7 @@ function itemCard(label: string, item: Item, shown: Item, awakening: number): To
     (stat) => `${STATS[stat].label} ${formatStatDelta(stat, shown.stats[stat] ?? 0)}`,
   );
   const tierName = `${TIER_LABELS[item.tier]}${rebirthMark(item)}`;
-  const tierLabel = awakening > 0 ? `${tierName} corrompu · Éveil ${awakening}` : tierName;
+  const tierLabel = awakening > 0 ? `${tierName} · Éveil ${awakening}` : tierName;
   return {
     title: label,
     badge: { label: `${tierLabel} · Niv. ${item.level}`, tier: item.tier },

@@ -58,8 +58,11 @@ export const SKILL_POINTS_PER_ZONE = 3;
 /** L'onglet s'ouvre à la zone 2 (choix de Théo, 18/10/2026), avec les 3 points de la zone 1 terminée. */
 export const SKILLS_UNLOCK_ZONE = 2;
 
-/** Points à dépenser dans une branche pour ouvrir chaque rangée, de la première à la quatrième. */
-export const ROW_THRESHOLDS: readonly number[] = [0, 3, 7, 12];
+/**
+ * Points à dépenser dans une branche pour ouvrir chaque rangée. La 5e rangée n'existe que dans les Sceaux : le sceau 5
+ * s'ouvre une fois les quatre premiers payés (3 + 4 + 5 + 6 points).
+ */
+export const ROW_THRESHOLDS: readonly number[] = [0, 3, 7, 12, 18];
 
 /** Un sort coûte 2 points à apprendre, puis 1 par rang. Un passif coûte 1 point par rang. */
 export const SPELL_UNLOCK_COST = 2;
@@ -203,13 +206,14 @@ export const SPELL_SLOTS = 3;
 
 // ─── Arbre ─────────────────────────────────────────────────────────────────
 
-export const BRANCH_IDS = ['force', 'prospecting', 'mastery'] as const;
+export const BRANCH_IDS = ['force', 'prospecting', 'mastery', 'seals'] as const;
 export type BranchId = (typeof BRANCH_IDS)[number];
 
 export const BRANCHES: Readonly<Record<BranchId, { readonly label: string; readonly summary: string }>> = {
   force: { label: 'Force', summary: 'Frapper plus fort et faire sauter la roche.' },
   prospecting: { label: 'Prospection', summary: 'Plus d\'or, plus d\'éclats, même pendant l\'absence.' },
   mastery: { label: 'Maîtrise', summary: 'Des sorts plus fréquents et plus longs.' },
+  seals: { label: 'Sceaux', summary: 'Un sceau par phase du Divin corrompu : descendre assez profond pour l\'éveiller.' },
 };
 
 interface NodeBase {
@@ -226,6 +230,8 @@ export interface PassiveNode extends NodeBase {
   readonly bonus: BonusId;
   readonly perRank: number;
   readonly summary: string;
+  /** Points par rang, quand ce n'est pas 1 (les sceaux). */
+  readonly rankCost?: number;
 }
 
 export interface SpellNode extends NodeBase {
@@ -234,6 +240,11 @@ export interface SpellNode extends NodeBase {
 }
 
 export type SkillNode = PassiveNode | SpellNode;
+
+/** Points de chaque sceau, du 1er au 5e. Avec l'arbre complet (67 points), les 5 sceaux demandent la zone 32. */
+const SEAL_COSTS = [3, 4, 5, 6, 7] as const;
+/** Un sceau renforce un peu la Frappe : il n'est pas qu'une taxe. */
+const SEAL_STRIKE_PCT = 0.1;
 
 export const SKILL_NODES: readonly SkillNode[] = [
   // Force
@@ -253,6 +264,22 @@ export const SKILL_NODES: readonly SkillNode[] = [
   { kind: 'passive', id: 'shortFuse', branch: 'mastery', row: 0, label: 'Mèche courte', maxRank: 5, bonus: 'cooldownPct', perRank: 0.04, summary: 'Recharge des sorts' },
   { kind: 'spell', id: 'geologistEye', branch: 'mastery', row: 1, spell: 'geologistEye' },
   { kind: 'passive', id: 'focus', branch: 'mastery', row: 2, label: 'Concentration', maxRank: 5, bonus: 'durationPct', perRank: 0.1, summary: 'Durée des sorts' },
+  // Sceaux (27/10/2026) : chacun ouvre une phase du Divin corrompu. Les points venant de la profondeur atteinte dans la
+  // vie, une phase demande d'être descendu assez loin, pas seulement d'avoir forgé
+  ...SEAL_COSTS.map(
+    (cost, index): PassiveNode => ({
+      kind: 'passive',
+      id: `seal${index + 1}`,
+      branch: 'seals',
+      row: index,
+      label: `Sceau ${index + 1}`,
+      maxRank: 1,
+      bonus: 'strikePct',
+      perRank: SEAL_STRIKE_PCT,
+      summary: `Ouvre la phase ${index + 1} du Divin corrompu, et Frappe`,
+      rankCost: cost,
+    }),
+  ),
   { kind: 'passive', id: 'blastMaster', branch: 'mastery', row: 3, label: 'Maître artificier', maxRank: 3, bonus: 'blastPct', perRank: 0.2, summary: 'Dégâts des explosions' },
 ];
 
@@ -262,5 +289,17 @@ export function nodeMaxRank(node: SkillNode): number {
 
 /** Points pour passer du rang `rank` au suivant. */
 export function nodeRankCost(node: SkillNode, rank: number): number {
-  return node.kind === 'spell' && rank === 0 ? SPELL_UNLOCK_COST : 1;
+  if (node.kind === 'passive') {
+    return node.rankCost ?? 1;
+  }
+  return rank === 0 ? SPELL_UNLOCK_COST : 1;
+}
+
+/** Sceaux appris, à la suite : le sceau N ouvre la phase N du Divin corrompu. */
+export function sealsLearned(ranks: Readonly<Partial<Record<string, number>>>): number {
+  let count = 0;
+  while ((ranks[`seal${count + 1}`] ?? 0) > 0) {
+    count++;
+  }
+  return count;
 }

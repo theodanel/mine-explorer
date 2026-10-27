@@ -57,7 +57,9 @@ export class SkillsPage {
     return {
       id: branch,
       ...BRANCHES[branch],
-      rows: Array.from({ length: ROW_COUNT }, (_, row) => ({
+      rows: Array.from({ length: ROW_COUNT }, (_, row) => row)
+        .filter((row) => SKILL_NODES.some((node) => node.branch === branch && node.row === row))
+        .map((row) => ({
         row,
         open: rowOpen(ranks, branch, row),
         threshold: ROW_THRESHOLDS[row],

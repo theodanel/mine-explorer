@@ -5,6 +5,8 @@ import { EVOLUTION_FORMS } from '../balance/balance';
 import { Evolution } from '../evolution/evolution';
 import { HeartForge } from '../heart-forge/heart-forge';
 import { Rebirth } from '../rebirth/rebirth';
+import { sealsLearned } from '../balance/skill-tree';
+import { Skills } from '../skills/skills';
 import { readStorage, writeStorage } from '../shared/local-storage';
 import {
   addDuplicates,
@@ -32,6 +34,7 @@ export class Awakening {
   private readonly evolution = inject(Evolution);
   private readonly heartForge = inject(HeartForge);
   private readonly rebirth = inject(Rebirth);
+  private readonly skills = inject(Skills);
   private readonly state = signal<AwakeningState>(loadState());
 
   readonly unlocked = computed(() => this.evolution.index() >= UNLOCK_INDEX);
@@ -65,7 +68,8 @@ export class Awakening {
 
   blocker(item: Item | undefined): AwakeningBlocker | null {
     const cost = item === undefined ? null : awakeningCost(item.slot, this.level(item.slot));
-    return awakeningBlocker(this.state(), item, cost === null ? 0 : this.heartForge.essences()[cost.essence]);
+    const essences = cost === null ? 0 : this.heartForge.essences()[cost.essence];
+    return awakeningBlocker(this.state(), item, essences, sealsLearned(this.skills.ranks()));
   }
 
   /** Éveille la pièce portée d'un palier, si tout est payé. */

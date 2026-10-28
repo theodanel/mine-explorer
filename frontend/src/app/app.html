@@ -93,8 +93,9 @@
   }
   <app-zone-banner class="zone" />
   <app-achievement-toast class="achievement-toast" />
-  <app-lottery-button class="lottery" />
+  <!-- Le carnet avant la loterie : au même étage, la fenêtre de la loterie (ouverte dans son bouton) passe par-dessus -->
   <app-journal-button class="journal" />
+  <app-lottery-button class="lottery" />
   <app-merchant-hint class="merchant-hint" />
   @if (challenge.unlocked() && challenge.claimable().length > 0) {
     <button type="button" class="challenge-call game-button green" (click)="navigation.open('challenge')">

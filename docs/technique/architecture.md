@@ -10,13 +10,13 @@ mine-explorer/
 │   ├── src/app/       Code applicatif, un dossier par domaine
 │   ├── public/        Fichiers servis tels quels (images, sons, _headers)
 │   └── tools/         Outils en ligne de commande (simulateur, tableaux, serveur de vérification)
-├── backend/           Spring Boot 4.1, Java 21 : comptes, sauvegarde cloud, classement (non déployé)
+├── backend/           Spring Boot 4.1, Java 21 : comptes, sauvegarde cloud, classement, discussion
 ├── art-source/        Visuels d'origine (Gemini) avant découpe
 ├── docs/              Coffre Obsidian : game-design/ et technique/
 └── .github/           CI/CD, CodeQL, Dependabot
 ```
 
-Le jeu est une **application monopage statique** : HTML, JavaScript et images servis par un CDN, aucune donnée envoyée à un serveur.
+Le jeu est une **application monopage statique** : HTML, JavaScript et images servis par Cloudflare Pages. Il tourne entièrement dans le navigateur ; le serveur, sur le Raspberry Pi, ne sert qu'au jeu en ligne (compte, sauvegarde cloud, classement, discussion).
 
 ## Frontend
 

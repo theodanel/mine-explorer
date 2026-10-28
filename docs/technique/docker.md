@@ -10,13 +10,12 @@ docker compose up --build
 ```
 
 - Le jeu : http://localhost:8080
-- Le serveur Spring Boot : http://localhost:8081
 
 `docker-compose.override.yml`, chargé tout seul par `docker compose`, publie les ports sur la machine. `.env` est facultatif (ports par défaut) et ignoré par git. Pour arrêter : `docker compose down`.
 
-## Déployer sur Coolify
+## Déployer le jeu sur Coolify (facultatif)
 
-Le `docker-compose.yml` suit les conventions de Coolify (demande de Théo, 16/10/2026) :
+Le jeu en ligne est servi par Cloudflare Pages (voir [[deploiement]]). Le `docker-compose.yml` reste prêt pour Coolify, où un ami de Théo le sert aussi ; il suit ses conventions (16/10/2026) :
 
 - **`expose` au lieu de `ports`** : rien n'est publié sur le serveur, c'est le proxy de Coolify qui reçoit le trafic.
 - **Pas de `container_name` ni de nom de projet** : Coolify nomme et préfixe lui-même ses conteneurs.

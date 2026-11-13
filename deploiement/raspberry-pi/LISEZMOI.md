@@ -46,7 +46,7 @@ Garder `http://localhost:8080/login/oauth2/code/google` pour les essais en local
 ## Étape 1 · Sur le PC : préparer l'archive
 
 ```powershell
-cd C:\Users\theod\IdleRpgGame\mine-explorer\deploiement\raspberry-pi
+cd <dossier-du-dépôt>\deploiement\raspberry-pi
 powershell -ExecutionPolicy Bypass -File .\preparer.ps1
 ```
 

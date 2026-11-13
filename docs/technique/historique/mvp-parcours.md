@@ -16,7 +16,7 @@ Versions vérifiées le 11/10/2026 :
 Pourquoi un seul dépôt : tu es seul, et une évolution d'API touche le serveur et le client en même temps. Un commit, une PR, un historique.
 
 1. Sur GitHub : **New repository**, nom `mine-explorer`, **Private**, sans README ni .gitignore (tu les crées en local).
-2. En local, dans `C:\Users\theod\IdleRpgGame` :
+2. En local, dans le dossier de travail :
    ```powershell
    mkdir mine-explorer
    cd mine-explorer

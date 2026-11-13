@@ -1,0 +1,113 @@
+:host {
+  display: grid;
+  align-content: start;
+  gap: 2cqw;
+}
+
+.hint,
+.header {
+  margin: 0;
+  font-size: 3.1cqw;
+  text-align: center;
+}
+
+.header {
+  font-size: 3.8cqw;
+}
+
+.reward {
+  display: grid;
+  justify-items: center;
+  gap: 1.5cqw;
+  padding: 2.5cqw;
+  border: 0.45cqw solid var(--ink);
+  border-radius: 3cqw;
+  background: linear-gradient(#fff3c4, #f6d77a);
+  color: var(--ink);
+
+  p {
+    margin: 0;
+    font-size: 3.2cqw;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .game-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 1cqw;
+    padding: 1.6cqw 4cqw;
+  }
+
+  img {
+    width: 4.6cqw;
+    height: 4.6cqw;
+  }
+}
+
+.rows {
+  display: grid;
+  gap: 1.2cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 8cqw minmax(0, 1fr) auto 5cqw;
+    align-items: center;
+    gap: 2cqw;
+    padding: 1.6cqw 2.5cqw;
+    border: 0.45cqw solid var(--ink);
+    border-radius: 2.5cqw;
+    background: var(--parchment);
+    color: var(--parchment-text);
+    font-size: 3.2cqw;
+
+    &.mine {
+      box-shadow: 0 0 0 0.6cqw #ffd34d;
+    }
+
+    // Zone de montée en vert, de descente en rouge
+    &[data-zone='up'] {
+      background: linear-gradient(90deg, #d8f5c8, var(--parchment));
+    }
+
+    &[data-zone='down'] {
+      background: linear-gradient(90deg, #f8d3c8, var(--parchment));
+    }
+  }
+}
+
+.rank {
+  font-weight: 800;
+  text-align: center;
+}
+
+.pseudo {
+  display: grid;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.title {
+  font-size: 2.5cqw;
+  opacity: 0.8;
+}
+
+.value {
+  font-weight: 700;
+}
+
+.move {
+  font-size: 3.6cqw;
+  text-align: center;
+
+  &.up {
+    color: #2f8f2a;
+  }
+
+  &.down {
+    color: #b8402a;
+  }
+}

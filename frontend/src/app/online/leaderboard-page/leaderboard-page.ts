@@ -7,6 +7,7 @@ import { OnlineApi } from '../online-api';
 import { ONLINE_CONFIG } from '../online-config';
 import { isLeaderboard, Leaderboard, LeaderboardType } from '../online-rules';
 import { titleOf } from '../../achievements/achievement-rules';
+import { LeagueBoard } from '../league-board/league-board';
 
 interface Tab {
   readonly type: LeaderboardType;
@@ -42,6 +43,7 @@ const PODIUM = 3;
  */
 @Component({
   selector: 'app-leaderboard-page',
+  imports: [LeagueBoard],
   templateUrl: './leaderboard-page.html',
   styleUrl: './leaderboard-page.scss',
 })
@@ -58,6 +60,8 @@ export class LeaderboardPage {
   protected readonly type = signal<LeaderboardType>('depth');
   protected readonly board = signal<Leaderboard | null>(null);
   protected readonly failed = signal(false);
+  /** Onglet de la ligue de la semaine, à côté des deux classements. */
+  protected readonly leagueOpen = signal(false);
 
   /**
    * Progression de l'appareil plus haute que celle classée : le serveur la valide petit à petit depuis la première
@@ -78,7 +82,12 @@ export class LeaderboardPage {
     this.listenToChanges();
   }
 
+  protected openLeague(): void {
+    this.leagueOpen.set(true);
+  }
+
   protected async load(type: LeaderboardType): Promise<void> {
+    this.leagueOpen.set(false);
     this.type.set(type);
     this.board.set(null);
     this.failed.set(false);

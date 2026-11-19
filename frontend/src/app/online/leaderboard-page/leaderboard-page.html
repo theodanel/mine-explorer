@@ -10,17 +10,29 @@
         type="button"
         role="tab"
         class="game-button"
-        [class.gold]="type() === tab.type"
-        [attr.aria-selected]="type() === tab.type"
+        [class.gold]="!leagueOpen() && type() === tab.type"
+        [attr.aria-selected]="!leagueOpen() && type() === tab.type"
         (click)="load(tab.type)"
       >
         {{ tab.label }}
       </button>
     }
+    <button
+      type="button"
+      role="tab"
+      class="game-button"
+      [class.gold]="leagueOpen()"
+      [attr.aria-selected]="leagueOpen()"
+      (click)="openLeague()"
+    >
+      Ligue
+    </button>
   </div>
 
   <div class="scroll">
-    @if (failed()) {
+    @if (leagueOpen()) {
+      <app-league-board />
+    } @else if (failed()) {
       <p class="hint">Classement indisponible pour l'instant.</p>
     } @else if (board(); as board) {
       @if (board.me; as me) {

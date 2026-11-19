@@ -1,0 +1,51 @@
+@switch (state()) {
+  @case ('loading') {
+    <p class="hint">Chargement…</p>
+  }
+  @case ('none') {
+    <p class="hint">
+      @if (account.signedIn()) {
+        Ta partie n'est pas encore partie dans le cloud : tu entreras en ligue Bronze à la prochaine sauvegarde.
+      } @else {
+        Connecte-toi pour entrer dans la ligue de la semaine.
+      }
+    </p>
+  }
+  @case ('failed') {
+    <p class="hint">Ligue indisponible pour l'instant.</p>
+  }
+  @default {
+    @if (reward(); as prize) {
+      <article class="reward">
+        <p>{{ prize.text }}</p>
+        <button type="button" class="game-button green" (click)="claim()">
+          Récupérer {{ prize.shards }}
+          <img src="assets/ui/geode-shard.webp" alt="éclats" width="128" height="128" />
+        </button>
+      </article>
+    }
+    <p class="header">
+      <strong>Ligue {{ leagueLabel() }}</strong> · fin dans {{ timeLeft() }}
+    </p>
+    <p class="hint">Score : les filons gagnés depuis lundi. Les meilleurs montent, les derniers descendent le lundi à 0 h.</p>
+    <ol class="rows">
+      @for (row of rows(); track row.rank) {
+        <li [class.mine]="row.mine" [attr.data-zone]="row.zone">
+          <span class="rank">{{ row.rank }}</span>
+          <span class="pseudo">
+            {{ row.pseudo }}
+            @if (row.titleLabel; as title) {
+              <small class="title">{{ title }}</small>
+            }
+          </span>
+          <span class="value">{{ row.score }} filon{{ row.score > 1 ? 's' : '' }}</span>
+          @if (row.zone === 'up') {
+            <span class="move up" aria-label="Monte en fin de semaine">▲</span>
+          } @else if (row.zone === 'down') {
+            <span class="move down" aria-label="Descend en fin de semaine">▼</span>
+          }
+        </li>
+      }
+    </ol>
+  }
+}

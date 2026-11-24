@@ -35,6 +35,8 @@ Toutes les réponses d'erreur sont en `application/problem+json` avec un `code` 
 | `GET /api/me` | oui | `{pseudo, createdAt, providers, title}` |
 | `PUT /api/me/pseudo` | oui | `{pseudo}` : 3 à 20 lettres, chiffres, espaces, tirets, soulignés ; unique sans tenir compte de la casse (`pseudo-invalid`, `pseudo-taken`) |
 | `PUT /api/me/title` | oui | `{title}` : identifiant d'un succès de la liste blanche `TitleCatalog`, ou null ; le succès doit figurer dans la sauvegarde cloud (`mine-explorer.succes`) (`title-unknown`, `title-locked`). Le titre s'affiche dans le classement (`title`) et la discussion |
+| `GET /api/league` | oui | Ligue de la semaine du joueur : ligue, fin de semaine, joueurs classés par filons gagnés depuis lundi, récompense en attente (404 `league-none` sans sauvegarde) |
+| `POST /api/league/claim` | oui | Récupère la récompense de la semaine passée (`{shards}`, 0 si rien) |
 | `GET /api/me/export` | oui | Toutes les données gardées sur le joueur (RGPD) |
 | `DELETE /api/me` | oui | Supprime le compte, la partie et toutes les sessions |
 | `POST /api/me/logout-everywhere` | oui | Ferme toutes les sessions du joueur, sur tous les appareils |

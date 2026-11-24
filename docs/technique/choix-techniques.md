@@ -13,11 +13,11 @@ Retour à [[documentation-technique]]. Chaque choix : le contexte, la décision,
 - **Décision** : toute la logique de jeu dans des fonctions sans effet de bord (`*-rules.ts`) et des tables de chiffres (`balance/`).
 - **Raison** : testables seules, rejouables par le simulateur d'économie, et portables en Java le jour où le serveur devient autoritaire.
 
-## Sauvegarde dans le navigateur, pas encore de serveur
+## La partie vit dans le navigateur, le serveur en garde une copie
 
-- **Décision** : l'état est dans le `localStorage`. Le backend (comptes, sauvegarde cloud) en garde une copie quand le joueur se connecte, sans remplacer la sauvegarde locale : le jeu reste jouable hors connexion.
-- **Raison** : pour une première version de test, un site statique suffit, ne coûte rien, et n'expose aucune surface d'attaque serveur (pas de base, pas d'API, pas de compte).
-- **En échange** : triche locale possible, partie liée à un navigateur et un appareil. À revoir dès qu'il y aura classement, synchronisation entre appareils ou achats.
+- **Décision** : l'état est dans le `localStorage`. Le serveur (comptes, sauvegarde cloud) en garde une copie quand le joueur se connecte, sans remplacer la sauvegarde locale : le jeu reste jouable sans compte et hors connexion.
+- **Raison** : la première version (octobre 2026) était un site statique, sans serveur ni surface d'attaque. Le serveur est venu ensuite pour la synchronisation entre appareils, le classement et la discussion, sans réécrire le jeu.
+- **En échange** : triche locale possible, que le serveur ne bloque que pour le classement (anti-triche de plausibilité). Un serveur autoritaire, qui calcule lui-même les gains, serait à envisager le jour où il y aurait des échanges ou des achats.
 
 ## Comptes et sauvegarde cloud : Spring Security, serveur et base sur le Raspberry Pi
 

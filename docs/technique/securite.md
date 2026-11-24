@@ -1,10 +1,10 @@
 # Sécurité
 
-Retour à [[documentation-technique]]. Revue complète du 13/10/2026.
+Retour à [[documentation-technique]]. Revue complète du 13/10/2026, mise à jour le 19/10/2026 (serveur en ligne, audit du dépôt : [[audit-depot]]). Signaler une faille : `SECURITY.md` à la racine.
 
 ## Modèle de menace
 
-Mine Explorer est aujourd'hui un **jeu solo sans serveur** : aucun compte, aucune donnée personnelle, aucun paiement, aucune donnée envoyée sur le réseau. Les risques réels sont donc :
+Mine Explorer est un jeu qui tourne dans le navigateur, avec un serveur pour le jeu en ligne : compte Google facultatif (identifiant opaque seulement, ni e-mail ni nom), sauvegarde cloud, classement et discussion. Aucun paiement. Les risques réels sont donc :
 
 | Risque | Protection |
 |---|---|
@@ -12,7 +12,9 @@ Mine Explorer est aujourd'hui un **jeu solo sans serveur** : aucun compte, aucun
 | Site affiché dans un cadre piégé (clickjacking) | `frame-ancestors 'none'` et `X-Frame-Options: DENY` |
 | Sauvegarde abîmée ou trafiquée qui casse le jeu | Validation et bornes de chaque clé au chargement, retour à un état neuf sinon, test dédié |
 | Dépendance vulnérable | `npm audit` bloquant en CI, Dependabot, CodeQL |
-| Fuite d'un secret | Aucun secret dans le dépôt ; secrets de déploiement dans un environnement GitHub restreint |
+| Fuite d'un secret | Aucun secret dans le dépôt ni dans son historique ([[audit-depot]]) ; secrets de déploiement dans un environnement GitHub restreint, secrets du serveur dans le `.env` du Pi |
+| Propos injurieux ou données personnelles dans la discussion | Filtre de mots, liens et coordonnées refusés, signalement par les joueurs, modération (voir [[backend]]) ; texte toujours affiché échappé |
+| Exposition de la box et du Pi | Seul le port 443 répond, via Nginx Proxy Manager ; base et serveur jamais publiés ; en-têtes de proxy crus seulement depuis le réseau Docker du proxy |
 | Pipeline détourné | Permissions minimales des workflows, jeton GitHub non conservé au checkout |
 | Compte ou partie d'un autre joueur (backend) | Session HttpOnly, CSRF, CORS strict, aucune route avec identifiant (voir [[backend]]) |
 | Fuite d'informations du serveur | Erreurs sans trace ni message interne, console H2 fermée, refus par défaut |
@@ -42,7 +44,7 @@ Pour y arriver : PixiJS est importé dans sa variante sans `eval` (`pixi.js/unsa
 
 ## Backend
 
-Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `GoogleLoginFlowTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`, `ProductionProfileTests`. Audit complet du 14/10/2026 : [[audit-securite-backend]].
+Comptes Google, sauvegarde cloud, classement et discussion, en ligne sur le Raspberry Pi. Protections détaillées dans [[backend]] (section Sécurité) : session en base et cookie `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF sur toute écriture, CORS limité à l'adresse du jeu, PKCE, aucun identifiant dans les routes (anti-IDOR), limite de requêtes, refus par défaut, erreurs sans trace, aucune donnée personnelle hors identifiant Google opaque, conteneur non root. Testés dans `SecurityTests`, `GoogleLoginFlowTests`, `SaveApiTests`, `AccountApiTests`, `RateLimitTests`, `ErrorResponseTests`, `ProductionProfileTests`. Audit complet du 14/10/2026 : [[audit-securite-backend]].
 
 ## Limites assumées
 
@@ -55,6 +57,6 @@ Comptes Google, sauvegarde cloud et classement, pas encore déployé. Protection
 | Contrôle | Où |
 |---|---|
 | Dépendances npm | `npm audit --audit-level=high` à chaque CI, Dependabot chaque semaine |
-| Dépendances Maven et actions GitHub | Dependabot chaque semaine (mises à jour de versions). **Pas d'alerte de faille** : alertes Dependabot désactivées sur le dépôt et aucun audit Maven en CI, voir [[audit-securite-backend]] |
+| Dépendances Maven et actions GitHub | Dependabot chaque semaine (mises à jour de versions). **Pas d'alerte de faille** tant que les alertes Dependabot sont désactivées sur le dépôt (à activer : Settings → Code security), et aucun audit Maven en CI, voir [[audit-securite-backend]] |
 | Code | CodeQL à chaque PR et chaque lundi (résultats en artefact, voir [[ci-cd]]) |
 | En-têtes | Après tout changement de `_headers` ou d'une bibliothèque de rendu : `npm run build` puis `node tools/serve-dist.mjs`, console du navigateur sans violation |

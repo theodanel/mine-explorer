@@ -135,7 +135,8 @@ class SecurityTests extends ApiTestSupport {
 		mockMvc.perform(get("/actuator/health"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.status").value("UP"))
-			.andExpect(jsonPath("$.components").doesNotExist());
+			.andExpect(jsonPath("$.components").doesNotExist())
+			.andExpect(jsonPath("$.groups").doesNotExist());
 		mockMvc.perform(get("/actuator/env")).andExpect(status().isUnauthorized());
 	}
 
